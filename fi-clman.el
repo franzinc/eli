@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.30 1992/10/05 08:43:09 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.31 1993/03/23 10:25:20 layer Exp $
 
 (defvar fi::manual-directory nil)
 
@@ -183,6 +183,7 @@ clman buffer, from anywhere in the buffer."
 	(beginning-of-line))))
 
 (defun fi:clman-next-entry ()
+  "Move the point to the DESCRIPTION section of the manual page."
   (interactive)
   (if (search-forward "DESCRIPTION" nil t)
       (progn (beginning-of-line)(forward-line 1))
@@ -198,6 +199,8 @@ clman buffer, from anywhere in the buffer."
   (set-window-configuration fi::clman-window-configuration))
 
 (defun fi:clman-package-help ()
+  "In the *CLMAN-NICKNAMES buffer list all the package for which CLMAN
+pages are available."
   (interactive)
   (with-output-to-temp-buffer "*CLMAN-NICKNAMES"
     (princ  "The following is a list of all the")
