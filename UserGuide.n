@@ -2,7 +2,7 @@
 			      User Guide
 			   Release 2.0beta
 
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.21 1991/09/11 15:24:16 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.22 1991/09/16 15:21:52 layer Exp $
 
 			     Introduction
 
@@ -441,9 +441,10 @@ Functions and Variables for Interacting with a Common Lisp subprocess
 %% fi:common-lisp-image-arguments
 %% fi:common-lisp-host
 %% fi:common-lisp-prompt-pattern
-%% fi:start-lisp-interface-function
-%% fi:reset-lep-connection
+%% fi:start-lisp-interface-arguments
+%% fi:use-background-streams
 %% fi:start-lisp-interface-hook
+%% fi:reset-lep-connection
 %% fi:in-package-regexp
 %% fi:default-in-package-regexp
 
