@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.71 1990/10/13 19:37:54 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.72 1990/10/16 22:02:20 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -59,7 +59,7 @@
 Emacs-Lisp interface.")
 
 (defvar fi:remote-lisp-track-image-name-directory nil
-  "If non-nil, then fi:remote-common-lisp and
+  "*If non-nil, then fi:remote-common-lisp and
 fi:explicit-remote-common-lisp will cause both Emacs and Lisp to cd into
 the directory where the Common Lisp image resides.  Otherwise, the remote
 Common Lisp will have $HOME as its current working directory and Emacs will
@@ -73,20 +73,27 @@ to funcall, the result of which should yield a string which is the image
 name or path.")
 
 (defvar fi:default-explicit-common-lisp-image-name nil
-  "If non-nil, then the value of this variable is used as the name of the
+  "*If non-nil, then the value of this variable is used as the name of the
 image fi:explicit-common-lisp and fi:explicit-remote-common-lisp uses to
 run Lisp, instead of reading the name from the minibuffer.")
 
 (defvar fi:default-explicit-common-lisp-image-arguments nil
-  "If non-nil, then the value of this variable (a string) contains the
+  "*If non-nil, then the value of this variable (a string) contains the
 arguments given to Lisp by fi:explicit-common-lisp and
 fi:explicit-remote-common-lisp when Lisp is invoked, instead of reading the
 name from the minibuffer.")
 
 (defvar fi:default-remote-common-lisp-host nil
-  "If non-nil, then the value of this variable (a string) is names the
+  "*If non-nil, then the value of this variable (a string) is names the
 host on which fi:remote-common-lisp and fi:explicit-remote-common-lisp
 executes Lisp, instead of reading the name from the minibuffer.")
+
+(defvar fi:default-remote-common-lisp-directory nil
+  "*If non-nil, used by fi:remote-common-lisp and
+fi:explicit-remote-common-lisp as the directory in which the Lisp is
+started.  Note that the pathname of the Lisp image must be give relative to
+this directory, or the home directory if this variable is nil.  See
+fi:fi:default-explicit-common-lisp-image-name")
 
 (defvar fi:common-lisp-image-arguments nil
   "*Default Common Lisp image arguments when invoked from `fi:common-lisp',
@@ -326,7 +333,9 @@ See fi:explicit-remote-common-lisp."
 		(append
 		 (list host
 		       (format fi::remote-lisp-sh-prefix
-			       (screen-width) remote-dir)
+			       (screen-width)
+			       (or fi:default-remote-common-lisp-directory
+				   remote-dir))
 		       (if fi:remote-lisp-track-image-name-directory
 			   (file-name-nondirectory
 			    fi:common-lisp-image-name)
@@ -337,7 +346,9 @@ See fi:explicit-remote-common-lisp."
 		fi:start-lisp-interface-function
 		(list 'lambda ()
 		      '(setq fi::lisp-is-remote t)
-		      (list 'cd remote-dir)
+		      (list 'cd
+			    (or fi:default-remote-common-lisp-directory
+				remote-dir))
 		      (list 'fi::set-buffer-host '(current-buffer)
 			    host)))))
     (setq fi::freshest-common-sublisp-name (process-name proc))
@@ -374,7 +385,9 @@ arguments are read from the minibuffer."
 		(append
 		 (list host
 		       (format fi::remote-lisp-sh-prefix
-			       (screen-width) remote-dir)
+			       (screen-width)
+			       (or fi:default-remote-common-lisp-directory
+				   remote-dir))
 		       (file-name-nondirectory image-name))
 		 image-arguments
 		 '("'"))
@@ -382,7 +395,8 @@ arguments are read from the minibuffer."
 		fi:start-lisp-interface-function
 		(list 'lambda ()
 		      '(setq fi::lisp-is-remote t)
-		      (list 'cd remote-dir)
+		      (list 'cd (or fi:default-remote-common-lisp-directory
+				    remote-dir))
 		      (list 'fi::set-buffer-host '(current-buffer)
 			    host)))))
     (setq fi::freshest-common-sublisp-name (process-name proc))
@@ -625,11 +639,11 @@ are read from the minibuffer."
    process
    (if fi:unix-domain
        "(progn(princ \";Starting socket daemon
-   \")(require :ipc)(require :emacs)(setq ipc::*unix-domain* t)
-   (ipc:start-lisp-listener-daemon)(values))\n"
+   \")(require :ipc)(require :emacs)(set (find-symbol (symbol-name :*unix-domain*) :ipc) t)
+   (funcall (find-symbol (symbol-name :start-lisp-listener-daemon) :ipc))(values))\n"
      "(progn(princ \";Starting socket interface
    \")(require :ipc)(require :emacs)
-   (ipc:start-lisp-listener-daemon)(values))\n")))
+   (funcall (find-symbol (symbol-name :start-lisp-listener-daemon) :ipc))(values))\n")))
 
 (defun fi::make-subprocess-variables ()
   (setq fi::input-ring-max fi:default-input-ring-max)
