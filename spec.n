@@ -1,4 +1,4 @@
-$Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.1 1988/03/30 16:44:38 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.2 1988/04/04 20:18:04 layer Exp $
 
 		 Franz Inc. GNU Emacs/LISP Interface
 
@@ -82,16 +82,13 @@ editing Lisp source:
 %mode: fi:common-lisp-mode
 %% fi:lisp-auto-semicolon-mode
 %% fi:lisp-comment-indent-specification
-%% fi:find-line-comment
-%% fi:lisp-comment-indent
-%% fi:lisp-indent-if*
+%% fi:lisp-indent-line
 %% fi:lisp-reindent-newline-indent
+%% fi:lisp-comment-indent
 %% fi:lisp-semicolon
 %% fi:indent-lisp-semicolon
-%% indent-line-comment-hook
-%% fi:indent-line-comment
-%% lisp-indent-do
-%% lisp-indent-line
+%% fi:lisp-do-auto-fill
+%% fi:indent-sexp
 
    Interactively called functions, variables and functions for
 interacting with Lisp:
@@ -162,6 +159,14 @@ The TCP type
 
 3.5.1 Subprocess-style Lisp modes
 
+%mode: fi:inferior-common-lisp-mode
+%% fi:inferior-common-lisp-mode
+%% fi:inferior-common-lisp-mode-map
+%% fi:inferior-common-lisp-mode-super-key-map
+%mode: fi:inferior-franz-lisp-mode
+%% fi:inferior-franz-lisp-mode
+%% fi:inferior-franz-lisp-mode-map
+%% fi:inferior-franz-lisp-mode-super-key-map
 %mode: fi:inferior-lisp-mode
 %% fi:inferior-lisp-mode
 %% fi:inferior-lisp-mode-map
@@ -252,9 +257,12 @@ The TCP type
 
 3.7 Rlogin Mode
 
-%mode: fi:shell-mode
+%mode: fi:rlogin-mode
 %% fi:rlogin
 %% fi:another-rlogin
+%% fi:rlogin-mode
+%% fi:rlogin-mode-map
+%% fi:rlogin-mode-super-key-map
 
 %% fi:default-rlogin-file-name
 %% fi:default-rlogin-image-arguments
@@ -266,23 +274,60 @@ The TCP type
 %% fi:rlogin-send-quit
 %% fi:rlogin-send-stop
 
-4. Miscellany
+4. Getting Started
 
-%mode: fundamental-mode
-%% kill-emacs
-%% fi:kill-emacs-hook
-%% fi:symeval-in-buffer
-
-5. Getting Started
+4.1 Sample .emacs file
 
-5.1 Sample .emacs file
+    (load "fi/site-init.el")
+    ;; turn on superkeys in subprocess modes
+    (setq-default fi:subprocess-enable-superkeys t)
 
-	(load "fi/site-init.el")
-	;; turn on superkeys in subprocess modes
-	(setq-default fi:subprocess-enable-superkeys t)
-
-5.2 Remote Lisps
+4.2 Remote Lisps
    To get a remote lisp:
 
-	(setq explicit-common-lisp-file-name "rsh")
-	(setq explicit-common-lisp-image-arguments '("frozen" "cl"))
+    (setq explicit-common-lisp-file-name "rsh")
+    (setq explicit-common-lisp-image-arguments '("frozen" "cl"))
+
+4.3 X11R2
+   <<have examples for binding the mouse to various things>>>
+
+
+4.4 Allegro CL top-level alias example
+   Putting the following expressions into ~/.clinit.cl will allow
+emacs, for buffers in fi:inferior-common-lisp-mode, to track the
+current working directory of teh inferior lisp process:
+
+    (defvar *directory-stack*
+      (list (namestring
+	     (setq *default-pathname-defaults* (current-directory)))))
+
+    (tpl:alias ("pd" :string) (&optional dir)
+      (if* (string= "" dir)
+	 then (let ((old-top (pop *directory-stack*))
+		    (new-top (pop *directory-stack*)))
+		(push old-top *directory-stack*)
+		(push (chdir new-top) *directory-stack*))
+	 else (push (chdir dir) *directory-stack*))
+      (format t "~a~%" *directory-stack*))
+
+    (tpl:alias "popd" ()
+      (if (> (length *directory-stack*) 1)
+	  (pop *directory-stack*)
+	(format t "nothing to pop into~%"))
+      (chdir (car *directory-stack*))
+      (format t "~a~%" *directory-stack*))
+
+    (tpl:alias "dirs" ()
+      (format t "~a~%" *directory-stack*))
+
+    (tpl:alias ("cd" :string) (dir)
+      ;; the following does update *default-pathname-defaults*
+      (setf (car *directory-stack*)
+	(apply #'chdir
+	       (if (string= "" dir) nil (list dir))))
+      (format t "~a~%" *directory-stack*))
+
+    (tpl:alias "pwd" ()
+      (format t "process cwd = ~a~%*default-pathname-defaults* = ~a~%"
+	      (namestring (current-directory))
+	      (namestring (truename *default-pathname-defaults*))))

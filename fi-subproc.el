@@ -1,4 +1,4 @@
-;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.16 1988/03/28 17:32:45 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.17 1988/04/04 20:18:17 layer Exp $
 ;;;
 ;;; Low-level subprocess mode guts
 
@@ -136,28 +136,23 @@ matches is deemed to be prompt, and is not re-executed.")
   "Run an inferior shell, with input/output through buffer *shell*.
 See `fi::subprocess'."
   (interactive)
-  (fi::subprocess "shell" "shell"))
+  (fi::subprocess "shell" "shell" 'fi:shell-mode))
 
 (defun fi:another-shell ()
   "Run a new inferior shell, with input/output through buffer *shell-N*.
 This function always creates a new subprocess and buffer.  See
 `fi::subprocess'."
   (interactive)
-  (fi::subprocess "shell" "shell" nil t))
+  (fi::subprocess "shell" "shell" 'fi:shell-mode nil t))
 
 (defun fi:rlogin (host)
   "Run an inferior remote login, with input/output through buffer *<host>*.
 See `fi::subprocess'.  Hook function `rlogin-subprocess-hook' will be
 applied in the buffer if defined."
   (interactive "sRemote login to host: \n")
-  (fi::subprocess "rlogin" host nil nil (list host))
-  (setq fi:shell-popd-regexp nil)
-  (setq fi:shell-pushd-regexp nil)
-  (setq fi:shell-cd-regexp nil)
-  (setq fi::rlogin-subprocess-semaphore t)
+  (fi::subprocess "rlogin" host 'fi:rlogin-mode nil nil (list host))
   (set-process-filter (get-buffer-process (current-buffer))
-		      'fi::rlogin-filter)
-  (run-hooks 'fi:rlogin-subprocess-hook))
+		      'fi::rlogin-filter))
 
 (defun fi:another-rlogin (host)
   "Run a new remote login, with input/output through buffer *<host>-N*.
@@ -165,27 +160,22 @@ This function always creates a new subprocess and buffer.  See
 `fi::subprocess'. Hook function `rlogin-subprocess-hook' will be applied in
 the newly-created buffer if defined."
   (interactive "sRemote login to host: \n")
-  (fi::subprocess "rlogin" host nil t (list host))
-  (setq fi:shell-popd-regexp nil)
-  (setq fi:shell-pushd-regexp nil)
-  (setq fi:shell-cd-regexp nil)
-  (setq fi::rlogin-subprocess-semaphore t)
+  (fi::subprocess "rlogin" host 'fi:rlogin-mode nil t (list host))
   (set-process-filter (get-buffer-process (current-buffer))
-		      'fi::rlogin-filter)
-  (run-hooks 'fi:rlogin-subprocess-hook))
+		      'fi::rlogin-filter))
 
 (defun fi:lisp ()
   "Run an inferior lisp, with input/output through buffer *lisp*.
 See `fi::subprocess'."
   (interactive)
-  (fi::subprocess "lisp" "lisp"))
+  (fi::subprocess "lisp" "lisp" 'fi:inferior-lisp-mode))
 
 (defun fi:another-lisp ()
   "Run a new inferior lisp, with input/output through buffer *lisp-N*.
 This function always creates a new subprocess and buffer.  See
 `fi::subprocess'."
   (interactive)
-  (fi::subprocess "lisp" "lisp" nil t))
+  (fi::subprocess "lisp" "lisp" 'fi:inferior-lisp-mode nil t))
 
 (defun fi:common-lisp (&optional tcp-lisp)
   "With no prefix arg run a Common Lisp :subprocess with input/output
@@ -214,7 +204,8 @@ Returns the name of the started subprocess."
 	(fi:tcp-lisp-mode fi:common-lisp-prompt-pattern)
 	(setq fi::freshest-common-sublisp-name proc))
     (setq fi::freshest-common-sublisp-name 
-      (fi::subprocess "common-lisp" "common-lisp"))))
+      (fi::subprocess "common-lisp" "common-lisp"
+		      'fi:inferior-common-lisp-mode))))
 
 (defun fi:another-common-lisp (&optional tcp-lisp)
   "Run a new Common Lisp subprocess, with i/o through buffer
@@ -246,7 +237,8 @@ function always creates a new subprocess and buffer.  See
 	(fi:tcp-lisp-mode fi:common-lisp-prompt-pattern)
 	(setq fi::freshest-common-sublisp-name proc))
     (setq fi::freshest-common-sublisp-name 
-      (fi::subprocess "common-lisp" "common-lisp" nil t))))
+      (fi::subprocess "common-lisp" "common-lisp"
+		      'fi:inferior-common-lisp-mode nil t))))
 
 (defun fi:franz-lisp ()
   "Run a Franz Lisp subprocess, with input/output through buffer
@@ -254,7 +246,7 @@ function always creates a new subprocess and buffer.  See
 `fi::subprocess'."
   (interactive)
   (setq fi::freshest-franz-sublisp-name 
-    (fi::subprocess "franz-lisp" "franz-lisp")))
+    (fi::subprocess "franz-lisp" "franz-lisp" 'fi:inferior-franz-lisp-mode)))
 
 (defun fi:another-franz-lisp ()
   "Run a new Franz Lisp subprocess, with i/o through buffer *franz-lisp-N*.
@@ -262,7 +254,8 @@ Returns the name of the started subprocess.  This function always creates a
 new subprocess and buffer.  See `fi::subprocess'."
   (interactive)
   (setq fi::freshest-franz-sublisp-name 
-    (fi::subprocess "franz-lisp" "franz-lisp" nil t)))
+    (fi::subprocess "franz-lisp" "franz-lisp"
+		    'fi:inferior-franz-lisp-mode nil t)))
 
 ;;;;
 ;;; Interactively called functions (from keymaps)
@@ -297,9 +290,8 @@ other than at the end of the buffer."
 	 (last-binding (lookup-key map last-key)))
     (while (keymapp last-binding)
       (setq last-binding
-	(lookup-key last-binding (setq last-key
-				   (char-to-string
-				    (read-char))))))
+	(lookup-key last-binding
+		    (setq last-key (char-to-string (read-char))))))
     (if (commandp last-binding)
 	(call-interactively last-binding)
       (ding))))
@@ -359,9 +351,7 @@ possible.  This regexp should start with \"^\"."
 (defun fi:shell-send-eof ()
   "Send eof to subshell (or to the program running under it)."
   (interactive)
-  (if fi::rlogin-subprocess-semaphore
-      (fi:rlogin-send-eof)
-    (process-send-eof)))
+  (process-send-eof))
 
 (defun fi:kill-output-from-shell ()
   "Kill all output from shell since last input."
@@ -385,9 +375,7 @@ Also put cursor there."
 (defun fi:interrupt-shell-subjob ()
   "Interrupt this shell's current subjob."
   (interactive)
-  (if fi::rlogin-subprocess-semaphore
-      (fi:rlogin-send-interrupt)
-    (interrupt-process nil t)))
+  (interrupt-process nil t))
 
 (defun fi:kill-shell-subjob ()
   "Send kill signal to this shell's current subjob."
@@ -397,16 +385,12 @@ Also put cursor there."
 (defun fi:quit-shell-subjob ()
   "Send quit signal to this shell's current subjob."
   (interactive)
-  (if fi::rlogin-subprocess-semaphore
-      (fi:rlogin-send-quit)
-    (quit-process nil t)))
+  (quit-process nil t))
 
 (defun fi:stop-shell-subjob ()
   "Stop this shell's current subjob."
   (interactive)
-  (if fi::rlogin-subprocess-semaphore
-      (fi:rlogin-send-stop)
-    (stop-process nil t)))
+  (stop-process nil t))
 
 (defun fi:kill-shell-input ()
   "Kill all text since last stuff output by the shell or its subjobs."
@@ -447,12 +431,12 @@ Also put cursor there."
 	  (boundp (intern name-of-symbol))
 	  (symbol-value (intern name-of-symbol)))))
 
-(defun fi::subprocess (image name &optional number another arguments)
+(defun fi::subprocess (image name mode &optional number another arguments)
   "Spawn a subprocess with input/output through an Emacs buffer.
+The major-mode is selected by calling MODE with one argument, the prompt.
 Process NAME or NAME-NUMBER is created.  Returns the name of the
-subprocess buffer without the asterisks.
-If the associated buffer
-\"*NAME*\" or \"*NAME-NUMBER*\" exists but the fi::subprocess is not
+subprocess buffer without the asterisks.  If the associated buffer
+\"*NAME*\" or \"*NAME-NUMBER*\" exists but the subprocess is not
 running, a new subprocess is started in that buffer.  If the optional
 ANOTHER argument is present, a new buffer and subprocess are always
 created.  The image invoked is taken from value of the Emacs symbol
@@ -475,13 +459,12 @@ the value (a list) of `default-<NAME>-image-arguments' or
 `default-<IMAGE>-image-arguments'.  In either case, the arguments specified
 to this function in the ARGUMENTS parameter will be appended.
 If a file `~/.emacs_<FILE>' exists, where <FILE> is the image being
-invoked, that file is sent to the subprocess as initial input.  The
-subprocess buffer is put in the appropriate mode, either
-`fi:inferior-lisp-mode' if the process name contains a string
-\"[Ll][Ii][Ss][Pp]\" or `fi:shell-mode'.  The subprocess prompt
-is set to the value of variable `<NAME>-prompt-pattern' if found, otherwise
-`<IMAGE>-prompt-pattern'.
-Also see `make-shell' and `fi::make-another-shell'."
+invoked, that file is sent to the subprocess as initial input.
+
+The subprocess prompt is set to the value of variable
+`<NAME>-prompt-pattern' if found, otherwise `<IMAGE>-prompt-pattern'.
+
+Also see `fi::make-shell' and `fi::make-another-shell'."
   (interactive "sImage name: \nsProcess name: ")
   (let* ((majuscule-image (fi::remove-chars-from-string '(?-) (upcase image)))
 	 (majuscule-name (fi::remove-chars-from-string '(?-) (upcase name)))
@@ -524,17 +507,14 @@ Also see `make-shell' and `fi::make-another-shell'."
 				     (file-name-nondirectory image-file))))
     (apply
      (if another 'fi::make-another-shell 'fi::make-shell)
-     (append
-      (list
-       name
-       image-file)
-      (if another (list number) nil)
-      (list
-       (if (file-exists-p start-up-feed-name) start-up-feed-name)
-       image-prompt)
-      (append image-arguments arguments))) ))
+     (append (list name image-file mode)
+	     (if another (list number) nil)
+	     (list
+	      (if (file-exists-p start-up-feed-name) start-up-feed-name)
+	      image-prompt)
+	     (append image-arguments arguments)))))
 
-(defun fi::make-shell (name program &optional startfile prompt-pattern
+(defun fi::make-shell (name program mode &optional startfile prompt-pattern
 			    &rest arguments)
   "Create shell or lisp subprocess that does input/output through buffer.
 Returns the name of the created subprocess without the asterisks."
@@ -569,18 +549,16 @@ Returns the name of the created subprocess without the asterisks."
       (setq name (process-name proc)))
     (goto-char (point-max))
     (set-marker (process-mark proc) (point))
-    (if (string-match "[Ll][Ii][Ss][Pp]" name)
-	(fi:inferior-lisp-mode prompt-pattern)
-      (fi:shell-mode prompt-pattern))
+    (funcall mode prompt-pattern)
     name))
 
-(defun fi::make-another-shell (name program
+(defun fi::make-another-shell (name program mode
 				    &optional number startfile prompt-pattern
 				    &rest arguments)
   "Create another subprocess that does input/output through a buffer."
   (apply 'fi::make-shell
 	 (append (list (fi::generate-new-buffer-name name number)
-		       program startfile prompt-pattern)
+		       program mode startfile prompt-pattern)
 		 arguments)))
 
 (defun fi::generate-new-buffer-name (name number)

@@ -8,15 +8,12 @@ emacs = /usr/local/emacs
 elc-files = modes.elc subproc.elc sublisp.elc filec.elc ring.elc\
 	    indent.elc aux.elc doc.elc
 
-all:	depend doc.n
+all:	depend spec.out
 
 depend: ${elc-files}
 
-doc.n:	list.n ${elc-files} doc.el
+spec.out:	spec.n ${elc-files} doc.el
 	$(emacs) -batch -q -l doc.elc
-
-print.doc:
-	${pr} doc.n
 
 pr = enscript -Plw -h -2r
 
