@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.37 1991/10/01 10:57:31 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.38 1991/10/01 13:36:20 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -147,7 +147,8 @@ at file visit time."
 				    (symbol-name something)
 				  something)
 				pathname point n-more other-window-p
-				(eq 0 n-more)))
+				(eq 0 n-more))
+     (if (= 0 n-more) (fi::pop-metadot-session)))
     (() (error)
      (when (fi::pop-metadot-session)
        (message "%s" error))))))
@@ -194,6 +195,7 @@ time."
 	   (setq lep::meta-dot-what (cdr lep::meta-dot-what))
 	   (setq lep::meta-dot-string (cdr lep::meta-dot-string))
 	   (setq lep::meta-dot-from-fspec (cdr lep::meta-dot-from-fspec))
+	   (lep::kill-session (car lep::meta-dot-session))
 	   (setq lep::meta-dot-session (cdr lep::meta-dot-session))
 	   (when lep::meta-dot-session
 	     (message "done with %ss of %s; more %ss of %s..."
@@ -689,7 +691,8 @@ Use ``\\<fi:common-lisp-mode-map>\\[fi:lisp-find-next-definition]'' to find the 
 				:package (fi::string-to-keyword fi:package)
 				:fspec fspec)
     ((other-window-p fspec what) (pathname point n-more)
-     (fi::show-found-definition fspec pathname point n-more other-window-p))
+     (fi::show-found-definition fspec pathname point n-more other-window-p)
+     (if (= 0 n-more) (fi::pop-metadot-session)))
     ((fspec) (error)
      (when (fi::pop-metadot-session)
        (error "Cannot edit %s: %s" fspec error))))))
