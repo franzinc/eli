@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.28 1990/09/05 22:22:17 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.29 1990/09/07 18:19:43 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -403,6 +403,21 @@ With a prefix argument, macroexpand the code as the compiler would."
   (fi::lisp-macroexpand-common
    (if arg "excl::compiler-walk" "excl::walk")
    "walk"))
+
+(defconst fi::lisp-macroexpand-command
+  "(lisp:progn
+    (excl::errorset
+     (let ((lisp:*print-circle* t)(lisp:*print-pretty* t)
+	   (lisp:*print-level* nil)(lisp:*print-length* nil)
+	   ;;(lisp:*print-readably* nil) ;; an x3j13 thang
+           (excl::*print-nickname* t)(lisp:*package* %s))
+       (lisp:with-open-file (lisp:*standard-input* \"%s\")
+	 (lisp:prin1 (%s (lisp:read)))))
+     t)
+    (lisp:values))\n"
+  "A format string, which expects the following arguments: a form which
+evaluates to a package argument, a filename, and the name of the function
+which will do the macroexpansion.")
 
 (defun fi::lisp-macroexpand-common (handler type)
   (let* ((fi:echo-evals-from-buffer-in-listener-p nil)
