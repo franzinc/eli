@@ -24,9 +24,12 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.18 1991/09/10 11:20:08 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.19 1991/09/11 15:22:02 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
+
+(defvar fi::lep-debug nil)			; for debugging
+(defvar fi::trace-lep-filter nil)	; for debugging
 
 (defvar fi:pop-up-temp-window-behavior '(other . t)
   "*The value of this variable determines the behavior of the popup
@@ -263,7 +266,10 @@ buffers package to the package of PACKAGE."
 	(save-excursion
 	  (set-buffer buffer)
 	  (fi::start-connection))
-      (error "Cannot start LEP connection"))))
+      (fi:error "
+An internal error has occurred.  There is no Lisp process and the
+emacs-lisp interface cannot be started.
+"))))
 
 (defun fi::find-connection-from-process (process)
   fi::*connection*)
@@ -282,42 +288,58 @@ buffers package to the package of PACKAGE."
 			       fi::lisp-ipc-version))
 
 (defun fi::make-connection-to-lisp (host port passwd ipc-version)
-  (cond ((not (or  (eq ipc-version 'nil) (eq ipc-version 'NIL)))
-	 (let* ((buffer-name (format "*LEP buffer %s %d %d*" host port passwd))
-		(buffer (get-buffer-create buffer-name))
-		(process (open-network-stream buffer-name nil host port)))
-	   (bury-buffer buffer)
-	   (save-excursion (set-buffer buffer) (erase-buffer))
-	   (set-process-buffer process buffer)
+  (cond ((eq ipc-version fi::required-ipc-version)
+	 (let* ((proc-name (format "*LEP %s %d %d*" host port passwd))
+		(buffer-name (if fi::lep-debug proc-name))
+		(buffer (when buffer-name
+			  (get-buffer-create buffer-name)))
+		(process (open-network-stream proc-name nil host port)))
+	   (when buffer
+	     (bury-buffer buffer)
+	     (save-excursion (set-buffer buffer) (erase-buffer))
+	     (set-process-buffer process buffer))
 	   (set-process-filter process 'fi::lep-connection-filter)
 	   ;; new stuff to indicate that we want the lisp editor protocol
 	   (send-string process ":lep\n")
-	   (send-string process (format "\"%s\"\n" (buffer-name buffer)))
+	   (send-string process (format "\"%s\"\n" proc-name))
 	   (send-string process (format "%d \n" passwd))
 	   ;; Send the class of the editor to the lisp.
 	   ;; This might affect something!
 	   ;; For example, gnu 19 has some good features.
 	   (send-string process (format "\"%s\"\n" (emacs-version)))
 	   (setq fi::*connection* (fi::make-connection host process))))
-	(t (error "Cannot start LEP to this lisp - incorrect IPC version"))))
+	(t
+	 (fi:error
+	  "
+The Allegro CL ipc version is ``%s'' (from the variable ipc::*ipc-version*
+in the Lisp environment).  This version of the emacs-lisp interface
+requires version ``%s''.  This mismatch would most likely be caused by the
+Emacs and Lisp not being from the same distribution.  If the obtained ipc
+version is `nil', then it is most likely you are using the emacs-lisp
+interface from ACL 4.1 or later with an older Lisp.
 
-(defvar fi::trace-lep-filter nil)
+See lisp/fi/examples/emacs.el for code to correctly startup different
+versions of the emacs-lisp interface.
+"
+	  ipc-version fi::required-ipc-version))))
 
 (defun fi::lep-connection-filter (process string)
-  "When a complete sexpression comes back from the lisp, read it and then
-handle it"
-  (let ((inhibit-quit t))
+  ;; When a complete sexpression comes back from the lisp, read it and then
+  ;; handle it
+  (let ((inhibit-quit t)
+	(buffer (or (process-buffer process)
+		    (get-buffer-create " LEP temp "))))
     (when fi::trace-lep-filter
       (print string (get-buffer "*scratch*")))
     (save-excursion
-      (set-buffer (process-buffer process))
+      (set-buffer buffer)
       (goto-char (point-max))
       (insert string))
     (let (form)
       (while 
 	  (condition-case ignore
 	      (save-excursion
-		(set-buffer (process-buffer process))
+		(set-buffer buffer)
 		(and 
 		 (not (eq (point-max) (point-min)))
 		 (progn
