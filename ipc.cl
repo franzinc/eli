@@ -16,7 +16,7 @@
 ;; at private expense as specified in DOD FAR 52.227-7013 (c) (1) (ii).
 ;;
 ;;
-;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.14 1988/04/06 20:11:58 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.15 1988/04/22 11:45:39 layer Exp $
 ;; $Locker: layer $
 ;;
 ;; This code is a preliminary IPC interface for ExCL. The functionality
@@ -44,17 +44,14 @@ domain port (see *inet-port* variable).")
 The value is this variable is only used when *unix-domain* is non-nil, in
 which case a UNIX domain socket is used.")
 
-(defvar AF_UNIX 1
-  "A constant from /usr/include/sys/socket.h.")
+(defconstant *af-unix* 1
+  "The AF_UNIX constant from /usr/include/sys/socket.h.")
 
-(defvar AF_INET 2
-  "A constant from /usr/include/sys/socket.h.")
+(defconstant *af-inet* 2
+  "The AF_INET constant from /usr/include/sys/socket.h.")
 
-(defvar SOCK_STREAM 1
-  "A constant from /usr/include/sys/socket.h.")
-
-(defvar TCP 0
-  "A constant from /usr/include/sys/socket.h.")
+(defconstant *sock-stream* 1
+  "The SOCK_STREAM constant from /usr/include/sys/socket.h.")
 
 (defvar lisp-listener-daemon-ff-loaded nil)
 (defvar lisp-listener-daemon nil)
@@ -138,9 +135,9 @@ files are closed."
 	(progn
 	  (if *unix-domain* (errorset (delete-file socket-pathname)))
 	  (setq listen-socket-fd (socket
-				  (if *unix-domain* AF_UNIX AF_INET)
-				  SOCK_STREAM
-				  TCP))
+				  (if *unix-domain* *af-unix* *af-inet*)
+				  *sock-stream*
+				  0))
 	  (when (< listen-socket-fd 0)
 	    (perror "call to socket")
 	    (setq listen-socket-fd nil)
@@ -151,7 +148,7 @@ files are closed."
 	  (setq mask (ash 1 listen-socket-fd))
 
 	  (if* *unix-domain*
-	     then (setf (sockaddr-un-family listen-sockaddr) AF_UNIX)
+	     then (setf (sockaddr-un-family listen-sockaddr) *af-unix*)
 		  ;; Set pathname.
 		  (dotimes (i (length socket-pathname)
 			    (setf (sockaddr-un-path listen-sockaddr i) 0))
@@ -159,7 +156,7 @@ files are closed."
 		      (char-int (elt socket-pathname i))))
 	     else ;; a crock:
 		  (bzero listen-sockaddr (ff::cstruct-len 'sockaddr-in))
-		  (setf (sockaddr-in-family listen-sockaddr) AF_INET
+		  (setf (sockaddr-in-family listen-sockaddr) *af-inet*
 			(sockaddr-in-port listen-sockaddr) *inet-port*))
 	  
 	  (unless (zerop (bind listen-socket-fd
