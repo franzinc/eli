@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.56 1990/09/01 20:15:29 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.57 1990/09/02 18:33:44 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -90,13 +90,19 @@ of what this pattern matches is deemed to be a prompt.")
   "*The regular expression matching the C shell `popd' command.  If nil, no
 automatic directory changes will be made.")
 
+(make-variable-buffer-local 'fi:shell-popd-regexp)
+
 (defvar fi:shell-pushd-regexp ":?pushd"
   "*The regular expression matching the C shell `pushd' command.  If nil,
 no automatic directory changes will be made.")
 
+(make-variable-buffer-local 'fi:shell-pushd-regexp)
+
 (defvar fi:shell-cd-regexp ":?cd"
   "*The regular expression matching the C shell `cd' command.  If nil,
 no automatic directory changes will be made.")
+
+(make-variable-buffer-local 'fi:shell-cd-regexp)
 
 (defvar fi:common-lisp-package-regexp
   "(in-package\\>\\|:\\<pa\\>\\|:\\<pac\\>\\|:\\<pack\\>\\|:\\<packa\\>\\|:\\<packag\\>\\|:\\<package\\>"
@@ -106,6 +112,8 @@ packages.  If nil, no automatic package tracking will be done.")
 (defvar fi:subprocess-map-nl-to-cr nil
   "*If t, then map newline to carriage-return.")
 
+(make-variable-buffer-local 'fi:subprocess-map-nl-to-cr)
+
 (defvar fi:subprocess-continuously-show-output-in-visible-buffer t
   "*If t, output from a subprocess to a visible buffer is continuously
 shown.  If a subprocess buffer is visible and the window point is beyond
@@ -113,6 +121,9 @@ the process output marker, output to that buffer from its associated
 process will be continuously visible.  If the window point is before the
 process output marker, the window is not updated.  This is a buffer-local
 symbol.")
+
+(make-variable-buffer-local
+ 'fi:subprocess-continuously-show-output-in-visible-buffer)
 
 (defvar fi:subprocess-write-quantum 120
   "*Maximum size in bytes of a single write request to a subprocess.")
@@ -126,6 +137,8 @@ typed elsewhere, these keys have their normal global binding.  This is a
 buffer-local symbol.  Use setq-default to set the default value for this
 symbol.")
 
+(make-variable-buffer-local 'fi:subprocess-enable-superkeys)
+
 (defvar fi:display-buffer-function 'switch-to-buffer
   "*If non-nil, then it is used as the function which is funcall'd with one
 argument, a buffer, to display a subprocess buffer when it is created (ie,
@@ -137,13 +150,19 @@ from `fi:common-lisp').")
   "The real Common Lisp package regexp, which is nil in all buffer except
 Inferior Common Lisp buffers.")
 
+(make-variable-buffer-local 'fi::cl-package-regexp)
+
 (defvar fi::last-input-start nil
   "Marker for start of last input in fi:shell-mode or fi:inferior-lisp-mode
 buffer.")
 
+(make-variable-buffer-local 'fi::last-input-start)
+
 (defvar fi::last-input-end nil
   "Marker for end of last input in fi:shell-mode or fi:inferior-lisp-mode
 buffer.")
+
+(make-variable-buffer-local 'fi::last-input-end)
 
 (defvar fi::sublisp-name nil
   "Name of inferior lisp process.")
@@ -156,6 +175,26 @@ buffer.")
 
 (defvar fi::shell-directory-stack nil
   "List of directories saved by pushd in this buffer's shell.")
+
+(make-variable-buffer-local 'fi::shell-directory-stack)
+
+(defvar fi::remote-host nil 
+"Host that is running the lisp in this buffer.  Buffer local.")
+
+(make-variable-buffer-local 'fi::remote-host)
+
+(defvar fi::remote-port nil 
+"Port to use in getting new listeners from remote lisp.  Buffer local.")
+
+(make-variable-buffer-local 'fi::remote-port)
+
+(defvar fi::remote-password nil 
+"Password to use in getting new listeners from remote lisp.  Buffer local.")
+
+(make-variable-buffer-local 'fi::remote-password)
+
+(defvar fi::lisp-case-mode ':unknown
+  "The case in which the ACL we are connected to lives.")
 
 ;;;;
 ;;; User visible functions
@@ -178,9 +217,12 @@ See fi:explicit-common-lisp."
 	       buffer-number "common-lisp" 
 	       'fi:inferior-common-lisp-mode
 	       fi:common-lisp-prompt-pattern
-	       fi:common-lisp-image-name
+	       (if (consp fi:common-lisp-image-name)
+		   (funcall fi:common-lisp-image-name)
+		 fi:common-lisp-image-name)
 	       fi:common-lisp-image-arguments)))
     (setq fi::freshest-common-sublisp-name (process-name proc))
+    (fi::set-buffer-host (process-buffer proc) (system-name))
     proc))
 
 (defun fi:explicit-common-lisp (&optional buffer-number
@@ -199,6 +241,7 @@ are read from the minibuffer."
 	       fi:common-lisp-prompt-pattern
 	       image-name image-arguments)))
     (setq fi::freshest-common-sublisp-name (process-name proc))
+    (fi::set-buffer-host (process-buffer proc) (system-name))
     proc))
 
 (defun fi:remote-common-lisp (&optional buffer-number host)
@@ -224,11 +267,11 @@ See fi:explicit-remote-common-lisp."
 	       "rsh"
 	       (append (list host 
 			     (if (consp fi:common-lisp-image-name)
-				 (setq fi:common-lisp-image-name
-				   (funcall fi:common-lisp-image-name))
+				 (funcall fi:common-lisp-image-name)
 			       fi:common-lisp-image-name))
 		       fi:common-lisp-image-arguments))))
     (setq fi::freshest-common-sublisp-name (process-name proc))
+    (fi::set-buffer-host (process-buffer proc) host)
     proc))
 
 (defun fi:explicit-remote-common-lisp (&optional buffer-number host
@@ -249,6 +292,7 @@ arguments are read from the minibuffer."
 	       "rsh"
 	       (append (list host image-name) image-arguments))))
     (setq fi::freshest-common-sublisp-name (process-name proc))
+    (fi::set-buffer-host (process-buffer proc) host)
     proc))
 
 (defun fi:tcp-common-lisp (&optional buffer-number)
@@ -262,22 +306,34 @@ the buffer is named `*common-lisp*<BUFFER-NUMBER>'.  If BUFFER-NUMBER is <
 
 See `fi:unix-domain' and `fi:explicit-tcp-common-lisp'."
   (interactive "p")
+  (if (null fi::freshest-common-sublisp-name)
+      (error "must start a Lisp subprocess first"))
   (let ((proc (fi::make-tcp-connection
 	       buffer-number "tcp-common-lisp" 'fi:tcp-common-lisp-mode
-	       fi:common-lisp-prompt-pattern)))
+	       fi:common-lisp-prompt-pattern
+	       (fi::get-buffer-host fi::freshest-common-sublisp-name)
+	       (fi::get-buffer-port fi::freshest-common-sublisp-name)
+	       (fi::get-buffer-password fi::freshest-common-sublisp-name))))
     (setq fi::freshest-common-sublisp-name (process-name proc))
     proc))
 
-(defun fi:explicit-tcp-common-lisp (&optional buffer-number host service)
+(defun fi:explicit-tcp-common-lisp (&optional buffer-number
+					      host service password)
   "The same as fi:tcp-common-lisp, except that the host name a port number
 are read from the minibuffer.  Use a port number of 0 for UNIX domain
 sockets."
   (interactive
-   "p\nsHost name: \nnService port number (0 for UNIX domain): ")
+   (let ((buffer (read-buffer "Buffer with Lisp subprocess: ")))
+     (if fi:unix-domain
+	 (list current-prefix-arg)
+       (list current-prefix-arg
+	     (fi::get-buffer-host buffer)
+	     (fi::get-buffer-port buffer)
+	     (fi::get-buffer-password buffer)))))
   (let ((proc (fi::make-tcp-connection
 	       buffer-number "tcp-common-lisp" 'fi:tcp-common-lisp-mode
 	       fi:common-lisp-prompt-pattern
-	       host service)))
+	       host service password)))
     (setq fi::freshest-common-sublisp-name (process-name proc))
     proc))
 
@@ -366,7 +422,7 @@ are read from the minibuffer."
 			     "-" image-file)
 		       image-arguments)))
       (set-process-sentinel process 'fi::subprocess-sentinel)
-      (set-process-filter process (if filter filter 'fi::subprocess-filter))
+      (set-process-filter process (or filter 'fi::subprocess-filter))
       (setq start-up-feed-name
 	(if image-file
 	    (concat "~/.emacs_" (file-name-nondirectory image-file))))
@@ -396,12 +452,13 @@ are read from the minibuffer."
 
 (defun fi::make-tcp-connection (buffer-number buffer-name mode image-prompt
 				    &optional given-host
-					      given-service)
-  (if (null fi:unix-domain-socket)
-      (error "Emacs/Lisp interface has not been started yet."))
-  (if (and (consp fi:unix-domain-socket)
+					      given-service
+					      password)
+  (if (and fi:unix-domain
+	   (consp fi:unix-domain-socket)
 	   (eq 'lambda (car fi:unix-domain-socket)))
       (setq fi:unix-domain-socket (funcall fi:unix-domain-socket)))
+  
   (let* ((buffer (fi::make-process-buffer buffer-name buffer-number))
 	 (default-dir default-directory)
 	 (buffer-name (buffer-name buffer))
@@ -411,10 +468,10 @@ are read from the minibuffer."
 		     given-host)
 		 (if fi:unix-domain
 		     (expand-file-name fi:unix-domain-socket)
-		   fi:local-host-name)))
-	 (service (if given-service
-		      given-service
-		    (if fi:unix-domain 0 fi:excl-service-name)))
+		   (or fi:inet-host-name
+		       (error "no default host--backdoor not started")))))
+	 (service (or given-service
+		      (error "not implemented yet")))
 	 proc status)
     (if fi:display-buffer-function
 	(funcall fi:display-buffer-function buffer)
@@ -429,13 +486,13 @@ are read from the minibuffer."
       (setq default-directory default-dir)
       (setq proc (open-network-stream buffer-name buffer host service))
       ;;
-      ;; HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK
       ;; The first input the new (Common Lisp) process is sent is the name
       ;; of the process.  This is so that the processes are named similarly
       ;; in Emacs and Lisp.
       ;;
       (process-send-string proc (format "\"%s\"\n" (buffer-name buffer)))
-
+      (process-send-string proc (format " %d \n" password))
+      
       (goto-char (point-max))
       (set-marker (process-mark proc) (point))
       (let ((saved-input-ring fi::input-ring)
@@ -525,6 +582,10 @@ are read from the minibuffer."
 (defun fi::subprocess-filter (process output &optional stay cruft)
   "Filter output from processes tied to buffers.
 This function implements continuous output to visible buffers."
+  (save-excursion
+    (set-buffer (process-buffer process))
+    (if (and (boundp 'fi::remote-host) fi::remote-host)
+	(setq output (fi::subprocess-control-a-frammis output))))
   (if cruft
       (setq output (fi::substitute-chars-in-string '((?\r)) output)))
   (let* ((old-buffer (current-buffer))
@@ -593,6 +654,22 @@ This function implements continuous output to visible buffers."
       (in-buffer nil)
       (stay old-buffer)
       (t (set-buffer old-buffer)))))
+
+(defun fi::subprocess-control-a-frammis (string)
+  (if (string-match "\\(.*\\)\\(.*\\)\\(.*\\)" string)
+      (let* ((res (concat
+		   (substring string (match-beginning 1) (match-end 1))
+		   (substring string (match-beginning 3) (match-end 3))))
+	     (command (substring string (match-beginning 2) (match-end 2)))
+	     (xx nil))
+	(setq fi::remote-port
+	  (car (setq xx (read-from-string command (cdr xx)))))
+	(setq fi::remote-password
+	  (car (setq xx (read-from-string command (cdr xx)))))
+	(setq fi::lisp-case-mode
+	  (car (setq xx (read-from-string command (cdr xx)))))
+	res)
+    string))
 
 (defun fi::subprocess-watch-for-special-commands ()
   "Watch for special commands like, for example, `cd' in a shell."
@@ -702,25 +779,40 @@ This function implements continuous output to visible buffers."
 		      (rplaca fi::shell-directory-stack dir)
 		      (cd dir)))))))))
     (error nil)))
+
+(defun fi::set-buffer-host (buffer host)
+  "Set the variable fi::remote-host in buffer BUFFER to be HOST."
+  (save-excursion
+    (set-buffer buffer)
+    (setq fi::remote-host host)))
+
+(defun fi::get-buffer-host (buffer)
+  "Given BUFFER return the value in this buffer of fi::remote-host."
+  (save-excursion
+    (set-buffer buffer)
+    fi::remote-host))
+
+(defun fi::get-buffer-port (buffer)
+  "Given BUFFER return the value in this buffer of fi::remote-port."
+  (save-excursion
+    (set-buffer buffer)
+    fi::remote-port))
+
+(defun fi::get-buffer-password (buffer)
+  "Given BUFFER returns the values in this buffer of fi::remote-password"
+  (save-excursion
+    (set-buffer buffer)
+    fi::remote-password))
 
 ;;;;
 ;;; Initializations
 ;;;;
 
 (mapcar 'make-variable-buffer-local
-	'(fi:shell-popd-regexp
-	  fi:shell-pushd-regexp 
-	  fi:shell-cd-regexp
-	  fi::cl-package-regexp
-	  fi:package
-	  fi:subprocess-map-nl-to-cr
-	  fi:subprocess-continuously-show-output-in-visible-buffer
-	  fi:subprocess-enable-superkeys
+	'(fi:package
 	  fi:subprocess-super-key-map
-
-	  fi::shell-directory-stack
-	  fi::last-input-start
-	  fi::last-input-end
+	  
+	  
 	  fi::input-ring
 	  fi::input-ring-max
 	  fi::input-ring-yank-pointer
