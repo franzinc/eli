@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.12 1991/04/22 13:40:53 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.13 1991/04/22 14:33:59 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -452,7 +452,7 @@ handle it"
 	(send-string process 
 		     (prin1-to-string (list (session-id session)
 					    ':error
-					    "aborted"))))
+					    ':aborted))))
       (if oncep (lep::kill-session session)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
