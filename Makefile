@@ -1,9 +1,9 @@
-# $Id: Makefile,v 1.138.4.9 1999/03/19 18:55:22 layer Exp $
+# $Id: Makefile,v 1.138.4.10 1999/04/14 20:15:50 layer Exp $
 # This makefile requires GNU make.
 
 include version.mak
 
-SHELL = /bin/sh
+SHELL = sh
 
 # $(OS) is from the environment on Windows NT
 ifeq ($(OS),Windows_NT)
