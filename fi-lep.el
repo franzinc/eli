@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.19 1991/03/15 12:44:04 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.20 1991/03/15 21:05:21 layer Exp $
 ;;
 
 (defvar fi:always-in-a-window nil)
@@ -398,27 +398,6 @@ information on how to send the mail."
 		(() (error)
 		 (message "Cannot do a backtrace because: %s" error))))
 
-
-
-;;;; Edit compiler warnings would be pretty cool also.
-;;;; Symbol completion would be quite nice
-
-;;;; *** This is broken, because if we cannot find the source file
-;;;; we should invoke the tags code on each one.
-
-(defun edit-somethings (something generator description)
-  (if lep:*meta-dot-session* (lep::kill-session lep:*meta-dot-session*))
-  (setq lep:*meta-dot-session*
-    (make-complex-request
-     (scm::edit-sequence-session 
-      :generator generator
-      :package (string-to-keyword fi:package) :fspec something)
-     ((something) (pathname point n-more)
-      (show-found-definition something pathname point n-more))
-     ((something) (error)
-      (delete-metadot-session)
-      (error "Cannot edit sequence %s: %s" something error)))))
-
 ;;; Macroexpansion and walking
 
 (defun fi:lisp-macroexpand ()
@@ -536,31 +515,6 @@ visit time."
 	      (all-completions pattern alist)))
 	   (message "Making completion list...done")))))
 
-
-(defun fi:lisp-who-calls (&optional symbol)
-  "Print all the callers of SYMBOL.  The default symbol is taken from the
-text surrounding the point.  fi:package is used to determine from which
-Common Lisp package the operation is done.  In a subprocess buffer, the
-package is tracked automatically.  In source buffer, the package is parsed
-at file visit time."
-  (interactive (fi::get-default-symbol "Find references to symbol"))
-  ;; Since this takes a while, tell the user that it has started.
-  (message "Finding callers of %s..." symbol)
-  (list-fspecs-common symbol 'lep::who-calls "Cannot find the callers: %s"))
-
-(defun list-fspecs-common (symbol function msg)
-  (make-request (lep::list-fspecs-session
-		 :function function :fspec (fi::frob-case-to-lisp symbol))
-		((symbol fi:package) (the-definitions)
-		 (lep:display-some-definitions fi:package
-					       the-definitions
-					       (list 'find-a-definition)))
-		((msg) (error)
-		 (message msg error))))
-
-(defun find-a-definition (string type list-buffer)
-  (fi::lisp-find-tag-common string  nil t type))
-
 (defun lep::my-find-file (filename)
   (find-file filename))
 
@@ -667,98 +621,149 @@ time."
 		 (message "Cannot (un)trace %s: %s" string error))))
 
 
-;;; Editing callers, callees etc
+;;;; list and edit somethings
 
-(defun fi:edit-generic-function-methods (something)
-  "Edit all the methods of the generic function named by SOMETHING."
-  (interactive (if current-prefix-arg
-		   '(nil t)
-		 (fi::get-default-symbol "Generic Function Name")))
-  (message "Editing generic function methods...")
-  (edit-somethings something 
-		   'lep::generic-function-methods-function-specs
-		   "Generic Function Methods"))
+(defun fi:list-who-calls (&optional fspec)
+  "List all the callers of FSPEC.  `List' means to show them in a buffer in
+definition mode.  The source for each definition can be easily found via
+key bindings in definition mode.  The default FSPEC is taken from the text
+surrounding the point.  fi:package is used to determine from which Common
+Lisp package the operation is done.  In a subprocess buffer, the package is
+tracked automatically.  In source buffer, the package is parsed at file
+visit time."
+  (interactive (fi::get-default-symbol "List who calls"))
+  ;; Since this takes a while, tell the user that it has started.
+  (message "Finding callers of %s..." fspec)
+  (lep::list-fspecs-common fspec
+			   'lep::who-calls
+			   "Cannot find the callers: %s"))
 
-(defun fi:edit-callers (something)
-  "Edit all the callers of the function named by SOMETHING."
-  (interactive (if current-prefix-arg
-		   '(nil t)
-		 (fi::get-default-symbol "Function name")))
+(defun fi:list-who-is-called-by (fspec)
+  "List all the functions called by FSPEC.  `List' means to show them in a
+buffer in definition mode.  The source for each definition can be easily
+found via key bindings in definition mode.  The default FSPEC is taken from
+the text surrounding the point.  fi:package is used to determine from which
+Common Lisp package the operation is done.  In a subprocess buffer, the
+package is tracked automatically.  In source buffer, the package is parsed
+at file visit time."
+  (interactive (fi::get-default-symbol "List who is called by"))
+  (message "Finding who is called by %s..." fspec)
+  (lep::list-fspecs-common fspec
+			   'lep::who-is-called-by
+			   "Cannot find who is called by: %s"))
+
+(defun fi:list-generic-function-methods (&optional fspec)
+  "List all the generic function methods of FSPEC.  `List' means to show
+them in a buffer in definition mode.  The source for each definition can be
+easily found via key bindings in definition mode.  The default FSPEC is
+taken from the text surrounding the point.  fi:package is used to determine
+from which Common Lisp package the operation is done.  In a subprocess
+buffer, the package is tracked automatically.  In source buffer, the
+package is parsed at file visit time."
+  (interactive (fi::get-default-symbol "List generic function methods of"))
+  ;; Since this takes a while, tell the user that it has started.
+  (message "Finding generic function methods of %s..." fspec)
+  (lep::list-fspecs-common fspec
+			   'scm::generic-function-methods-function-specs
+			   "Cannot find the generic function methods: %s"))
+
+
+(defun fi:edit-who-calls (fspec)
+  "Edit all the callers of the function named by FSPEC.
+Use ``\\<fi:common-lisp-mode-map>\\[fi:lisp-tags-loop-continue]'' to find the next definition, if there is one."
+  (interactive (fi::get-default-symbol "Edit who calls"))
   (message "Editing callers...")
-  (edit-somethings something 
-		   'lep::who-calls
-		   "Who calls"))
+  (lep::edit-somethings fspec 'lep::who-calls))
 
-(defun fi:edit-callees (something)
-  "Edit all the callees of the function named by SOMETHING."
-  (interactive (if current-prefix-arg
-		   '(nil t)
-		 (fi::get-default-symbol "Function name")))
+(defun fi:edit-who-is-called-by (fspec)
+  "Edit all functions called by FSPEC.
+Use ``\\<fi:common-lisp-mode-map>\\[fi:lisp-tags-loop-continue]'' to find the next definition, if there is one."
+  (interactive (fi::get-default-symbol "Edit who is called by"))
   (message "Editing callees...")
-  (edit-somethings something 
-		   'lep::who-is-called-by
-		   "Who is called by"))
+  (lep::edit-somethings fspec 'lep::who-is-called-by))
 
-(defun fi:list-callers (symbol)
-  (interactive (fi::get-default-symbol "Find references to symbol"))
-  (fi:lisp-who-calls symbol))
+(defun fi:edit-generic-function-methods (fspec)
+  "Edit all the methods of the generic function named by FSPEC.
+Use ``\\<fi:common-lisp-mode-map>\\[fi:lisp-tags-loop-continue]'' to find the next definition, if there is one."
+  (interactive (fi::get-default-symbol "Edit generic function methods of"))
+  (message "Editing generic function methods...")
+  (lep::edit-somethings fspec
+			'scm::generic-function-methods-function-specs))
 
-;;; list-callees
-;;; list-class-methods
-;;; list-generic-function-methods
+
+(defun lep::list-fspecs-common (fspec function msg)
+  (make-request (lep::list-fspecs-session
+		 :function function :fspec (fi::frob-case-to-lisp fspec))
+		((fspec fi:package) (the-definitions)
+		 (lep:display-some-definitions fi:package
+					       the-definitions
+					       (list 'lep::find-a-definition)))
+		((msg) (error)
+		 (message msg error))))
+
+(defun lep::find-a-definition (string type list-buffer)
+  (fi::lisp-find-tag-common string nil t type))
+
+(defun lep::edit-somethings (fspec generator)
+  (if lep:*meta-dot-session* (lep::kill-session lep:*meta-dot-session*))
+  (setq lep:*meta-dot-session*
+    (make-complex-request
+     (scm::edit-sequence-session :generator generator
+				 :package (string-to-keyword fi:package)
+				 :fspec fspec)
+     ((fspec) (pathname point n-more)
+      (show-found-definition fspec pathname point n-more))
+     ((fspec) (error)
+      (delete-metadot-session)
+      (error "Cannot edit sequence %s: %s" fspec error)))))
+
 
 
 ;;; describing something
 
-(defun lep::describe-something (something function)
+(defun fi:describe-symbol (fspec)
+  "Dynamically, in the Common Lisp environment, describe the symbol named
+by FSPEC.
+fi:package is used to determine from which Common Lisp package the
+operation is done.  In a subprocess buffer, the package is tracked
+automatically.  In source buffer, the package is parsed at file visit
+time."
+  (interactive (fi::get-default-symbol "Describe symbol"))
+  (lep::describe-something fspec 'describe))
+
+(defun fi:describe-class (fspec)
+  "Dynamically, in the Common Lisp environment, describe the class named by
+FSPEC.
+fi:package is used to determine from which Common Lisp package the
+operation is done.  In a subprocess buffer, the package is tracked
+automatically.  In source buffer, the package is parsed at file visit
+time."
+  (interactive (fi::get-default-symbol "Class name"))
+  (lep::describe-something fspec 'clos::find-class))
+
+
+(defun fi:describe-function (fspec)
+  "Dynamically, in the Common Lisp environment, describe the function named
+by FSPEC.
+fi:package is used to determine from which Common Lisp package the
+operation is done.  In a subprocess buffer, the package is tracked
+automatically.  In source buffer, the package is parsed at file visit
+time."
+  (interactive (fi::get-default-symbol "Function spec"))
+  (lep::describe-something fspec 'fdefinition))
+
+
+(defun lep::describe-something (fspec function)
   (make-request (lep::describe-something-session
-		 :fspec something :function function)
+		 :fspec fspec :function function)
 		;; Normal continuation
 		(() (what)
 		 (fi:show-some-text nil what))
 		;; Error continuation
-		((something) (error)
-		 (message "Cannot describe %s: %s" something error))))
-
-(defun fi:describe-symbol (something)
-  "Dynamically, in the Common Lisp environment, describe the symbol named
-by SOMETHING.
-fi:package is used to determine from which Common Lisp package the
-operation is done.  In a subprocess buffer, the package is tracked
-automatically.  In source buffer, the package is parsed at file visit
-time."
-  (interactive (if current-prefix-arg
-		   '(nil t)
-		 (fi::get-default-symbol "Describe symbol")))
-  (lep::describe-something something 'describe))
-
-(defun fi:describe-class (something)
-  "Dynamically, in the Common Lisp environment, describe the class named by
-SOMETHING.
-fi:package is used to determine from which Common Lisp package the
-operation is done.  In a subprocess buffer, the package is tracked
-automatically.  In source buffer, the package is parsed at file visit
-time."
-  (interactive (if current-prefix-arg
-		   '(nil t)
-		 (fi::get-default-symbol "Class name")))
-  (lep::describe-something something 'clos::find-class))
+		((fspec) (error)
+		 (message "Cannot describe %s: %s" fspec error))))
 
 
-(defun fi:describe-function (something)
-  "Dynamically, in the Common Lisp environment, describe the function named
-by SOMETHING.
-fi:package is used to determine from which Common Lisp package the
-operation is done.  In a subprocess buffer, the package is tracked
-automatically.  In source buffer, the package is parsed at file visit
-time."
-  (interactive (if current-prefix-arg
-		   '(nil t)
-		 (fi::get-default-symbol "Function spec")))
-  (lep::describe-something something 'fdefinition))
-
-;; describe-method
-;; describe-method-combination
 
 ;;; Function documentation
 
@@ -770,14 +775,15 @@ operation is done.  In a subprocess buffer, the package is tracked
 automatically.  In source buffer, the package is parsed at file visit
 time."
   (interactive (fi::get-default-symbol "Describe symbol"))
-  (make-request
-   (lep::function-documentation-session :package fi:package :fspec symbol)
-   ;; Normal continuation
-   ((symbol) (documentation)
-    (if documentation
-	(fi:show-some-text fi:package documentation)
-      (message "There is no documentation for %s" symbol)))
-   ;; Error continuation
-   ((symbol) (error)
-    (message "Cannot find documentation for %s: %s" symbol error))))
+  (make-request (lep::function-documentation-session :package fi:package
+						     :fspec symbol)
+		;; Normal continuation
+		((symbol) (documentation)
+		 (if documentation
+		     (fi:show-some-text fi:package documentation)
+		   (message "There is no documentation for %s" symbol)))
+		;; Error continuation
+		((symbol) (error)
+		 (message "Cannot find documentation for %s: %s"
+			  symbol error))))
 
