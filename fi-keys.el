@@ -1,3 +1,38 @@
+;;
+;; copyright (C) 1987, 1988 Franz Inc, Berkeley, Ca.
+;;
+;; The software, data and information contained herein are proprietary
+;; to, and comprise valuable trade secrets of, Franz, Inc.  They are
+;; given in confidence by Franz, Inc. pursuant to a written license
+;; agreement, and stored only in accordance with the terms of such license.
+;;
+;; Restricted Rights Legend
+;; ------------------------
+;; Use, duplication, and disclosure by the Government are subject to
+;; restrictions of Restricted Rights for Commercial Software developed
+;; at private expense as specified in DOD FAR 52.227-7013 (c) (1) (ii).
+;;
+;; This file may be distributed without further permission from
+;; Franz Inc. as long as
+;;
+;;	* it is not part of a product for sale,
+;;	* no charge is made for the distribution, and
+;;	* all copyright notices and this notice are preserved.
+;;
+;; If you have any comments or questions on this package, please feel
+;; free to contact Franz Inc. at
+;;
+;;	Franz Inc.
+;;	Attn: Emacs Group Manager
+;;	1995 University Ave
+;;	Suite 275
+;;	Berkeley, CA 94704
+;; or
+;;	emacs-info%franz.uucp@Berkeley.EDU
+;;	ucbvax!franz!emacs-info
+
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.2 1988/05/11 14:55:52 layer Exp $
+
 ;;;;
 ;;; Key defs
 ;;;;
