@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.36 1992/08/04 15:49:38 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.37 1992/12/14 17:32:07 layer Exp $
 
 ;;; Misc utilities
 
@@ -125,6 +125,19 @@ nil if non-exists.  Yes, a value of nil and no local value are the same."
 	(setq res nil))
       (setq p (cdr p)))
     res))
+
+(defun fi::command-exists-p (command)
+  "Use exec-path to determine whether or not COMMAND exists."
+  (if (file-exists-p (format "%s%s" default-directory command))
+      (format "%s%s" default-directory command)
+    (let ((dirs exec-path) result temp)
+      (while (and dirs (null result))
+	(if (and (file-exists-p (setq temp (format "%s/%s" (car dirs)
+						   command)))
+		 (not (file-directory-p temp)))
+	    (setq result temp))
+	(setq dirs (cdr dirs)))
+      result)))
 
 (defun fi::fast-parse-partial-sexp (from to
 				    &optional targetdepth stopbefore state
