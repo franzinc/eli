@@ -24,24 +24,22 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.2 1991/01/29 17:19:56 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.3 1991/01/30 10:38:42 layer Exp $
 ;;
 ;;;;;; This LEP file redefines many of the fi:functions in the fi/keys.el file
 
 ;;;; Implementation of arglist
 
 (defun fi:lisp-arglist (string)
-  (interactive (if current-prefix-arg
-		   '(nil t)
-		 (fi::get-default-symbol "Arglist for")))
+  (interactive (fi::get-default-symbol "Arglist for"))
   (make-request (lep::arglist-session :fspec string)
 		;; Normal continuation
-		 (() (what arglist)
-		  (show-some-short-text "The arglist of %s is %s"
-					what arglist))
-		 ;; Error continuation
-		 ((string) (error)
-		  (message "Cannot get the arglist of %s: %s" string error))))
+		(() (what arglist)
+		 (show-some-short-text "The arglist of %s is %s"
+				       what arglist))
+		;; Error continuation
+		((string) (error)
+		 (message "Cannot get the arglist of %s: %s" string error))))
 
 (defun show-some-short-text (text &rest args)
   (when args (setq text (apply (function format) text args)))
@@ -92,14 +90,14 @@
   "Lep version"
   (interactive (if current-prefix-arg
 		   '(nil t)
-		 (fi::get-default-symbol "Lisp locate source")))
+		 (list (fi::get-default-symbol "Lisp locate source") nil)))
   (fi::lisp-find-tag-common something next nil))
 
 
 (defun fi:lisp-find-tag-other-window (something &optional next)
   (interactive (if current-prefix-arg
 		   '(nil t)
-		 (fi::get-default-symbol "Lisp locate source")))
+		 (list (fi::get-default-symbol "Lisp locate source") nil)))
   (fi::lisp-find-tag-common something next nil))
 
 (defun delete-metadot-session ()
@@ -554,20 +552,16 @@ from the sexp around the point."
 		 (message "Cannot undefine current definition %s" error))))
 
 
-(defun lep::toggle-trace-definition (interactive)
+(defun lep::toggle-trace-definition (string)
   "Trace or untrace the specified function"
-  (string (if current-prefix-arg
-		   '(nil t)
-		 (fi::get-default-symbol "(un)trace")))
-   (make-request (lep::toggle-trace :fspec string)
+  (interactive (fi::get-default-symbol "(un)trace"))
+  (make-request (lep::toggle-trace :fspec string)
 		;; Normal continuation
-		 (() (what tracep)
-		  (message (if tracep
-			       "%s is now traced"
-			     "%s is now untraced")
-			   what))
-		 ;; Error continuation
-		 ((string) (error)
-		  (message "Cannot (un)trace %s: %s" string error))))
-
-;;(define-key fi:common-lisp-mode-map "\e\T" 'lep::toggle-trace-definition)
+		(() (what tracep)
+		 (message (if tracep
+			      "%s is now traced"
+			    "%s is now untraced")
+			  what))
+		;; Error continuation
+		((string) (error)
+		 (message "Cannot (un)trace %s: %s" string error))))
