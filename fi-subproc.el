@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.59 1990/09/03 00:26:39 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.60 1990/09/04 10:40:08 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -214,16 +214,16 @@ The image file and image arguments are taken from the variables
 See fi:explicit-common-lisp."
   (interactive "p")
   (let ((proc (fi::make-subprocess
-	       buffer-number "common-lisp" 
+	       buffer-number
+	       "common-lisp" 
 	       'fi:inferior-common-lisp-mode
 	       fi:common-lisp-prompt-pattern
-	       (if (consp fi:common-lisp-image-name)
-		   (funcall fi:common-lisp-image-name)
-		 fi:common-lisp-image-name)
-	       fi:common-lisp-image-arguments)))
+	       fi:common-lisp-image-name
+	       fi:common-lisp-image-arguments
+	       nil
+	       'fi::start-tcp-lisp-interface)))
     (setq fi::freshest-common-sublisp-name (process-name proc))
     (fi::set-buffer-host (process-buffer proc) (system-name))
-    (fi::start-tcp-lisp-interface proc)
     proc))
 
 (defun fi:explicit-common-lisp (&optional buffer-number
@@ -237,13 +237,16 @@ are read from the minibuffer."
     (fi::listify-string
      (read-from-minibuffer "Image arguments (separate by spaces): "))))
   (let ((proc (fi::make-subprocess
-	       buffer-number "common-lisp" 
+	       buffer-number
+	       "common-lisp" 
 	       'fi:inferior-common-lisp-mode
 	       fi:common-lisp-prompt-pattern
-	       image-name image-arguments)))
+	       image-name
+	       image-arguments
+	       nil
+	       'fi::start-tcp-lisp-interface)))
     (setq fi::freshest-common-sublisp-name (process-name proc))
     (fi::set-buffer-host (process-buffer proc) (system-name))
-    (fi::start-tcp-lisp-interface proc)
     proc))
 
 (defun fi:remote-common-lisp (&optional buffer-number host)
@@ -263,18 +266,17 @@ The image file and image arguments are taken from the variables
 See fi:explicit-remote-common-lisp."
   (interactive "p\nsRemote host name: ")
   (let ((proc (fi::make-subprocess
-	       buffer-number "common-lisp" 
+	       buffer-number
+	       "common-lisp" 
 	       'fi:inferior-common-lisp-mode
 	       fi:common-lisp-prompt-pattern
 	       "rsh"
-	       (append (list host 
-			     (if (consp fi:common-lisp-image-name)
-				 (funcall fi:common-lisp-image-name)
-			       fi:common-lisp-image-name))
-		       fi:common-lisp-image-arguments))))
+	       (append (list host fi:common-lisp-image-name)
+		       fi:common-lisp-image-arguments)
+	       nil
+	       'fi::start-tcp-lisp-interface)))
     (setq fi::freshest-common-sublisp-name (process-name proc))
     (fi::set-buffer-host (process-buffer proc) host)
-    (fi::start-tcp-lisp-interface proc)
     proc))
 
 (defun fi:explicit-remote-common-lisp (&optional buffer-number host
@@ -289,14 +291,16 @@ arguments are read from the minibuffer."
     (fi::listify-string
      (read-from-minibuffer "Image arguments (separate by spaces): "))))
   (let ((proc (fi::make-subprocess
-	       buffer-number "common-lisp" 
+	       buffer-number
+	       "common-lisp" 
 	       'fi:inferior-common-lisp-mode
 	       fi:common-lisp-prompt-pattern
 	       "rsh"
-	       (append (list host image-name) image-arguments))))
+	       (append (list host image-name) image-arguments)
+	       nil
+	       'fi::start-tcp-lisp-interface)))
     (setq fi::freshest-common-sublisp-name (process-name proc))
     (fi::set-buffer-host (process-buffer proc) host)
-    (fi::start-tcp-lisp-interface proc)
     proc))
 
 (defun fi:tcp-common-lisp (&optional buffer-number)
@@ -386,9 +390,9 @@ are read from the minibuffer."
 ;;;;
 
 (defun fi::make-subprocess (buffer-number process-name mode-function
-					  image-prompt image-file
-					  image-arguments
-			    &optional filter)
+			    image-prompt image-file image-arguments
+			    &optional filter
+				      initial-func)
   (let* ((buffer (fi::make-process-buffer process-name buffer-number))
 	 (default-dir default-directory)
 	 (buffer-name (buffer-name buffer))
@@ -399,6 +403,7 @@ are read from the minibuffer."
 
     (if (not runningp)
 	(progn				; hack image-file
+	  (message "foo") (sleep-for 4)
 	  (if (consp image-file)
 	      (if (not (stringp (setq image-file (funcall image-file))))
 		  (error "image-file function didn't return a string"))
@@ -451,7 +456,8 @@ are read from the minibuffer."
 	(error nil))
       (make-local-variable 'subprocess-prompt-pattern)
       (setq subprocess-prompt-pattern image-prompt)
-      (fi::make-subprocess-variables))
+      (fi::make-subprocess-variables)
+      (if initial-func (funcall initial-func process)))
     process))
 
 (defun fi::make-tcp-connection (buffer-number buffer-name mode image-prompt
