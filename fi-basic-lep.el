@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.19 1991/09/11 15:22:02 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.20 1991/09/16 14:54:23 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -46,7 +46,7 @@ printed in the minibuffer can easily be erased.")
 
 (defun fi:show-some-text (package text &rest args)
   (when args (setq text (apply (function format) text args)))
-  (let ((n (string-match "\n$" text)))
+  (let ((n (string-match "[\n]+\\'" text)))
     (when n (setq text (substring text 0 n))))
   (if (null (cdr fi:pop-up-temp-window-behavior))
       (fi::show-some-text-1 text (or package fi:package))
@@ -59,7 +59,9 @@ printed in the minibuffer can easily be erased.")
 	   (lines/len (fi::frob-string text-try)))
       (if (and (< (car lines/len) 2)
 	       (<= (second lines/len) width))
-	  (message "%s" text-try)
+	  (progn
+	    (message "%s" text-try)
+	    (fi::note-background-reply))
 	(fi::show-some-text-1
 	 (cond (fi:package (format "[package: %s]\n%s" fi:package text))
 	       (t text))
@@ -96,6 +98,7 @@ printed in the minibuffer can easily be erased.")
 	 (apply 'fi::show-some-text-replace text package hook args))
 	(t (error "bad value for car of fi:pop-up-temp-window-behavior: %s"
 		  (car fi:pop-up-temp-window-behavior:))))
+  (fi::note-background-reply)
   (when fi::show-some-text-1-first-time
     (message
      "%s"
