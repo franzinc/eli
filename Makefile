@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.38 1989/08/07 16:40:18 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.39 1989/08/07 18:08:43 layer Exp $
 
 emacs = /usr/local/emacs
 
@@ -21,8 +21,8 @@ elcs = modes.elc indent.elc subproc.elc sublisp.elc filec.elc ring.elc\
 all:	elcs fasls spec.out
 
 fasls:
-	./docompile.sh ipc ${cl}
-	./docompile.sh emacs ${cl}
+	./docompile.sh ipc ${cl} ${cl_library}
+	./docompile.sh emacs ${cl} ${cl_library}
 
 elcs: ${elcs}
 
