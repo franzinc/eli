@@ -1,7 +1,7 @@
 ;;; subprocess-lisp.el
 ;;;   functions to send lisp source code to the sublisp process
 ;;;
-;;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.5 1988/02/19 17:53:56 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.6 1988/02/20 22:20:13 layer Exp $
 
 (defun inferior-lisp-newline ()
   (interactive)
@@ -128,7 +128,7 @@ the major-mode of the buffer."
   (let* ((stab (syntax-table))
 	 (start  (unwind-protect
 		     (save-excursion
-		       (set-syntax-table lisp-mode-syntax-table)
+		       (set-syntax-table fi:lisp-mode-syntax-table)
 		       (forward-sexp -1)
 		       (point))
 		   (set-syntax-table stab))))
@@ -224,16 +224,23 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 
 (defun send-string-load (process text nl-to-cr compile-file-p)
   (if (null emacs-to-lisp-transaction-file)
-      (setq emacs-to-lisp-transaction-file (format
-					    "%s.cl"
-					    (make-temp-name
-					     (format "/tmp/%s"
-						     (user-login-name))))
-	    emacs-to-lisp-package (if package
-				      (format "(in-package :%s)\n" package)
-				    nil)
-	    emacs-to-lisp-transaction-buf (create-file-buffer
-					   emacs-to-lisp-transaction-file)))
+      (let ()
+	(setq emacs-to-lisp-transaction-file
+	  (let* ((filename (buffer-file-name (current-buffer))))
+	    (format "/tmp/,%s" (file-name-nondirectory filename))))
+	(setq emacs-to-lisp-package (if package
+					(format "(in-package :%s)\n" package)
+				      nil))
+	(setq emacs-to-lisp-transaction-buf
+	  (let ((name (file-name-nondirectory
+		       emacs-to-lisp-transaction-file)))
+	    (or (get-buffer name)
+		(create-file-buffer name))))
+	(let ((file emacs-to-lisp-transaction-file))
+	  (save-window-excursion
+	    (pop-to-buffer emacs-to-lisp-transaction-buf)
+	    (set 'remove-file-on-kill-emacs file)
+	    (set 'remove-file-on-kill-emacs file)))))
   (save-window-excursion
     (let ((file emacs-to-lisp-transaction-file)
 	  (pkg emacs-to-lisp-package))
@@ -246,8 +253,8 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
       (bury-buffer)))
   (let ((load-string
 	 (if compile-file-p
-	     (format ":cl %s" emacs-to-lisp-transaction-file)
-	   (format ":ld %s" emacs-to-lisp-transaction-file))))
+	     (format ":cl \"%s\"" emacs-to-lisp-transaction-file)
+	   (format ":ld \"%s\"" emacs-to-lisp-transaction-file))))
     (send-string-split process load-string nl-to-cr)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -256,27 +263,6 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 ;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defvar local-host-name "localhost")
-(defvar excl-service-name "excl")
-
-(defun run-common-lisp-tcp (&optional host)
-  "Make a new buffer connected to the Lisp Listener Daemon on the given host,
-which defaults to the local host.  A fresh buffer is made for each invocation.
-Does not yet have provision for signals (e.g. ^C)."
-  (interactive)
-  (let ((buffer (generate-new-buffer "*tcplisp*"))
-	(host (or host local-host-name))
-	proc)
-    (save-excursion
-      (set-buffer buffer)
-      (setq proc (open-network-stream (buffer-name buffer)
-				      buffer local-host-name
-				      excl-service-name))
-      (goto-char (point-max))
-      (set-marker (process-mark proc) (point)))
-    (switch-to-buffer buffer)
-    (fi:inferior-lisp-mode common-lisp-prompt-pattern)))
-
 ;; The backdoor lisp listener functions.
 
 ;; Certain commands are typically invoked while editing lisp text, e.g.
@@ -291,16 +277,35 @@ Does not yet have provision for signals (e.g. ^C)."
 ;; because someone has strange lisp syntax in his buffer, or broken
 ;; reader macros, or broken regular macros, ...
 
+(defvar unix-domain t)
+(defvar unix-domain-socket (expand-file-name "~/.excl_to_emacs"))
+
+(defvar local-host-name "localhost")
+(defvar excl-service-name "excl")
+
+(defun run-common-lisp-tcp (&optional host)
+  "Make a new buffer connected to the Lisp Listener Daemon on the given host,
+which defaults to the local host.  A fresh buffer is made for each invocation.
+Does not yet have provision for signals (e.g. ^C)."
+  (interactive)
+  (let ((buffer (generate-new-buffer "*tcplisp*"))
+	(host (or host local-host-name))
+	proc)
+    (save-excursion
+      (set-buffer buffer)
+      (if unix-domain
+	  (setq proc (open-network-stream
+		      (buffer-name buffer) buffer unix-domain-socket 0))
+	(setq proc (open-network-stream (buffer-name buffer) buffer
+					local-host-name
+					excl-service-name)))
+      (goto-char (point-max))
+      (set-marker (process-mark proc) (point)))
+    (switch-to-buffer buffer)
+    (fi:inferior-lisp-mode common-lisp-prompt-pattern)))
+
 (defvar background-sublisp-process nil
   "Process connected to sublist socket for sublisp-arglist and friends.")
-
-(defvar background-sublisp-form
- "(progn
- (setf (mp:process-name mp:*current-process*) \"Gnu Listener\")
- (loop
-  (princ \"\n\")
-  (errorset (eval (read)) t)))\n"
- "The program executed by the backdoor lisp listener.")
 
 (defun background-sublisp-process (&optional nomake)
   (if (or (null background-sublisp-process)
@@ -312,14 +317,25 @@ Does not yet have provision for signals (e.g. ^C)."
 	(and background-sublisp-process
 	     (delete-process background-sublisp-process))
 	(setq background-sublisp-process
-	  (open-network-stream "sublisp-back" nil local-host-name
-			       excl-service-name))
+	  (if unix-domain
+	      (open-network-stream "sublisp-back" nil unix-domain-socket 0)
+	    (open-network-stream "sublisp-back" nil local-host-name
+				 excl-service-name)))
 	(setq sublisp-returns-state nil)
 	(process-send-string background-sublisp-process
 			     background-sublisp-form)
 	(set-process-filter background-sublisp-process
 			    'sublisp-backdoor-filter))))
   background-sublisp-process)
+
+(defvar background-sublisp-form
+ "(progn
+ (setf (mp:process-name mp:*current-process*) \"Gnu Listener\")
+ (loop
+  (princ \"\n\")
+  (errorset (eval (read)) t)))\n"
+ "The program executed by the backdoor lisp listener.")
+
 
 ;; This is the filter for the back door lisp process.
 ;; It collects output until it sees a ctl-A\n, then prints the preceding
