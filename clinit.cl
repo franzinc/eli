@@ -1,14 +1,19 @@
-;; $Header: /repo/cvs.copy/eli/Attic/clinit.cl,v 1.4 1988/11/17 18:20:20 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/clinit.cl,v 1.5 1988/11/17 18:26:43 layer Exp $
 
 #|
 
-;; Put the following single form in your .clinit file:
+;; Put the following single form in your .emacs file:
+
+(setq fi:unix-domain-socket
+  (format "/tmp/%s_emacs_to_acl" (user-login-name)))
+
+;; Then, put the following single form in your .clinit file:
 
 (defparameter *emacs-library*
   (let ((emacs-lib (si:getenv "EMACSLIBRARY")))
     (if emacs-lib (format nil "~a/lisp/fi/" emacs-lib))))
 
-;; and one of the following three forms (after the above form)
+;; plus one of the following three forms (after the above form)
 
 ;;;;;;; Form 1
 ;; this will load the ipc package and unconditionally start it up
