@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.3 1991/02/15 15:27:49 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.4 1991/02/15 23:17:56 layer Exp $
 ;;
 
 (defconst lep:current-frame-regexp "^ ->")
@@ -57,6 +57,9 @@ Type SPACE to hide this help summary.
 
 (defvar lep::process-name nil)
 (make-variable-buffer-local 'lep::process-name)
+
+(defvar lep::debugger-from-buffer nil)
+(make-variable-buffer-local 'lep::debugger-from-buffer)
 
 (defun fi:scan-stack (&optional all)
   (interactive "P")
@@ -93,9 +96,10 @@ Type SPACE to hide this help summary.
 
 (defun lep::scan-stack-mode (from-buffer process-name)
   (interactive)
-  (let ((saved-from-buffer lep::debugger-from-buffer))
+  (let ((saved-from-buffer
+	 ;; KILL-ALL-LOCAL-VARIABLES will kill lep::debugger-from-buffer
+	 lep::debugger-from-buffer))
     (kill-all-local-variables)
-    (make-local-variable 'lep::debugger-from-buffer)
     (setq lep::debugger-from-buffer (or from-buffer
 					saved-from-buffer)))
   (setq lep::process-name process-name)
@@ -263,7 +267,7 @@ Type SPACE to hide this help summary.
   (if (looking-at lep:current-frame-regexp)
       nil
     (if (not (looking-at lep:ok-frame-regexp))
-	(error "not on a frame"))
+	(error "Not on a frame."))
     (let* ((down t)
 	   (start (point))
 	   (end
@@ -271,7 +275,7 @@ Type SPACE to hide this help summary.
 	      (or (and (re-search-forward lep:current-frame-regexp nil t)
 		       (progn (setq down nil) t))
 		  (re-search-backward lep:current-frame-regexp nil t)
-		  (error "can't find current frame indicator"))
+		  (error "Can't find current frame indicator."))
 	      (beginning-of-line)
 	      (point)))
 	   (lines (count-lines start end)))
