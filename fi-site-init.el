@@ -1,4 +1,4 @@
-;; $Id: fi-site-init.el,v 1.111.20.1 1998/05/08 17:13:52 layer Exp $
+;; $Id: fi-site-init.el,v 1.111.20.2 1998/10/12 22:48:25 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -86,14 +86,6 @@
      ((and (setq p (format "%s.elc" file)) (file-exists-p p)) p)
      ((and (setq p (format "%s.el" file)) (file-exists-p p)) p)
      (t nil))))
-
-;;;(load (or (fi::locate-library "fi-version.el")
-;;;	  (error "Couldn't find fi-version.el.")))
-
-;; It would be nice to be able to differentiate between NT and 95, but that
-;; doesn't appear possible right now.  The follow variable should default
-;; to nil on Windows 95, when that is possible.
-;;(when (on-ms-windows) (setq fi::load-subprocess-files nil))
 
 (when (and (or (eq fi::emacs-type 'emacs19)
 	       (eq fi::emacs-type 'xemacs19))
