@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.43 1990/08/31 23:46:26 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.44 1990/09/02 18:59:10 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -13,8 +13,7 @@ cl_library =
 
 elcs = modes.elc indent.elc subproc.elc sublisp.elc filec.elc ring.elc\
 	    su.elc telnet.elc rlogin.elc shell.elc keys.elc tcplisp.elc\
-	    utils.elc ltags.elc clman.elc\
-	    ../tools/doc.elc
+	    utils.elc ltags.elc clman.elc doc.elc
 
 .SUFFIXES:
 .SUFFIXES: .el .elc
@@ -37,8 +36,8 @@ elcs: ${elcs}
 
 ###############################################################################
 
-spec.out:	../doc/spec.n ${elcs}
-	$(emacs) -batch -q -l ../tools/doc.elc
+spec.out:	spec.n ${elcs}
+	$(emacs) -batch -q -l doc.elc
 
 
 install:
