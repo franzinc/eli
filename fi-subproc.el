@@ -19,7 +19,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.131 1991/10/21 20:04:14 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.132 1991/10/29 14:59:29 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -317,6 +317,10 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 				       fi:common-lisp-image-name
 				       fi:common-lisp-image-arguments
 				       fi:common-lisp-host))
+  (when (and fi::shell-buffer-for-common-lisp-interaction-host-name
+	     (or (y-or-n-p "A make-dist might be in progress.  Continue? ")
+		 (error "fi:common-lisp aborted.")))
+    (setq fi::shell-buffer-for-common-lisp-interaction-host-name nil))
   (let* ((buffer-name (if (interactive-p)
 			  (or buffer-name fi:common-lisp-buffer-name)
 			fi:common-lisp-buffer-name))
@@ -594,13 +598,20 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	      host)
       (list buffer-name directory image-name image-args host))))
 
-(defun fi::common-lisp-subprocess-filter (process output &optional stay cruft)
-  (case (catch 'cl-subproc-filter-foo (fi::common-lisp-subprocess-filter-1))
-    (error (switch-to-buffer "*Help*"))
-    (normal
-     (fi::subprocess-filter process output stay cruft)
-     (set-process-filter process 'fi::subprocess-filter))
-    (t (fi::subprocess-filter process output stay cruft))))
+(defun fi::common-lisp-subprocess-filter (process output &optional stay
+								   cruft)
+  (let ((val (catch 'cl-subproc-filter-foo
+	       (fi::common-lisp-subprocess-filter-1))))
+    (case val
+      (normal
+       (fi::subprocess-filter process output stay cruft)
+       (set-process-filter process 'fi::subprocess-filter))
+      (t
+       (if (and (consp val) (eq 'error (car val)))
+	   (progn
+	     (message "%s" (cdr val))
+	     (switch-to-buffer "*Help*"))
+	 (fi::subprocess-filter process output stay cruft))))))
 
 (defun fi::common-lisp-subprocess-filter-1 ()
   ;; This is a temporary filter, which is used until the rendezvous with
@@ -644,14 +655,16 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 				       (cdr xx)))))
 		  (error nil)))
 	      (setq output res)
-	      (condition-case ()
+
+	      (condition-case condition
 		  (progn
 		    (cond ((consp fi:start-lisp-interface-hook)
 			   (mapcar 'funcall fi:start-lisp-interface-hook))
 			  (fi:start-lisp-interface-hook
 			   (funcall fi:start-lisp-interface-hook)))
 		    (throw 'cl-subproc-filter-foo 'normal))
-		(error (throw 'cl-subproc-filter-foo 'error))))))))
+		(error (throw 'cl-subproc-filter-foo
+			 (cons 'error condition)))))))))
 
 (defun fi::make-subprocess (startup-message process-name buffer-name
 			    directory mode-function image-prompt image-file
