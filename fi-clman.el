@@ -24,13 +24,11 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.7 1989/07/11 18:20:33 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.8 1989/07/18 13:38:58 layer Exp $
 
 (defvar fi:clman-package-info nil
   "A list of (PRODUCT DIRECTORY) which tells where the manual pages are (in
 DIRECTORY) for PRODUCT.")
-
-(if (not (boundp 'fi::clman-oblist)) (load "fi/clman.data"))
 
 (defvar fi:clman-mode-map nil
   "Major mode key definitions for viewing a clman page.")
@@ -60,7 +58,7 @@ package, use the nickname of that package, followed by a colon (e.g. cw: or
 math:).  The buffer that is displayed will be in CLMAN mode."
   (interactive)
   (if (null fi:clman-package-info)
-      (setq fi:clman-package-info (fi:setup-clman-package-info)))
+      (setq fi:clman-package-info (fi::setup-clman-package-info)))
   (setq fi::clman-window-configuration (current-window-configuration))
   (let* ((temp-info fi:clman-package-info)(package nil)
          (doc-page nil)(sym nil)
@@ -111,7 +109,7 @@ buffer which lists all documented symbols which match the string.  The
 buffer will be in CLMAN mode."
   (interactive)
   (if (null fi:clman-package-info)
-      (setq fi:clman-package-info (fi:setup-clman-package-info)))
+      (setq fi:clman-package-info (fi::setup-clman-package-info)))
   (let* ((string (downcase (read-string "clman apropos: ")))
 	 (apropos-buffer-name "*CLMan-Apropos*"))
     (with-output-to-temp-buffer apropos-buffer-name
@@ -357,6 +355,7 @@ Return the full pathname of the file the symbol is in. "
     (concat result ".doc")))
 
 (defun fi::setup-clman-package-info ()
+  (if (not (boundp 'fi::clman-oblist)) (load "fi/clman.data"))
   (mapcar (function
 	   (lambda (xxx)
 	     (let* ((p load-path)
