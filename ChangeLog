@@ -11,10 +11,11 @@ For more detailed instructions on filling in the ChangeLog form, see
 
 Thu Jul 16 09:48:30 1998  Kevin Layer  <layer@ultra>
 
+	* Doc0.el: fix variable-definition
 	* move eli.htm to doc/
 	* Makefile: always build readme.htm
 	* fi-compile.el: new eli.htm location
-	* local.mak: move readme.htm rule to Makefile
+	* local.mak: move readme.htm rule to Makefile; fix rdist'd files list
 
 Thu Jul 16 09:47:46 1998    <layer@HOBART>
 

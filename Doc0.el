@@ -1,6 +1,8 @@
-;; $Id: Doc0.el,v 1.1.2.4 1998/07/16 16:47:42 layer Exp $
+;; $Id: Doc0.el,v 1.1.2.5 1998/07/16 17:05:04 layer Exp $
 
 (defvar current-local-map-var)
+
+(defun foo (x) x)
 
 (defun generate-eli-documentation (input-file output-file)
   (switch-to-buffer "*foo*")
@@ -27,9 +29,6 @@
 
   (while (re-search-forward "^%%" nil t)
     (beginning-of-line)
-;;;    (message "foo: %s" (save-excursion
-;;;			 (buffer-substring (point)
-;;;					   (progn (end-of-line) (point)))))
     (cond
      ((looking-at "^%%include \\(.*\\)")
       (message "default-directory is %s" default-directory)
@@ -38,8 +37,7 @@
 	(message "inserting contents of %s" file)
 	(insert-file-contents-indented file 4)))
      ((looking-at "^%% ")
-      (let* ((verbose t)
-	     (xx (re-search-forward "^%% \\([^ \t]+\\)[ \t]*\\([^ \t]+\\)?$"
+      (let* ((xx (re-search-forward "^%% \\([^ \t]+\\)[ \t]*\\([^ \t]+\\)?$"
 				    (save-excursion (end-of-line) (point))))
 	     (var-string
 	      (buffer-substring (match-beginning 1) (match-end 1)))
@@ -70,9 +68,9 @@
 				     (not (eq 'interactive
 					      (car (third xfunc)))))))
 		       "function"
-		     "command"))
-	     (line-pad 88))
-	xx yy ;; get rid of compile warnings
+		     "command")))
+	(foo xx) ;; get rid of compile warnings
+	(foo yy) ;; get rid of compile warnings
 	(cond
 	 ((boundp var)
 	  (let* ((val (symbol-value var))
@@ -84,7 +82,7 @@
 			    var 'variable-documentation))
 			  (error "no documentation available for %s" var))))
 	    (insert
-	     (variable-definition var (value-to-string val var) doc))))
+	     (variable-definition type var (value-to-string val var) doc))))
 	 ((fboundp var)
 	  (setq current-local-map-var
 	    (cond ((symbol-value mode))
@@ -154,11 +152,11 @@
       (setq i (+ i 1)))
     (concat (nreverse res))))
 
-(defun variable-definition (variable value description)
+(defun variable-definition (type variable value description)
   (format "</pre><table border=\"0\" width=\"95%%\" cellpadding=\"0\" cellspacing=\"0\">
   <tr>
     <td width=\"75%%\"><strong><font face=\"Courier New\">%s</font></em></strong></td>
-    <td width=\"20%%\"><strong>[Emacs variable]</strong></td>
+    <td width=\"20%%\"><strong>[Emacs %s]</strong></td>
   </tr>
   <tr>
     <td width=\"77%%\" colspan=\"2\"><strong>Initial value</strong>: %s</td>
@@ -168,7 +166,7 @@
 <ul>
   <li><pre><font face=\"Times New Roman\"><big>%s</big></font></pre></li>
 </ul><pre>"
-	  variable value description))
+	  variable type value description))
 
 (defun function-definition (name type arglist invoke-with description)
   (format "</pre><table border=\"0\" width=\"95%%\" cellpadding=\"0\" cellspacing=\"0\">

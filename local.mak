@@ -1,4 +1,4 @@
-# $Id: local.mak,v 2.6.20.6 1998/07/16 16:49:23 layer Exp $
+# $Id: local.mak,v 2.6.20.7 1998/07/16 17:05:05 layer Exp $
 
 TGZFILE = eli-$(VERSION).tar.gz
 DISTDIR = eli-$(VERSION)
@@ -39,11 +39,14 @@ elib_root = /usr/fi/emacs-lib
 to = $(elib_root)/fi
 rdist = rdist
 
-FILES_TO_RDIST = ChangeLog fi-*.el fi-*.elc \
-		local*.el local*.elc Makefile 
+FILES_TO_RDIST = $(release_files) local*.el local*.elc 
 
-rdist:
-	rm -fr DIST
-	$(rdist) -hwqc $(FILES_TO_RDIST) "`hostname`:$(pwd)/DIST"
+rdist:	DIST
 	(cd DIST; $(rdist) -Rc . "{`echo $(hosts) | sed 's/ /,/g'`}:$(to)")
 	rm -fr DIST
+
+DIST:	FORCE
+	rm -fr DIST
+	mkdir DIST
+	cp /dev/null DIST/local.mak
+	$(rdist) -hwqc $(FILES_TO_RDIST) "`hostname`:$(pwd)/DIST"

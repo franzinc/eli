@@ -1,8 +1,9 @@
 *.doc
 *.tar.gz
+DIST
 dists
 fi-vers.el
-readme0.htm
 readme.htm
+readme0.htm
 test.out
 tmp
