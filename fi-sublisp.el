@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.24 1988/05/11 14:48:31 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.25 1988/05/12 10:15:28 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -46,15 +46,30 @@ sent from Emacs buffers to Lisp so that the expressions are read in the
 proper Lisp package.")
 
 (defun fi:set-associated-sublisp (buffer-name)
-  "On a per-buffer basis, this function can be used to set the Lisp process
-associated with a Lisp source file.  The buffer name is interactively read
-and must be the name of an existing buffer. This process is used when
-sending expressions to Lisp for evaluation."
+  "Evaluated when in a Lisp source buffer causes further `eval' commands to
+use BUFFER-NAME as the buffer which contains a Lisp subprocess.  The buffer
+name is interactively read and must be the name of an existing buffer.  New
+buffers with the same mode as the current buffer will also use BUFFER-NAME
+for `eval' commands."
   (interactive "bBuffer name containing a Lisp process: ")
   (let ((process (get-buffer-process (get-buffer buffer-name))))
     (if process
- 	(setq fi::sublisp-name (process-name process))
-      (error "No process associated with buffer %s" buffer-name))))
+	(if (memq major-mode '(fi:common-lisp-mode fi:franz-lisp-mode))
+	    (let ((buffers (buffer-list))
+		  (proc-name (process-name process)))
+	      (cond ((eq major-mode 'fi:common-lisp-mode)
+		     (setq fi::freshest-common-sublisp-name proc-name))
+		    ((eq major-mode 'fi:franz-lisp-mode)
+		     (setq fi::freshest-franz-sublisp-name proc-name)))
+	      (while buffers
+		(if (eq (fi::symbol-value-in-buffer 'major-mode (car buffers))
+			major-mode)
+		    (fi::set-in-buffer 'fi::sublisp-name proc-name
+				       (car buffers)))
+		(setq buffers (cdr buffers))))
+	  (error "The current buffer is not in a Lisp editing mode.")) 
+      (error "There is no process associated with buffer %s!"
+	     buffer-name))))
 
 ;;;;
 ;;; Internals
@@ -87,10 +102,9 @@ parsed, the enclosing list is processed."
 
     ;; we are in the middle of the buffer somewhere and need to collect
     ;; and s-exp to re-send
-
     ;; we grab everything from the end of the current line back to the end
     ;; of the last prompt
-    
+    ;;
     (let ((exp-to-resend "")
 	  (start-resend (point))
 	  (end-resend (point)))
@@ -229,11 +243,3 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 	   (format "(let ((*record-source-files* nil)) (load \"%s\"))"
 		   fi::emacs-to-lisp-transaction-file))))
     (fi::send-string-split process load-string nl-to-cr)))
-
-(defun fi::file-name-sans-type (name)
-  "Return FILENAME sans file extension or type."
-  (substring name 0
- 	     (or (string-match "\\.cl$" name)
- 		 (string-match "\\.lisp$" name)
- 		 (string-match "\\.l$" name)
- 		 (length name))))
