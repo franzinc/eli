@@ -10,5 +10,6 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-emacs19.el,v 2.1 1993/07/15 00:02:00 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-emacs19.el,v 2.2 1993/07/23 07:02:36 layer Exp $
 
+;; nothing yet...
