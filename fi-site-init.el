@@ -1,39 +1,43 @@
-;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.33 1992/12/14 17:34:36 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.34 1993/03/23 10:14:24 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
 (setq fi:emacs-lisp-interface-version "2.0.3")
 (defvar fi::required-ipc-version 1)
+(defvar fi::load-subprocess-files t)
 
 (require 'cl)
 
 (load "fi/modes.elc")
-(if fi:lisp-do-indentation		; default is `t'
-    (load "fi/indent.elc"))
+(when fi:lisp-do-indentation
+  (load "fi/indent.elc"))
 (load "fi/keys.elc")
-(load "fi/subproc.elc")
-(load "fi/sublisp.elc")
-(load "fi/basic-lep.elc")
-(load "fi/lep.elc")
-(load "fi/dmode.elc")
-(load "fi/composer.elc")
-(load "fi/lze.elc")
-(load "fi/changes.elc")
-(load "fi/db.elc")
-(load "fi/stream.elc")
-(load "fi/ring.elc")
-(load "fi/filec.elc")
 (load "fi/utils.elc")
 
-(when (boundp 'epoch::version)
-  (load "fi/leep0.elc")
-  (load "fi/leep.elc"))
+(when fi::load-subprocess-files
+  (load "fi/subproc.elc")
+  (load "fi/sublisp.elc")
+  (load "fi/basic-lep.elc")
+  (load "fi/lep.elc")
+  (load "fi/dmode.elc")
+  (load "fi/composer.elc")
+  (load "fi/lze.elc")
+  (load "fi/changes.elc")
+  (load "fi/db.elc")
+  (load "fi/stream.elc")
 
-;; `shell' and `rlogin' modes:
-(load "fi/shell.elc")
-(load "fi/rlogin.elc")
-(load "fi/telnet.elc")
-(load "fi/su.elc")
+  (when (boundp 'epoch::version)
+    (load "fi/leep0.elc")
+    (load "fi/leep.elc"))
+
+  (load "fi/ring.elc")
+  (load "fi/filec.elc")
+
+  ;; `shell' and `rlogin' modes:
+  (load "fi/shell.elc")
+  (load "fi/rlogin.elc")
+  (load "fi/telnet.elc")
+  (load "fi/su.elc"))
 
 (autoload 'fi:clman         "fi/clman" nil t)
 (autoload 'fi:clman-mode    "fi/clman" nil t)
