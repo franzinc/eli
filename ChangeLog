@@ -14,6 +14,7 @@ post-release patch
 	* fi-basic-lep.el: bug10572: killing buffer can sometimes lead to
 	an error in emacs.  It's a timing thing that only happens on some
 	emacs and operating system combos.
+	* fi-compile.el: make sure fi-xemacs.el is byte compiled!
 
 2001-11-01  Kevin Layer  <layer@crikey>
 
