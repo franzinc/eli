@@ -1,7 +1,7 @@
 ;;; subprocess.el
 ;;;   subprocess modes and functions
 ;;;
-;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.5 1987/10/22 21:06:44 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.6 1988/02/19 12:16:38 layer Exp $
 
 (provide 'subprocess)
 
@@ -326,12 +326,13 @@ in the MAP given as argument."
   (define-key map "\e\C-q"	'indent-sexp))
 
 (defun shell-mode-commands (&optional map)
-  (define-key map "\C-a" 'subprocess-beginning-of-line)
   (define-key map "\C-m" 'fi:shell-send-input)
   (define-key map "\C-c" 'fi:interrupt-shell-subjob)
   (define-key map "\C-i" 'shell-file-name-completion)
+  ;;(define-key map "\C-a" 'subprocess-beginning-of-line)
   (if subprocess-enable-superkeys
     (progn
+      (define-key map "\C-a" 'subprocess-superkey)
       (define-key map "\C-d" 'subprocess-superkey)
       (define-key map "\C-o" 'subprocess-superkey)
       (define-key map "\C-u" 'subprocess-superkey)
