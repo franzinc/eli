@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 1.107 1997/02/27 17:33:56 layer Exp $
+;; $Id: fi-keys.el,v 1.107.2.1 1997/07/09 20:08:35 layer Exp $
 
 (cond ((eq fi::emacs-type 'xemacs19)
        (require 'tags "etags"))
@@ -525,7 +525,10 @@ subprocess mode."
 	(if (and (on-ms-windows) (not *on-windows-nt*))
 	    (insert "\n\r")
 	  (insert "\n"))
-	(setq fi::last-input-end (point)))
+	(setq fi::last-input-end
+	  (if (and (on-ms-windows) (not *on-windows-nt*))
+	      (1- (point))
+	    (point))))
     (let ((max (point)))
       (beginning-of-line)
       (re-search-forward fi::prompt-pattern max t))
@@ -539,6 +542,8 @@ subprocess mode."
   (let ((process (get-buffer-process (current-buffer))))
     (process-send-region process fi::last-input-start fi::last-input-end)
     (fi::input-ring-save fi::last-input-start (1- fi::last-input-end))
+    (when (and (on-ms-windows) (not *on-windows-nt*))
+      (delete-char -1))
     (set-marker (process-mark process) (point))))
 
 ;;;;

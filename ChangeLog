@@ -9,6 +9,16 @@ Documentation changes:	<`none' or give pointer to them>
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.alpha.0
+
+Documentation changes:	no new features
+
+Wed Jul 09 13:07:24 1997    <layer@HOBART>
+
+	* fi-keys.el: new fi:subprocess-send-input from smh that fixes
+	^M's on win95
+
+*******************************************************************************
 2.0.21.pre-alpha.9
 
 Documentation changes:	no new features
