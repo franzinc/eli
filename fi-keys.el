@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.57 1991/06/20 10:48:34 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.58 1991/06/27 15:25:49 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -133,16 +133,16 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
       (progn
 	(define-key map "\t"		'fi:lisp-indent-line)
 	(define-key map "\e\C-q"	'fi:indent-sexp))
-    (progn
-      (define-key map "\t"		'lisp-indent-line)
-      (define-key map "\e\C-q"		'indent-sexp)))
+    (define-key map "\t"		'lisp-indent-line)
+    (define-key map "\e\C-q"		'indent-sexp))
 
   (if (memq mode '(sub-lisp tcp-lisp))
       (progn
 	(define-key map "\r"	 'fi:inferior-lisp-newline)
 	(define-key map "\e\r"	 'fi:inferior-lisp-input-sexp)
 	(define-key map "\C-x\r" 'fi:inferior-lisp-input-list))
-    (define-key map "\r"	 'fi:lisp-mode-newline))
+    (define-key map "\r"	 'fi:lisp-mode-newline)
+    (define-key map "\C-c^"	 'fi:center-defun))
 
   (when (memq major-mode '(fi:common-lisp-mode fi:inferior-common-lisp-mode
 			   fi:lisp-listener-mode))
@@ -160,9 +160,6 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
     (define-key map "\eT"	'fi:toggle-trace-definition)
     (define-key map "\eW"	'fi:lisp-macroexpand-recursively)
     (define-key map "\C-c "	'fi:lisp-delete-pop-up-window))
-
-  (when (eq major-mode 'fi:common-lisp-mode)
-    (define-key map "\C-c!"	'fi:common-lisp))
 
   (when (eq major-mode 'fi:emacs-lisp-mode)
     (define-key map "\e\C-x"	'eval-defun))
@@ -455,7 +452,7 @@ process via the backdoor."
   (interactive)
   (fi:eval-in-lisp
 ;;;; should send to proper process
-   "(db:debug-pop (mp::process-name-to-process \"Initial Lisp Listener\"))\n")
+   "(db:debug-pop (mp::process-name-to-process \"Initial Lisp Listener\" t))\n")
   )
 
 (defun fi:tcp-lisp-listener-send-eof ()
@@ -467,7 +464,7 @@ doing a debugger:debug-pop on the Common Lisp process tied to the Lisp
 Listener buffer via the backdoor."
   (interactive)
   (fi:eval-in-lisp 
-   (format "(db:debug-pop (mp::process-name-to-process \"%s\"))\n"
+   (format "(db:debug-pop (mp::process-name-to-process \"%s\" t))\n"
 	   (buffer-name (current-buffer)))))
 
 (defun fi:tcp-lisp-listener-kill-process ()
@@ -480,7 +477,7 @@ doing a mp:process-kill on the Common Lisp process tied to the Lisp
 Listener buffer via the backdoor."
   (interactive)
   (fi:eval-in-lisp
-   (format "(mp:process-kill (mp::process-name-to-process \"%s\"))\n"
+   (format "(mp:process-kill (mp::process-name-to-process \"%s\" t))\n"
 	   (buffer-name (current-buffer)))))
 
 (defun fi:tcp-lisp-listener-interrupt-process ()
@@ -493,7 +490,9 @@ simulated by doing a mp:process-interrupt on the Common Lisp process tied
 to the Lisp Listener buffer via the backdoor."
   (interactive)
   (fi:eval-in-lisp
-   (format "(mp:process-interrupt (mp::process-name-to-process \"%s\") #'break \"interrupt from emacs\")\n"
+   (format "(%s (%s \"%s\" t) #'break \"interrupt from emacs\")\n"
+	   "mp:process-interrupt"
+	   "mp::process-name-to-process"
 	   (buffer-name (current-buffer)))))
 
 
@@ -766,15 +765,46 @@ form.  If there are too many parens delete them.  The form is also indented."
   "Verify that parentheses in the current Lisp source buffer are balanced.
 If they are not, position the point at the first syntax error found."
   (interactive)
-  (let ((started-here (point)))
+  (let ((saved-point (point))
+	(lpar (string-to-char "("))
+	(rpar (string-to-char ")")))
     (goto-char (point-min))
-    (while (re-search-forward "^(" nil t)
-      (backward-char 1)
-      (forward-sexp 1)
-      (if (looking-at ")") (error "Extra `)'")))
-    (goto-char started-here)
-    (if (interactive-p)
-	(message "All parentheses appear to be balanced."))))
+    (while (and (not (eobp))
+		(let ((comment-start-char (string-to-char comment-start))
+		      (done nil))
+		  (while (and (not (eobp)) (not done))
+		    (skip-chars-forward "\f\n\t ")
+		    (setq char (char-after (point)))
+		    (cond ((eq ?\\ char)
+			   (forward-char 2))
+			  ((eq comment-start-char char)
+			   (forward-char 1)
+			   (skip-chars-forward "^\n"))
+			  ((eq ?\" char)
+			   (forward-sexp 1))
+			  ((eq ?# char)
+			   (cond
+			    ((eq ?| (char-after (1+ (point))))
+			     (forward-char 1)
+			     (forward-sexp 1)
+			     (forward-char 1))
+			    (t (forward-char 1)
+			       (forward-sexp 1))))
+			  (t (setq done t))))
+		  t))
+      (let ((char (char-after (point))))
+	(cond ((or (eq char lpar)
+		   ;; For things other than lists
+		   (eq (char-after (1- (point))) ?\n))
+	       (condition-case ()
+		   (progn (forward-sexp) nil)
+		 (error (error "Extra )"))))
+	      ((eq char rpar)
+	       (error "Extra ("))
+	      (t (error "foo")))))
+    (goto-char saved-point))
+  (if (interactive-p) (message "All parentheses appear to be balanced."))
+  t)
 
 (defun fi:check-unbalanced-parentheses-when-saving ()
   (if (and fi:check-unbalanced-parentheses-when-saving
@@ -782,7 +812,7 @@ If they are not, position the point at the first syntax error found."
 			      fi:franz-lisp-mode)))
       (if (eq 'warn fi:check-unbalanced-parentheses-when-saving)
 	  (condition-case nil
-	      (fi:find-unbalanced-parenthesis)
+	      (progn (fi:find-unbalanced-parenthesis) nil)
 	    (error
 	     (message "Warning: parens are not balanced in this buffer.")
 	     (ding)
@@ -790,7 +820,7 @@ If they are not, position the point at the first syntax error found."
 	     ;; so the file is written:
 	     nil))
 	(condition-case nil
-	    (fi:find-unbalanced-parenthesis)
+	    (progn (fi:find-unbalanced-parenthesis) nil)
 	  (error
 	   ;; save file if user types "yes":
 	   (not (y-or-n-p "Parens are not balanced.  Save file anyway? ")))))))
@@ -931,7 +961,8 @@ following form in your ~/.emacs file:
 	       (define-key map \"\\e,\"	'fi:lisp-find-next-definition)))))
 
 To prevent this message to appear when find-tag or find-tag-other-window
-are invoked, put this form in your ~/.emacs:
+are invoked, put this form in your ~/.emacs before the LOAD of
+\"fi/site-init\":
 
 	(setq fi:find-tag-lock nil)
 
@@ -956,3 +987,12 @@ Type `q' to proceed.
   (fset 'saved-find-tag-other-window (symbol-function 'find-tag-other-window))
   (fset 'find-tag (symbol-function 'fi:disabled-once-find-tag))
   (fset 'find-tag-other-window (symbol-function 'fi:disabled-once-find-tag)))
+
+(defun fi:center-defun ()
+  "Put the first line of the current definition at on the first line of the
+window, leaving the point unchanged"
+  (interactive)
+  (let ((p (point)))
+    (fi:beginning-of-defun)
+    (recenter 0)
+    (goto-char p)))
