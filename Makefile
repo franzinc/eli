@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.144.6.1 2000/09/26 22:16:06 layer Exp $
+# $Id: Makefile,v 1.144.6.2 2000/10/21 15:17:57 layer Exp $
 # This makefile requires GNU make.
 
 include version.mak
@@ -32,7 +32,7 @@ pwd = $(shell pwd)
 endif
 ###############################################################################
 
-all default:	fi-vers.el compile readme.htm
+all default:	fi-vers.el compile
 
 compile:	fi-vers.el
 	$(emacs) -nw -batch -q -l $(pwd)/fi-compile.el -kill
@@ -45,8 +45,8 @@ fi-vers.el: Makefile version.mak
 	echo '(defvar fi:compiled-with-version)' >> fi-vers.el
 	echo '(setq fi:compiled-with-version (eval-when-compile (cons emacs-major-version emacs-minor-version)))' >> fi-vers.el
 
-readme.htm: readme0.htm
-	sed -e 's/__VERSION__/$(VERSION)/g' < readme0.htm > readme.htm
+#readme.htm: readme0.htm
+#	sed -e 's/__VERSION__/$(VERSION)/g' < readme0.htm > readme.htm
 
 test.out:	$(elcs) fi-test.el
 	$(emacs) -nw -batch -q -l fi-test.el

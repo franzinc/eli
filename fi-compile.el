@@ -1,4 +1,4 @@
-;; $Id: fi-compile.el,v 2.10 2000/06/22 20:48:53 layer Exp $
+;; $Id: fi-compile.el,v 2.10.6.1 2000/10/21 15:17:58 layer Exp $
 
 (require 'cl)
 
@@ -45,9 +45,7 @@
 	(message "--------------------------------------------------------")
 	(byte-compile-file el)))))
 
-(message "--------------------------------------------------------")
-(message "doing readme.htm...")
-
-(load "Doc0.elc")
-
-(generate-eli-documentation "doc/eli.htm" "readme0.htm")
+;;(message "--------------------------------------------------------")
+;;(message "doing readme.htm...")
+;;(load "Doc0.elc")
+;;(generate-eli-documentation "doc/eli.htm" "readme0.htm")
