@@ -1,7 +1,7 @@
 ;;; subprocess.el
 ;;;   subprocess modes and functions
 ;;;
-;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.1 1987/05/14 14:08:54 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.2 1987/07/21 16:14:52 layer Exp $
 
 (provide 'subprocess)
 
@@ -27,12 +27,6 @@
 
 (defvar freshest-common-sublisp-name nil
   "Name of common lisp subprocess most recently invoked.")
-
-(defvar sublisp-error-prompt-pattern nil
-  "Regexp to describe error prompt.")
-
-(defconst common-lisp-error-prompt-pattern "\[[1-9]]" )
-(defconst franz-lisp-error-prompt-pattern "c{[1-9]}" )
 
 (defvar shell-directory-stack nil
   "List of directories saved by pushd in this buffer's shell.")
@@ -75,70 +69,70 @@ normal global binding.  This is a buffer-local symbol.")
 If elsewhere, it is treated as a prefix key for the `fi:subprocess-mode-map'
 keymap.  This is a buffer-local symbol.")
 
-(defconst explicit-shell-file-name nil
+(defvar explicit-shell-file-name nil
   "*Explicit Shell image to invoke from (shell).")
-(defconst explicit-rlogin-file-name nil
+(defvar explicit-rlogin-file-name nil
   "*Explicit remote-login image to invoke from (rlogin).")
-(defconst explicit-lisp-file-name nil
+(defvar explicit-lisp-file-name nil
   "*Explicit Lisp image to invoke from (lisp).")
-(defconst explicit-franz-lisp-file-name nil
+(defvar explicit-franz-lisp-file-name nil
   "*Explicit Franz Lisp image to invoke from (franz-lisp).")
-(defconst explicit-common-lisp-file-name nil
+(defvar explicit-common-lisp-file-name nil
   "*Explicit Common Lisp image to invoke from (common-lisp).")
-(defconst explicit-shell-image-arguments nil
+(defvar explicit-shell-image-arguments nil
   "*Explicit Shell image arguments when invoked from (shell).")
-(defconst explicit-rlogin-image-arguments nil
+(defvar explicit-rlogin-image-arguments nil
   "*Explicit remote-login image arguments when invoked from (rlogin).")
-(defconst explicit-lisp-image-arguments nil
+(defvar explicit-lisp-image-arguments nil
   "*Explicit Lisp image arguments when invoked from (lisp).")
-(defconst explicit-franz-lisp-image-arguments nil
+(defvar explicit-franz-lisp-image-arguments nil
   "*Explicit Franz Lisp image arguments when invoked from (franz-lisp).")
-(defconst explicit-common-lisp-image-arguments nil
+(defvar explicit-common-lisp-image-arguments nil
   "*Explicit Common Lisp image arguments when invoked from (common-lisp).")
 
-(defconst default-shell-file-name "sh"
+(defvar default-shell-file-name "sh"
   "*Default Shell image to invoke from (shell).")
-(defconst default-rlogin-file-name "rlogin"
+(defvar default-rlogin-file-name "rlogin"
   "*Default remote-login image to invoke from (rlogin).")
-(defconst default-lisp-file-name "lisp"
+(defvar default-lisp-file-name "lisp"
   "*Default Lisp image to invoke from (lisp).")
-(defconst default-franz-lisp-file-name "lisp"
+(defvar default-franz-lisp-file-name "lisp"
   "*Default Franz Lisp image to invoke from (franz-lisp).")
-(defconst default-common-lisp-file-name "cl"
+(defvar default-common-lisp-file-name "cl"
   "*Default Common Lisp image to invoke from (common-lisp).")
-(defconst default-shell-image-arguments '("-i")
+(defvar default-shell-image-arguments '("-i")
   "*Default Shell image arguments when invoked from (shell).")
-(defconst default-rlogin-image-arguments nil
+(defvar default-rlogin-image-arguments nil
   "*Default remote-login image arguments when invoked from (rlogin).")
-(defconst default-lisp-image-arguments nil
+(defvar default-lisp-image-arguments nil
   "*Default Lisp image arguments when invoked from (lisp).")
-(defconst default-franz-lisp-image-arguments nil
+(defvar default-franz-lisp-image-arguments nil
   "*Default Franz Lisp image arguments when invoked from (franz-lisp).")
-(defconst default-common-lisp-image-arguments nil
+(defvar default-common-lisp-image-arguments nil
   "*Default Common Lisp image arguments when invoked from (common-lisp).")
 
-(defconst subprocess-write-quantum 120
+(defvar subprocess-write-quantum 120
   "Maximum size in bytes of a single write request to a subprocess.")
 
-(defconst shell-prompt-pattern
+(defvar shell-prompt-pattern
   "^[-_.a-zA-Z0-9]*[#$%>] *"
   "*Regexp used by Newline command in shell mode to match subshell prompts.
 Anything from beginning of line up to the end of what this pattern matches
 is deemed to be prompt, and is not re-executed.")
 
-(defconst lisp-prompt-pattern
+(defvar lisp-prompt-pattern
   "^[-=]> +\\|^c{[0-9]+} +"
   "*Regexp used by Newline command in inferior-lisp mode to match Lisp prompts.
 Anything from beginning of line up to the end of what this pattern matches
 is deemed to be prompt, and is not re-executed.")
 
-(defconst franz-lisp-prompt-pattern
+(defvar franz-lisp-prompt-pattern
   "^[-=]> +\\|^c{[0-9]+} +"
   "*Regexp used by Newline command in inferior-lisp mode to match Franz Lisp prompts.
 Anything from beginning of line up to the end of what this pattern matches
 is deemed to be prompt, and is not re-executed.")
 
-(defconst common-lisp-prompt-pattern
+(defvar common-lisp-prompt-pattern
   "^\\(\\[[0-9]+c?\\] \\|\\[step\\] \\)?<?cl> "
   "*Regexp for Newline command in inferior-lisp mode to match Common Lisp prompts.
 Anything from beginning of line up to the end of what this pattern
@@ -343,7 +337,7 @@ in the MAP given as argument."
     (define-key map "\C-c" 'Subprocess-Special-prefix))
   (if subprocess-enable-superkeys
     (progn
-      (define-key map "\C-a" 'subprocess-superkey)
+      ;;(define-key map "\C-a" 'subprocess-superkey)
       (define-key map "\C-d" 'subprocess-superkey)
       (define-key map "\C-o" 'subprocess-superkey)
       (define-key map "\C-u" 'subprocess-superkey)
@@ -898,10 +892,6 @@ If sublisp-name is nil, startup an appropriate sublisp, based on
 the major-mode of the buffer."
   (interactive)
   (fi:sublisp-select)
-  (cond ((equal major-mode 'common-lisp-mode)
-	 (setq sublisp-error-prompt-pattern common-lisp-error-prompt-pattern))
-	((equal major-mode 'franz-lisp-mode)
-	 (setq sublisp-error-prompt-pattern franz-lisp-error-prompt-pattern)))
   (unwind-protect
       (let ((start (min (point) (mark)))
 	    (end   (max (point) (mark)))
