@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.200.10.3 1998/05/26 20:14:42 layer Exp $
+;; $Id: fi-subproc.el,v 1.200.10.4 1998/05/28 23:49:57 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -395,7 +395,7 @@ risk.")
 			  buffer-name
 			(or buffer-name fi:common-lisp-buffer-name)))
 	 (directory (if (interactive-p)
-			(expand-file-name directory)
+			(and directory (expand-file-name directory))
 		      (or directory fi:common-lisp-directory)))
 	 (executable-image-name
 	  (if (interactive-p)
@@ -788,70 +788,64 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		"'" "")))))
 
 (defun fi::get-lisp-interactive-arguments (first-time buffer-name buffer
-					   directory image-name image-args host
-					   &optional image-file)
-  (let ((buffer-name (or (and buffer (buffer-name buffer))
-			 buffer-name))
-	local)
-    (when (or first-time
-	      (and current-prefix-arg
-		   (or (null buffer)
-		       (not (get-buffer-process buffer))
-		       (not (fi:process-running-p
-			     (get-buffer-process buffer)
-			     buffer-name)))))
+					   directory exe image-args host
+					   &optional dxl)
+  (setq buffer-name (or (and buffer (buffer-name buffer))
+			buffer-name))
 
-      (setq buffer-name (read-buffer "Buffer: " buffer-name))
-      
-      (if (on-ms-windows)
-	  (setq host "localhost")
-	(setq host (read-string "Host: " host)))
-      
-      (setq local (or (string= "localhost" host)
-		      (string= host (system-name))))
-      
-      (let ((temp (expand-file-name
-		   (read-file-name "Process directory: "
-				   (or directory default-directory)
-				   (or directory default-directory)
-				   local))))
-	;; make sure it ends in a slash:
-	(setq directory
-	  (if (= ?/ (aref temp (- (length temp) 1)))
-	      temp
-	    (concat temp "/"))))
+  (when (or first-time
+	    (and current-prefix-arg
+		 (or (null buffer)
+		     (not (get-buffer-process buffer))
+		     (not (fi:process-running-p
+			   (get-buffer-process buffer)
+			   buffer-name)))))
 
-      (let ((exe (read-file-name "Lisp executable program: "
-				 image-name image-name nil))
-	    (temp (read-file-name "Lisp image (dxl) file: "
-				  directory image-file nil image-file)))
-	
-	(if (or (string= temp "")
-		(and (null image-file)
-		     (string= temp default-directory))
-		(and image-file
-		     (string= temp image-file)))
-	    ;; the null answer:
-	    (setq image-file nil)
-	  (setq image-file temp))
-	
-	(when (and image-file
-		   (or (string-match "\\$" image-file)
-		       (string-match "^~" image-file)))
-	  (setq image-file (expand-file-name image-file)))
+    (setq buffer-name (read-buffer "Buffer: " buffer-name))
+      
+    (if (on-ms-windows)
+	(setq host "localhost")
+      (setq host (read-string "Host: " host)))
+      
+    ;; make sure it ends in a slash:
+    (setq directory
+      (let ((temp (fi::read-file-name "Process directory: "
+				      (or directory default-directory)
+				      (or directory default-directory)
+				      ;; must match only if local:
+				      (or (string= "localhost" host)
+					  (string= host (system-name))))))
+	(if (= ?/ (aref temp (- (length temp) 1)))
+	    temp
+	  (concat temp "/"))))
 
-	(setq image-name
-	  (if (string-match "[\$~]" exe)
-	      (expand-file-name exe)
-	    exe)))
-      
-      (setq image-args
-	(fi::listify-string
-	 (read-from-minibuffer
-	  "Image arguments (separate by spaces): "
-	  (mapconcat 'concat image-args " ")))))
-      
-    (list buffer-name directory image-name image-args host image-file)))
+    (setq exe (fi::read-file-name "Lisp executable program: " exe exe))
+    (setq dxl
+      (fi::read-file-name "Lisp image (dxl) file: " directory dxl nil dxl))
+
+    (setq image-args
+      (fi::listify-string
+       (read-from-minibuffer "Image arguments (separate by spaces): "
+			     (mapconcat 'concat image-args " ")))))
+
+  (list buffer-name directory exe image-args host dxl))
+
+(defun fi::read-file-name (prompt
+			   &optional directory default mustmatch initial)
+  (let ((temp (read-file-name prompt directory default mustmatch initial)))
+    (setq temp
+      (cond ((string= temp "")
+	     ;; user deleted `initial' text
+	     nil)
+	    ((or (string-match "\\$" temp)
+		 (string-match "^~" temp))
+	     ;; expand it, since `directory' will have been expanded
+	     (expand-file-name temp))
+	    (t temp)))
+    (cond ((and temp (string= temp directory))
+	   ;; user typed RET only, return default answer:
+	   default)
+	  (t temp))))
 
 (defun fi::common-lisp-subprocess-filter (process output &optional stay
 								   cruft)

@@ -7,6 +7,15 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.2
+
+Thu May 28 16:48:52 1998  Kevin Layer  <layer@ultra>
+
+	* fi-subproc.el: [bug6885] rework
+	fi::get-lisp-interactive-arguments yet again.  This time it is
+	much simpler.
+
+*******************************************************************************
 2.0.21.1
 
 Tue May 26 13:11:40 1998  Kevin Layer  <layer@ultra>
