@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 1.100 1996/10/11 00:33:05 layer Exp $
+;; $Id: fi-keys.el,v 1.101 1996/10/15 00:24:52 layer Exp $
 
 (cond ((eq fi::emacs-type 'xemacs19)
        (require 'tags "etags"))
@@ -613,7 +613,7 @@ process via the backdoor."
   (fi:eval-in-lisp
    ;; we know we can use "Initial Lisp Listener" because this function will
    ;; only be invoked in the subprocess buffer were the lisp was started
-   "(db:debug-pop
+   "(debugger:debug-pop
       (mp::process-name-to-process \"Initial Lisp Listener\"))\n"))
 
 (defun fi:tcp-lisp-listener-send-eof ()
@@ -624,7 +624,7 @@ either Emacs or Common Lisp, at this time).  The fake EOF is simulated by
 doing a debugger:debug-pop on the Common Lisp process tied to the Lisp
 Listener buffer via the backdoor."
   (interactive)
-  (fi::tcp-simulate-special-char "db:debug-pop"))
+  (fi::tcp-simulate-special-char "debugger:debug-pop"))
 
 (defun fi:rlogin-send-eof ()
   "Send an EOF to the process running as in the remote shell in the current
