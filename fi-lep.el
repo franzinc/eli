@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.57 1993/09/08 00:21:50 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.58 1993/09/17 05:57:33 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -889,7 +889,6 @@ environment."
   (fi::compile-or-load-file file ':load))
 
 (defun fi::compile-or-load-file (file operation)
-  (fi::error-if-request-in-progress)
   (let* ((compilep nil)
 	 (msg-start
 	  (format "%s %s..."

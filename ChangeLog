@@ -1,3 +1,14 @@
+Thu Sep 16 22:48:49 1993  Kevin Layer  (layer@sole)
+
+	* Makefile: fi-dist hacking
+
+	* UserGuide.n: just include major version number
+
+	* fi-leep-lemacs.el: backout in progress fix 
+
+	* fi-lep.el: fi::error-if-request-in-progress is outta here, so
+	don't call it.
+
 *******************************************************************************
 2.0.10 public release
 *******************************************************************************

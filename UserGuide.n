@@ -1,8 +1,8 @@
 		    GNU Emacs-Allegro CL Interface
 			      User Guide
-			    Release 2.0.10
+			     Release 2.0
 
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.51 1993/09/13 21:00:48 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.52 1993/09/17 05:57:24 layer Exp $
 
 			     Introduction
 

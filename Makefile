@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.95 1993/09/13 20:57:55 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.96 1993/09/17 05:57:21 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -136,24 +136,26 @@ echo_acl_release_files:
 	@echo $(acl_release_files)
 
 fi-dist:	all
-	@if test -z "$(version)"; then\
-	  echo Make variable version is null; exit 1;\
-	fi
+	chmod 644 fi-site-init.el ChangeLog
+	rm -f version
+	emacs -batch -l `pwd`/fi-inc-vers > version
+	cvs commit -m "`cat version`" fi-site-init.el ChangeLog
 	@if test -d "$(release_root)/$(fi_release_directory)"; then\
 	  echo $(release_root)/$(fi_release_directory) exists; exit 1;\
 	fi
-	@if grep "Release $(version)" UserGuide.n > /dev/null; then\
-	  foo=;\
-	else\
-	  echo The version in fi-site-init.el and UserGuide.n do not agree;\
-	  exit 1;\
-	fi
+#just store the major version number in UserGuide.n:
+#	@if grep "Release $(version)" UserGuide.n > /dev/null; then\
+#	  foo=;\
+#	else\
+#	  echo The version in fi-site-init.el and UserGuide.n do not agree;\
+#	  exit 1;\
+#	fi
 	mkdir $(release_root)/$(fi_release_directory)
 	tar cf - $(fi_release_files) | \
 	  (cd $(release_root)/$(fi_release_directory); tar xf -)
 	(cd $(release_root); \
 	 tar cf - $(fi_release_directory)| gzip -9 > $(fi_release_gztar))
-	cvs tag `echo fi_$(version) | sed s/\\\\./_/g'`
+	cvs tag `echo fi_`cat version` | sed s/\\\\./_/g'`
 
 clman_version = 4.1-v2
 
