@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.74 1990/11/29 14:12:31 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.75 1990/12/04 23:11:31 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -568,25 +568,18 @@ are read from the minibuffer."
 (defun fi::make-tcp-connection (buffer-number buffer-name mode image-prompt
 				    &optional given-host
 					      given-service
-					      password)
-  (if (and fi:unix-domain
-	   (consp fi:unix-domain-socket)
-	   (eq 'lambda (car fi:unix-domain-socket)))
-      (setq fi:unix-domain-socket (funcall fi:unix-domain-socket)))
-  
+					      given-password)
+  (if (not fi::freshest-common-sublisp-name)
+      (error "A Common Lisp subprocess has not yet been started."))
   (let* ((buffer (fi::make-process-buffer buffer-name buffer-number))
 	 (default-dir default-directory)
 	 (buffer-name (buffer-name buffer))
-	 (host (if given-host
-		   (if fi:unix-domain
-		       (expand-file-name given-host)
-		     given-host)
-		 (if fi:unix-domain
-		     (expand-file-name fi:unix-domain-socket)
-		   (or fi:inet-host-name
-		       (error "no default host--backdoor not started")))))
+	 (host (or given-host
+		   (fi::get-buffer-host fi::freshest-common-sublisp-name)))
 	 (service (or given-service
-		      (error "not implemented yet")))
+		      (fi::get-buffer-port fi::freshest-common-sublisp-name)))
+	 (password (or given-password
+		       (fi::get-buffer-password fi::freshest-common-sublisp-name)))
 	 proc status)
     
     (funcall fi:display-buffer-function buffer)
@@ -646,13 +639,15 @@ are read from the minibuffer."
 (defun fi::start-tcp-lisp-interface (process)
   (send-string
    process
-   (if fi:unix-domain
-       "(progn(princ \";Starting socket daemon
-   \")(require :ipc)(require :emacs)(set (find-symbol (symbol-name :*unix-domain*) :ipc) t)
-   (funcall (find-symbol (symbol-name :start-lisp-listener-daemon) :ipc))(values))\n"
-     "(progn(princ \";Starting socket interface
-   \")(require :ipc)(require :emacs)
-   (funcall (find-symbol (symbol-name :start-lisp-listener-daemon) :ipc))(values))\n")))
+   (format "(progn
+              (princ \";Starting socket daemon\n\")
+              (force-output)
+              (require :ipc)
+              (require :emacs)
+              (set (find-symbol (symbol-name :*unix-domain*) :ipc) %s)
+              (funcall (find-symbol (symbol-name :start-lisp-listener-daemon) :ipc))
+              (values))\n"
+	   fi:unix-domain)))
 
 (defun fi::make-subprocess-variables ()
   (setq fi::input-ring-max fi:default-input-ring-max)
@@ -789,13 +784,22 @@ This function implements continuous output to visible buffers."
 		   (substring string (match-beginning 1) (match-end 1))
 		   (substring string (match-beginning 3) (match-end 3))))
 	     (command (substring string (match-beginning 2) (match-end 2)))
-	     (xx nil))
+	     (xx nil)
+	     (host nil))
 	(setq fi::remote-port
 	  (car (setq xx (read-from-string command (cdr xx)))))
 	(setq fi::remote-password
 	  (car (setq xx (read-from-string command (cdr xx)))))
 	(setq fi::lisp-case-mode
 	  (car (setq xx (read-from-string command (cdr xx)))))
+	;; the following "argument" is optional in that a previous version
+	;; of the ipc.cl didn't provide it
+	(if (setq host
+	      (condition-case ()
+		  (car (setq xx (read-from-string command (cdr xx))))
+		(error nil)))
+	    (setq fi:unix-domain-socket
+	      (setq fi::remote-host host)))
 	res)
     string))
 
