@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.29 1988/05/19 16:24:03 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.30 1988/05/19 23:48:34 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -281,3 +281,16 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 	   (format "(let ((*record-source-files* nil)) (load \"%s\"))"
 		   fi::emacs-to-lisp-transaction-file))))
     (fi::send-string-split process load-string nl-to-cr)))
+
+(defun fi:remove-all-temporary-lisp-transaction-files ()
+  "This function will clean up all the files created in /tmp for Emacs/Lisp
+communication.  The files are named /tmp/<USER-LOGIN-NAME>,<BUFFER-NAME>."
+  (let ((buffers (buffer-list))
+	  file)
+      (while buffers
+	(setq file (fi::symbol-value-in-buffer
+		    'fi::remove-file-on-kill-emacs (car buffers)))
+	(if (and file (file-exists-p file)) (delete-file file))
+	(setq buffers (cdr buffers)))))
+
+(make-variable-buffer-local 'fi::remove-file-on-kill-emacs)
