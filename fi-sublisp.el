@@ -45,7 +45,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.39 1990/09/05 22:09:36 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.40 1990/09/06 23:10:07 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -267,35 +267,25 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
     (if (null fi::emacs-to-lisp-transaction-file)
 	(let ()
 	  (setq fi::emacs-to-lisp-transaction-file
-	    (make-temp-name
-	     (format "%s/%s" fi:emacs-to-lisp-transaction-directory
-		     (if buffer-file-name
-			 ;; take only the first 9 characters because we
-			 ;; don't want to generate a filename with more
-			 ;; than 14 characters in it...
-			 (let ((s (file-name-nondirectory buffer-file-name)))
-			   (if (> (length s) 8)
-			       (substring s 0 8)
-			     s))
-		       "noname"))))
+	    (format "%s/%s.cl"
+		    fi:emacs-to-lisp-transaction-directory
+		    (make-temp-name "EtoL")))
 	  (setq fi::emacs-to-lisp-package
 	    (if fi:package
 		(format "(in-package :%s)\n" fi:package)
 	      nil))
 	  (setq fi::emacs-to-lisp-transaction-buf
-	    (let ((name (file-name-nondirectory
-			 fi::emacs-to-lisp-transaction-file)))
-	      (or (get-buffer name)
-		  (create-file-buffer name))))
+	    (get-buffer-create
+	     (format " %s" (file-name-nondirectory buffer-file-name))))
 	  (let ((file fi::emacs-to-lisp-transaction-file))
 	    (save-window-excursion
-	      (pop-to-buffer fi::emacs-to-lisp-transaction-buf)
+	      (set-buffer fi::emacs-to-lisp-transaction-buf)
 	      (set 'fi::remove-file-on-kill-emacs file)
 	      (set 'fi::remove-file-on-kill-emacs file)))))
     (setq pkg fi::emacs-to-lisp-package)
     (save-window-excursion
       (let ((file fi::emacs-to-lisp-transaction-file))
-	(pop-to-buffer fi::emacs-to-lisp-transaction-buf)
+	(set-buffer fi::emacs-to-lisp-transaction-buf)
 	(erase-buffer)
 	(if (and pkg (not fi:echo-evals-from-buffer-in-listener-p))
 	    (insert pkg))
