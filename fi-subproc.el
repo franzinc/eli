@@ -19,7 +19,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.134 1991/11/27 17:34:07 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.135 1992/01/12 11:48:26 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -93,7 +93,8 @@ If nil, no automatic package tracking will be done.")
 
 (defvar fi:pop-to-sublisp-buffer-after-lisp-eval t
   "*If non-nil, then go to the Lisp subprocess buffer after sending
-expressions to Lisp (via fi:lisp-eval-* function).")
+expressions to Lisp (via the functions which eval or compile the region, a
+form or the entire buffer).")
 
 (defvar fi:package nil
   "A buffer-local variable whose value should either be nil or a string
@@ -116,7 +117,8 @@ accessible on both machine with the same pathname (via the wonders of NFS).")
 
 (defvar fi:echo-evals-from-buffer-in-listener-p nil
   "*If non-nil, forms evalutated directly in fi:common-lisp-mode by the
-fi:lisp-eval-* functions will be echoed by Common Lisp.")
+functions which compile or eval the region, a form or the entire buffer
+will be echoed by Common Lisp.")
 
 (defvar fi:start-lisp-interface-arguments
     (function
