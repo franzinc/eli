@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.89 1991/03/07 16:27:35 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.90 1991/03/07 22:56:28 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -663,7 +663,12 @@ This function implements continuous output to visible buffers."
   (let ((inhibit-quit t))
     (save-excursion
       (set-buffer (process-buffer process))
-      (if (and (boundp 'fi::remote-host) fi::remote-host)
+      (if (and (boundp 'fi::remote-host)
+	       fi::remote-host
+	       (not (or (and fi:use-lep
+			     (lep::lep-open-connection-p))
+			(and (not fi:use-lep)
+			     (fi:backdoor-is-running-p)))))
 	  (setq output (fi::subprocess-control-a-frammis output))))
     (if cruft
 	(setq output (fi::substitute-chars-in-string '((?\r)) output)))
