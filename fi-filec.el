@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-filec.el,v 1.15 1992/07/22 11:34:40 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-filec.el,v 1.16 1992/08/04 15:50:24 layer Exp $
 
 ;; Command and file name completion
 
@@ -58,16 +58,18 @@ completed file name."
 	 (shell-expand-dir nil)
 	 (shell-expand-file nil)
 	 (shell-expand-completion nil))
+
     ;; replace abbrev, if different than shell-expand-string
     (if (not (string= shell-expand-string shell-expand-abbrev-string))
 	(progn
-	  (search-backward shell-expand-string)
-	  (replace-match shell-expand-abbrev-string t t)
-	  (setq shell-expand-string shell-expand-abbrev-string)))
+	  (when (search-backward shell-expand-string nil t)
+	    (replace-match shell-expand-abbrev-string t t)
+	    (setq shell-expand-string shell-expand-abbrev-string))))
     
     ;; directory part of name
     (setq shell-expand-dir
       (or (file-name-directory shell-expand-string) default-directory))
+
     ;; file part of name
     (setq shell-expand-file
       (file-name-nondirectory shell-expand-string))
@@ -75,6 +77,7 @@ completed file name."
     ;; do the expansion
     (setq shell-expand-completion
       (file-name-completion shell-expand-file shell-expand-dir))
+
     ;; display the results
     (if (eq shell-expand-completion t) (message "Sole completion")
       (if (eq shell-expand-completion nil) (message "No match")
@@ -90,7 +93,7 @@ completed file name."
 			  shell-expand-completion shell-expand-dir)
 			'string-lessp)))
 	      (message ""))
- 	  ;; put in the expansion
+	  ;; put in the expansion
 	  (search-backward shell-expand-file)
 	  (replace-match shell-expand-completion t t))))))
 
