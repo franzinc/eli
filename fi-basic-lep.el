@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-basic-lep.el,v 1.47.6.3 2001/06/20 08:06:13 layer Exp $
+;; $Id: fi-basic-lep.el,v 1.47.6.3.2.1 2001/11/12 22:09:23 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -318,7 +318,7 @@ versions of the emacs-lisp interface.
      (delq session (fi::connection-sessions connection)))))
 
 (defun fi::handle-sessionless-reply (form)
-  "A session less reply is either (:error message) or (nil fn . args)"
+  ;; A session-less reply is either (:error message) or (:request fn . args)
   (cond ((eq (car form) ':error)
 	 (error (second form)))
 	((eq (car form) ':request)
@@ -513,14 +513,16 @@ versions of the emacs-lisp interface.
   (if (stringp s) (intern s) s))
 
 (defvar connection) ;; ugly, but necessary
-(defvar process) ;; this, too
+(defvar process) ;; this, too...  crikey, this is grossssss!!!!!
 
 (defun lep::make-session-for-lisp (session-id replyp oncep function &rest args)
   (let ((session (fi::make-session session-id nil))
-	(done nil))
+	(done nil)
+	(dead (or (eq 'closed (process-status process))
+		  (null (process-buffer process)))))
     (fi::add-session connection session)
     (unwind-protect
-	(progn
+	(when (not dead)
 	  (condition-case error
 	      (let* ((result (apply (fi::intern-it function) args)))
 		(when replyp
@@ -541,20 +543,23 @@ versions of the emacs-lisp interface.
 
 		   (process-send-string process "\n"))
 	       (fi::show-error-text
-		"Error %s in %s with args %s"
+		"Error %s in %s\nwith args: %s\nstack dump:\n%s"
 		(fi::prin1-to-string
 		 (if (and (consp error) (cdr error))
 		     (cdr error)
 		   error))
 		function
-		args))))
+		args
+		(when (fboundp 'backtrace)
+		  (with-output-to-string (backtrace)))))))
 	  (setq done t))
-      (unless done
+      (when (and (not dead) (not done))
 	(process-send-string process
 		     (fi::prin1-to-string (list (fi::session-id session)
 						':error
 						':aborted))))
-      (if oncep (lep::kill-session session)))))
+      (when (or dead oncep)
+	(lep::kill-session session)))))
 
 (defun fi:send-reply (session string)
   (let* ((connection (fi::session-connection session))

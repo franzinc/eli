@@ -9,6 +9,12 @@ For more detailed instructions on filling in the ChangeLog form, see
 ******************************************************************************
 post-release patch
 
+2001-11-12  Kevin Layer  <layer@crikey>
+
+	* fi-basic-lep.el: bug10572: killing buffer can sometimes lead to
+	an error in emacs.  It's a timing thing that only happens on some
+	emacs and operating system combos.
+
 2001-11-01  Kevin Layer  <layer@crikey>
 
     from mikel for spr24742
