@@ -19,7 +19,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.142 1992/07/20 10:08:54 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.143 1992/12/14 17:32:15 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -172,9 +172,9 @@ result of which should yield a string which is the image name.")
 which must be a list of strings.  Each element of the list is one command
 line argument.")
 
-(defvar fi:common-lisp-host "localhost"
-  "*The default host on which fi:common-lisp starts the Common Lisp
-subprocess.  \"localhost\" means use the host on which emacs is running.")
+(defvar fi:common-lisp-host nil
+  "*The host on which fi:common-lisp starts the Common Lisp
+subprocess.  The default is the host on which emacs is running.")
 
 (defvar fi:common-lisp-prompt-pattern
     "^\\(\\[[0-9]+i?c?\\] \\|\\[step\\] \\)?\\(<[-A-Za-z]* ?[0-9]*?>\\|[-A-Za-z0-9]+([0-9]+):\\) "
@@ -199,8 +199,9 @@ name or path.")
 (defvar fi:franz-lisp-image-arguments nil
   "*Default Franz Lisp image arguments when invoked from `fi:franz-lisp'.")
 
-(defvar fi:franz-lisp-host "localhost"
-  "*")
+(defvar fi:franz-lisp-host nil
+  "*The host on which fi:franz-lisp starts the Franz Lisp
+subprocess.  The default is the host on which emacs is running.")
 
 (defvar fi:franz-lisp-process-name nil)
 
@@ -275,7 +276,7 @@ buffer local.")
 ;;; User visible functions
 ;;;;
 
-(defvar fi::rsh-command "rsh")
+(defvar fi::rsh-command nil)
 (defvar fi::rsh-args nil)
 
 (defun fi::start-backdoor-interface (proc)
@@ -318,7 +319,14 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 					   default-directory)
 				       fi:common-lisp-image-name
 				       fi:common-lisp-image-arguments
-				       fi:common-lisp-host))
+				       (or fi:common-lisp-host (system-name))))
+  (unless fi::rsh-command
+    (setq fi::rsh-command
+      (cond ((fi::command-exists-p "remsh") "remsh")
+	    ((fi::command-exists-p "rsh") "rsh")
+	    (t
+	     (error "can't find the rsh command in your path")))))
+
   (when (and fi::shell-buffer-for-common-lisp-interaction-host-name
 	     (or (y-or-n-p "A make-dist might be in progress.  Continue? ")
 		 (error "fi:common-lisp aborted.")))
@@ -339,7 +347,8 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		   host
 		 (or host fi:common-lisp-host)))
 	 
-	 (local (or (string= "localhost" host)
+	 (local (or (string= "localhost" host) ; the convention on many
+					       ; machines, except HP (argh!!)
 		    (string= host (system-name))))
 	 (real-args
 	  (if (and fi:start-lisp-interface-arguments
@@ -397,7 +406,10 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		   (if local
 		       (save-excursion
 			 (set-buffer (current-buffer))
-			 (setq fi::lisp-host "localhost"))
+			 ;; can't use "localhost" below because HP can't
+			 ;; write an operating system.
+			 (setq fi::lisp-host host) ; used to use "localhost"
+			 )
 		     (save-excursion
 		       (set-buffer (current-buffer))
 		       (setq fi::lisp-is-remote t)
@@ -489,7 +501,13 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 					   default-directory)
 				       fi:franz-lisp-image-name
 				       fi:franz-lisp-image-arguments
-				       fi:franz-lisp-host))
+				       (or fi:franz-lisp-host (system-name))))
+  (unless fi::rsh-command
+    (setq fi::rsh-command
+      (cond ((fi::command-exists-p "remsh") "remsh")
+	    ((fi::command-exists-p "rsh") "rsh")
+	    (t
+	     (error "can't find the rsh command in your path")))))
   (let* ((buffer-name (if (interactive-p)
 			  buffer-name
 			(or buffer-name fi:franz-lisp-buffer-name)))
@@ -504,7 +522,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		       (or image-args fi:franz-lisp-image-arguments)))
 	 (host (if (interactive-p)
 		   host
-		 (or host fi:franz-lisp-host)) )
+		 (or host fi:franz-lisp-host)))
 	 (local (or (string= "localhost" host)
 		    (string= host (system-name))))
 	 (proc (fi::make-subprocess
@@ -553,8 +571,10 @@ the first \"free\" buffer name and start a subprocess in that buffer."
     "sh"
     "-c"
     (format "%s%s if test -d %s; then cd %s; fi; %s %s%s"
-	    (if (string= "rsh" (file-name-nondirectory fi::rsh-command))
-		"'" "")
+	    (if (fi:member-equal (file-name-nondirectory fi::rsh-command)
+				 '("remsh" "rsh"))
+		"'"
+	      "")
 	    (fi::env-vars)
 	    directory
 	    directory
@@ -566,7 +586,8 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 			    "")))
 		       image-args
 		       " ")
-	    (if (string= "rsh" (file-name-nondirectory fi::rsh-command))
+	    (if (fi:member-equal (file-name-nondirectory fi::rsh-command)
+				 '("remsh" "rsh"))
 		"'" "")))))
 
 (defun fi::get-lisp-interactive-arguments (first-time buffer-name buffer
