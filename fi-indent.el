@@ -19,7 +19,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.35 1991/10/21 20:04:06 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.36 1991/11/21 13:16:33 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If non-nil, semicolons that begin comments are indented as they are
@@ -1561,18 +1561,36 @@ if matched at the beginning of a line, means don't indent that line."
   (put 'loop tag
        '((0 t (fi:lisp-indent-keyword-list
 	       nil			; quotedp
-	       t			; keyword-arg-pairs-p
+	       nil			; keyword-arg-pairs-p
 	       t			; keyword-count
 	       t			; special-keyword-count
 	       0			; special-count
 	       nil			; ignore-after-count
 	       ;; keywords recognized:
-	       "named" "initially" "finally" "nodeclare" "do" "doing"
-	       "return" "collect" "collecting" "append" "appending" "nconc"
-	       "nconcing" "count" "counting" "sum" "summing" "maximize"
-	       "minimize" "always" "never" "thereis" "while" "until" "when"
-	       "if" "unless" "with" "for" "as" "repeat" "=" "first" "in"
-	       "on" "from" "downfrom" "upfrom" "below" "to" "being"))))
+;;;; ANSI loop
+	       "for" "as" "and"
+	       "from" "downfrom" "upfrom" "to" "downto" "upto" "below"
+	       "above" "by" "in" "on" "=" "then" "across" "being" "each"
+	       "the" "hash-key" "hash-keys" "hash-value" "hash-values" "of"
+	       "symbol" "present-symbol" "external-symbol"
+	       "symbols" "present-symbols" "external-symbols"
+	       "repeat" "while" "until" "always" "never" "thereis"
+	       "collect" "collecting" "nconc" "nconcing"
+	       "append" "appending" "sum" "summing"
+	       "maximizing" "minimizing"
+	       "maximize" "minimize"
+	       "count" "counting"
+	       "if" "unless" "when" "else" "end"
+	       "do" "doing" "return"
+	       "initially" "finally"
+	       "with" "into" "it" "of-type" "using"
+
+;;;; extended loop
+	       "named"
+;;;; old loop
+	       "first"
+;;;; ?
+	       "nodeclare"))))
   (put 'macrolet tag '(like flet))
   (put 'make-instance tag 1)
   (put 'named-lambda tag '(like defun))
