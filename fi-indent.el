@@ -19,7 +19,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.37 1992/04/28 14:01:49 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.38 1992/04/28 23:20:05 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If non-nil, semicolons that begin comments are indented as they are
@@ -1659,7 +1659,7 @@ if matched at the beginning of a line, means don't indent that line."
   (put 'with-resource tag 1)
   (put 'with-timeout tag 1)
   (put 'without-interrupts tag 1)
-  (put 'without-scheduling tag 1)
+  (put 'without-scheduling tag 0)
   )
 
 (let ((tag 'fi:franz-lisp-indent-hook))
