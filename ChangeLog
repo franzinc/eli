@@ -7,6 +7,13 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.2.2
+
+2001-06-13  Kevin Layer  <layer@crikey>
+
+	* fi-lep.el: added fi:goto-char
+
+*******************************************************************************
 2.2.1
 
 2001-06-05  Kevin Layer  <layer@crikey>
