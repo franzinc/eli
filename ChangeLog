@@ -1,3 +1,7 @@
+Tue Aug  2 09:43:26 1994  Steve Haflich  (smh@vapor)
+
+	* fi-indent.cl: Fix indentation glitch in certain special forms.
+
 Mon Aug  1 14:26:51 1994  Steve Haflich  (smh@vapor)
 
 	* clman.c: Use netinet/in.h macros to hack binary data on

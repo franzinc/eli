@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.49 1993/12/04 00:39:17 duane Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.50 1994/08/02 16:45:11 smh Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If non-nil, semicolons that begin comments are indented as they are
@@ -535,65 +535,66 @@ of the start of the containing expression."
 		 (not (looking-at "\\s()"))
 		 ;; only return if there is an indent method for the thing
 		 ;; following the open paren.
-		 (let ((function (buffer-substring
-				  (progn (forward-char 1) (point))
-				  (progn (forward-sexp 1) (point)))))
-		   (fi::lisp-get-method function)))
+		 (save-excursion	;added 2aug94 - smh
+		   (let ((function (buffer-substring
+				    (progn (forward-char 1) (point))
+				    (progn (forward-sexp 1) (point)))))
+		     (fi::lisp-get-method function))))
 	(throw 'fi:lisp-indent-hook-escape nil))
       (re-search-forward "\\sw\\|\\s_" nil t)
-      (if (/= (point) (car (cdr state)))
-	  (let ((function (buffer-substring (progn (forward-char -1) (point))
-					    (progn (forward-sexp 1) (point))))
-		(count (fi::calc-count (car (cdr state)) indent-point)))
-	    (setq calculated-indent
-	      (fi::lisp-invoke-method
-	       (nth 1 state)
-	       (fi::lisp-get-method function)
-	       0 count state indent-point))))
-      (if (and (null calculated-indent)
-	       fi:lisp-maximum-indent-struct-depth)
-	  (let ((depth 0)
-	        (maximum-depth
-		 (if (integerp fi:lisp-maximum-indent-struct-depth)
-		     fi:lisp-maximum-indent-struct-depth
-		   99999))
-		last-start function sexp-beginning)
-	    (goto-char (car (cdr state)))
-	    (while (and (null calculated-indent)
-			(< depth maximum-depth)
-			(condition-case nil
-			    (progn
-			      (setq last-start (point))
-			      (backward-up-list 1)
-			      t)
-			  (error nil)))
-	      (save-excursion
-		(setq depth (1+ depth))
-		(setq sexp-beginning (point))
-		(forward-char 1)
-		(re-search-forward "\\sw\\|\\s_")
-		(if (< (point) last-start)
-		    (let ((count 1))
-		      (setq function (buffer-substring
-				      (progn (forward-char -1) (point))
-				      (progn (forward-sexp 1) (point))))
-		      (fi::parse-partial-sexp (point) indent-point 1 t nil
-					      fi::lisp-indent-state-temp)
-		      (while (and (condition-case nil
-				      (progn
-					(forward-sexp 1)
-					(fi::parse-partial-sexp
-					 (point) indent-point 1 t nil
-					 fi::lisp-indent-state-temp))
-				    (error nil))
-				  (< (point) indent-point))
-			(setq count (1+ count)))
-		      (setq calculated-indent
-			(fi::lisp-invoke-method
-			 sexp-beginning
-			 (fi::lisp-get-method function)
-			 depth count state
-			 indent-point))))))))
+      (when (/= (point) (car (cdr state)))
+	(let ((function (buffer-substring (progn (forward-char -1) (point))
+					  (progn (forward-sexp 1) (point))))
+	      (count (fi::calc-count (car (cdr state)) indent-point)))
+	  (setq calculated-indent
+	    (fi::lisp-invoke-method
+	     (nth 1 state)
+	     (fi::lisp-get-method function)
+	     0 count state indent-point))))
+      (when (and (null calculated-indent)
+		 fi:lisp-maximum-indent-struct-depth)
+	(let ((depth 0)
+	      (maximum-depth
+	       (if (integerp fi:lisp-maximum-indent-struct-depth)
+		   fi:lisp-maximum-indent-struct-depth
+		 99999))
+	      last-start function sexp-beginning)
+	  (goto-char (car (cdr state)))
+	  (while (and (null calculated-indent)
+		      (< depth maximum-depth)
+		      (condition-case nil
+			  (progn
+			    (setq last-start (point))
+			    (backward-up-list 1)
+			    t)
+			(error nil)))
+	    (save-excursion
+	      (setq depth (1+ depth))
+	      (setq sexp-beginning (point))
+	      (forward-char 1)
+	      (re-search-forward "\\sw\\|\\s_")
+	      (if (< (point) last-start)
+		  (let ((count 1))
+		    (setq function (buffer-substring
+				    (progn (forward-char -1) (point))
+				    (progn (forward-sexp 1) (point))))
+		    (fi::parse-partial-sexp (point) indent-point 1 t nil
+					    fi::lisp-indent-state-temp)
+		    (while (and (condition-case nil
+				    (progn
+				      (forward-sexp 1)
+				      (fi::parse-partial-sexp
+				       (point) indent-point 1 t nil
+				       fi::lisp-indent-state-temp))
+				  (error nil))
+				(< (point) indent-point))
+		      (setq count (1+ count)))
+		    (setq calculated-indent
+		      (fi::lisp-invoke-method
+		       sexp-beginning
+		       (fi::lisp-get-method function)
+		       depth count state
+		       indent-point))))))))
       calculated-indent)))
 
 (defvar fi::lisp-count-max 10
