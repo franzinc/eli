@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.16 1988/11/21 13:39:02 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.17 1988/11/21 17:18:30 layer Exp $
 
 ;;;;
 ;;; Key defs
@@ -448,22 +448,39 @@ function defintions are considered.  Otherwise all symbols are considered."
 	 (completions
 	  (fi:eval-in-lisp "(excl::list-all-completions \"%s\" %s %s)"
 			   pattern package functions-only))
-	 (array (if (consp completions)
-		    (apply 'list (mapcar '(lambda (x) (list (symbol-name x)))
-					 completions))))
-	 (completion (if array (try-completion pattern array))))
+	 (alist
+	  (if (consp completions)
+	      (apply 'list
+		     (mapcar
+		      (function
+		       (lambda (x)
+			(let* ((whole-name (symbol-name x))
+			       (name (progn
+				       (string-match "^\\(.*::?\\)?\\(.*\\)$"
+						     whole-name)
+				       (substring whole-name
+						  (match-beginning 2)
+						  (match-end 2)))))
+			  (cons name whole-name))))
+		      completions))))
+	 (completion (if alist (try-completion pattern alist))))
     (cond ((eq completion t))
 	  ((null completion)
 	   (message "Can't find completion for \"%s\"" pattern)
 	   (ding))
 	  ((not (string= pattern completion))
-	   (delete-region beg end)
-	   (insert completion))
+	   (let ((new (cdr (assoc completion alist))))
+	     (if new
+		 (progn
+		   (delete-region real-beg end)
+		   (insert new))
+	       (delete-region beg end)
+	       (insert completion))))
 	  (t
 	   (message "Making completion list...")
 	   (with-output-to-temp-buffer "*Help*"
 	     (display-completion-list
-	      (all-completions pattern array)))
+	      (all-completions pattern alist)))
 	   (message "Making completion list...done")))))
 
 (defun fi:tcp-lisp-send-eof ()
