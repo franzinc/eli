@@ -20,7 +20,7 @@
 ;; Description:
 ;;  
 
-;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.10 1987/12/09 12:03:52 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.11 1988/02/18 08:24:48 layer Exp $
 ;; $Locker: layer $
 ;;
 
@@ -56,7 +56,7 @@
     (defforeign-list '((getuid)
 		       (socket)
 		       (bind)
-		       (listen)
+		       (unix-listen :entry-point "_listen")
 		       (accept)
 		       (getsockname)
 		       (select)
@@ -110,7 +110,7 @@ files are closed."
     (defforeign-list '((getuid)
 		       (socket)
 		       (bind)
-		       (listen)
+		       (unix-listen :entry-point "_listen")
 		       (accept)
 		       (getsockname)
 		       (select)
@@ -167,7 +167,7 @@ files are closed."
 	    (perror "bind")
 	    (return-from lisp-listener-socket-daemon nil))
 
-	  (unless (zerop (listen listen-socket-fd 5))
+	  (unless (zerop (unix-listen listen-socket-fd 5))
 	    (perror "listen")
 	    (return-from lisp-listener-socket-daemon nil))
 	  (loop
