@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.107 1991/05/28 16:18:09 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.108 1991/06/19 22:16:50 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -113,20 +113,6 @@ into the correct Lisp package.")
   "*The directory in which files for Emacs/Lisp communication are stored.
 When using Lisp and Emacs on different machines, this directory should be
 accessible on both machine with the same pathname (via the wonders of NFS).")
-
-(defvar fi:source-info-not-found-hook 'fi:find-tag-somewhere
-  "*The value of this variable is funcalled when source information is not
-present in Lisp for a symbol.  The function is given two argument, the name
-for which source is desired (a string) and a flag indicating to use the
-other window.  The null string means use the word at the point as the
-search word.  This allows the GNU Emacs tags facility to be used when the
-information is not present in Lisp.")
-
-(defun fi:find-tag-somewhere (string &optional other-window-p)
-  "Used by fi:source-info-not-found-hook to find source via Emacs TAGS."
-  (if other-window-p
-      (find-tag-other-window string nil)
-    (find-tag string nil)))
 
 (defvar fi:echo-evals-from-buffer-in-listener-p nil
   "*If non-nil, forms evalutated directly in fi:common-lisp-mode by the
@@ -321,13 +307,17 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 				       'fi:common-lisp-image-arguments
 				       'fi:common-lisp-host))
   (let* ((buffer-name (or buffer-name fi:common-lisp-buffer-name))
-	 (directory (or directory fi:common-lisp-directory))
+	 (directory (expand-file-name (or directory fi:common-lisp-directory)))
 	 (image-name (or image-name fi:common-lisp-image-name))
 	 (image-args (or image-args fi:common-lisp-image-arguments))
 	 (host (or host fi:common-lisp-host))
 	 (local (or (string= "localhost" host)
 		    (string= host (system-name))))
+	 (startup-message
+	  (format "Starting image %s in %s on %s...\n"
+		  image-name directory host))
 	 (proc (fi::make-subprocess
+		startup-message
 		"common-lisp"
 		buffer-name
 		directory
@@ -423,6 +413,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	 (local (or (string= "localhost" host)
 		    (string= host (system-name))))
 	 (proc (fi::make-subprocess
+		nil
 		"franz-lisp"
 		buffer-name
 		directory
@@ -568,18 +559,19 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	    output))))
   (fi::subprocess-filter process output stay cruft))
 
-(defun fi::make-subprocess (process-name buffer-name directory
-			    mode-function image-prompt image-file
+(defun fi::make-subprocess (startup-message process-name buffer-name
+			    directory mode-function image-prompt image-file
 			    image-args
 			    &optional filter
 				      initial-func
 				      mode-hook
 			    &rest mode-hook-arguments)
-  (let* ((buffer-name
+  (let* ((remote (and (stringp image-file) (string= "rsh" image-file)))
+	 (buffer-name
 	  (cond ((stringp buffer-name) buffer-name)
 		(t (let ((name (concat "*" process-name "*")))
 		     (if (numberp buffer-name)
-			 (fi::buffer-number-to-name name buffer-name)
+			 (fi::buffer-number-to-buffer name buffer-name)
 		       name)))))
 	 (buffer (or (get-buffer buffer-name)
 		     (get-buffer-create buffer-name)))
@@ -596,13 +588,15 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	    (if (not (stringp image-file))
 		(error "image-file not a string or cons: %s" image-file))
 	    (setq image-file (substitute-in-file-name image-file)))
-	  (if (= ?~ (aref image-file 0))
+	  (if (and (not remote) (= ?~ (aref image-file 0)))
 	      (setq image-file (expand-file-name image-file)))))
     
     (funcall fi:display-buffer-function buffer)
     
     (if runningp
 	(goto-char (point-max))
+      (goto-char (point-max))
+      (if (stringp startup-message) (insert startup-message))
       (if (and directory (file-exists-p directory))
 	  (setq default-directory directory))
       (if process (delete-process process))
@@ -655,7 +649,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
   (if (not fi::common-lisp-backdoor-main-process-name)
       (error "A Common Lisp subprocess has not yet been started."))
   (let* ((buffer-name
-	  (fi::buffer-number-to-name (concat "*" buffer-name "*")
+	  (fi::buffer-number-to-buffer (concat "*" buffer-name "*")
 				     buffer-number))
 	 (buffer (or (get-buffer buffer-name)
 		     (get-buffer-create buffer-name)))
@@ -713,6 +707,11 @@ the first \"free\" buffer name and start a subprocess in that buffer."
   ;; Sentinel and filter for network connections.  The sentinel currently
   ;; does nothing, other than prevent the status change message when the
   ;; connection is closed.
+  (set-buffer (process-buffer process))
+  (goto-char (point-max))
+  (insert
+   (format
+    "---------------------------------------------------------------------\n"))
   t)
 
 (defun fi::subprocess-filter (process output &optional stay cruft)
@@ -788,7 +787,7 @@ This function implements continuous output to visible buffers."
        (stay old-buffer)
        (t (set-buffer old-buffer))))))
 
-(defun fi::buffer-number-to-name (name number)
+(defun fi::buffer-number-to-buffer (name number)
   (let ((buffer-name
 	 (cond ((> number 1) (concat name "<" number ">"))
 	       ((< number 0)
