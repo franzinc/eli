@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 1.117.6.4 2002/02/07 16:41:34 layer Exp $
+;; $Id: fi-keys.el,v 1.117.6.4.8.1 2002/06/03 15:54:08 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -807,6 +807,8 @@ form.  If there are too many parens delete them.  The form is also indented."
   (interactive)
   (save-restriction
     (narrow-to-region (point) (save-excursion (fi:beginning-of-defun) (point)))
+    (when (nth 3 (parse-partial-sexp (point-min) (point)))
+      (error "Inside a string!"))
     (let (p)
       (while (progn (setq p (point))
 		    (fi:beginning-of-defun)

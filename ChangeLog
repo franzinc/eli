@@ -7,6 +7,13 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 ******************************************************************************
+2.3.5
+
+2002-04-11  Kevin Layer  <layer@crikey>
+
+	* fi-keys.el (fi:super-paren): bug12029
+
+******************************************************************************
 2.3.4
 
 join from acl61 to acl6 branch on 02Mar2002
