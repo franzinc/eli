@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.31 1991/12/19 19:01:33 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.32 1992/01/22 16:39:28 layer Exp $
 
 ;;; Misc utilities
 
@@ -24,17 +24,30 @@
 	(setq i (+ i d))))
     n))
 
-(defconst space (string-to-char " "))
+(defconst fi::space (string-to-char " "))
 
 (defun fi::listify-string (string)
   "Take a string \"a b c\" and turn it into a list of \"a\" \"b\" and
 \"c\".  nil is represented by the null string."
-  (let ((res nil) n)
-    (while (setq n (fi::lisp-find-char space string t))
-      (setq res (cons (substring string (+ n 1)) res))
-      (setq string (substring string 0 n)))
-    (if (/= 0 (length string))
-	(setq res (cons string res)))))
+  (let* ((res nil)
+	 (i 0)
+	 (len (length string))
+	 (len-1 (- len 1))
+	 s
+	 c)
+    (while (< i len)
+      (setq x i)
+      (setq s "")
+      (while (and (< x len) (/= fi::space (aref string x)))
+	(if (and (= ?\\ (setq c (aref string x)))
+		 (< x len-1))
+	    (progn (setq x (+ x 1))
+		   (setq c (aref string x))))
+	(setq s (concat s (char-to-string c)))
+	(setq x (+ x 1)))
+      (setq res (cons s res))
+      (setq i (+ x 1)))
+    (nreverse res)))
 
 (defun fi::symbol-value-in-buffer (symbol buffer)
   "Return the value of the local binding of SYMBOL in BUFFER, or
