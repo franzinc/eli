@@ -1,4 +1,4 @@
-;; $Id: fi-compile.el,v 2.6.20.1 1998/05/08 17:13:52 layer Exp $
+;; $Id: fi-compile.el,v 2.6.20.2 1998/06/24 17:24:11 layer Exp $
 
 (require 'cl)
 
@@ -17,7 +17,7 @@
 (load "fi-leep0.el")
 
 (setq fi-files
-  '("Doc" "fi-vers" "fi-basic-lep" "fi-changes" "fi-composer" "fi-db"
+  '("Doc" "Doc0" "fi-vers" "fi-basic-lep" "fi-changes" "fi-composer" "fi-db"
     "fi-dmode" "fi-emacs18" "fi-emacs19" "fi-filec" "fi-gnu"
     "fi-indent" "fi-keys" "fi-leep0"
     "fi-lep" "fi-lze" "fi-modes" "fi-ring" "fi-rlogin" "fi-shell"
@@ -39,3 +39,10 @@
       (unless (file-newer-than-file-p elc el)
 	(message "--------------------------------------------------------")
 	(byte-compile-file el)))))
+
+(message "--------------------------------------------------------")
+(message "doing readme.htm...")
+
+(load "Doc0.elc")
+
+(generate-eli-documentation "eli.htm" "foo.htm")

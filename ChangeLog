@@ -7,6 +7,22 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.6
+
+Wed Jun 24 10:22:28 1998  Kevin Layer  <layer@ultra>
+
+    removed files:
+	* UserGuide.n
+	* readme.htm
+    added files:
+	* Doc0.el
+	* eli.htm
+    changed files:
+	* Doc.el: move engine to Doc0.el
+ 	* Makefile: remove old doc stuff
+	* fi-compile.el: make readme.htm here
+
+*******************************************************************************
 2.0.21.5
 
 Tue Jun 23 15:48:21 1998  Kevin Layer  <layer@ultra>

@@ -1,3 +1,3 @@
-# $Id: version.mak,v 2.17.6.9 1998/06/23 22:50:47 layer Exp $
+# $Id: version.mak,v 2.17.6.10 1998/06/24 17:24:11 layer Exp $
 
-VERSION = 2.0.21.5
+VERSION = 2.0.21.6
