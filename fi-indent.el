@@ -19,7 +19,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.38 1992/04/28 23:20:05 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.39 1992/07/17 15:28:24 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If non-nil, semicolons that begin comments are indented as they are
@@ -252,7 +252,7 @@ status of that parse."
   (save-excursion
     (let ((new-point (point))
 	  (old-point (if at at (point)))
-	  (parse-state (if last-state last-state '(0 0 0 nil nil nil 0))))
+	  (parse-state (if last-state last-state (list 0 0 0 nil nil nil 0))))
       (if (and last-state (< old-point (point)))
 	  (setq parse-state
 	    (fi::parse-partial-sexp
@@ -1658,7 +1658,7 @@ if matched at the beginning of a line, means don't indent that line."
   (put 'with-profiling tag '((1 1 quote) (0 t 1)))
   (put 'with-resource tag 1)
   (put 'with-timeout tag 1)
-  (put 'without-interrupts tag 1)
+  (put 'without-interrupts tag 0)
   (put 'without-scheduling tag 0)
   )
 
