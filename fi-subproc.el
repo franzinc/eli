@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.182 1997/01/07 01:04:15 layer Exp $
+;; $Id: fi-subproc.el,v 1.183 1997/01/17 23:46:45 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -1114,6 +1114,11 @@ works--if it does not, then fi:common-lisp will fail.%s"
 (defun fi::subprocess-filter (process output &optional stay cruft)
   "Filter output from processes tied to buffers.
 This function implements continuous output to visible buffers."
+  (condition-case nil
+      (fi::subprocess-filter-1 process output stay cruft)
+    (error (set-process-filter process nil))))
+
+(defun fi::subprocess-filter-1 (process output &optional stay cruft)
   (let ((inhibit-quit t))
     (when cruft
       (setq output (fi::substitute-chars-in-string '((?\r)) output)))

@@ -11,6 +11,16 @@ Tests for new features:	<`no new features', `no tests for new features', or
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.pre-alpha.2
+
+Documentation changes:	none
+Tests for new features:	no new features
+
+Fri Jan 17 15:45:41 1997  Kevin Layer  <layer@ultra>
+
+	* fi-subproc.el: protect against errors in subprocess filter
+
+*******************************************************************************
 2.0.21.pre-alpha.1
 
 Documentation changes:	none
