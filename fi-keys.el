@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.58 1991/06/27 15:25:49 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.59 1991/07/02 10:08:00 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -767,19 +767,18 @@ If they are not, position the point at the first syntax error found."
   (interactive)
   (let ((saved-point (point))
 	(lpar (string-to-char "("))
-	(rpar (string-to-char ")")))
+	(rpar (string-to-char ")"))
+	(comment-start-char (string-to-char comment-start)))
     (goto-char (point-min))
     (while (and (not (eobp))
-		(let ((comment-start-char (string-to-char comment-start))
-		      (done nil))
+		(let ((done nil))
 		  (while (and (not (eobp)) (not done))
 		    (skip-chars-forward "\f\n\t ")
 		    (setq char (char-after (point)))
 		    (cond ((eq ?\\ char)
 			   (forward-char 2))
 			  ((eq comment-start-char char)
-			   (forward-char 1)
-			   (skip-chars-forward "^\n"))
+			   (end-of-line))
 			  ((eq ?\" char)
 			   (forward-sexp 1))
 			  ((eq ?# char)
@@ -794,10 +793,9 @@ If they are not, position the point at the first syntax error found."
 		  t))
       (let ((char (char-after (point))))
 	(cond ((or (eq char lpar)
-		   ;; For things other than lists
 		   (eq (char-after (1- (point))) ?\n))
 	       (condition-case ()
-		   (progn (forward-sexp) nil)
+		   (forward-sexp 1)
 		 (error (error "Extra )"))))
 	      ((eq char rpar)
 	       (error "Extra ("))
