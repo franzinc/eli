@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.14 1988/11/17 12:19:22 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.15 1988/11/18 19:02:43 layer Exp $
 
 ;;;;
 ;;; Key defs
@@ -424,6 +424,11 @@ from the sexp around the point."
       (fi::eval-string-send string nil t))))
 
 (defun fi:lisp-complete-symbol ()
+  "Perform completion on the Common Lisp symbol preceding the point.  That
+symbol is compared to symbols that exist in the Common Lisp, to which there
+is a TCP/IP connection (see fi:eval-in-lisp).  If the symbol starts just
+after an open-parenthesis, then only symbols (in the Common Lisp) with
+function defintions are considered.  Otherwise all symbols are considered."
   (interactive)
   (let* ((end (point))
 	 package real-beg
