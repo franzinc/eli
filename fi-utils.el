@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 1.67.20.2 1998/12/03 19:32:54 layer Exp $
+;; $Id: fi-utils.el,v 1.67.20.3 1999/02/01 19:14:23 layer Exp $
 
 ;;; Misc utilities
 
@@ -253,7 +253,7 @@ that starts with ~."
 (defun fi::frob-case-to-lisp (arg)
   (let ((string (if (symbolp arg)
 		    (symbol-name arg)
-		  arg)))
+		  (format "%s" arg))))
     (cond ((eq ':upper fi::lisp-case-mode)
 	   (upcase string))
 	  (t string))))

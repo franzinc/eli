@@ -7,6 +7,14 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.16.8
+
+1999-02-01  Kevin Layer  <layer@ultra>
+
+	* fi-utils.el: strip off font stuff from symbols before sending to
+	lisp
+
+*******************************************************************************
 2.0.21.16.7
 
 1999-01-27  Kevin Layer  <layer@ultra>
