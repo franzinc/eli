@@ -1,5 +1,5 @@
 ;;;
-;;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.2 1988/02/20 22:55:24 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.3 1988/02/21 21:27:20 layer Exp $
 
 ;;;;
 ;;; Variables and Constants
@@ -250,6 +250,7 @@ if that value is non-nil."
   (setq major-mode 'lisp-mode)
   (setq mode-name "Lisp")
   (lisp-mode-variables t)
+  (fi:check-for-package-info)
   (run-hooks 'lisp-mode-hook))
 
 (defun franz-lisp-mode ()
@@ -270,6 +271,7 @@ if that value is non-nil."
   (setq major-mode 'franz-lisp-mode)
   (setq mode-name "Franz Lisp")
   (lisp-mode-variables t)
+  (fi:check-for-package-info)
   
   (make-local-variable 'sublisp-name)
   (setq sublisp-name freshest-franz-sublisp-name)
@@ -293,6 +295,7 @@ if that value is non-nil."
   (setq major-mode 'common-lisp-mode)
   (setq mode-name "Common Lisp")
   (lisp-mode-variables t)			
+  (fi:check-for-package-info)
   (make-local-variable 'sublisp-name)
   (setq sublisp-name freshest-common-sublisp-name)
   (run-hooks 'lisp-mode-hook 'common-lisp-mode-hook))
@@ -368,8 +371,6 @@ if that value is non-nil."
   (make-local-variable 'indent-line-function)
   (setq indent-line-function 'lisp-indent-line)
 
-  (make-local-variable 'package)
-  (setq package "user")
   (make-local-variable 'emacs-to-lisp-transaction-file)
   (make-local-variable 'emacs-to-lisp-transaction-buf)
   (make-local-variable 'emacs-to-lisp-package)
@@ -383,8 +384,67 @@ if that value is non-nil."
   (make-local-variable 'comment-indent-hook)
   (setq comment-indent-hook 'lisp-comment-indent)
   (make-local-variable 'comment-indent-hook-values)
-  (setq comment-indent-hook-values '(0 nil))
-  )
+  (setq comment-indent-hook-values '(0 nil)))
+
+(defun fi:check-for-package-info ()
+  (interactive)
+  (make-local-variable 'package)
+  (setq package nil)
+  
+  (save-excursion
+    ;; look for -*- ... package: xxx; .... -*-
+    (let (beg end mode)
+      (goto-char (point-min))
+      (skip-chars-forward " \t\n")
+      (if (and (search-forward "-*-" (save-excursion (end-of-line) (point)) t)
+	       (progn
+		 (skip-chars-forward " \t")
+		 (setq beg (point))
+		 (search-forward "-*-"
+				 (save-excursion (end-of-line) (point)) t))
+	       (progn
+		 (forward-char -3)
+		 (skip-chars-backward " \t")
+		 (setq end (point))
+		 (goto-char beg)
+		 (if (search-forward ":" end t)
+		     (progn
+		       (goto-char beg)
+		       (if (let ((case-fold-search t))
+			     (search-forward "package:" end t))
+			   (progn
+			     (skip-chars-forward " \t")
+			     (setq beg (point))
+			     (if (search-forward ";" end t)
+				 (forward-char -1)
+			       (goto-char end))
+			     (skip-chars-backward " \t")
+			     (setq package
+			       (buffer-substring beg (point)))))))
+		 package))
+	  package
+	(let ((pos (re-search-forward "^(in-package[\t ]*" nil t)))
+	  ;; find the `in-package' form, and snarf the package
+	  ;; that way
+	  (if pos
+	      (let* ((start (match-end 0))
+		     (end (progn (search-forward ")" nil t)
+				 (match-beginning 0)))
+		     (p-string (buffer-substring start end))
+		     (p (car (read-from-string p-string))))
+		(setq package
+		  (cond ((symbolp p)
+			 (if (= (elt (symbol-name p) 0) ?:)
+			     (substring (symbol-name p) 1)
+			   (symbol-name p)))
+			((and (consp p)
+			      (eq 'quote (car p))
+			      (symbolp (cadr p)))
+			 (symbol-name (cadr p)))
+			((stringp p) p)))))
+	  (if package
+	      package
+	    (setq package "user")))))))
 
 ;;;;
 ;;; Initializations
