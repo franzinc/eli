@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-emacs19.el,v 2.11 1996/01/06 19:39:37 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-emacs19.el,v 2.12 1996/05/15 23:31:27 layer Exp $
 
 
 (unless (string-match "^18." emacs-version) ;Allows compilation on 18.
@@ -260,14 +260,15 @@
 (defun fi::install-menubar (menu-bar)
   (add-menu nil (car menu-bar) (cdr menu-bar) "Help"))
 
-(push '(progn
-	(fi::install-menubar fi:allegro-file-menu)
-	(fi::install-menubar fi:allegro-edit-menu)
-	(fi::install-menubar fi:allegro-debug-menu)
-	(fi::install-menubar fi:allegro-help-menu)
-	(when fi:composer-menu
-	  (fi::install-menubar fi:composer-menu)))
-      fi::initialization-forms)
+(when fi::install-acl-menubar
+  (push '(progn
+	  (fi::install-menubar fi:allegro-file-menu)
+	  (fi::install-menubar fi:allegro-edit-menu)
+	  (fi::install-menubar fi:allegro-debug-menu)
+	  (fi::install-menubar fi:allegro-help-menu)
+	  (when fi:composer-menu
+	    (fi::install-menubar fi:composer-menu)))
+	fi::initialization-forms))
 
 (defun fi:menu-common-lisp ()
   (interactive)
@@ -586,6 +587,7 @@
 
 (add-hook 'fi:inferior-common-lisp-mode-hook 'fi::install-mode-menus)
 (add-hook 'fi:common-lisp-mode-hook 'fi::install-mode-menus)
+
 (add-hook 'fi:common-lisp-mode-hook
 	  (function
 	   (lambda ()

@@ -1,10 +1,11 @@
-;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.71 1996/01/06 19:39:41 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.72 1996/05/15 23:31:35 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
 (setq fi:emacs-lisp-interface-version "2.0.19")
 (defvar fi::required-ipc-version 1)
 (defvar fi::load-subprocess-files t)
+(defvar fi::install-acl-menubar t)
 (defvar fi::build-time nil)
 (defvar fi::emacs-type nil)
 
@@ -12,12 +13,16 @@
 
 (require 'cl)
 
-(when (or (eq fi::emacs-type 'emacs19) (eq fi::emacs-type 'xemacs19))
+(when (on-ms-windows) (setq fi::load-subprocess-files nil))
+
+(when (and (or (eq fi::emacs-type 'emacs19) (eq fi::emacs-type 'xemacs19))
+	   (not (on-ms-windows)))
   ;; needed for setf expanations (on some version 19.xx) when they are
   ;; compiled with non-version 19 byte-compilers.
-  (condition-case nil
-      (require 'cl-compat)
-    (error nil)))
+  (let ((debug-on-error nil))
+    (condition-case nil
+	(require 'cl-compat)
+      (error nil))))
 
 (defvar fi::initialization-forms nil)
 (defun fi::initialize-emacs-lisp-interface ()
@@ -50,41 +55,81 @@ function, it is changed to a list of functions."
 		 (nconc (symbol-value hook) (list function))
 	       (cons function (symbol-value hook)))))))
 
-(load "fi-modes.elc")
+(defvar fi::compile-at-load-time nil)
+
+(defun fi::load (file &rest load-before-compile)
+  (cond (fi::compile-at-load-time
+	 (let ((lib-file (locate-library file)))
+	   (unless lib-file
+	     (error "can't find file %s" file))
+	   (dolist (required-file load-before-compile)
+	     (load required-file))
+	   (cond ((string-match "\\.el$" lib-file)
+		  ;; this compiles and loads:
+		  (byte-compile-file lib-file t))
+		 (t (load lib-file)))))
+	(t (load file))))
+
+(defun fi::load-compiled (file &rest load-before-compile)
+  (let ((lib-file (locate-library file)))
+    (unless lib-file (error "can't find file %s" file))
+    (dolist (required-file load-before-compile)
+      (load required-file))
+    (cond ((string-match "\\.el$" lib-file)
+	   ;; no .elc file
+	   (byte-compile-file lib-file t)
+	   (setq lib-file (format "%sc" lib-file)))
+	  (t
+	   (let* ((xx (string-match "\\(.*\\)\\.elc$" lib-file))
+		  (base (substring lib-file (match-beginning 1)
+				   (match-end 1)))
+		  (el (format "%s.el" base))
+		  (elc (format "%s.elc" base)))
+	     (when (file-newer-than-file-p el elc)
+	       (byte-compile-file el t)))))
+    (load lib-file)))
+
+(fi::load "fi-keys")			; load before fi-modes
+(fi::load "fi-modes")
 (when fi:lisp-do-indentation
-  (load "fi-indent.elc"))
-(load "fi-keys.elc")
-(load "fi-utils.elc")
-(load "fi-gnu.elc")
+  (fi::load "fi-indent"))
+(fi::load "fi-utils")
+(fi::load "fi-gnu")
+
+(unless fi::load-subprocess-files
+  (defvar fi:package nil)
+  (make-variable-buffer-local 'fi:package)
+  ;; used in Common Lisp edit mode:
+  (setq fi::common-lisp-backdoor-main-process-name nil))
 
 (when fi::load-subprocess-files
-  (load "fi-subproc.elc")
-  (load "fi-sublisp.elc")
-  (load "fi-basic-lep.elc")
-  (load "fi-lep.elc")
-  (load "fi-dmode.elc")
-  (load "fi-composer.elc")
-  (load "fi-lze.elc")
-  (load "fi-changes.elc")
-  (load "fi-db.elc")
-  (load "fi-stream.elc")
+  (fi::load "fi-subproc")
+  (fi::load "fi-sublisp")
+  (fi::load "fi-basic-lep")
+  (fi::load "fi-lep")
+  (fi::load "fi-dmode")
+  (fi::load "fi-composer")
+  (fi::load "fi-lze")
+  (fi::load "fi-changes")
+  (fi::load "fi-db")
+  (fi::load "fi-stream")
 
   (when (eq fi::emacs-type 'epoch)
-    (load "fi-leep0.elc")
-    (load "fi-leep.elc"))
+    (fi::load "fi-leep0")
+    (fi::load "fi-leep"))
 
   (when (eq fi::emacs-type 'xemacs19)
-    (load "fi-leep0.elc")
-    (load "fi-leep-xemacs.elc"))
+    (fi::load "fi-leep0")
+    (fi::load "fi-leep-xemacs"))
 
-  (load "fi-ring.elc")
-  (load "fi-filec.elc")
+  (fi::load "fi-ring")
+  (fi::load "fi-filec")
 
   ;; `shell' and `rlogin' modes:
-  (load "fi-shell.elc")
-  (load "fi-rlogin.elc")
-  (load "fi-telnet.elc")
-  (load "fi-su.elc"))
+  (fi::load "fi-shell")
+  (fi::load "fi-rlogin")
+  (fi::load "fi-telnet")
+  (fi::load "fi-su"))
 
 (autoload 'fi:clman         "fi-clman" nil t)
 (autoload 'fi:clman-mode    "fi-clman" nil t)
@@ -99,11 +144,12 @@ function, it is changed to a list of functions."
 ;; the test for GNU Emacs 19 has to be after that for xemacs, because
 ;; the version of xemacs is 19.* too!
 
-(cond ((eq fi::emacs-type 'xemacs19)
+(when fi::load-subprocess-files
+  (cond ((eq fi::emacs-type 'xemacs19)
        (load "fi-xemacs"))
       ((eq fi::emacs-type 'emacs19)
        (load "fi-emacs19"))
-      (t (load "fi-emacs18")))
+      (t (load "fi-emacs18"))))
 
 (defun fi::top-level ()
   (fi::initialize-emacs-lisp-interface)

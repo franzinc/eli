@@ -1,3 +1,14 @@
+Wed May 15 16:22:47 1996  Kevin Layer  <layer@freezer>
+
+	* fi-emacs19.el: make installation of menubar optional (defaults
+	  is the same as previous behaviour)
+	* fi-keys.el: define-key hacking for lemacs' way of doing things
+	* fi-site-init.el: new way of loading, with fi::load, which
+	  compiles any of the files if they are not already compiled.  This
+	  was primarily done because on windows people might not have
+	  `make', to be able to build all the .elc files.
+	* fi-version.el: define "on-ms-windows"
+
 *******************************************************************************
 2.0.19 public release
 *******************************************************************************

@@ -1,6 +1,9 @@
-;; $Header: /repo/cvs.copy/eli/Attic/fi-version.el,v 2.3 1995/01/10 20:04:51 smh Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-version.el,v 2.4 1996/05/15 23:31:38 layer Exp $
 
 ;; This is in a separate file so that it can be loaded at byte-compile time
+
+(defun on-ms-windows ()
+  (memq system-type '(ms-windows ms-dos win386)))
 
 (let ((case-fold-search t))
   (cond ((string-match "xemacs" emacs-version) (setq fi::emacs-type 'xemacs19))
