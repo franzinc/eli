@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-emacs19.el,v 2.12 1996/05/15 23:31:27 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-emacs19.el,v 2.13 1996/06/04 20:38:04 layer Exp $
 
 
 (unless (string-match "^18." emacs-version) ;Allows compilation on 18.
@@ -252,23 +252,22 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;(defun fi::install-menubar (menu-bar)
-;  (set-menubar (delete (assoc (car menu-bar) current-menubar)
-;		       (copy-sequence current-menubar)))
-;  (add-menu nil (car menu-bar) (cdr menu-bar) "Help"))
-
 (defun fi::install-menubar (menu-bar)
   (add-menu nil (car menu-bar) (cdr menu-bar) "Help"))
 
-(when fi::install-acl-menubar
-  (push '(progn
-	  (fi::install-menubar fi:allegro-file-menu)
-	  (fi::install-menubar fi:allegro-edit-menu)
-	  (fi::install-menubar fi:allegro-debug-menu)
-	  (fi::install-menubar fi:allegro-help-menu)
-	  (when fi:composer-menu
-	    (fi::install-menubar fi:composer-menu)))
-	fi::initialization-forms))
+(defun fi::install-buffer-local-emacs19-acl-menubar ()
+  (when (eq current-menubar (default-value 'current-menubar))
+    ;; current-menubar isn't yet buffer local
+    (set-buffer-menubar current-menubar)
+    (fi::install-menubar fi:allegro-file-menu)
+    (fi::install-menubar fi:allegro-edit-menu)
+    (fi::install-menubar fi:allegro-debug-menu)
+    (fi::install-menubar fi:allegro-help-menu)
+    (when fi:composer-menu (fi::install-menubar fi:composer-menu))))
+
+(defvar fi::menubar-initialization)
+(setq fi::menubar-initialization
+  'fi::install-buffer-local-emacs19-acl-menubar)
 
 (defun fi:menu-common-lisp ()
   (interactive)

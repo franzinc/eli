@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-xemacs.el,v 2.2 1996/01/06 19:39:43 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-xemacs.el,v 2.3 1996/06/04 20:38:09 layer Exp $
 
 (defun fi::switch-to-buffer-new-screen (buffer)
   (cond
@@ -244,34 +244,22 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;(defun fi::install-menubar (menu-bar)
-;  (when current-menubar
-;    ;; (set-menubar (delete (assoc (car menu-bar) current-menubar)
-;    ;; (copy-sequence current-menubar)))
-;    (add-menu nil (car menu-bar) (cdr menu-bar) "Help")
-;    ))
-
 (defun fi::install-menubar (menu-bar)
   (add-menu nil (car menu-bar) (cdr menu-bar) nil))
 
-;(defun fi::install-menubar (menu-bar)
-;  (let ((old (copy-tree current-menubar))
-;	(new nil))
-;    (while (and (consp old) (not (equalp (caar old) "Help")))
-;      (push (pop old) new))
-;    (set-menubar (nconc (nreverse new) (list (copy-tree menu-bar)) old))))
+(defun fi::install-buffer-local-xemacs-acl-menubar ()
+  (when (eq current-menubar (default-value 'current-menubar))
+    ;; current-menubar isn't yet buffer local
+    (set-buffer-menubar current-menubar)
+    (fi::install-menubar fi:allegro-file-menu)
+    (fi::install-menubar fi:allegro-edit-menu)
+    (fi::install-menubar fi:allegro-debug-menu)
+    (fi::install-menubar fi:allegro-help-menu)
+    (when fi:composer-menu (fi::install-menubar fi:composer-menu))))
 
-;(defun fi::install-menubar (menu-bar)
-;  (set-menubar (append (copy-list current-menubar) (list menu-bar))))
-
-(push '(progn
-	(fi::install-menubar fi:allegro-file-menu)
-	(fi::install-menubar fi:allegro-edit-menu)
-	(fi::install-menubar fi:allegro-debug-menu)
-	(fi::install-menubar fi:allegro-help-menu)
-	(when fi:composer-menu
-	  (fi::install-menubar fi:composer-menu)))
-      fi::initialization-forms)
+(defvar fi::menubar-initialization)
+(setq fi::menubar-initialization
+  'fi::install-buffer-local-xemacs-acl-menubar)
 
 (defun fi:menu-common-lisp ()
   (interactive)

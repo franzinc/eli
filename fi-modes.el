@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.63 1996/05/31 19:06:48 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.64 1996/06/04 20:38:07 layer Exp $
 
 ;;;; Mode initializations
 
@@ -85,6 +85,8 @@ buffers, but is nil elsewhere.")
 current package.  The two things this must match are the IN-PACKAGE macro
 form and all the possible instances of the :package top-level command.
 If nil, no automatic package tracking will be done.")
+
+(defvar fi::menubar-initialization nil)
 
 ;;;;
 ;;; The Modes
@@ -340,16 +342,19 @@ any other mode setup."
 	(setq comment-indent-hook 'fi:lisp-comment-indent)
 
 	(make-local-variable 'parse-sexp-ignore-comments)
-	;; It used to be true that this variable must be `nil' when comments end
-	;; in newlines.  However, it seems this limitation was removed some time
-	;; around the start of 1994, so now we'll try setting it true. - smh 29jun95
+	;; It used to be true that this variable must be `nil' when
+	;; comments end in newlines.  However, it seems this limitation was
+	;; removed some time around the start of 1994, so now we'll try
+	;; setting it true. - smh 29jun95
 	(setq parse-sexp-ignore-comments t)
 
 	(setq fi::lisp-most-recent-parse-result (list 0 0 0 0 nil nil nil 0))
 	(setq fi::calculate-lisp-indent-state-temp (list 0 0 0 nil nil nil 0))
 	(setq fi::lisp-indent-state-temp (list nil nil nil nil nil nil nil)))
     ;; the GNU style
-    (lisp-mode-variables t)))
+    (lisp-mode-variables t))
+  
+  (when fi::menubar-initialization (funcall fi::menubar-initialization)))
 
 (defvar fi:default-package
     "user"
