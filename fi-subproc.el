@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 3.7 2004/05/07 22:01:01 layer Exp $
+;; $Id: fi-subproc.el,v 3.7.4.1 2004/05/19 17:47:29 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -504,9 +504,13 @@ be a string. Use the 6th argument for image file."))
 	 (process-connection-type fi::common-lisp-connection-type) ;bug3033
 	 (proc
 	  (if (and (on-ms-windows) fi::process-is-local)
-	      (let ((proc (fi::socket-start-lisp nil fi::cl-process-name
-						 executable-image-name
-						 real-args)))
+	      (let ((proc
+		     (save-excursion
+		       (set-buffer (get-buffer-create buffer-name))
+		       (setq default-directory directory)
+		       (fi::socket-start-lisp fi::cl-process-name
+					      executable-image-name
+					      real-args))))
 		(sleep-for 1) ;; wait for process to start
 		(if (and fi:eli-compatibility-mode
 			 (fi::eli-compat-mode-p 9666))
@@ -756,7 +760,7 @@ be a string. Use the 6th argument for image file."))
 (defvar w32-quote-process-args)
 (defvar w32-start-process-show-window)
 
-(defun fi::socket-start-lisp (buffer-name process-name image arguments)
+(defun fi::socket-start-lisp (process-name image arguments)
   (let (
 ;;;; rms didn't like the win32- prefix, so we have to support the old and
 ;;;; new style:
@@ -771,7 +775,7 @@ be a string. Use the 6th argument for image file."))
 	(nt-quote-args-functions-alist '(("." . nt-quote-args-double-quote))))
     (apply (function start-process)
 	   process-name
-	   nil ;; buffer-name
+	   nil ;; no buffer name
 	   image
 	   (if (on-ms-windows)
 	       (mapcar 'shell-quote-argument arguments)

@@ -1,3 +1,12 @@
+*******************************************************************************
+post 7.0.beta release
+
+2004-05-19  Kevin Layer  <layer@gemini>
+
+	* fi-subproc.el: bug14399: fix ELI startup directory
+
+*******************************************************************************
+
 2004-05-07    <layer@HOBART>
 
 	* fi-subproc.el: bug14313: fix compat startup again
@@ -4936,4 +4945,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.9 $
+$Revision: 3.9.4.1 $
