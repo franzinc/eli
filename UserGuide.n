@@ -1,4 +1,4 @@
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.1 1991/03/12 17:08:20 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.2 1991/03/12 18:31:03 layer Exp $
 ===============================================================================
 			     Introduction
 
@@ -720,7 +720,6 @@ Functions and Variables for Editing with Common Lisp programs
 
 %% fi:telnet
 %% fi:telnet-mode
-%% fi:telnet-start-garbage-filter
 %% fi:telnet-image-arguments
 %% fi:telnet-image-name
 %% fi:telnet-initial-input
