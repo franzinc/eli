@@ -7,6 +7,14 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2nd Int'l ACL Lite 5.0.1 changes (no version change is intentional)
+6/1/2001 expiration date
+
+2000-08-29  Kevin Layer  <layer@franz.com>
+
+	* emacsdir.pl: work without administrator privs
+
+*******************************************************************************
 2.0.21.16.15
 
 1999-04-14    <layer@ANT>
