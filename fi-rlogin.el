@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.24 1991/09/30 11:39:14 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.25 1992/12/10 06:01:01 layer Exp $
 
 (defvar fi:rlogin-mode-map nil
   "The rlogin major-mode keymap.")
@@ -72,7 +72,7 @@ any other mode setup."
   (setq fi:shell-cd-regexp nil)
   (run-hooks 'fi:subprocess-mode-hook 'fi:rlogin-mode-hook))
 
-(defun fi:rlogin (&optional buffer-number host)
+(defun fi:rlogin (&optional buffer-number host user)
   "Start an rlogin in a buffer whose name is determined from the optional
 prefix argument BUFFER-NUMBER and the HOST.  Rlogin buffer names start with
 `*HOST*' and end with an optional \"<N>\".  If BUFFER-NUMBER is not given
@@ -97,8 +97,15 @@ The rlogin image file and image arguments are taken from the variables
 			 'fi:rlogin-mode
 			 fi:rlogin-prompt-pattern
 			 fi:rlogin-image-name
-			 (append fi:rlogin-image-arguments (list host))
+			 (append fi:rlogin-image-arguments
+				 (list host)
+				 (when user
+				   (list "-l" user)))
 			 'fi::rlogin-filter)))
+
+(defun fi:rlogin-new-user (&optional buffer-number host user)
+  (interactive "p\nsRemote login to host: \nsUser name: ")
+  (fi:rlogin buffer-number host user))
 
 (defun fi::rlogin-filter (process output)
   "Filter for `fi:rlogin' subprocess buffers.
