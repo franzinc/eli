@@ -7,14 +7,14 @@ emacs = /usr/local/emacs
 
 elc-files = modes.elc subprocess.elc subprocess-lisp.elc\
 	    subprocess-filec.elc subprocess-ring.elc\
-	    lisp-indent.elc aux.elc
+	    lisp-indent.elc aux.elc doc.elc
 
 all:	depend doc.n
 
 depend: ${elc-files}
 
 doc.n:	list.n ${elc-files} doc.el
-	$(emacs) -batch -q -l doc.el
+	$(emacs) -batch -q -l doc.elc
 
 print.doc:
 	${pr} doc.n
