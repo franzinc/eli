@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.39 1991/10/02 13:12:19 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.40 1991/10/03 12:45:34 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -16,7 +16,7 @@ STRING.  fi:package is used to determine from which Common Lisp package the
 operation is done.  In a subprocess buffer, the package is tracked
 automatically.  In source buffer, the package is parsed at file visit
 time."
-  (interactive (fi::get-default-symbol "Arglist for" t))
+  (interactive (fi::get-default-symbol "Arglist for" t t))
   (fi::make-request
    (lep::arglist-session :fspec string)
    ;; Normal continuation
@@ -103,7 +103,7 @@ time."
   (interactive
    (if current-prefix-arg
        '(nil t)
-     (list (car (fi::get-default-symbol "Lisp locate source" t))
+     (list (car (fi::get-default-symbol "Lisp locate source" t t))
 	   nil)))
   (if next
       (fi:lisp-find-next-definition)
@@ -120,7 +120,8 @@ at file visit time."
   (interactive
    (if current-prefix-arg
        '(nil t)
-     (list (car (fi::get-default-symbol "Lisp locate source other window" t))
+     (list (car (fi::get-default-symbol "Lisp locate source other window"
+					t t))
 	   nil)))
   (if next
       (fi:lisp-find-next-definition)
@@ -453,21 +454,23 @@ beginning of words in target symbols."
 	      ))
 	   (message "Making completion list...done")))))
 
-(defun fi::lisp-complete-1 (pattern package functions-only)
+(defun fi::lisp-complete-1 (pattern package functions-only
+			    &optional ignore-keywords)
   (let ((completions
-	 (progn
-	   (car (lep::eval-session-in-lisp 
-		 'lep::list-all-completions-session
-		 ':pattern (fi::frob-case-to-lisp pattern)
-		 ':buffer-package (fi::string-to-keyword fi:package)
-		 ':package (progn
-			     (if (equal ":" package)
-				 (setq package "keyword"))
-			     (intern (fi::frob-case-to-lisp
-				      package)))
-		 ':functions-only-p (intern
-				     (fi::frob-case-to-lisp
-				      functions-only)))))))
+	 (car (lep::eval-session-in-lisp 
+	       'lep::list-all-completions-session
+	       ':pattern (fi::frob-case-to-lisp pattern)
+	       ':buffer-package (fi::string-to-keyword fi:package)
+	       ':package (progn
+			   (if (equal ":" package)
+			       (setq package "keyword"))
+			   (intern (fi::frob-case-to-lisp
+				    package)))
+	       ':functions-only-p (intern
+				   (fi::frob-case-to-lisp
+				    functions-only))
+	       ':ignore-keywords (intern
+				  (fi::frob-case-to-lisp ignore-keywords))))))
     (fi::lisp-complete-2 completions nil)))
 
 (defun fi::lisp-complete-2 (completions &optional dont-strip-package)
@@ -595,7 +598,7 @@ fi:package is used to determine from which Common Lisp package the
 operation is done.  In a subprocess buffer, the package is tracked
 automatically.  In source buffer, the package is parsed at file visit
 time."
-  (interactive (fi::get-default-symbol "(un)trace" t))
+  (interactive (fi::get-default-symbol "(un)trace" t t))
   (fi::make-request
    (lep::toggle-trace :fspec string :break current-prefix-arg)
    ;; Normal continuation
@@ -617,7 +620,7 @@ surrounding the point.  fi:package is used to determine from which Common
 Lisp package the operation is done.  In a subprocess buffer, the package is
 tracked automatically.  In source buffer, the package is parsed at file
 visit time."
-  (interactive (fi::get-default-symbol "List who calls" nil))
+  (interactive (fi::get-default-symbol "List who calls" nil nil))
   ;; Since this takes a while, tell the user that it has started.
   (message "Finding callers of %s..." fspec)
   (lep::list-fspecs-common fspec
@@ -633,7 +636,7 @@ the text surrounding the point.  fi:package is used to determine from which
 Common Lisp package the operation is done.  In a subprocess buffer, the
 package is tracked automatically.  In source buffer, the package is parsed
 at file visit time."
-  (interactive (fi::get-default-symbol "List who is called by" t))
+  (interactive (fi::get-default-symbol "List who is called by" t t))
   (message "Finding who is called by %s..." fspec)
   (lep::list-fspecs-common fspec
 			   'lep::who-is-called-by
@@ -648,7 +651,7 @@ taken from the text surrounding the point.  fi:package is used to determine
 from which Common Lisp package the operation is done.  In a subprocess
 buffer, the package is tracked automatically.  In source buffer, the
 package is parsed at file visit time."
-  (interactive (fi::get-default-symbol "List generic function methods of" t))
+  (interactive (fi::get-default-symbol "List generic function methods of" t t))
   ;; Since this takes a while, tell the user that it has started.
   (message "Finding generic function methods of %s..." fspec)
   (lep::list-fspecs-common fspec
@@ -660,21 +663,22 @@ package is parsed at file visit time."
 (defun fi:edit-who-calls (fspec)
   "Edit all the callers of the function named by FSPEC.
 Use ``\\<fi:common-lisp-mode-map>\\[fi:lisp-find-next-definition]'' to find the next definition, if there is one."
-  (interactive (fi::get-default-symbol "Edit who calls" nil))
+  (interactive (fi::get-default-symbol "Edit who calls" nil nil))
   (message "Editing callers...")
   (lep::edit-somethings fspec 'lep::who-calls nil "caller"))
 
 (defun fi:edit-who-is-called-by (fspec)
   "Edit all functions called by FSPEC.
 Use ``\\<fi:common-lisp-mode-map>\\[fi:lisp-find-next-definition]'' to find the next definition, if there is one."
-  (interactive (fi::get-default-symbol "Edit who is called by" t))
+  (interactive (fi::get-default-symbol "Edit who is called by" t t))
   (message "Editing callees...")
   (lep::edit-somethings fspec 'lep::who-is-called-by nil "callee"))
 
 (defun fi:edit-generic-function-methods (fspec)
   "Edit all the methods of the generic function named by FSPEC.
-Use ``\\<fi:common-lisp-mode-map>\\[fi:lisp-find-next-definition]'' to find the next definition, if there is one."
-  (interactive (fi::get-default-symbol "Edit generic function methods of" t))
+Use ``\\<fi:common-lisp-mode-map>\\[fi:lisp-find-next-definition]'' to find
+the next definition, if there is one."
+  (interactive (fi::get-default-symbol "Edit generic function methods of" t t))
   (message "Editing generic function methods...")
   (lep::edit-somethings fspec
 			'scm::generic-function-methods-function-specs
@@ -721,7 +725,7 @@ fi:package is used to determine from which Common Lisp package the
 operation is done.  In a subprocess buffer, the package is tracked
 automatically.  In source buffer, the package is parsed at file visit
 time."
-  (interactive (fi::get-default-symbol "Describe symbol" nil))
+  (interactive (fi::get-default-symbol "Describe symbol" nil nil))
   (lep::describe-something fspec 'identity))
 
 (defun fi:describe-class (fspec)
@@ -731,7 +735,7 @@ fi:package is used to determine from which Common Lisp package the
 operation is done.  In a subprocess buffer, the package is tracked
 automatically.  In source buffer, the package is parsed at file visit
 time."
-  (interactive (fi::get-default-symbol "Class name" nil))
+  (interactive (fi::get-default-symbol "Class name" nil t))
   (lep::describe-something fspec 'clos::find-class))
 
 
@@ -742,7 +746,7 @@ fi:package is used to determine from which Common Lisp package the
 operation is done.  In a subprocess buffer, the package is tracked
 automatically.  In source buffer, the package is parsed at file visit
 time."
-  (interactive (fi::get-default-symbol "Function spec" t))
+  (interactive (fi::get-default-symbol "Function spec" t t))
   (lep::describe-something fspec 'fdefinition))
 
 
@@ -768,7 +772,8 @@ fi:package is used to determine from which Common Lisp package the
 operation is done.  In a subprocess buffer, the package is tracked
 automatically.  In source buffer, the package is parsed at file visit
 time."
-  (interactive (fi::get-default-symbol "Describe symbol" nil))
+  (interactive (fi::get-default-symbol "Function documentation for symbol"
+				       nil t))
   (fi::make-request
    (lep::function-documentation-session :package fi:package :fspec symbol)
    ;; Normal continuation
