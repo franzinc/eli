@@ -1,6 +1,6 @@
 ;; Sample .emacs file
 ;;
-;; $Header: /repo/cvs.copy/eli/examples/emacs.el,v 1.1 1991/08/23 10:37:15 layer Exp $
+;; $Header: /repo/cvs.copy/eli/examples/emacs.el,v 1.2 1991/09/10 11:18:58 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; The following code implements selection of a particular version of the
@@ -52,4 +52,36 @@ lives for that version.")
   ))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; Load the Franz Emacs-Lisp Interface.
 (load "fi/site-init")
+
+;; Default args for fi:common-lisp.
+;; Change these to match your specific setup.
+
+(setq fi:common-lisp-buffer-name "*mycl*") ;; the default is "*common-lisp*"
+
+;; Instead we set it to a specific directory.
+(setq fi:common-lisp-directory (expand-file-name "~cxh/lisp/"))
+
+(setq fi:common-lisp-image-name "/usr/local/cl-4.1")
+
+(setq fi:common-lisp-image-arguments nil)
+
+(setq fi:common-lisp-host "sparky")
+
+(defun run-common-lisp ()
+  "This function starts up lisp with your defaults"
+  (interactive)
+  (fi:common-lisp fi:common-lisp-buffer-name
+		  fi:common-lisp-directory
+		  fi:common-lisp-image-name
+		  fi:common-lisp-image-arguments
+		  fi:common-lisp-host))
+
+;; Set up a keybinding for mycl.
+(setq ctlx-3-map (make-keymap))
+(define-key ctl-x-map "3" ctlx-3-map)
+(define-key ctlx-3-map "l" 'mycl)
+
+;; Start up a lisp image.
+(mycl)
