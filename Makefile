@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.144.6.4 2001/10/22 16:26:58 layer Exp $
+# $Id: Makefile,v 1.144.6.4.18.1 2002/09/27 14:44:22 layer Exp $
 # This makefile requires GNU make.
 
 include version.mak
@@ -31,6 +31,14 @@ endif
 pwd = $(shell pwd)
 endif
 ###############################################################################
+
+ifeq ($(OS),Windows_NT)
+ifdef xemacs
+pwd = $(shell pwd)
+else
+pwd = $(shell ../bin/pwd)
+endif
+endif
 
 all default:	fi-vers.el compile
 
