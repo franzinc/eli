@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.40 1991/01/31 16:36:52 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.41 1991/03/12 18:29:54 layer Exp $
 
 ;;;; Mode initializations
 
@@ -42,9 +42,9 @@
 (defvar fi:inferior-franz-lisp-mode-super-key-map nil
   "Used for super-key processing in inferior-franz-lisp mode.")
 
-(defvar fi:tcp-common-lisp-mode-map nil
+(defvar fi:lisp-listener-mode-map nil
   "The tcp-lisp major-mode keymap.")
-(defvar fi:tcp-common-lisp-mode-super-key-map nil
+(defvar fi:lisp-listener-mode-super-key-map nil
   "Used for super-key processing in tcp-lisp mode.")
 
 (defvar fi:common-lisp-mode-map nil
@@ -61,8 +61,8 @@ Lisp mode.")
   "The value of which is the syntax table for Emacs Lisp mode.")
 
 (defvar fi:common-lisp-file-types '(".cl" ".lisp" ".lsp")
-  "*A list of the files which are automatically put in fi:common-lisp-mode.
-This variable should be set before this package is loaded.")
+  "*A list of the file types which are automatically put in
+fi:common-lisp-mode.")
 
 (defvar fi:lisp-do-indentation t
   "*When non-nil, do FI-style indentation in Lisp modes.")
@@ -82,7 +82,7 @@ MODE-LINE-PROCESS, which has no use in non-subprocess buffers.")
 ;;; The Modes
 ;;;;
 
-(defun fi:inferior-common-lisp-mode (&optional mode-hook)
+(defun fi:inferior-common-lisp-mode (&optional mode-hook &rest mode-hook-args)
   "Major mode for interacting with Common Lisp subprocesses.
 The keymap for this mode is bound to fi:inferior-common-lisp-mode-map:
 \\{fi:inferior-common-lisp-mode-map}
@@ -95,7 +95,7 @@ Entry to this mode runs the following hooks:
 in the above order."
   (interactive)
   (kill-all-local-variables)
-  (if mode-hook (funcall mode-hook))
+  (if mode-hook (apply mode-hook mode-hook-args))
   (setq major-mode 'fi:inferior-common-lisp-mode)
   (setq mode-name "Inferior Common Lisp")
   (set-syntax-table fi:lisp-mode-syntax-table)
@@ -150,38 +150,38 @@ in the above order."
   (run-hooks 'fi:lisp-mode-hook 'fi:subprocess-mode-hook
 	     'fi:inferior-franz-lisp-mode-hook))
 
-(defun fi:tcp-common-lisp-mode (&optional mode-hook)
+(defun fi:lisp-listener-mode (&optional mode-hook)
   "Major mode for interacting with Common Lisp over a socket.
-The keymap for this mode is bound to fi:tcp-common-lisp-mode-map:
-\\{fi:tcp-common-lisp-mode-map}
+The keymap for this mode is bound to fi:lisp-listener-mode-map:
+\\{fi:lisp-listener-mode-map}
 Entry to this mode runs the following hooks:
 
 	fi:lisp-mode-hook
 	fi:subprocess-mode-hook
-	fi:tcp-common-lisp-mode-hook
+	fi:lisp-listener-mode-hook
 
 in the above order."
   (interactive)
   (kill-all-local-variables)
   (if mode-hook (funcall mode-hook))
-  (setq major-mode 'fi:tcp-common-lisp-mode)
+  (setq major-mode 'fi:lisp-listener-mode)
   (setq mode-name "TCP Common Lisp")
   (set-syntax-table fi:lisp-mode-syntax-table)
   (fi::lisp-subprocess-mode-variables)
-  (if (null fi:tcp-common-lisp-mode-super-key-map)
+  (if (null fi:lisp-listener-mode-super-key-map)
       (progn
-	(setq fi:tcp-common-lisp-mode-super-key-map (make-sparse-keymap))
+	(setq fi:lisp-listener-mode-super-key-map (make-sparse-keymap))
 	(fi::subprocess-mode-super-keys
-	 fi:tcp-common-lisp-mode-super-key-map 'tcp-lisp)))
-  (if (null fi:tcp-common-lisp-mode-map)
-      (setq fi:tcp-common-lisp-mode-map
-	(fi::tcp-common-lisp-mode-commands
-	 (make-sparse-keymap) fi:tcp-common-lisp-mode-super-key-map)))
-  (use-local-map fi:tcp-common-lisp-mode-map)
-  (setq fi:subprocess-super-key-map fi:tcp-common-lisp-mode-super-key-map)
+	 fi:lisp-listener-mode-super-key-map 'tcp-lisp)))
+  (if (null fi:lisp-listener-mode-map)
+      (setq fi:lisp-listener-mode-map
+	(fi::lisp-listener-mode-commands
+	 (make-sparse-keymap) fi:lisp-listener-mode-super-key-map)))
+  (use-local-map fi:lisp-listener-mode-map)
+  (setq fi:subprocess-super-key-map fi:lisp-listener-mode-super-key-map)
   (setq fi:lisp-indent-hook-property 'fi:common-lisp-indent-hook)
   (run-hooks 'fi:lisp-mode-hook 'fi:subprocess-mode-hook
-	     'fi:tcp-common-lisp-mode-hook))
+	     'fi:lisp-listener-mode-hook))
 
 (defun fi:common-lisp-mode (&optional mode-hook)
   "Major mode for editing Lisp code to run in Common Lisp.
@@ -206,8 +206,7 @@ in the above order."
 	(setq fi:common-lisp-mode-map (make-sparse-keymap))
 	(fi::lisp-mode-commands fi:common-lisp-mode-map nil nil)))
   (use-local-map fi:common-lisp-mode-map)
-  (make-local-variable 'fi::sublisp-name)
-  (setq fi::sublisp-name fi::freshest-common-sublisp-name)
+  (setq fi::process-name fi:common-lisp-process-name)
   (setq fi:lisp-indent-hook-property 'fi:common-lisp-indent-hook)
   (run-hooks 'fi:lisp-mode-hook 'fi:common-lisp-mode-hook))
 
@@ -234,8 +233,7 @@ in the above order."
 	(setq fi:franz-lisp-mode-map (make-sparse-keymap))
 	(fi::lisp-mode-commands fi:franz-lisp-mode-map nil nil)))
   (use-local-map fi:franz-lisp-mode-map)
-  (make-local-variable 'fi::sublisp-name)
-  (setq fi::sublisp-name fi::freshest-franz-sublisp-name)
+  (setq fi::process-name fi:franz-lisp-process-name)
   (setq fi:lisp-indent-hook-property 'fi:franz-lisp-indent-hook)
   (run-hooks 'fi:lisp-mode-hook 'fi:franz-lisp-mode-hook))
 
@@ -269,7 +267,7 @@ Entry to this mode runs the fi:emacs-lisp-mode-hook hook."
 
 (defun fi::lisp-mode-setup-common ()
   ;; not needed for Emacs Lisp mode, but ...
-  (setq fi::cl-package-regexp fi:common-lisp-package-regexp)
+  (setq fi:in-package-regexp fi:default-in-package-regexp)
   
   (setq local-abbrev-table lisp-mode-abbrev-table)
   
@@ -304,6 +302,8 @@ Entry to this mode runs the fi:emacs-lisp-mode-hook hook."
 	  (list nil nil nil nil nil nil nil)))))
 
 (defun fi:parse-mode-line-and-package ()
+  "Determine the current package in which the buffer is defined.
+IN-PACKAGE and the -*- mode line are parsed for this information."
   (interactive)
   (save-excursion
     ;; look for -*- ... package: xxx; .... -*-
