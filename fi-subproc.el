@@ -19,7 +19,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.145 1993/03/25 07:15:08 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.146 1993/04/09 15:09:01 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -1033,7 +1033,7 @@ to your `.cshrc' after the `set cdpath=(...)' in the same file."
 	      (let* ((xdir (buffer-substring (match-beginning 1)
 					     (match-end 1)))
 		     (dir
-		      (if (string-match "$~" xdir)
+		      (if (string-match "[\\$~]" xdir)
 			  (expand-file-name (substitute-in-file-name xdir))
 			xdir)))
 		(setq directory dir)
@@ -1062,7 +1062,7 @@ to your `.cshrc' after the `set cdpath=(...)' in the same file."
 	      (let* ((xdir
 		      (buffer-substring (match-beginning 1) (match-end 1)))
 		     (dir
-		      (if (string-match "$~" xdir)
+		      (if (string-match "[\\$~]" xdir)
 			  (expand-file-name (substitute-in-file-name xdir))
 			xdir)))
 		(setq directory dir)
