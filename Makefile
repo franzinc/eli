@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.46 1991/01/29 14:21:37 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.47 1991/01/29 15:29:26 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -13,12 +13,16 @@ cl_library =
 
 elcs = modes.elc indent.elc subproc.elc sublisp.elc filec.elc ring.elc\
 	    su.elc telnet.elc rlogin.elc shell.elc keys.elc tcplisp.elc\
-	    query.elc utils.elc ltags.elc clman.elc doc.elc
+	    query.elc utils.elc ltags.elc clman.elc doc.elc\
+	    lep/lep-utils.elc lep/basic-lep.elc lep/lep.elc\
+	    lep/dmode.elc lep/stream.elc lep/composer.elc
+
+compile_time_env = -l cl -l bytecomp -l `pwd`/lep/lep-utils -l `pwd`/lep/basic-lep
 
 .SUFFIXES:
 .SUFFIXES: .el .elc
 .el.elc: 
-	$(emacs) -nw -batch -q -l bytecomp -f batch-byte-compile $*.el
+	$(emacs) -nw -batch -q $(compile_time_env) -f batch-byte-compile $*.el
 
 default:	elcs spec.out
 
