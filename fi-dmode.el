@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.2 1991/01/29 17:19:54 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.3 1991/02/12 17:38:16 layer Exp $
 ;;
 
 ;; Create a mode in which each line is a definition and . on that
@@ -35,6 +35,7 @@
 (if dmode-map 
     nil
   (setq dmode-map (make-sparse-keymap)))
+(define-key dmode-map "\c-." 'dmode-goto-definition)
 (define-key dmode-map "." 'dmode-goto-definition)
 (define-key dmode-map "p" 'dmode-goto-previous)
 (define-key dmode-map "n" 'dmode-goto-next)
@@ -64,7 +65,7 @@
   (make-local-variable 'types)
   (make-local-variable 'fi:package)
   (make-local-variable 'finding-function)
-  (use-local-mouse-map dmode-mouse-map))
+  (when dmode-mouse-map (use-local-mouse-map dmode-mouse-map)))
 
 (defun dmode-mouse-select (info)
   (goto-char (car info))
@@ -80,7 +81,7 @@
 	 (buffer (current-buffer))
 	 (def (nth n definitions))
 	 (type (nth n types)))
-    (when finding-function
+    (when (and (not (equal type '(nil))) finding-function)
       (apply (car finding-function) def type buffer (cdr finding-function)))))
 
 (defun dmode-goto-next ()
@@ -91,7 +92,7 @@
 (defun dmode-goto-previous ()
   (interactive)
   (previous-line 1)
-    (dmode-goto-definition))
+  (dmode-goto-definition))
 
 
 
@@ -130,8 +131,9 @@
 			  string buffer error))))
 
 (defun display-buffer-definitions (package buffer buffer-definitions
-				   fn-and-arguments)
-  (switch-to-buffer-other-window "*definitions*")
+				   fn-and-arguments
+				   &optional buffer-name)
+  (switch-to-buffer-other-window (or buffer-name "*definitions*"))
   (erase-buffer)
   (mapcar '(lambda (x) 
 	    (princ (car x) (current-buffer))
