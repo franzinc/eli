@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/Attic/fi-lemacs.el,v 2.4 1993/07/22 23:56:42 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-lemacs.el,v 2.5 1993/07/23 04:18:49 layer Exp $
 
 (defconst fi:allegro-file-menu
     '("ACLFile"
@@ -110,8 +110,9 @@
 
 (defconst fi:composer-menu
     '("Composer"
-      ["Start Composer" fi:start-composer t]
-      ["Start Composer w/mouse line" fi:start-composer-mouse-line t]
+      ["Start Composer" fi:start-composer fi::connection-open]
+      ["Start Composer w/mouse line" fi:start-composer-mouse-line
+       fi::connection-open]
       "----"
       ("CLOS"
        ["Inspect class" fi:inspect-class fi::connection-open]
