@@ -1,4 +1,4 @@
-;;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.15 1988/03/28 17:33:30 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.16 1988/04/04 20:16:50 layer Exp $
 ;;;
 ;;; Interaction with a Lisp subprocess
 
@@ -74,7 +74,7 @@ forms is done while they are entered."
 		;; not a complete sexp, so newline and indent
 		(progn
 		  (newline)
-		  (lisp-indent-line))))
+		  (fi:lisp-indent-line))))
 	  ;; a non-list s-exp, so just send it off...
 	  (fi:subprocess-send-input)))
     (fi:subprocess-send-input)))
@@ -94,13 +94,9 @@ forms is done while they are entered."
 If fi::sublisp-name is nil, startup the appropriate Lisp, based on
 the major-mode of the buffer."
   (interactive "P")
-  (let* ((stab (syntax-table))
-	 (start  (unwind-protect
-		      (save-excursion
-			(set-syntax-table fi:lisp-mode-syntax-table)
-			(forward-sexp -1)
-			(point))
-		   (set-syntax-table stab))))
+  (let ((start (save-excursion
+		 (forward-sexp -1)
+		 (point))))
     (fi::eval-send start (point) compile-file-p)))
 
 (defun fi:lisp-eval-defun (compile-file-p)
@@ -131,11 +127,13 @@ the major-mode of the buffer."
   (fi::eval-send (point-min) (point-max) compile-file-p))
 
 (defun fi:set-associated-sublisp (buffer-name)
-  "Set the sublisp associated with a franz lisp or common lisp source file."
-  (interactive "sSublisp name: ")
-  (if (get-process buffer-name)
-      (setq fi::sublisp-name buffer-name)
-    (error "No such process buffer.")))
+  "Set the sublisp associated with a Lisp source file to BUFFER-NAME, which
+ is the name of a buffer."
+  (interactive "bBuffer name containing a Lisp process: ")
+  (let ((process (get-buffer-process (get-buffer buffer-name))))
+    (if process
+ 	(setq fi::sublisp-name (process-name process))
+      (error "No process associated with buffer %s" buffer-name))))
 
 ;;;
 ;;; Interactive functions requiring the socket to lisp
@@ -144,7 +142,8 @@ the major-mode of the buffer."
 (defun fi:lisp-arglist (&optional symbol)
   "Asks the sublisp to run arglist on a symbol."
   (interactive)
-  (setq symbol (fi::add-package-info (fi::get-cl-symbol nil t "Function: ")))
+  (setq symbol (fi::add-package-info
+		(fi::get-cl-symbol nil t (interactive-p) "Function")))
   (process-send-string
    (fi::background-sublisp-process)
    (format
@@ -162,7 +161,8 @@ the major-mode of the buffer."
   "Asks the sublisp to describe a symbol."
   (interactive)
   (setq symbol (fi::add-package-info
-		(fi::get-cl-symbol nil nil "Describe symbol: ")))
+		(fi::get-cl-symbol
+		 nil nil (interactive-p) "Describe symbol")))
   (process-send-string
    (fi::background-sublisp-process)
    (format "(progn (lisp:describe '%s) (values))\n" symbol)))
@@ -172,7 +172,7 @@ the major-mode of the buffer."
   (interactive)
   (setq symbol (fi::add-package-info
 		(fi::get-cl-symbol
-		 nil nil "Function documentation for symbol: ")))
+		 nil nil (interactive-p) "Function documentation for symbol")))
   (process-send-string
    (fi::background-sublisp-process)
    (format "(princ (lisp:documentation '%s 'lisp:function))\n" symbol)))
@@ -180,7 +180,7 @@ the major-mode of the buffer."
 (defun fi:lisp-find-tag (&optional symbol)
   "Find the common lisp source for SYMBOL."
   (interactive)
-  (setq symbol (fi::get-cl-symbol nil nil "Source for symbol: "))
+  (setq symbol (fi::get-cl-symbol nil nil (interactive-p) "Source for symbol"))
   (let ((s (fi::add-package-info symbol)))
     (condition-case ()
 	(process-send-string
@@ -296,27 +296,30 @@ Lisp at the other end of our socket."
 	       (put s 'fi::package fi::package))))
     s))
 
-(defun fi::get-cl-symbol (symbol up-p &optional interactive)
+(defun fi::get-cl-symbol (symbol up-p interactive-p interactive)
   ;; Ask the user for a CL symbol to be investigated.
   ;; If INTERACTIVE, then that prompt is used.
   ;; If UP-P, then the default is the symbol at the car of the form at the
   ;; cursor.  Otherwise, it is the symbol at the cursor.
-  (if (interactive-p) (setq symbol (read-string interactive)))
-  (if (or (null symbol) (equal symbol ""))
-      (setq symbol
-	(if up-p
-	    (save-excursion
-	      (buffer-substring (progn (up-list -1)
-				       (forward-char 1)
-				       (point))
-				(progn (forward-sexp 1) (point))))
-	  (save-excursion
-	    (buffer-substring (progn (forward-char 1)
-				     (backward-sexp 1)
-				     (skip-chars-forward "#'")
-				     (point))
-			      (progn (forward-sexp 1) (point)))))))
-  (fi::remove-package-info symbol))
+  (let ((default 
+	    (if up-p
+		(save-excursion
+		  (buffer-substring (progn (up-list -1)
+					   (forward-char 1)
+					   (point))
+				    (progn (forward-sexp 1) (point))))
+	      (save-excursion
+		(buffer-substring (progn (forward-char 1)
+					 (backward-sexp 1)
+					 (skip-chars-forward "#'")
+					 (point))
+				  (progn (forward-sexp 1) (point)))))))
+    (if interactive-p
+	(setq symbol
+	  (read-string (format "%s (default %s): " interactive default))))
+    (if (or (null symbol) (equal symbol ""))
+	(setq symbol default))
+    (fi::remove-package-info symbol)))
 
 (defvar fi::background-sublisp-process nil
   "Process connected to sublist socket for fi:lisp-arglist and friends.")
@@ -489,7 +492,7 @@ parsed, the enclosing list is processed."
 	(move-marker fi::last-input-start
 		     (process-mark (get-buffer-process (current-buffer))))
 	(insert "\n")
-	(lisp-indent-line)
+	(fi:lisp-indent-line)
 	(move-marker fi::last-input-end (point)))
 
     ;; we are in the middle of the buffer somewhere and need to collect
@@ -528,7 +531,7 @@ parsed, the enclosing list is processed."
       (if (eobp)
 	  (progn
 	    (insert "\n")
-	    (lisp-indent-line)
+	    (fi:lisp-indent-line)
 	    (move-marker fi::last-input-start start-resend)
 	    (move-marker fi::last-input-end (point-max)))
 	(progn
@@ -629,10 +632,18 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 	 (if compile-file-p
 	     (format
 	      "(let ((*record-source-files* nil))
- 		 (excl::compile-file-if-needed \"%s.cl\")
+ 		 (excl::compile-file-if-needed \"%s\")
 		 (load \"%s.fasl\"))"
 	      fi::emacs-to-lisp-transaction-file
-	      fi::emacs-to-lisp-transaction-file)
+	      (fi::file-name-sans-type fi::emacs-to-lisp-transaction-file))
 	   (format "(let ((*record-source-files* nil)) (load \"%s\"))"
 		   fi::emacs-to-lisp-transaction-file))))
     (fi::send-string-split process load-string nl-to-cr)))
+
+(defun fi::file-name-sans-type (name)
+  "Return FILENAME sans file extension or type."
+  (substring name 0
+ 	     (or (string-match "\\.cl$" name)
+ 		 (string-match "\\.lisp$" name)
+ 		 (string-match "\\.l$" name)
+ 		 (length name))))
