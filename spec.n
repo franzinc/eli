@@ -3,7 +3,7 @@
 	      Franz Inc. GNU Emacs/Common Lisp Interface
 			   Release 2.0alpha
 
-;; $Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.57 1991/02/28 23:06:18 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.58 1991/02/28 23:09:25 layer Exp $
 
 ****** Common Lisp Mode *******************************************************
 
@@ -92,7 +92,6 @@
 %% fi:lisp-find-tag-other-window	fi:inferior-common-lisp-mode-map
 %% fi:lisp-mode-newline			fi:inferior-common-lisp-mode-map
 %% fi:lisp-sync-current-working-directory fi:inferior-common-lisp-mode-map
-%% fi:lisp-tags-loop-continue-common
 %% fi:list-input-ring			fi:inferior-common-lisp-mode-map
 %% fi:pop-input				fi:inferior-common-lisp-mode-map
 %% fi:pop-to-sublisp-buffer-after-lisp-eval
