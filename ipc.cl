@@ -20,7 +20,7 @@
 ;; Description:
 ;;  
 
-;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.7 1987/10/23 18:44:18 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.8 1987/11/04 10:34:43 layer Exp $
 ;; $Locker: layer $
 ;;
 
@@ -119,7 +119,7 @@ files are closed."
 		       #-never (perror))))
   (unless lisp-listener-daemon
     (setq lisp-listener-daemon
-      (process-run-function "Lisp Listener Socket Daemon"
+      (process-run-function "TCP Listener Socket Daemon"
 			    'lisp-listener-socket-daemon))
     (setf (getf (process-property-list lisp-listener-daemon) ':no-interrupts)
 	  t)))
@@ -173,7 +173,7 @@ files are closed."
 	    (perror "call to listen")
 	    (return-from lisp-listener-socket-daemon nil))
 	  (loop
-	   (process-wait "waiting for connection"
+	   (process-wait "waiting for a connection"
 			 #'(lambda (mask mask-obj timeout)
 			     (setf (unsigned-long-unsigned-long mask-obj) mask)
 			     (not (zerop (select 32 mask-obj 0 0 timeout))))
@@ -193,10 +193,9 @@ files are closed."
 		then (format t ";;; access denied for addr ~s~%" hostaddr)
 		     (refuse-connection fd)
 		else (process-run-function
-		       (format nil "listener-~d" fd)
+		       (format nil "TCP Listener ~d" fd)
 		       'lisp-listener-with-fd-as-terminal-io
-		       fd)))
-	   ))
+		       fd)))))
       (when listen-socket-fd
 	(mp::mpunwatchfor listen-socket-fd)
 	(fd-close listen-socket-fd)
