@@ -1,4 +1,4 @@
-;; $Id: Doc0.el,v 1.1.2.1 1998/06/24 17:24:10 layer Exp $
+;; $Id: Doc0.el,v 1.1.2.2 1998/06/24 23:06:53 layer Exp $
 
 (defvar current-local-map-var)
 
@@ -24,29 +24,27 @@
 
   (beginning-of-buffer)
 
-  (while (or (re-search-forward "^!" nil t)
-	     (re-search-forward "^%" nil t)
-	     (re-search-forward "^@" nil t))
+  (while (re-search-forward "^%%" nil t)
     (beginning-of-line)
+;;;    (message "foo: %s" (save-excursion
+;;;			 (buffer-substring (point)
+;;;					   (progn (end-of-line) (point)))))
     (cond
-     ((looking-at "^!include \\(.*\\)")
+     ((looking-at "^%%include \\(.*\\)")
       (message "default-directory is %s" default-directory)
       (let ((file (buffer-substring (match-beginning 1) (match-end 1))))
 	(replace-match "")
 	(message "inserting contents of %s" file)
 	(insert-file-contents-indented file 4)))
-     ((or (looking-at "^%% ")
-	  (looking-at "^@@ "))
-      (let* ((verbose (looking-at "^%% "))
-	     ;;(bol (point))
-					(xx (re-search-forward
-		  "^\\(%%\\|@@\\) \\([^ \t]+\\)[ \t]*\\([^ \t]+\\)?$"
-		  (save-excursion (end-of-line) (point))))
+     ((looking-at "^%% ")
+      (let* ((verbose t)
+	     (xx (re-search-forward "^%% \\([^ \t]+\\)[ \t]*\\([^ \t]+\\)?$"
+				    (save-excursion (end-of-line) (point))))
 	     (var-string
-	      (buffer-substring (match-beginning 2) (match-end 2)))
+	      (buffer-substring (match-beginning 1) (match-end 1)))
 	     (mode-string
-	      (when (match-beginning 3)
-		(buffer-substring (match-beginning 3) (match-end 3))))
+	      (when (match-beginning 2)
+		(buffer-substring (match-beginning 2) (match-end 2))))
 	     (var (intern var-string))
 	     (mode (when (and mode-string (not (string= "" mode-string)))
 		     (intern mode-string)))
@@ -59,7 +57,7 @@
 			(re-search-forward
 			 "^\\(%%\\|@@\\) \\([^ \t]+\\)[ \t]*\\([^ \t]+\\)?$"
 			 (save-excursion (end-of-line) (point)))
-			(replace-match "\\2")))
+			(replace-match "")))
 	     (xfunc (and (fboundp var) (symbol-function var)))
 	     (func (if (and xfunc
 			    (consp xfunc)
@@ -70,82 +68,47 @@
 				(and (not (stringp (third xfunc)))
 				     (not (eq 'interactive
 					      (car (third xfunc)))))))
-		       " [function]"
-		     " [command]"))
+		       "function"
+		     "command"))
 	     (line-pad 88))
 	xx yy ;; get rid of compile warnings
 	(cond
 	 ((boundp var)
 	  (let* ((val (symbol-value var))
-		 (type (cond ((syntax-table-p val) " [syntax-table]")
-			     ((keymapp val) " [keymap]")
-			     (t " [variable]")))
-		 (doc (or (documentation-property var 'variable-documentation)
+		 (type (cond ((syntax-table-p val) "syntax-table")
+			     ((keymapp val) "keymap")
+			     (t "variable")))
+		 (doc (or (frob-docstring
+			   (documentation-property
+			    var 'variable-documentation))
 			  (error "no documentation available for %s" var))))
-	    (insert-char ?. (- line-pad (length type)
-			       (length (symbol-name var))))
-	    (cond ((syntax-table-p val)
-		   (insert (format "%s" type))
-		   (if verbose
-		       (insert "\n")
-		     (forward-line 1))
-		   (when verbose
-		     (insert-doc-string doc)))
-		  ((keymapp val)
-		   (insert (format "%s" type))
-		   (if verbose
-		       (insert "\n")
-		     (forward-line 1))
-		   (when verbose
-		     (insert-doc-string doc)
-		     (insert
-		      (format "\n%s" (substitute-command-keys
-				      (format "\\{%s}" var))))))
-		  (t
-		   (insert type)
-		   (if verbose
-		       (insert "\n")
-		     (forward-line 1))
-		   (insert (format "   Initial value: %s\n"
-				   (frob-newlines (fi::prin1-to-string val))))
-		   (when verbose
-		     (insert-doc-string doc))))))
+	    (insert
+	     (variable-definition var (value-to-string val var) doc))))
 	 ((fboundp var)
-	  (let* ((xx (symbol-function var))
-		 (arglist (and (consp xx) (car (cdr xx))))
-		 (n line-pad))
-	    (when arglist
-	      (let ((string
-		     (concat " " (mapconcat 'symbol-name arglist " "))))
-		(setq n (- n (length string)))
-		(insert string)))
-	    (insert-char ?. (- n (length func) (length var-string))))
 	  (setq current-local-map-var
 	    (cond ((symbol-value mode))
 		  (t nil)))
-	  (let ((key (when current-local-map-var
-		       (substitute-command-keys
-			(format "\\<current-local-map-var>\\[%s]" var)))))
-	    (insert func)
-	    (if verbose
-		(insert "\n")
-	      (forward-line 1))
-	    (if key
-		(progn
-		  (insert (format "   Invoke with \"%s\"" key))
-		  (if (and key (null (string-match "M-x" key)))
-		      (insert (format " in %s" xmode-name)))
-		  (insert ".\n"))
-	      (when verbose
-		(insert (format "   Invoke with \"M-x %s\"" var))
-		(insert ".\n")))
-	    (when verbose
-	      (insert-doc-string
-	       (or (documentation var)
-		   (error "no documentation available for %s" var))))))
-	 (t (error "Variable %s is not bound or fbound" var)))
-	(when verbose
-	  (insert "\n\n"))))))
+	  (let* ((xx (symbol-function var))
+		 (xarglist (and (consp xx) (car (cdr xx))))
+		 (arglist
+		  (when xarglist
+		    (mapconcat 'symbol-name xarglist " ")))
+		 (key (when current-local-map-var
+			(substitute-command-keys
+			 (format "\\<current-local-map-var>\\[%s]" var)))))
+	    (insert
+	     (function-definition
+	      var
+	      func
+	      arglist
+	      (if key
+		  (format "%s%s" key
+			  (if (and key (null (string-match "M-x" key)))
+			      (insert (format " in %s" xmode-name))))
+		(format "M-x %s" var))
+	      (or (frob-docstring (documentation var))
+		  (error "no documentation available for %s" var))))))
+	 (t (error "Variable %s is not bound or fbound" var)))))))
 
   (write-region (point-min) (point-max) output-file))
 
@@ -188,3 +151,47 @@
 	(setq res (cons c res)))
       (setq i (+ i 1)))
     (concat (nreverse res))))
+
+(defun variable-definition (variable value description)
+  (format "</pre><table border=\"0\" width=\"95%%\" cellpadding=\"0\" cellspacing=\"0\">
+  <tr>
+    <td width=\"75%%\"><strong><font face=\"Courier New\">%s</font></em></strong></td>
+    <td width=\"20%%\"><strong>[Emacs variable]</strong></td>
+  </tr>
+  <tr>
+    <td width=\"77%%\" colspan=\"2\"><strong>Initial value</strong>: %s</td>
+  </tr>
+</table>
+
+<ul>
+  <li><pre><font face=\"Times New Roman\"><big>%s</big></font></pre></li>
+</ul><pre>"
+	  variable value description))
+
+(defun function-definition (name type arglist invoke-with description)
+  (format "</pre><table border=\"0\" width=\"95%%\" cellpadding=\"0\" cellspacing=\"0\">
+  <tr>
+    <td width=\"75%%\"><strong><font face=\"Courier New\">%s</font></strong></td>
+    <td width=\"20%%\"><strong>[Emacs %s]</strong></td>
+  </tr>
+  <tr>
+    <td width=\"75%%\" colspan=\"2\"><strong>Arguments</strong>: %s</td>
+  </tr>
+</table>
+
+<ul>
+  <li>Invoke with %s.</li>
+  <li><pre><font face=\"Times New Roman\"><big>%s</big></font></pre></li>
+</ul><pre>"
+	  name type arglist invoke-with description))
+
+(defun value-to-string (value name)
+  (cond ((syntax-table-p value) "")
+	((keymapp value) (substitute-command-keys (format "\\{%s}" name)))
+	(t (frob-newlines (fi::prin1-to-string value)))))
+
+(defun frob-docstring (string)
+  ;; remove leading *
+  (if (= ?* (aref string 0))
+      (substring string 1)
+    string))

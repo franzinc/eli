@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.200.10.6 1998/06/23 22:50:47 layer Exp $
+;; $Id: fi-subproc.el,v 1.200.10.7 1998/06/24 23:06:54 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -323,6 +323,8 @@ process-connection-type (q.v.).")
   "*This variable only has an effect on Windows.  The value is the timeout,
 in seconds, that Emacs will wait for Lisp to startup, when no connection
 can be made in fi:common-lisp.")
+
+(defvar minibuffer-confirm-incomplete)
 
 (defun fi:common-lisp (&optional buffer-name directory executable-image-name
 				 image-args host image-file)

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.138.4.2 1998/06/24 17:24:10 layer Exp $
+# $Id: Makefile,v 1.138.4.3 1998/06/24 23:06:53 layer Exp $
 # This makefile requires GNU make.
 
 include version.mak
@@ -19,7 +19,7 @@ endif
 
 default:	fi-vers.el compile
 
-all:	fi-vers.el compile test.out tags docs
+all:	fi-vers.el compile readme.htm
 
 compile:	fi-vers.el
 	$(emacs) -nw -batch -q -l $(pwd)/fi-compile.el -kill
@@ -40,7 +40,7 @@ test.out:	$(elcs) fi-test.el
 	@date > test.out
 
 clean:	FORCE
-	rm -f *.elc *.doc test.out
+	rm -f *.elc *.doc readme.htm test.out
 
 tags:	FORCE
 	etags *.el

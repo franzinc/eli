@@ -1,8 +1,8 @@
-test.out
 *.doc
-RefMan.n
-RefCard.n
-fi-vers.el
 *.tar.gz
 dists
+fi-vers.el
+readme0.htm
+readme.htm
+test.out
 tmp

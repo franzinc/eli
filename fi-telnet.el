@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-telnet.el,v 1.15 1997/02/27 17:34:53 layer Exp $
+;; $Id: fi-telnet.el,v 1.15.24.1 1998/06/24 23:06:55 layer Exp $
 
 (defvar fi:telnet-mode-map nil
   "The telnet major-mode keymap.")
@@ -39,7 +39,7 @@ is seen.")
 (defun fi:telnet-mode (&optional mode-hook)
   "Major mode for interacting with an inferior telnet.
 The keymap for this mode is bound to fi:telnet-mode-map:
-\\{fi:telnet-mode-map}
+<font face=\"Courier New\">\\{fi:telnet-mode-map}</font>
 Entry to this mode runs the following hooks:
 
 	fi:subprocess-mode-hook
