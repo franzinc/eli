@@ -24,138 +24,165 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.4 1989/02/15 23:19:01 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.5 1989/05/19 14:06:19 layer Exp $
 
-(defconst clman:doc-directory
-  (let ((p load-path)
-	(string "fi/manual/")
-	(done nil) res)
-    (while (and (not done) p)
-      (if (file-exists-p (setq res (concat (car p) "/" string)))
-	  (setq done t)
-	(setq res nil))
-      (setq p (cdr p)))
-    res))
+(defconst fi:clman-doc-directory
+    (let ((p load-path)
+	  (string "fi/manual/")
+	  (done nil) res)
+      (while (and (not done) p)
+	(if (file-exists-p (setq res (concat (car p) "/" string)))
+	    (setq done t)
+	  (setq res nil))
+	(setq p (cdr p)))
+      res))
 
-(defconst clman:package-info
-  (list 
-   (list "xcw-pilot"
-	 (concat clman:doc-directory "winman/pages/x-specific/new-pilot/"))
-   (list "xcw" (concat clman:doc-directory "winman/pages/x-specific/"))
-   (list "cw" (concat clman:doc-directory "winman/pages/"))
-   (list "math" (concat clman:doc-directory "mathpack/pages/"))
-   (list "lisp" (concat clman:doc-directory "refman/pages/"))))
+(defconst fi:clman-package-info
+    (list 
+     (list "xcw" (concat fi:clman-doc-directory "xcw/"))
+     (list "math" (concat fi:clman-doc-directory "matrix/"))
+     (list "lisp" (concat fi:clman-doc-directory "cl/"))))
 
-(if (not (boundp 'clman::oblist)) (load "fi/clman-oblist.el"))
+(if (not (boundp 'fi::clman-oblist)) (load "fi/clman-oblist"))
 
-(defvar clman:mode-map nil)
+(defvar fi:clman-mode-map nil
+  "Major mode key definitions for viewing a clman page.")
 
-(defvar clman:displaying-function 'clman:find-file
+(defvar fi:clman-displaying-function 'fi:clman-find-file
   "This function will be funcalled with two arguments, the .doc file to be
-displayed, and the buffer which is the value of clman:displaying-buffer.
+displayed, and the buffer which is the value of fi:clman-displaying-buffer.
 If you wish, you can set this variable to your own displaying function.")
 
-(defvar clman:displaying-buffer "*CLMan*"
+(defvar fi:clman-displaying-buffer "*CLMan*"
   "Either nil or a string naming the buffer that the system will use for
 displaying documentation pages.  If nil, then the system will not try to
 reuse the same buffer.")
 
-(defvar clman::window-configuration nil)
+(defvar fi::clman-window-configuration nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; Interactive Functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun fi:clman (&optional symbol)
+  "Look up SYMBOL in the online manual, with completion.  The optional
+argument SYMBOL is prompted for in the minibuffer, if not supplied.  As a
+guess, the system uses the symbol immediately to the left of the text
+cursor.  To get completion for a symbol in a package other than the :lisp
+package, use the nickname of that package, followed by a colon (e.g. cw: or
+math:).  The buffer that is displayed will be in CLMAN mode."
   (interactive)
-  (setq clman::window-configuration (current-window-configuration))
-  (let* ((temp-info clman:package-info)(package nil)
-         (doc-page nil)(syn nil)
-         (done nil))
-    (setq sym (or symbol (clman::get-sym-to-lookup)))
-    (while (not done) 
-      (setq package (car temp-info))
-      (if (not package)
-          (progn (setq done t)
-                 (message "Couldn't find the doc page for %s " sym))
-	(progn
-	  (setq doc-page
-	    (concat (car (cdr package))
-		    (clman::file-nameify sym))))
+  (setq fi::clman-window-configuration (current-window-configuration))
+  (let* ((temp-info fi:clman-package-info)(package nil)
+         (doc-page nil)(sym nil)
+         (done nil)(found-it nil)(pack nil)(sym-pack-pair nil)
+	 (pack-dir nil))
+    (setq sym (or symbol (fi::clman-get-sym-to-lookup)))
+    (if (not sym)
+	(setq sym-pack-pair (list "" ""))
+      (setq  sym-pack-pair (fi::clman-strip-leading-package-name sym)))
+    (setq pack (car  sym-pack-pair))
+    (setq sym (car (cdr  sym-pack-pair)))
+    (setq packdir (car (cdr (assoc pack fi:clman-package-info))))
+    ;; they did not specify a package
+    (if (not packdir)
+	(progn 
+	  (while (not done) 
+	    (setq package (car temp-info))
+	    (if (not package)
+		(progn (setq done t)
+		       (message "Couldn't find the doc page for %s " sym))
+	      (progn
+		(setq doc-page
+		  (concat (car (cdr package))
+			  (fi::clman-file-nameify (downcase sym)))))
+	      (if (file-exists-p doc-page)
+		  (progn
+		    (setq done t)
+		    (fi::clman-display-file
+		     doc-page fi:clman-displaying-buffer)
+		    (setq found-it t))
+		(setq temp-info (cdr temp-info)))
+	      found-it)))
+      ;; they did specify a package
+      (progn
+	(setq doc-page
+	  (concat  packdir
+		   (fi::clman-file-nameify (downcase sym))))
 	(if (file-exists-p doc-page)
 	    (progn
 	      (setq done t)
-	      (clman::display-file doc-page clman:displaying-buffer))
-	  (setq temp-info (cdr temp-info)))))))
+	      (fi::clman-display-file doc-page fi:clman-displaying-buffer)
+	      (setq found-it t)))
+	found-it))))
 
 (defun fi:clman-apropos ()
+  "Prompts for a string on which an apropos search is done.  Displays a
+buffer which lists all documented symbols which match the string.  The
+buffer will be in CLMAN mode."
   (interactive)
-  (let* ((oblist-buffer-name "*clman-oblist*")
-	 (oblist-buffer (get-buffer-create oblist-buffer-name))
-	 (string (read-string "clman apropos: ")))
-    (set-buffer oblist-buffer)
-    (let ((done nil) (lis clman::oblist))
-      (while (not done)
-        (insert-string (car (car lis)))
-        (newline 1)
-        (setq lis (cdr lis))
-        (if (null lis) (setq done t))))
-    (beginning-of-buffer)
-    (with-output-to-temp-buffer "*clman-apropos*"
-      (while (re-search-forward string nil t)
-	(beginning-of-line)
-	(princ (buffer-substring (point) (progn (end-of-line) (point))))
-	(terpri)
-	(forward-line 1)))
-    (fi:clman-mode)
+  (let* ((string (downcase (read-string "clman apropos: ")))
+	 (apropos-buffer-name "*CLMan-Apropos*"))
+    (with-output-to-temp-buffer apropos-buffer-name
+      (let ((done nil) (lis fi::clman-oblist)
+	    (item nil))
+	(while lis
+	  (setq item (car (car lis)))
+	  (if (string-match string item)
+	      (progn (prin1 item)
+		     (princ "\n")))
+	  (setq lis (cdr lis)))))
+    (switch-to-buffer-other-window apropos-buffer-name)
+    (replace-string "\"" "")
+    (fi:clman-mode)(goto-char (point-min))))
 
-    ;;why was the following here?
-    ;;(beginning-of-buffer)
-    ;;(replace-string "\"" "")
-    ;;(beginning-of-buffer)
-    ;;(replace-string "(" "")
-    ;;(beginning-of-buffer)
-    ;;(replace-string ")" "")
-    ;;(beginning-of-buffer)
-    ;;(while (search-forward "if assoc" nil t)
-    ;;  (beginning-of-line)
-    ;;  (kill-line 1))
-    ;;(beginning-of-buffer)
-    ))
 
 (defun fi:clman-mode ()
-  "Major mode for getting around
-Like Text Mode but with these additional comands:\n\\{clman:mode-map}\n"
+  "Major mode for viewing Allegro manual pages.  text-mode-syntax-table and
+text-mode-abbrev-table are `used' in this mode."
   (interactive)
   (set-syntax-table text-mode-syntax-table)
-  (use-local-map clman:mode-map)
+  (use-local-map fi:clman-mode-map)
   (setq local-abbrev-table text-mode-abbrev-table)
   (setq major-mode 'fi:clman-mode)
   (setq mode-name "CLMAN")
   (run-hooks 'text-mode-hook))
 
-(defun clman:search-forward-see-alsos ()
+(defun fi:clman-search-forward-see-alsos ()
+  "Move text cursor directly to the beginnig of the SEE ALSO section of a
+clman buffer, from anywhere in the buffer."
   (interactive)
   (if (search-forward "SEE ALSO" nil t)
       (beginning-of-line)
     (if (search-backward "SEE ALSO" nil t)
-	(beginning-of-line))))
+	(beginning-of-line)))
+  (recenter))
 
-(defun clman:flush-doc ()
+(defun fi:clman-next-entry ()
+  (interactive)
+  (if (search-forward "DESCRIPTION" nil t)
+      (progn (beginning-of-line)(forward-line 1))
+    (progn 
+      (goto-char (point-min))
+      (search-forward "DESCRIPTION" nil t)
+      (beginning-of-line)(forward-line 1) )))
+
+(defun fi:clman-flush-doc ()
+  "Flush the current clman buffer."
   (interactive)
   (kill-buffer (current-buffer))
-  (set-window-configuration clman::window-configuration))
+  (set-window-configuration fi::clman-window-configuration))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; Internal stuff
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun clman::get-sym-to-lookup ()
+(defun fi::clman-get-sym-to-lookup ()
   (interactive)		   
-  (let* ((str nil)(sym nil)(ans nil))
+  (let* ((str nil)(sym nil)(ans nil)(pack nil))
     ;; make sure we have a symbol table
     ;; get a symbol to look up, if the user did not provide one
-    (setq str (clman::backward-copy-sexp-as-kill))
+    (setq str (fi::clman-backward-copy-symbol-as-kill))
     (setq sym (if (or (string= str "")
 		      (string= (substring str 0 1) "(")
 		      (string= (substring str 0 1) "."))
@@ -163,35 +190,52 @@ Like Text Mode but with these additional comands:\n\\{clman:mode-map}\n"
     (if (listp (car sym))(setq str nil))
           
     (setq ans (completing-read  
-	       (concat "Symbol (" str "): ") clman::oblist))
+	       (concat "Symbol (" str "): ") fi::clman-oblist))
     (if (string=  ans "")(setq ans str))
-    (setq ans (clman::strip-leading-package-name ans))
+    (if (setq pack  (assoc ans fi:clman-package-info))
+	(progn 
+	  (setq oblist-name 
+	    (concat "fi::clman-" ans "-oblist"))
+	  (setq ans 
+	    (concat ans ":"
+		    (completing-read 
+		     (concat "Symbol (" ans ":): ") 
+		     (eval (car (read-from-string oblist-name))))))))
     ans))
 
-(defun clman::strip-leading-package-name (str)
+(defun fi::clman-strip-leading-package-name (str)
   (interactive)
-  (let ((pos (string-match ":" str)))
+  ;; now this returns a list of the package and the symbol
+  (let ((pos (string-match "[a-zA-Z]:" str)))
     (if (and pos (not (= pos 0)))
-	(substring str (+ 1 pos) (length str))
-      str)))
+	;; There is a leading package qualifier
+	(let ((first-string (substring str 0 (+ 1 pos)))
+	      (second-string (substring str (+ 2 pos) (length str))))
+	  (if (not (string= second-string ""))
+	      (if (string= (substring second-string 0 1) ":")
+		  (setq second-string 
+		    (substring second-string 1 (length second-string)))))
+	  (list first-string second-string))
+      (list "" str))))
 
-(defun clman::retrieve-doc-page (str table doc-dir)
+
+(defun fi::clman-retrieve-doc-page (str table doc-dir)
   "Retrieve the documentation page for the string argument, which is 
 the name of a symbol that we want to look up. If the symbol is 
 not found, you will be prompted for an alternate package. If you just
 hit return, this function returns nil."
-  (let ((name
-	 (clman::man-page-lookup str table doc-dir)))
+  (let ((name (fi::clman-man-page-lookup str table doc-dir)))
     ;; name is the full pathname of the doc page we want
     (bury-buffer)
     (if name name nil)))
 		       
-(defun clman::display-file (name buf)
-  "Display name, which is an clman .doc file according to a displaying style.
-The displaying style is the value of the global var clman:displaying-function.
-The two built in displaying functions are 'clman:view-file, which uses 'view,
-and clman:find-file, which inserts the .doc file into the buffer named
-by the value of the variable clman:displaying-buffer"
+(defun fi::clman-display-file (name buf)
+  "Display name, which is an clman .doc file according to a displaying
+style. The displaying style is the value of the global var
+fi:clman-displaying-function.  The two built in displaying functions are
+'fi:clman-view-file, which uses 'view,  and fi:clman-find-file, which
+inserts the .doc file into the buffer named by the value of the variable
+fi:clman-displaying-buffer"
   ;; If buf is non-nil then we want to reuse the displaying buffer,
   ;; so have to erase it first
   (if buf
@@ -199,24 +243,24 @@ by the value of the variable clman:displaying-buffer"
 	  (save-excursion 
 	    (switch-to-buffer buf)
 	    (erase-buffer))))
-  (funcall clman:displaying-function name buf)
+  (funcall fi:clman-displaying-function name buf)
   (fi:clman-mode))
 
-(defun clman:view-file (name buf)
+(defun fi:clman-view-file (name buf)
   "A built-in function that you may use for the value of
-clman:displaying-function.  This function uses the function 'view-file."
+fi:clman-displaying-function.  This function uses the function 'view-file."
   (view-file name))
 
-(defun clman:find-file (name buf)
+(defun fi:clman-find-file (name buf)
   "A built-in function that you may use for the value of
-clman:displaying-function.  This function uses the function 'insert-file to
-insert the file that is named by the first argument into the buffer named
-by the second argument."
+fi:clman-displaying-function.  This function uses the function 'insert-file
+to insert the file that is named by the first argument into the buffer
+named by the second argument."
   (if (not (string=  buf (buffer-name(current-buffer))))
       (switch-to-buffer-other-window buf))
   (insert-file name))
 
-(defun clman::man-page-lookup (str table doc-dir)
+(defun fi::clman-man-page-lookup (str table doc-dir)
   "Lookup  a string in the filename/symbol table.  The system used the
 buffer which is named by the third element in clman-current-package-info.
 Return the full pathname of the file the symbol is in. "
@@ -235,15 +279,22 @@ Return the full pathname of the file the symbol is in. "
       (backward-char)
       (concat doc-dir "/" (buffer-substring begin (point))))))
 
-(defun clman::backward-copy-sexp-as-kill ()
-  "Low level function."
+(defun fi::clman-backward-copy-sexp-as-kill ()
   (backward-sexp)
   (let* ((begin (point)) end sym)
     (forward-sexp)
-    (clman::remove-chars-from-string '(?\ ?\n)
-				    (buffer-substring begin (point)))))
+    (fi::clman-remove-chars-from-string '(?\ ?\n)
+					(buffer-substring begin (point)))))
 
-(defun clman::escape-funny-chars (sym)
+
+(defun fi::clman-backward-copy-symbol-as-kill ()
+  (skip-chars-backward "[a-zA-Z\-:+*0-9]")
+  (let* ((begin (point)) end sym)
+    (skip-chars-forward "[a-zA-Z\-:+*0-9]")
+    (fi::clman-remove-chars-from-string '(?\ ?\n)
+					(buffer-substring begin (point)))))
+
+(defun fi::clman-escape-funny-chars (sym)
   ;; the shell requires that certain chars be preceded by \
   ;; and that entire command be surrounded by '  '
   (let ((temp sym)
@@ -270,7 +321,7 @@ Return the full pathname of the file the symbol is in. "
       (setq temp (substring temp 1)))
     (setq result (concat "\"" result "\""))))
 
-(defun clman::sub-chars-in-string (char-assoc-list string)
+(defun fi::clman-sub-chars-in-string (char-assoc-list string)
   "Substitute character pairs of CHAR-ASSOC-LIST in STRING."
   (let (pair)
     (mapconcat '(lambda (char)
@@ -280,7 +331,7 @@ Return the full pathname of the file the symbol is in. "
 	       string
 	       nil)))
 
-(defun clman::remove-chars-from-string (char-list string)
+(defun fi::clman-remove-chars-from-string (char-list string)
   "Remove characters in CHAR-LIST from string STRING and return the result."
   (mapconcat '(lambda (char)
 	       (if (memq char char-list)
@@ -289,30 +340,29 @@ Return the full pathname of the file the symbol is in. "
 	     string
 	     nil))
 
-(defun clman::file-nameify (str)
+(defun fi::clman-file-nameify (str)
   (let ((result
-         (clman::sub-chars-in-string '((?* . ?S)(?~ . ?T)
-				      (?< . ?L)(?> . ?G)
-				      (?/ . ?D)(?& . ?A) (?: . ?C)
-				      (?= . ?E)(?\\ . ?B)
-				      (?$ . ?d)(?% . ?p)
-				      (?\? . ?Q) (?\( . ?o)
-				      (?\) . ?c)(?| . ?V)
-				      (?^ . ?K)(?\[ . ?b)
-				      (?\' . ?q)(?\" . ?Z)
-				      (?\# . ?h)(?\` . ?b)
-				      (?\; . ?s)(?- . ?H)
-				      (?, . ?k)(?+ . ?a)(?\. . ?e)(?\  . ?B)
-				      )
-				    str)))
-    ;;   (setq result (clman::remove-chars-from-string 
-    ;;                  '(?\  ) result))
+         (fi::clman-sub-chars-in-string '((?* . ?S)(?~ . ?T)
+					  (?< . ?L)(?> . ?G)
+					  (?/ . ?D)(?& . ?A) (?: . ?C)
+					  (?= . ?E)(?\\ . ?B)
+					  (?$ . ?d)(?% . ?p)
+					  (?\? . ?Q) (?\( . ?o)
+					  (?\) . ?c)(?| . ?V)
+					  (?^ . ?K)(?\[ . ?b)
+					  (?\' . ?q)(?\" . ?Z)
+					  (?\# . ?h)(?\` . ?b)
+					  (?\; . ?s)(?- . ?H)
+					  (?, . ?k)(?+ . ?a)
+					  (?\. . ?e)(?\  . ?B))
+					str)))
     (concat result ".doc")))
 
-(if clman:mode-map
+(if fi:clman-mode-map
     nil
-  (setq clman:mode-map (make-sparse-keymap))
-  (define-key clman:mode-map "\C-C\C-C" 'clman:flush-doc)
-  (define-key clman:mode-map "a" 'fi:clman-apropos)
-  (define-key clman:mode-map "m" 'fi:clman)
-  (define-key clman:mode-map "s" 'clman:search-forward-see-alsos))
+  (setq fi:clman-mode-map (make-sparse-keymap))
+  (define-key fi:clman-mode-map "\C-C\C-C" 'fi:clman-flush-doc)
+  (define-key fi:clman-mode-map "a" 'fi:clman-apropos)
+  (define-key fi:clman-mode-map "m" 'fi:clman)
+  (define-key fi:clman-mode-map "s" 'fi:clman-search-forward-see-alsos)
+  (define-key fi:clman-mode-map "n" 'fi:clman-next-entry))
