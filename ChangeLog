@@ -7,6 +7,13 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.1.2
+
+2000-09-26  Kevin Layer  <layer@ultra>
+
+	* Makefile: fix xemacs location
+
+*******************************************************************************
 2.1.1
 
 2000-09-18  Kevin Layer  <layer@ultra>

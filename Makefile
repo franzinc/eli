@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.144 2000/06/22 20:48:53 layer Exp $
+# $Id: Makefile,v 1.144.6.1 2000/09/26 22:16:06 layer Exp $
 # This makefile requires GNU make.
 
 include version.mak
@@ -13,7 +13,7 @@ ifdef xemacs
 #xemacsdir = $(shell perl.exe xemacsdir.pl)
 #emacs = $(xemacsdir)/XEmacs-21.1.9/i386-pc-win32/xemacs.exe
 #### Cygwin version is just right
-emacs = /usr/local/bin/i686-pc-cygwin32/xemacs
+emacs = /usr/bin/i686-pc-cygwin32/xemacs
 pwd = $(shell pwd)
 else
 emacsdir = $(shell perl.exe emacsdir.pl)
