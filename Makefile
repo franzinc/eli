@@ -1,35 +1,34 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.37 1989/07/22 14:33:29 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.38 1989/08/07 16:40:18 layer Exp $
 
-cl = /usr/local/cl
 emacs = /usr/local/emacs
 
-fasls = ipc.fasl emacs.fasl
+cl = /usr/local/cl
+
+# if the following is null, then the .fasl files will be compiled into
+# excl::*library-code-pathname*
+cl_library = 
 
 elcs = modes.elc indent.elc subproc.elc sublisp.elc filec.elc ring.elc\
 	    rlogin.elc shell.elc keys.elc tcplisp.elc\
 	    utils.elc ltags.elc clman.elc\
 	    ../../tools/doc.elc
 
-precompile = (set-case-mode :case-sensitive-lower)(require :process)(require :foreign)(require :cstructs)
-
 .SUFFIXES:
-.SUFFIXES: .el .elc .cl .fasl
+.SUFFIXES: .el .elc
 .el.elc: 
 	$(emacs) -nw -batch -q -l bytecomp -f batch-byte-compile $*.el
 
-.cl.fasl:
-	echo '$(precompile)(compile-file "$*.cl")' | $(cl) -qq -batch
-
 all:	elcs fasls spec.out
 
-fasls: ${fasls}
+fasls:
+	./docompile.sh ipc ${cl}
+	./docompile.sh emacs ${cl}
 
 elcs: ${elcs}
 
-spec.out:	../../doc/spec.n ${elcs}
-	$(emacs) -batch -q -l ../../tools/doc.elc
-
 tags:;	(cd ../..; etags lisp/fi/*.el lisp/local/*.el)
 
-echo-fasls:
-	echo ${fasls}
+###############################################################################
+
+spec.out:	../../doc/spec.n ${elcs}
+	$(emacs) -batch -q -l ../../tools/doc.elc
