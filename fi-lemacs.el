@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/Attic/fi-lemacs.el,v 2.13 1993/09/13 20:50:16 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-lemacs.el,v 2.14 1993/09/23 18:03:46 layer Exp $
 
 (defconst fi:allegro-file-menu
     '("ACLFile"
@@ -389,17 +389,18 @@
     '("common lisp mode popup menu"
       ["Compile region or form"
        fi:lisp-compile-active-region-or-defun
-       fi::connection-open]
+       (fi::connection-open)]
       ["Compile and load file" fi:menu-compile-and-load-file
-       fi::connection-open]
+       (fi::connection-open)]
       "----"
-      ["Find definition" fi:menu-lisp-find-definition fi::connection-open]
-      ["Find next definition" fi:lisp-find-next-definition fi::connection-open]
-      ["Arglist" fi:menu-lisp-arglist fi::connection-open]
-      ["Toggle trace" fi:menu-toggle-trace-definition fi::connection-open]
-      ["Macroexpand" fi:lisp-macroexpand fi::connection-open]
+      ["Find definition" fi:menu-lisp-find-definition (fi::connection-open)]
+      ["Find next definition" fi:lisp-find-next-definition
+       (fi::connection-open)]
+      ["Arglist" fi:menu-lisp-arglist (fi::connection-open)]
+      ["Toggle trace" fi:menu-toggle-trace-definition (fi::connection-open)]
+      ["Macroexpand" fi:lisp-macroexpand (fi::connection-open)]
       ["Recursive macroexpand" fi:lisp-macroexpand-recursively
-       fi::connection-open]
+       (fi::connection-open)]
       ))
 
 (defun fi:menu-lisp-find-definition ()

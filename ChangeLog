@@ -1,5 +1,7 @@
 Thu Sep 23 00:10:52 1993  Kevin Layer  (layer@sole)
 
+	* fi-lemacs.el: fix more menu specs
+
 	* fi-indent.el: search's should never error
 
 	* fi-modes.el: look for -*- only in first line of file
