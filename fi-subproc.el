@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.23 1988/04/26 09:26:24 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.24 1988/04/26 18:26:32 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -93,7 +93,8 @@ C-u, C-w, C-z, and C-\\, which will behave as they would in the current
 local keymap when typed at the end of a subprocess buffer.  If typed
 elsewhere, these keys have their normal global binding.  This is a
 buffer-local symbol.  This variable should be set before starting-up the
-first subprocess.")
+first subprocess.  Use setq-default to set the default value for this
+symbol.")
 
 (defvar fi:explicit-franz-lisp-file-name nil
   "Explicit Franz Lisp image to invoke from (fi:franz-lisp).")
@@ -133,7 +134,8 @@ this pattern matches is deemed to be prompt, and is not re-executed.")
 ;;;;
 
 (defun fi:common-lisp (&optional tcp-lisp)
-  "With no prefix argument, start a Common Lisp subprocess in 
+  "Make a buffer through which Common Lisp and Emacs can communicate.
+With no prefix argument, start a Common Lisp subprocess in 
 buffer *common-lisp*, otherwise try and connect to a Lisp listener
 daemon via a TCP/IP socket.  Returns the new process.  See
 `fi:unix-domain'."
@@ -148,9 +150,10 @@ daemon via a TCP/IP socket.  Returns the new process.  See
     proc))
 
 (defun fi:another-common-lisp (&optional tcp-lisp)
-  "With no prefix argument, start a new inferior Common Lisp process,
-otherwise try connecting to a Lisp Listener daemon via a TCP/IP socket.  If
-the socket connection succeeds, then lightweight Lisp process (not Emacs!)
+  "Make a another buffer through which Common Lisp and Emacs can
+communicate.  With no prefix argument, start a new inferior Common Lisp
+process,otherwise try connecting to a Lisp Listener daemon via a TCP/IP
+socket.  If the socket connection succeeds, then a lightweight Lisp process
 is started up automatically and this process is tied to the buffer created.
 The name of the buffer is *common-lisp-N*, where N will be chosen so that a
 new buffer is created (if N is 0, then the buffer is named *common-lisp*).
@@ -178,7 +181,7 @@ Returns the new process."
 (defun fi:another-franz-lisp ()
   "Run a new Franz Lisp subprocess, with IO through a buffer called
 *franz-lisp-N*, where N will be chosen so that a new buffer is created (if
-N is 0, then the buffer is named *common-lisp*).  Returns the new process."
+N is 0, then the buffer is named *franz-lisp*).  Returns the new process."
   (interactive)
   (let ((proc (fi::make-process "franz-lisp" "franz-lisp"
 				'fi:inferior-franz-lisp-mode nil t)))
