@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.120 1991/07/31 09:58:12 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.121 1991/08/22 21:28:49 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -281,7 +281,8 @@ Emacs-Lisp interface.  This only works in Allegro CL, currently."
        #-allegro-v4.1 nil)
       (when (fboundp 'excl::use-background-streams)
         (excl::use-background-streams))
-      (values))\n")))
+      (values))\n")
+    (send-string process (fi::setup-tcp-connection process))))
 
 (defun fi:common-lisp (&optional buffer-name directory image-name
 				 image-args host)
@@ -397,7 +398,9 @@ and typing ``C-x l'' provide an easy way to start a Common Lisp and go to it."
   (interactive)
   (call-interactively 'fi:common-lisp))
 
-(defun fi:open-lisp-listener (&optional buffer-number buffer-name)
+(defun fi:open-lisp-listener (&optional buffer-number
+					buffer-name
+					setup-function)
   "Open a connection to an existing Common Lisp process, started with the
 function fi:common-lisp, and create a Lisp Listener (a top-level
 interaction).  The Common Lisp can be either local or remote.  The name of
@@ -410,6 +413,8 @@ the buffer name is the second optional argument."
 	  (not (fi:process-running-p
 		(get-process fi::common-lisp-backdoor-main-process-name))))
       (error "Common Lisp must be running to open a lisp listener."))
+  (unless setup-function
+    (setq setup-function 'fi::setup-tcp-connection))
   (let* ((buffer
 	  (process-buffer
 	   (get-process fi::common-lisp-backdoor-main-process-name)))
@@ -420,8 +425,17 @@ the buffer name is the second optional argument."
 					(fi::get-buffer-host buffer)
 					(fi::get-buffer-port buffer)
 					(fi::get-buffer-password buffer)
-					(fi::get-buffer-ipc-version buffer))))
+					(fi::get-buffer-ipc-version buffer)
+					setup-function)))
     proc))
+
+(defun fi::setup-tcp-connection (proc)
+  (format
+   "(progn
+      (setf (getf (mp:process-property-list mp:*current-process*) %s) %d)
+      (values))\n"
+   ':emacs-listener-number
+   (fi::tcp-listener-generation proc)))
 
 (defun fi:franz-lisp (&optional buffer-name directory image-name
 				image-args host)
@@ -703,11 +717,22 @@ the first \"free\" buffer name and start a subprocess in that buffer."
       (when initial-func (funcall initial-func process)))
     process))
 
+(defvar fi::tcp-listener-table nil)
+(defvar fi::tcp-listener-generation 0)
+
+(defun fi::tcp-listener-generation (proc)
+  (let ((gen fi::tcp-listener-generation))
+    (setq fi::tcp-listener-table
+      (cons (cons proc gen) fi::tcp-listener-table))
+    (setq fi::tcp-listener-generation (+ 1 fi::tcp-listener-generation))
+    gen))
+
 (defun fi::make-tcp-connection (buffer-name buffer-number mode image-prompt
 				&optional given-host
 					  given-service
 					  given-password
-					  given-ipc-version)
+					  given-ipc-version
+					  setup-function)
   (if (not fi::common-lisp-backdoor-main-process-name)
       (error "A Common Lisp subprocess has not yet been started."))
   (let* ((buffer-name
@@ -744,7 +769,10 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	 proc
 	 (format "%s\n" (prin1-to-string fi::listener-protocol))))
       (process-send-string proc (format "\"%s\"\n" (buffer-name buffer)))
-      (process-send-string proc (format " %d \n" password))
+      (process-send-string proc (format "%d\n" password))
+
+      (when setup-function
+	(process-send-string proc (funcall setup-function proc)))
       
       (goto-char (point-max))
       (set-marker (process-mark proc) (point))
