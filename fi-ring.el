@@ -30,7 +30,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-ring.el,v 1.10 1990/12/13 17:34:51 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-ring.el,v 1.11 1991/03/12 18:30:43 layer Exp $
 
 ;; This code is very similar to the kill-ring implementation
 ;; and implements the fi::subprocess input ring.  Each fi::subprocess buffer
@@ -115,8 +115,8 @@ the subprocess input ring."
 		    fi::input-ring))))))
 
 (defun fi:pop-input (&optional arg)
-  "Yank previous text from input ring.  Cycle through input ring with each
-successive invocation."
+  "Yank previous text from input ring, and cycle through input ring with
+each successive invocation."
   (interactive "*p")
   (setq fi::last-command-was-successful-search nil)
   (if (not (memq last-command '(fi::yank-input
@@ -135,7 +135,7 @@ successive invocation."
 	     (if before (exchange-point-and-mark))))))
 
 (defun fi:push-input (&optional arg)
-  "Yank next text from input ring.  Cycle through input ring in reverse
+  "Yank next text from input ring, and cycle through input ring in reverse
 order with each successive invocation."
   (interactive "*p")
   (setq fi::last-command-was-successful-search nil)
@@ -266,7 +266,8 @@ Set fi::input-ring-yank-pointer to text."
     return-value))
 
 (defun fi:re-search-backward-input (arg regexp)
-  "Search in input ring for text that contains regexp and yank."
+  "Search backward in the input ring for the ARG occurance of text that
+matches REGEXP and yank it."
   (interactive "*p\nsRE search input backward: ")
   (if (string= regexp "") (setq regexp fi::last-input-search-string))
   (if fi::last-command-was-successful-search
@@ -286,7 +287,8 @@ Set fi::input-ring-yank-pointer to text."
       (message "Matching string not found in input ring.")))
 
 (defun fi:re-search-forward-input (arg regexp)
-  "Search in input ring for text that contains regexp and yank."
+  "Search forward in the input ring for the ARG occurance of text that
+matches REGEXP and yank it."
   (interactive "*p\nsRE search input forward: ")
   (if fi::last-command-was-successful-search
       (fi::rotate-yank-input-pointer -1))

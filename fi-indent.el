@@ -31,10 +31,11 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.23 1991/03/07 14:54:33 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.24 1991/03/12 18:30:38 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
-  "*If `t', semicolons that begin comments are indented as they are typed.")
+  "*If non-nil, semicolons that begin comments are indented as they are
+inserted into the buffer.")
 
 (make-variable-buffer-local 'fi:lisp-electric-semicolon)
 
@@ -146,7 +147,7 @@ depth to backtrack.  A reasonable value is 3.")
 (make-variable-buffer-local 'fi:lisp-maximum-indent-struct-depth)
 
 (defvar fi:indent-methods-case-sensitive t
-  "*If non-NIL, the code that is being edited is for a case-sensitive dialect
+  "*If non-nil, the code that is being edited is for a case-sensitive dialect
 of Lisp.  This variable is buffer-local.  If a Lisp is case-insensitive,
 indentation specifications should be placed on the Emacs Lisp symbol that
 corresponds to the lowercase name of the function, macro, or special

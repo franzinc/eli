@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.15 1991/03/07 14:57:37 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.16 1991/03/12 18:29:33 layer Exp $
 ;;
 
 (defvar fi:always-in-a-window nil)
@@ -133,6 +133,8 @@ buffers package to the package of PACKAGE."
 ;;;; Implementation of arglist
 
 (defun fi:lisp-arglist (string)
+  "Dynamically determine, in the Common Lisp environment, the arglist for
+STRING."
   (interactive (fi::get-default-symbol "Arglist for"))
   (make-request (lep::arglist-session :fspec string)
 		;; Normal continuation
@@ -147,6 +149,8 @@ buffers package to the package of PACKAGE."
 
 
 (defun fi:lisp-apropos (string &optional regexp)
+  "In the Common Lisp environment evaluate lisp:apropos on STRING.  STRING
+is taken to be a regular expression if a prefix argument is given."
   (interactive
    (list (car (fi::get-default-symbol
 	       (if current-prefix-arg "Apropos (regexp)" "Apropos")))
@@ -167,18 +171,23 @@ buffers package to the package of PACKAGE."
 ;; Both of these should take a next argument but what does it do?
 
 (defun fi:lisp-find-tag (something &optional next)
-  "Lep version"
+  "Find TAG using information in the Common Lisp environment, in the current
+window.  If NEXT or a prefix argument is given, then find the next
+occurance of the last tag."
   (interactive (if current-prefix-arg
 		   '(nil t)
 		 (list (car (fi::get-default-symbol "Lisp locate source")) nil)))
   (fi::lisp-find-tag-common something next nil))
 
 
-(defun fi:lisp-find-tag-other-window (something &optional next)
+(defun fi:lisp-find-tag-other-window (tag &optional next)
+  "Find TAG using information in the Common Lisp environment, in the other
+window.  If NEXT or a prefix argument is given, then find the next
+occurance of the last tag."
   (interactive (if current-prefix-arg
 		   '(nil t)
 		 (list (car (fi::get-default-symbol "Lisp locate source")) nil)))
-  (fi::lisp-find-tag-common something next t))
+  (fi::lisp-find-tag-common tag next t))
 
 (defun delete-metadot-session ()
   (if lep:*meta-dot-session* (lep::kill-session lep:*meta-dot-session*))
@@ -210,6 +219,7 @@ buffers package to the package of PACKAGE."
       (find-definition-using-find-tag something other-window-p))))
 
 (defun fi:lisp-tags-loop-continue (&optional first-time)
+  "Find the next definition found by a previous fi:lisp-find-tag."
   (interactive "P")
   (if (or tags-loop-form (not lep:*meta-dot-session*))
       (progn
@@ -378,8 +388,7 @@ return the pathname of temp file."
       (error "Cannot edit sequence %s: %s" something error)))))
 
 (defun fi:lisp-describe (symbol)
-  "Describe a symbol, which is read from the minibuffer.  The word around
-the point is used as the default."
+  "Dynamically, in the Common Lisp environment, describe SYMBOL."
   (interactive (fi::get-default-symbol "Describe symbol"))
   (make-request (lep::describe-session
 		 :package (string-to-keyword fi:package) :fspec symbol)
@@ -394,8 +403,8 @@ the point is used as the default."
 ;;; Function documentation
 
 (defun fi:lisp-function-documentation (symbol)
-  "Describe a symbol, which is read from the minibuffer.  The word around
-the point is used as the default."
+  "Dynamically determine, in the Common Lisp environment, the function
+documentation for SYMBOL."
   (interactive (fi::get-default-symbol "Describe symbol"))
   (make-request
    (lep::function-documentation-session :package fi:package :fspec symbol)
@@ -411,7 +420,7 @@ the point is used as the default."
 ;;; Macroexpansion and walking
 
 (defun fi:lisp-macroexpand ()
-  "Print the macroexpansion of the form at the point"
+  "Print the macroexpansion of the form at the point."
   (interactive)
   (message "Macroexpanding...")
   (fi::lisp-macroexpand-common 'lisp:macroexpand "macroexpand"))
@@ -445,10 +454,10 @@ With a prefix argument, macroexpand the code as the compiler would."
 
 (defun fi:lisp-complete-symbol ()
   "Perform completion on the Common Lisp symbol preceding the point.  That
-symbol is compared to symbols that exist in the Common Lisp, to which there
-is a TCP/IP connection (see fi:eval-in-lisp).  If the symbol starts just
-after an open-parenthesis, then only symbols (in the Common Lisp) with
-function defintions are considered.  Otherwise all symbols are considered."
+symbol is compared to symbols that exist in the Common Lisp environment.
+If the symbol starts just after an open-parenthesis, then only symbols (in
+the Common Lisp) with function defintions are considered.  Otherwise all
+symbols are considered."
   (interactive)
   (let* ((end (point))
 	 package real-beg
@@ -516,8 +525,8 @@ function defintions are considered.  Otherwise all symbols are considered."
 
 
 (defun fi:lisp-who-calls (&optional symbol)
-  "Print all the callers of a function.  The default symbol name is taken
-from the sexp around the point."
+  "Print all the callers of SYMBOL, the default of which is taken from the
+s-expression around the point."
   (interactive (fi::get-default-symbol "Find references to symbol"))
   ;; Since this takes a while, tell the user that it has started.
   (message "Finding callers of %s..." symbol)
@@ -555,7 +564,7 @@ from the sexp around the point."
   ;; We create a tcp listener using the stream protocol which arranges for
   ;; the stream to be passed back to the session
   (let ((fi::listener-protocol ':stream))
-    (send-string (fi:tcp-common-lisp -1)
+    (send-string (fi:open-lisp-listener -1)
 		 (format "%d\n" (session-id session)))))
 
 (defun getf-property (plist property &optional default)
@@ -618,7 +627,11 @@ prefix argument do it"
 
 
 (defun fi:toggle-trace-definition (string)
-  "Trace or untrace the specified function"
+  "Dynamically toggle, in the Common Lisp environment, tracing for STRING.
+If tracing is turned on, then it will be turned off for STRING.  If it is
+turned off, then it will be turned on for STRING.  When given a prefix
+argument, cause the debugger to be invoked, via a call to BREAK, when the
+function is called."
   (interactive (fi::get-default-symbol "(un)trace"))
   (make-request (lep::toggle-trace :fspec string :break current-prefix-arg)
 		;; Normal continuation
