@@ -7,6 +7,16 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+post release patches:
+
+1999-08-25  Kevin Layer  <layer@ultra>
+
+	* fi-lep.el: fix fi:lisp-complete-symbol for keywords
+
+	* fi-ident.el: fix fi:lisp-comment-indent in xemacs 21 (fix from
+	Frank.Schmuelling@gsfc.nasa.gov)
+
+*******************************************************************************
 2.0.21.16.15
 
 1999-04-14    <layer@ANT>
