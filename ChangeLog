@@ -1,3 +1,10 @@
+2005-01-28    <layer@HOBART>
+
+	* fi-emacs21.el: bug15164: fix resize hack
+	* fi-keys.el: bug15164: call fi::maybe-update-default-right-margin
+	  in fi:inferior-lisp-newline
+	* fi-site-init.el: bug15164: defvar's for fix
+
 2004-10-07  Kevin Layer  <layer@gemini>
 
 	* fi-emacs21.el: rfe6058: move a few things up one level in menus;
@@ -5013,4 +5020,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.9.2.10 $
+$Revision: 3.9.2.10.2.1 $

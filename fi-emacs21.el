@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-emacs21.el,v 3.2.8.1 2004/10/07 21:32:52 layer Exp $
+;; $Id: fi-emacs21.el,v 3.2.8.1.2.1 2005/01/28 18:53:51 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; emacs specific stuff
@@ -1075,22 +1075,25 @@
 ;; ways this could fail, such as if the initial frame were
 ;; subsequently closed...
 
-(defvar fi::*last-frame-width-given-to-lisp* 0)
-
 (defun fi::window-config-changed ()
-  (let ((width (1- (frame-width))))
-    (unless (equal fi::*last-frame-width-given-to-lisp* width)
-      ;;(message "window-config-changed frame %s width %s height %s"
-      ;;       (selected-frame) width (frame-height))
-      (ignore-errors			; Cautious.
-					; There is probably a better way to
-					; decide whether to try to notify
-					; lisp.
-       ;; Save the value first, in case there an error, so we don't contact
-       ;; Lisp more than we have to.
-       (setq fi::*last-frame-width-given-to-lisp* width)
-
-       (when (fi::lep-open-connection-p)
-	 (fi:eval-in-lisp "(setq excl::*default-right-margin* %d)" width))))))
+  (setq fi::*new-frame-width* (cons (1- (frame-width)) (selected-frame))))
 
 (add-hook 'window-configuration-change-hook 'fi::window-config-changed)
+
+(defun fi::maybe-update-default-right-margin ()
+  (ignore-errors
+   (when (and fi::*new-frame-width* fi::*current-frame-width*)
+     (let ((new-width (car fi::*new-frame-width*))
+	   (frame (cdr fi::*new-frame-width*)))
+       (setq fi::*new-frame-width* nil)
+       (when (/= fi::*current-frame-width* new-width)
+;;;	 (message "window frame %s width changed from %s to %s"
+;;;		  frame fi::*current-frame-width* new-width)
+     
+	 ;; Save the value first, in case there an error, so we don't contact
+	 ;; Lisp more than we have to.
+	 (setq fi::*current-frame-width* new-width)
+	
+	 (when (fi::lep-open-connection-p)
+	   (fi:eval-in-lisp "(setq excl::*default-right-margin* %d)"
+			    new-width)))))))

@@ -1,4 +1,4 @@
-;; $Id: fi-site-init.el,v 3.0 2003/12/15 22:52:57 layer Exp $
+;; $Id: fi-site-init.el,v 3.0.94.1 2005/01/28 18:53:52 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -33,6 +33,12 @@
 (defvar fi::install-acl-menubar t)
 (defvar fi::build-time nil)
 (defvar fi::emacs-type nil)
+
+(defvar fi::*current-frame-width* nil)
+(defvar fi::*new-frame-width* nil)
+(when (fboundp 'frame-width)
+  (ignore-errors
+   (setq fi::*current-frame-width* (1- (frame-width)))))
 
 (defun fi::find-path (path file)
   (let ((done nil) res temp)
