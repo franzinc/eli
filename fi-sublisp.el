@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.20 1988/04/26 18:25:57 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.21 1988/04/26 22:25:08 layer Exp $
 
 ;; Interaction with a Lisp subprocess
 
@@ -61,9 +61,9 @@
 
 (defvar fi:package nil
   "A buffer-local variable whose value should either be nil or a string
-which names a Lisp package.  This is used when expressions are sent from
-Emacs buffers to Lisp so that the expressions are read in the proper
-Lisp package.")
+which names a package in the Lisp world.  It is used when expressions are
+sent from Emacs buffers to Lisp so that the expressions are read in the
+proper Lisp package.")
 
 (defvar fi:unix-domain t
   "If non-nil, then `fi:unix-domain-socket' specifies the name of the
@@ -80,6 +80,7 @@ the steps to take:
 3. Make sure `fi:local-host-name' is in /etc/hosts and points to the local
 or loopback host.
 4. On the Common Lisp side, put the following in you .clinit.cl file:
+	(setq ipc:*inet-port* 1123) 	; the number from /etc/services
 	(setq ipc:*unix-domain* nil)
 
 The problem with this, is that people can then use `telnet' to get a

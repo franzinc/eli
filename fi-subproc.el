@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.24 1988/04/26 18:26:32 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.25 1988/04/26 22:25:12 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -101,18 +101,22 @@ symbol.")
 (defvar fi:explicit-common-lisp-file-name nil
   "Explicit Common Lisp image to invoke from (fi:common-lisp).")
 (defvar fi:explicit-franz-lisp-image-arguments nil
-  "Explicit Franz Lisp image arguments when invoked from (fi:franz-lisp).")
+  "Explicit Franz Lisp image arguments when invoked from (fi:franz-lisp).
+Should be a list of strings.")
 (defvar fi:explicit-common-lisp-image-arguments nil
-  "Explicit Common Lisp image arguments when invoked from (fi:common-lisp).")
+  "Explicit Common Lisp image arguments when invoked from (fi:common-lisp).
+Should be a list of strings.")
 
 (defvar fi:default-franz-lisp-file-name "lisp"
   "Default Franz Lisp image to invoke from (fi:franz-lisp).")
 (defvar fi:default-common-lisp-file-name "cl"
   "Default Common Lisp image to invoke from (fi:common-lisp).")
 (defvar fi:default-franz-lisp-image-arguments nil
-  "Default Franz Lisp image arguments when invoked from (fi:franz-lisp).")
+  "Default Franz Lisp image arguments when invoked from (fi:franz-lisp).
+Should be a list of strings.")
 (defvar fi:default-common-lisp-image-arguments nil
-  "Default Common Lisp image arguments when invoked from (fi:common-lisp).")
+  "Default Common Lisp image arguments when invoked from (fi:common-lisp).
+Should be a list of strings.")
 
 (defvar fi:subprocess-write-quantum 120
   "Maximum size in bytes of a single write request to a subprocess.")

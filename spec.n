@@ -1,7 +1,7 @@
 
 	      Franz Inc. GNU Emacs/Common Lisp Interface
 
-$Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.7 1988/04/26 18:27:36 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.8 1988/04/26 22:25:17 layer Exp $
 
 This document is a specification of the Franz Inc. GNU Emacs interface
 to Common Lisp, which is written entirely in GNU Emacs Lisp (for GNU
@@ -12,7 +12,7 @@ Emacs version 18.50).
    The purpose of this package is to enhance the productivity of the
 Lisp environment.  To this end, GNU Emacs and Lisp have been tightly
 coupled, and in the case of Sun Common Lisp 3.0 (or Allegro CL 3.0)
-the interface uses TCP/IP UNIX domain sockets.
+the interface uses TCP/IP UNIX or internet domain sockets.
 
    While editing Lisp source code, there are commands that make it
 easy to send expressions to, and receive information from, a Lisp
@@ -73,6 +73,10 @@ the two modes are (in order):
 
 The above functions are enhancements to the standard available GNU
 Emacs Lisp mode.
+
+   The major mode function for Common Lisp is called
+`fi:common-lisp-mode', and this function can be interactively called
+to put a buffer in Common Lisp mode.
 
 2.1 Bindings
 
@@ -96,8 +100,11 @@ variables.
    To correctly deal with the Common Lisp package system, Emacs must
 know the package for each file, so that it may use this when sending
 expressions from a buffer to Lisp.  There is a buffer-local variable
-which contains the name of the package, called `fi:package', and
-there are three ways to automatically set this variable:
+which contains the name of the package:
+
+%% fi:package
+
+There are three ways to automatically set this variable:
 
   1. If the first line in the file contains text surrounded by -*-,
      the `package' field of this line is parsed for the package name.
@@ -122,7 +129,7 @@ there are three ways to automatically set this variable:
 	;; End:
 
      Note that the normal method for setting a variable will not work,
-     because `fi:package' contains a `:' and this confuses the GNU
+     because `fi:package' contains a `:' and this confuses GNU
      Emacs, hence the use of `eval'.
 
 2.3 Functions
@@ -159,15 +166,58 @@ in Common Lisp mode:
     (setq fi:lisp-mode-hook
       '(lambda ()
 	(setq fill-column 75)
-	(make-local-variable 'auto-fill-hook)
-	(setq auto-fill-hook 'lisp-do-auto-fill)))
+	(auto-fill-mode 1)))
 
 3. Running Lisp
 
-   In this section are described the features, functions and key
-bindings of the ways the user can interact with Common Lisp:
-subprocesses and TCP/IP sockets.
- 
+   This section discusses the functions, features and key bindings
+associated with inferior and TCP/IP Lisp modes.  The following is an
+overview of the entry points to these modes.
+
+	M-x fi:common-lisp
+
+will start up an inferior Common Lisp in a buffer called
+`*common-lisp*'.  The image activated by Emacs depends of the values
+of `fi:explicit-common-lisp-file-name' and
+`fi:default-common-lisp-file-name', in this order.
+
+   If after an inferior Lisp has been started, as in the above example,
+the following can be evaluated by the newly created Lisp process to
+initiate a Lisp listener daemon to which Emacs can connect:
+
+	(or (find-package :ipc) (errorset (load "ipc.fasl")))
+	#+ipc (ipc:start-lisp-listener-daemon)
+
+Then after the above listener daemon is started, the following command
+to Emacs will open a second buffer onto the same Lisp (giving a prefix
+argument to `fi:another-common-lisp'):
+
+	C-u 1 M-x fi:another-common-lisp
+
+The resulting process will be talking to Lisp over a TCP/IP socket via
+a UNIX domain socket (using the file ~/.excl_to_emacs).  The following
+command would create a separate Lisp process in a new buffer (called
+`*common-lisp-3*' is the all the above commands where evaluated first):
+
+	M-x fi:another-common-lisp
+
+   To connect to a Lisp on another machine, the following in ~/.emacs
+
+	(setq fi:unix-domain nil)
+	(setq fi:local-host-name "akbar")	   ; the remote host name
+
+and the following in ~/.clinit.cl
+
+	(or (find-package :ipc) (errorset (load "ipc.fasl")))
+	(setq ipc::*unix-domain* nil)
+	(ipc:start-lisp-listener-daemon)
+
+would allow
+
+	C-u 1 M-x fi:another-common-lisp
+
+to open a connection to the Lisp on `akbar', as long as machine
+`akbar' was reachable on the network.
 
 3.1 Bindings
 
@@ -201,6 +251,9 @@ is taken from the following variables:
 
 %% fi:explicit-common-lisp-file-name
 %% fi:default-common-lisp-file-name
+
+NOTE: The Sun Common Lisp 3.0 binary is called `lisp', not `cl'
+      which is the initial value of `fi:default-common-lisp-file-name'.
 
    After the image name as been determined and the process has been
 started, a file in the user's home directory called .emacs_<IMAGE>,
@@ -353,15 +406,13 @@ A.2 Remote Lisps
     (setq explicit-common-lisp-image-arguments '("frozen" "cl"))
 
 A.3 X11R2
-
     ;; toy mouse bindings when using X windows
 
     (require 'x-mouse)
 
     (defun x-lisp-find-tag (arg)
       (x-mouse-set-point arg)
-      (cond ((eq major-mode 'fi:common-lisp-mode)
-	     (fi:lisp-find-tag))
+      (cond ((eq major-mode 'fi:common-lisp-mode) (fi:lisp-find-tag))
 	    (t (find-tag-other-window (find-tag-default)))))
 
     (defun x-lisp-eval-defun (arg)
@@ -369,13 +420,11 @@ A.3 X11R2
       (cond ((memq major-mode '(fi:common-lisp-mode fi:franz-lisp-mode
 				fi:lisp-mode))
 	     (fi:lisp-eval-defun nil))
-	    ((eq major-mode 'fi:emacs-lisp-mode)
-	     (eval-defun))))
+	    ((eq major-mode 'fi:emacs-lisp-mode) (eval-defun))))
 
     (defun x-lisp-arglist (arg)
       (x-mouse-set-point arg)
-      (cond ((eq major-mode 'fi:common-lisp-mode)
-	     (fi:lisp-arglist))
+      (cond ((eq major-mode 'fi:common-lisp-mode) (fi:lisp-arglist))
 	    (t (describe-function (intern (find-tag-default))))))
 
     (define-key mouse-map x-button-left-up 'x-lisp-find-tag)
@@ -384,7 +433,6 @@ A.3 X11R2
 
     ;; we ignore mouse button-down events, because if we put something
     ;; on it the `up' event will cause the minibuffer output to disappear
-
     (define-key mouse-map x-button-left 'x-mouse-ignore)
     (define-key mouse-map x-button-middle 'x-mouse-ignore)
     (define-key mouse-map x-button-right 'x-mouse-ignore)
@@ -442,15 +490,17 @@ B.1 Introduction
    Franz Lisp is handled very similar to Common Lisp, the only
 difference being that Franz Lisp does not support TCP/IP socket
 communication.  In all other ways, the features, function and variable
-names mirror that of the Common Lisp functions and variables.
+names mirror those of the corresponding Common Lisp functions and
+variables.
 
-B.2 Editing Franz Lisp Source
+B.2 Editing Franz Lisp
 
    As with Common Lisp, editing a Franz Lisp source file (.l
 extension) causes fi:franz-lisp-mode to be invoked.  The order of
 setup in the mode follows that of fi:common-lisp-mode.
 
-   Package system setup also occurs as in fi:common-lisp-mode.
+   Package system set-up also occurs in the same way as in
+fi:common-lisp-mode.
 
    Franz Lisp does not support the commands depending on TCP/IP.
 
@@ -475,6 +525,11 @@ B.2.4 Hooks
 and are done last in the mode initialization.
 
 B.3 Running Franz Lisp
+
+   As with Common Lisp, there are two entry points for running an
+inferior Franz Lisp. `M-x fi:franz-lisp' and `M-x fi:another-franz-lisp' 
+create Franz Lisp processes.  The default name of the Franz Lisp image
+is `lisp'.
 
 B.3.1 Bindings
 

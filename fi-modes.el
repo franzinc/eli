@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.19 1988/04/26 09:26:09 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.20 1988/04/26 22:25:21 layer Exp $
 
 ;;;; Mode initializations
 
@@ -282,7 +282,6 @@ shell, rlogin, sub-lisp or tcp-lisp."
   (define-key map "\C-u" 'fi:subprocess-kill-input)
   (define-key map "\C-v" 'fi:subprocess-show-output)
   (define-key map "\C-w" 'fi:subprocess-backward-kill-word)
-  (define-key map "\C-x" 'fi:input-region)
 
   (cond
     ((memq mode '(sub-lisp shell))
