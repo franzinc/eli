@@ -31,9 +31,9 @@
     (narrow-to-region (point)
 		      (progn (skip-chars-backward "0-9") (point)))
     (goto-char (point-min))
-    (let ((version (read (current-buffer))))
-      (delete-region (point-min) (point-max))
-      (prin1 (1+ version) (current-buffer)))))
+    (setq version (1+ (read (current-buffer))))
+    (delete-region (point-min) (point-max))
+    (prin1 version (current-buffer))))
 (skip-chars-backward "^\"")
 (message "%s"
 	 (buffer-substring (point)
@@ -65,9 +65,7 @@
 (insert
  "*******************************************************************************\n")
 (insert
- (format "%s public release\n"
-	 (car (cdr (fi:member-equal "-version"
-				    command-line-args)))))
+ (format "%d public release\n" version))
 (insert
  "*******************************************************************************\n\n")
 
