@@ -1,6 +1,3 @@
 A numbered list of user-visible changes to the product since the last
 public release.
 
-1. New variable fi:connect-to-windows.
-
-2. New variable fi:common-lisp-subprocess-wait-forever.

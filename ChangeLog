@@ -7,6 +7,13 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+<no version change>
+
+1999-01-25  Kevin Layer  <layer@ultra>
+
+	* CHANGES: file rfes
+
+*******************************************************************************
 2.0.21.16.5
 
 1999-01-18  Kevin Layer  <layer@ultra>
