@@ -3,7 +3,7 @@
 	      Franz Inc. GNU Emacs/Common Lisp Interface
 			   Release 2.0alpha
 
-;; $Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.51 1991/01/31 14:47:10 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.52 1991/01/31 16:36:59 layer Exp $
 
 ****** Common Lisp Mode *******************************************************
 
@@ -11,7 +11,6 @@
 
 %% fi:comment-region			fi:common-lisp-mode-map
 %% fi:common-lisp-file-types
-%% fi:common-lisp-package-regexp
 %% fi:end-of-defun			fi:common-lisp-mode-map
 %% fi:extract-list			fi:common-lisp-mode-map
 %% fi:fill-paragraph
@@ -46,6 +45,7 @@
 %% fi:lisp-keyword-indentation-hook
 %% fi:lisp-macroexpand			fi:common-lisp-mode-map
 %% fi:lisp-maximum-indent-struct-depth
+%% fi:lisp-mode-hook
 %% fi:lisp-mode-syntax-table
 %% fi:lisp-package
 %% fi:lisp-semicolon
@@ -57,6 +57,7 @@
 %% fi:lisp-who-calls			fi:common-lisp-mode-map
 %% fi:log-functional-change		fi:common-lisp-mode-map
 %% fi:package
+%% fi:parse-mode-line-and-package
 %% fi:source-info-not-found-hook
 %% fi:super-paren			fi:common-lisp-mode-map
 %% fi:toggle-trace-definition		fi:common-lisp-mode-map
@@ -68,6 +69,7 @@
 %% fi:common-lisp
 %% fi:common-lisp-image-arguments
 %% fi:common-lisp-image-name
+%% fi:common-lisp-package-regexp
 %% fi:common-lisp-prompt-pattern
 %% fi:default-explicit-common-lisp-image-arguments
 %% fi:default-explicit-common-lisp-image-name
