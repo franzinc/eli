@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.45 1993/07/27 20:12:28 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.46 1993/08/31 19:03:46 layer Exp $
 
 ;;; Misc utilities
 
@@ -699,6 +699,9 @@ created by fi:common-lisp."
 (cond ((string-match "ucid" emacs-version)
        (fset 'fi::mark 'fi::mark-hack)
        (fset 'fi::prin1-to-string 'fi::prin1-to-string-hack))
+      ((string-match "GNU Emacs 19\." emacs-version)
+       (fset 'fi::mark 'fi::mark-hack)
+       (fset 'fi::prin1-to-string 'prin1-to-string))
       (t
        (fset 'fi::mark 'mark)
        (fset 'fi::prin1-to-string 'prin1-to-string)))

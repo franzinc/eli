@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.88 1993/08/11 17:06:27 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.89 1993/08/31 19:03:37 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -11,7 +11,7 @@ emacs = emacs
 elcs = fi-modes.elc fi-indent.elc fi-subproc.elc fi-sublisp.elc fi-filec.elc \
        fi-lemacs.elc fi-emacs19.elc fi-ring.elc \
        fi-su.elc fi-telnet.elc fi-rlogin.elc fi-shell.elc fi-keys.elc \
-       fi-utils.elc fi-clman.elc Doc.elc \
+       fi-gnu.elc fi-utils.elc fi-clman.elc Doc.elc \
        fi-basic-lep.elc fi-lep.elc fi-lze.elc fi-db.elc \
        fi-stream.elc fi-dmode.elc fi-composer.elc fi-changes.elc \
        fi-leep0.elc fi-leep.elc fi-leep-lemacs.elc makeman.elc

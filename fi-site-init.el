@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.44 1993/08/12 23:45:14 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.45 1993/08/31 19:03:44 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -21,6 +21,7 @@
   (load "fi-indent.elc"))
 (load "fi-keys.elc")
 (load "fi-utils.elc")
+(load "fi-gnu.elc")
 
 (when fi::load-subprocess-files
   (load "fi-subproc.elc")

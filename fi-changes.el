@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-changes.el,v 1.12 1993/08/12 23:45:04 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-changes.el,v 1.13 1993/08/31 19:03:39 layer Exp $
 ;;
 ;; Support for changed definitions
 
@@ -17,87 +17,85 @@
   "*The value of this variable is used as the default SINCE
 argument to the changed-definition commands.  The value must be one of the
 symbols file-first-read, buffer-save or last-compile-or-eval, which
-correspond to SINCE arguments of 1, 2 and 3.")
+correspond to SINCE arguments of 1, 2 and 3.  The meaning of each of the
+values are:
+  file-first-read - the changes since the file was first read by emacs are
+     used,
+  buffer-save - the changes since the last buffer save are used, and
+  last-compile-or-eval - the changes since the last compile or eval changed
+     definition command was issued.")
 
 (defun fi::change-definition-convert-prefix-argument ()
   (list
    (if (null current-prefix-arg)
-       (cond ((eq 'file-first-read fi:change-definitions-since-default) 1)
-	     ((eq 'buffer-save fi:change-definitions-since-default) 2)
-	     ((eq 'last-compile-or-eval fi:change-definitions-since-default) 3)
-	     ((eq 'comma-zero fi:change-definitions-since-default) 4)
-	     (t (error "bad value of fi:change-definitions-since-default")))
-     current-prefix-arg)))
+       fi:change-definitions-since-default
+     (cond ((eq 1 current-prefix-arg) 'file-first-read)
+	   ((eq 2 current-prefix-arg) 'buffer-save)
+	   ((eq 3 current-prefix-arg) 'last-compile-or-eval)
+	   ((eq 4 current-prefix-arg) 'comma-zero)
+	   (t (error "prefix argument should be between 1 and 4"))))))
 
 (defun fi:list-buffer-changed-definitions (since)
   "List the definitions in the current buffer which have been added,
-deleted or changed since it was first read by Common Lisp.  When prefix arg
-SINCE is 2, list changes since the current buffer was last saved, or when
-SINCE is 3, list the changes since the changed definitions in the current
-buffer were last evaluated."
+deleted or changed.  See the documentation for the variable
+fi:change-definitions-since-default for information on the behavior of
+SINCE."
   (interactive (fi::change-definition-convert-prefix-argument))
   (fi::do-buffer-changed-definitions ':list since))
 
 (defun fi:list-changed-definitions (since)
   "List the definitions in all buffers which have been added,
-deleted or changed since they were first read by Common Lisp.  When prefix
-arg SINCE is 2, list changes since they were last saved, or when
-SINCE is 3, list the changes since the changed definitions in all buffers
-were last evaluated."
+deleted or changed.  See the documentation for the variable
+fi:change-definitions-since-default for information on the behavior of
+SINCE."
   (interactive (fi::change-definition-convert-prefix-argument))
   (fi::do-buffer-changed-definitions ':list since t))
 
 (defun fi:eval-buffer-changed-definitions (since)
   "Eval the definitions in the current buffer which have been added or
-changed since it was first read by Common Lisp.  When prefix arg
-SINCE is 2, eval changes since the current buffer was last saved, or when
-SINCE is 3, eval the changes since the changed definitions in the current
-buffer were last evaluated."
+changed.  See the documentation for the variable
+fi:change-definitions-since-default for information on the behavior of
+SINCE."
   (interactive (fi::change-definition-convert-prefix-argument))
   (fi::do-buffer-changed-definitions ':eval since))
 
 (defun fi:eval-changed-definitions (since)
   "Eval the definitions in all buffers which have been added or
-changed since they were first read by Common Lisp.  When prefix
-arg SINCE is 2, eval changes since they were last saved, or when
-SINCE is 3, eval the changes since the changed definitions in all buffers
-were last evaluated."
+changed.  See the documentation for the variable
+fi:change-definitions-since-default for information on the behavior of
+SINCE."
   (interactive (fi::change-definition-convert-prefix-argument))
   (fi::do-buffer-changed-definitions ':eval since t))
 
 (defun fi:compile-buffer-changed-definitions (since)
   "Compile the definitions in the current buffer which have been added or
-changed since it was first read by Common Lisp.  When prefix arg
-SINCE is 2, compile changes since the current buffer was last saved, or when
-SINCE is 3, compile the changes since the changed definitions in the current
-buffer were last evaluated."
+changed.  See the documentation for the variable
+fi:change-definitions-since-default for information on the behavior of
+SINCE."
   (interactive (fi::change-definition-convert-prefix-argument))
   (fi::do-buffer-changed-definitions ':compile since))
 
 (defun fi:compile-changed-definitions (since)
   "Compile the definitions in all buffers which have been added or
-changed since they were first read by Common Lisp.  When prefix
-arg SINCE is 2, compile changes since they were last saved, or when
-SINCE is 3, compile the changes since the changed definitions in all buffers
-were last evaluated."
+changed.  See the documentation for the variable
+fi:change-definitions-since-default for information on the behavior of
+SINCE."
   (interactive (fi::change-definition-convert-prefix-argument))
   (fi::do-buffer-changed-definitions ':compile since t))
 
 (defun fi:copy-buffer-changed-definitions (since)
   "Copy into the kill ring the definitions in the current buffer which have
-been added or changed since it was first read by Common Lisp.  When prefix arg
-SINCE is 2, copy changes since the current buffer was last saved, or when
-SINCE is 3, copy the changes since the changed definitions in the current
-buffer were last evaluated."
+been added or changed.  See the documentation for the variable
+fi:change-definitions-since-default for information on the behavior of
+SINCE."
   (interactive (fi::change-definition-convert-prefix-argument))
   (fi::do-buffer-changed-definitions ':copy since))
 
 (defun fi:copy-changed-definitions (since)
   "Copy into the kill ring the definitions in all buffers which have been
-added or changed since they were first read by Common Lisp.  When prefix
-arg SINCE is 2, copy changes since they were last saved, or when
-SINCE is 3, copy the changes since the changed definitions in all buffers
-were last evaluated."
+added or changed.  See the documentation for the variable
+fi:change-definitions-since-default for information on the behavior of
+SINCE."
   (interactive (fi::change-definition-convert-prefix-argument))
   (fi::do-buffer-changed-definitions ':copy since t))
 
@@ -126,7 +124,6 @@ OLD-FILE."
 (defun fi::do-buffer-changed-definitions (operation since
 					  &optional all-buffers)
   (message "Computing changes...")
-  (setq since (fi::convert-since-prefix since))
   (let ((buffer (current-buffer))
 	(copy-file-name (and (eq operation ':copy)
 			     (format "%s/%s.cl"
@@ -147,25 +144,22 @@ OLD-FILE."
 		     (fi::transpose-list args))
 	    (message "There are no changes.")))
       (if (fi::check-buffer-for-changes-p since)
-	(apply
-	 (function fi::do-buffer-changed-definitions-1)
-	 copy-file-name
-	 (fi::compute-file-changed-values-for-current-buffer))
+	  (apply
+	   (function fi::do-buffer-changed-definitions-1)
+	   copy-file-name
+	   (fi::compute-file-changed-values-for-current-buffer))
 	(message "There are no changes.")))))
 
 (defun fi::check-buffer-for-changes-p (since)
-  "Decide whether this buffer is worth checking for changes"
+  "Decide whether this buffer is worth checking for changes."
   (and (eq major-mode 'fi:common-lisp-mode)
        (buffer-file-name)
        (ecase since
-	 (:comma-zero
+	 (comma-zero
 	  (file-exists-p (concat (buffer-file-name) unlock-file-suffix)))
-	 (:read
-	  (or (buffer-modified-p)
-	      buffer-backed-up))
-	 (:saved
-	  (buffer-modified-p))
-	 (:eval
+	 (file-first-read (or (buffer-modified-p) buffer-backed-up))
+	 (buffer-save (buffer-modified-p))
+	 (last-compile-or-eval
 	  ;; Its like this buffer needs an every-modified-flag
 	  t))))
 
@@ -173,13 +167,11 @@ OLD-FILE."
   (let ((actual-file (buffer-file-name))
 	(old-file 
 	 (case since
-	   (:comma-zero
-	    (concat (buffer-file-name) unlock-file-suffix))
-	   (t
-	   (if (and (not (eq since ':saved))
-		    buffer-backed-up)
-	       (car (find-backup-file-name (buffer-file-name)))
-	     (buffer-file-name)))))
+	   (comma-zero (concat (buffer-file-name) unlock-file-suffix))
+	   (t (if (and (not (eq since 'buffer-save))
+		       buffer-backed-up)
+		(fi::find-most-recent-backup-file-name (buffer-file-name))
+	      (buffer-file-name)))))
 	(new-file (buffer-file-name)))
     (list actual-file old-file new-file)))
 
@@ -215,10 +207,3 @@ OLD-FILE."
 				changes
 				(list 'lep::find-buffer-definition)
 				(or buffer-name "*changes*")))
-
-(defun fi::convert-since-prefix (since)
-  (ecase since
-    (1 ':read)
-    (2 ':saved)
-    (3 ':eval)
-    (4 ':comma-zero)))
