@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.24 1991/10/02 13:11:47 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.25 1991/10/03 12:45:54 layer Exp $
 
 ;;; Misc utilities
 
@@ -298,7 +298,7 @@ at the beginning of the line."
 ;; the problem.
 (defvar fi::original-package nil)
 
-(defun fi::get-default-symbol (prompt &optional up-p)
+(defun fi::get-default-symbol (prompt &optional up-p ignore-keywords)
   (let* ((symbol-at-point (fi::get-symbol-at-point up-p))
 	 (read-symbol
 	  (let ((fi::original-package fi:package))
@@ -314,6 +314,12 @@ at the beginning of the line."
 	    read-symbol))))
 
 (defun fi::minibuffer-complete (pattern predicate what)
+
+  ;; HACK HACK HACK HACK
+  ;;   ignore-keywords must be bound in the dynamic context in which this
+  ;;   function is called (just above in fi::get-default-symbol).
+  ;; HACK HACK HACK HACK
+  
   (let ((fi:package fi::original-package))
     (let (package deletion)
       (if (string-match ":?:" pattern)
@@ -323,7 +329,7 @@ at the beginning of the line."
 	    deletion (substring pattern 0 (match-end 0))
 	    pattern
 	    (substring pattern (match-end 0))))
-      (let* ((alist (fi::lisp-complete-1 pattern package nil))
+      (let* ((alist (fi::lisp-complete-1 pattern package nil ignore-keywords))
 	     (completion (and alist (try-completion pattern alist))))
 	(ecase what
 	  ((nil) (cond ((eq completion t) t)
