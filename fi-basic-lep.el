@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-basic-lep.el,v 1.47.6.5 2002/02/07 16:41:34 layer Exp $
+;; $Id: fi-basic-lep.el,v 1.47.6.5.8.1 2003/03/26 16:16:36 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -192,7 +192,7 @@ emacs-lisp interface cannot be started.
 
 (defun fi::make-connection-to-lisp (host port passwd ipc-version)
   (cond ((eq ipc-version fi::required-ipc-version)
-	 (let* ((proc-name (format "*LEP %s %d %d*" host port passwd))
+	 (let* ((proc-name (format " *LEP %s %d %d*" host port passwd))
 		;; buffer-name used to be non-nil only when fi::lep-debug
 		;; was non-nil, but changes to lep::make-session-for-lisp
 		;; depend on there being a buffer associated with the
