@@ -1,6 +1,6 @@
 ;; Sample .emacs file
 ;;
-;; $Header: /repo/cvs.copy/eli/examples/emacs.el,v 1.2 1991/09/10 11:18:58 layer Exp $
+;; $Header: /repo/cvs.copy/eli/examples/emacs.el,v 1.3 1991/09/11 15:22:47 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; The following code implements selection of a particular version of the
@@ -82,6 +82,11 @@ lives for that version.")
 (setq ctlx-3-map (make-keymap))
 (define-key ctl-x-map "3" ctlx-3-map)
 (define-key ctlx-3-map "l" 'mycl)
+
+;; If you don't want to do the above, then this binding go to the
+;; *common-lisp* buffer, causing the image to be run the first time it is
+;; typed. 
+(define-key global-map "\C-xl" 'fi:common-lisp)
 
 ;; Start up a lisp image.
 (mycl)
