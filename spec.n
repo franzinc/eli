@@ -127,9 +127,10 @@ and continuously showing output from a subprocess in a visible buffer.
 
    This package modifies `auto-mode-alist' so that the major modes
 defined in this package are invoked when certain types of source files
-are edited.  The filename extensions `.lisp' and `.cl' cause
-`fi:common-lisp-mode' to be invoked.  The important actions done by
-Common Lisp mode are (in order):
+are edited.  The list of filename extensions given by the value of
+`fi:common-lisp-file-types' cause `fi:common-lisp-mode' to be invoked
+whenever a file with one of these types is visited.  The important
+actions done by Common Lisp mode are (in order):
 
 	1. set up local variables specific to the mode;
 	2. check for package information;
@@ -142,6 +143,8 @@ Emacs Lisp mode.
    The major mode function for Common Lisp is called
 `fi:common-lisp-mode', and this function can be interactively called
 to put a buffer in Common Lisp mode.
+
+%% fi:common-lisp-file-types
 
 2.1 Bindings
 
