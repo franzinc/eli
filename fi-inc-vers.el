@@ -69,7 +69,7 @@
 	 (car (cdr (fi:member-equal "-version"
 				    command-line-args)))))
 (insert
- "*******************************************************************************\n")
+ "*******************************************************************************\n\n")
 
 (write-region (point-min) (point-max) changelog-file nil 'nomsg)
 (erase-buffer)

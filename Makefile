@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.96 1993/09/17 05:57:21 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.97 1993/09/17 06:07:16 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -125,7 +125,6 @@ clman:	clman.o clmanaux.o
 
 release_root = /net/vapor/scm/emacs-lib/Dists
 
-fi_release_directory = fi-$(version)
 fi_release_files = ChangeLog fi-*.el fi-*.elc Makefile *.doc examples/*.el
 fi_release_gztar = $(release_root)/eli-$(version).tar.gz
 
@@ -139,9 +138,10 @@ fi-dist:	all
 	chmod 644 fi-site-init.el ChangeLog
 	rm -f version
 	emacs -batch -l `pwd`/fi-inc-vers > version
+	@echo new emacs-lisp interface version: `cat version`
 	cvs commit -m "`cat version`" fi-site-init.el ChangeLog
-	@if test -d "$(release_root)/$(fi_release_directory)"; then\
-	  echo $(release_root)/$(fi_release_directory) exists; exit 1;\
+	@if test -d "$(release_root)/fi-`cat version`"; then\
+	  echo $(release_root)/fi-`cat version` exists; exit 1;\
 	fi
 #just store the major version number in UserGuide.n:
 #	@if grep "Release $(version)" UserGuide.n > /dev/null; then\
@@ -150,12 +150,12 @@ fi-dist:	all
 #	  echo The version in fi-site-init.el and UserGuide.n do not agree;\
 #	  exit 1;\
 #	fi
-	mkdir $(release_root)/$(fi_release_directory)
+	mkdir $(release_root)/fi-`cat version`
 	tar cf - $(fi_release_files) | \
-	  (cd $(release_root)/$(fi_release_directory); tar xf -)
+	  (cd $(release_root)/fi-`cat version`; tar xf -)
 	(cd $(release_root); \
-	 tar cf - $(fi_release_directory)| gzip -9 > $(fi_release_gztar))
-	cvs tag `echo fi_`cat version` | sed s/\\\\./_/g'`
+	 tar cf - fi-`cat version`| gzip -9 > $(fi_release_gztar))
+	(version=`cat version`; cvs tag fi_$$version | sed s/\\\\./_/g'`)
 
 clman_version = 4.1-v2
 
