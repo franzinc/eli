@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-filec.el,v 1.9 1988/08/11 21:24:12 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-filec.el,v 1.10 1988/11/03 17:09:21 layer Exp $
 
 ;; Command and file name completion
 
@@ -23,7 +23,10 @@ as Common Lisp or rlogin buffers)."
 	 (opoint (point))
 	 (input-start
 	  (save-excursion
-	    (goto-char fi::last-input-end)
+	    (goto-char
+	     (if (marker-buffer fi::last-input-end)
+		 fi::last-input-end
+	       0))
 	    (if (re-search-forward subprocess-prompt-pattern opoint t)
 		(point)))))
     (if input-start
