@@ -7,6 +7,13 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.beta.0
+
+Mon Apr 20 13:16:16 1998  Kevin Layer  <layer@ultra>
+
+	* version.mak: bump version to beta
+
+*******************************************************************************
 2.0.21.pre-beta.21
 
 Tue Mar 31 17:25:35 1998  Kevin Layer  <layer@ultra>
