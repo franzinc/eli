@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.188 1997/09/11 18:55:38 layer Exp $
+;; $Id: fi-subproc.el,v 1.189 1997/09/29 16:28:38 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -538,6 +538,14 @@ be a string. Use 6th argument for image file."))
 	(progn
 	  (fi::start-backdoor-interface proc)
 	  (fi::ensure-lep-connection)
+	  (condition-case ()
+	      (setq fi::lisp-case-mode
+		(case (car
+		       (read-from-string
+			(fi:eval-in-lisp "excl:*current-case-mode*")))
+		  ((case-insensitive-lower case-sensitive-lower) ':lower)
+		  ((CASE-INSENSITIVE-UPPER CASE-SENSITIVE-UPPER) ':upper)))
+	    (error nil))
 	  (setq fi:common-lisp-image-name
 	    (cons executable-image-name executable-image-file))
 	  (setq fi::common-lisp-first-time nil
@@ -575,10 +583,17 @@ be a string. Use 6th argument for image file."))
 ;; make xemacs compile warnings go away:
 (defvar win32-quote-process-args)
 (defvar win32-start-process-show-window)
+(defvar w32-quote-process-args)
+(defvar w32-start-process-show-window)
 
 (defun fi::socket-start-lisp (buffer-name process-name image arguments)
-  (let ((win32-start-process-show-window t)
-	(win32-quote-process-args t))
+  (let (
+;;;; rms didn't like the win32- prefix, so we have to support the old and
+;;;; new style:
+	(win32-start-process-show-window t)
+	(w32-start-process-show-window t)
+	(win32-quote-process-args t)
+	(w32-quote-process-args t))
     (apply (function start-process)
 	   process-name
 	   nil ;; buffer-name
