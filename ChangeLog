@@ -1,3 +1,11 @@
+Tue Jan 10 12:02:21 1995  Steve Haflich  <smh@vapor>
+
+	* fi-version.el
+	Fixed lemacs vs xemacs conditionalization.
+
+	* fi-lep.el
+	expand-file-name in fi:bug-report when listing emacs-lisp files.
+
 Mon Jan  9 15:45:28 1995  Steve Haflich  <smh@vapor>
 
 *******************************************************************************

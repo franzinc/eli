@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.62 1994/12/21 22:36:20 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.63 1995/01/10 20:04:48 smh Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -361,7 +361,8 @@ information on how to send the mail."
 	  (if dir
 	      (progn
 		(insert (format "Contents of %s directory:\n" dir))
-		(call-process "ls" nil t nil "-la" dir)
+		(call-process "ls" nil t nil "-la"
+			      (expand-file-name dir))
 		(insert "\n"))
 	    (insert (format "Could not find fi-site-init.el\n")))
 	  (insert "\n")))
