@@ -1,5 +1,8 @@
 (load "fi/site-init.el")
-(find-file "List.n")
+
+(switch-to-buffer "*foo*")
+(erase-buffer)
+(insert-file "list.n")
 
 (set-syntax-table fi:lisp-mode-syntax-table)
 
@@ -25,4 +28,4 @@
 		   "NO DOC"))))
     (insert "\n---------\n")))
 
-(write-region (point-min) (point-max) "Doc.n")
+(write-region (point-min) (point-max) "doc.n")
