@@ -2,7 +2,7 @@
 			      User Guide
 			   Release 2.0alpha
 
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.7 1991/04/22 19:51:01 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.8 1991/04/23 15:47:42 layer Exp $
 
 			     Introduction
 
@@ -171,6 +171,12 @@ Trouble shooting
    Otherwise, there is some problem in your $HOME/.emacs, which you
    can diagnose in the Emacs Lisp debugger.
 
+   * If you run Emacs and Lisp on different machines, then you must be
+   certain that the value of fi:emacs-to-lisp-transaction-directory is
+   a directory which is accessible on both machines.  Care must be
+   taken to get the pathname just right, including the possible NFS
+   prefix (/net/MACHINE-NAME/...).
+
 ===============================================================================
 			 Running Common Lisp
 
@@ -276,6 +282,11 @@ Key bindings in Common Lisp subprocess mode (fi:inferior-common-lisp-mode)
 		ESC ,		fi:lisp-tags-loop-continue
 		ESC .		fi:lisp-find-tag
 		C-x 4 .		fi:lisp-find-tag-other-window
+
+	    The functions in the category that read symbols also do
+	    dynamic completion of symbols present in the ACL
+	    environment--there is no static database, so a symbol is
+	    available for completion just after it is created. 
 
 Superkeys
 
@@ -445,6 +456,7 @@ Functions and Variables for Interacting with a Common Lisp subprocess
 %% fi:common-lisp-host
 %% fi:common-lisp-prompt-pattern
 %% fi:start-lisp-interface-function
+%% fi:reset-lep-connection
 %% fi:start-lisp-interface-hook
 %% fi:in-package-regexp
 %% fi:default-in-package-regexp
@@ -479,6 +491,7 @@ Functions and Variables for Interacting with a Common Lisp subprocess
 %% fi:tcp-lisp-listener-kill-process		fi:lisp-listener-mode-map
 %% fi:tcp-lisp-listener-send-eof		fi:lisp-listener-mode-map
 
+%% fi:emacs-to-lisp-transaction-directory
 %% fi:default-input-ring-max
 %% fi:display-buffer-function
 %% fi:eval-in-lisp
@@ -710,7 +723,7 @@ Information sharing between Common Lisp and Emacs
 		  *record-xref-info* to non-nil values before loading
 		  any files into Common Lisp.
 
-Functions and Variables for Editing with Common Lisp programs
+Functions and Variables for editing Common Lisp programs:
 
 %% fi:common-lisp-mode
 %% fi:comment-region			fi:common-lisp-mode-map
@@ -757,11 +770,20 @@ Functions and Variables for Editing with Common Lisp programs
 %% fi:compare-source-files
 
 %% fi:definition-mode
+%% fi:inverse-definition-mode
 %% fi:list-buffer-definitions
+%% fi:list-undefined-functions
+
 %% fi:definition-mode-goto-definition	fi:definition-mode-map
 %% fi:definition-mode-goto-next		fi:definition-mode-map
 %% fi:definition-mode-goto-previous	fi:definition-mode-map
 %% fi:definition-mode-quit		fi:definition-mode-map
+%% fi:definition-mode-undo		fi:definition-mode-map
+%% fi:definition-mode-toggle-trace	fi:definition-mode-map
+%% fi:inverse-definition-mode-quit	fi:inverse-definition-mode-map
+%% fi:inverse-definition-who-calls	fi:inverse-definition-mode-map
+
+%% fi:compile-file
 
 %% fi:common-lisp-file-types
 %% fi:echo-evals-from-buffer-in-listener-p
@@ -803,7 +825,7 @@ Functions and Variables for Editing with Common Lisp programs
 
 	<cl> (ed 'frob)
 
-	#<process #<metadot-session @ #x816906> @ #x83221e> 
+	#<process scm::metadot-session editor session 12 @ #xb04126>
 	<cl> 
 
    but causes a buffer to be created and made visible in Emacs
@@ -873,6 +895,9 @@ Retrieving information from the Common Lisp environment
 	fi:describe-class
 	fi:describe-function
 		Describe a named class or function.
+
+	fi:list-undefined-functions
+		List the functions which are called but not defined.
 
    `List' means to browse the names in definition mode, which easily
    allows for finding the source associated with a definition.  See
@@ -1030,9 +1055,10 @@ Debugging Common Lisp processing in Emacs
    query.  Unless a multiprocessing application is being run, then
    most errors occur in the initial process created when Common Lisp
    is run, which is called the "Initial Lisp Listener".  Typing RET to
-   this query will cause a buffer, named *acl debugger* to be created
-   and displayed.  For the example above, it will have the following
-   contents:
+   this query will cause a buffer, named *debugger:XXX*, where XXX is
+   the pretty form of the Allegro CL process which is being debugged,
+   to be created and displayed.  For the example above, it will have
+   the following contents:
 
 	Debugger commands:
 
@@ -1130,20 +1156,20 @@ Debugging Common Lisp processing in Emacs
 
 %% fi:scan-stack
 %% fi:scan-stack-mode
-%% lep:ss-continue			lep:scan-stack-mode-map
-%% lep:ss-disassemble			lep:scan-stack-mode-map
-%% lep:ss-edit				lep:scan-stack-mode-map
-%% lep:ss-hide-help-text		lep:scan-stack-mode-map
-%% lep:ss-locals			lep:scan-stack-mode-map
-%% lep:ss-pop				lep:scan-stack-mode-map
-%% lep:ss-pprint			lep:scan-stack-mode-map
-%% lep:ss-quit				lep:scan-stack-mode-map
-%% lep:ss-reset				lep:scan-stack-mode-map
-%% lep:ss-restart			lep:scan-stack-mode-map
-%% lep:ss-return			lep:scan-stack-mode-map
-%% lep:ss-revert-stack			lep:scan-stack-mode-map
-%% lep:ss-toggle-all			lep:scan-stack-mode-map
-%% lep:ss-unhide-help-text		lep:scan-stack-mode-map
+%% fi:ss-continue			fi:scan-stack-mode-map
+%% fi:ss-disassemble			fi:scan-stack-mode-map
+%% fi:ss-edit				fi:scan-stack-mode-map
+%% fi:ss-hide-help-text			fi:scan-stack-mode-map
+%% fi:ss-locals				fi:scan-stack-mode-map
+%% fi:ss-pop				fi:scan-stack-mode-map
+%% fi:ss-pprint				fi:scan-stack-mode-map
+%% fi:ss-quit				fi:scan-stack-mode-map
+%% fi:ss-reset				fi:scan-stack-mode-map
+%% fi:ss-restart			fi:scan-stack-mode-map
+%% fi:ss-return				fi:scan-stack-mode-map
+%% fi:ss-revert-stack			fi:scan-stack-mode-map
+%% fi:ss-toggle-all			fi:scan-stack-mode-map
+%% fi:ss-unhide-help-text		fi:scan-stack-mode-map
 
 Lisp Listeners
 
