@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.9 1989/07/19 14:10:49 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.10 1989/08/07 16:44:31 layer Rel $
 
 (defvar fi:clman-package-info nil
   "A list of (PRODUCT DIRECTORY) which tells where the manual pages are (in
@@ -66,7 +66,7 @@ math:).  The buffer that is displayed will be in CLMAN mode."
 	 (pack-dir nil))
     (setq sym (or (and symbol
 		       (setq symbol 
-			 (fi::clman-check-for-package ans)))
+			 (fi::clman-check-for-package symbol)))
 		  (fi::clman-get-sym-to-lookup)))
     (if (not sym)
 	(setq sym-pack-pair (list "" ""))
@@ -115,8 +115,8 @@ math:).  The buffer that is displayed will be in CLMAN mode."
 
 (defun fi:clman-apropos ()
   "Prompts for a string on which an apropos search is done.  Displays a
-      buffer which lists all documented symbols which match the string.  The
-      buffer will be in CLMAN mode."
+buffer which lists all documented symbols which match the string.  The
+buffer will be in CLMAN mode."
   (interactive)
    (if (null fi:clman-package-info)
       (fi::setup-info-and-oblist))
@@ -161,7 +161,7 @@ clman buffer, from anywhere in the buffer."
       (beginning-of-line)
     (if (search-backward "SEE ALSO" nil t)
 	(beginning-of-line)))
-  (recenter))
+)
 
 (defun fi:clman-next-entry ()
   (interactive)
@@ -220,9 +220,7 @@ clman buffer, from anywhere in the buffer."
 	  (if (string= (substring answer 0 1) ":")(setq answer (concat ":" answer)))
 	  (setq ans 
 	    (concat ans ":" answer))
-		    
 	  ;;  a little trick to handle keywords : stick an extra colon on them
-	  
 	  ans)
       ans)))
 
@@ -281,6 +279,7 @@ to insert the file that is named by the first argument into the buffer
 named by the second argument."
   (if (not (string=  buf (buffer-name(current-buffer))))
       (switch-to-buffer-other-window buf))
+  (buffer-flush-undo (current-buffer))
   (insert-file name))
 
 (defun fi::clman-man-page-lookup (str table doc-dir)
@@ -309,11 +308,10 @@ Return the full pathname of the file the symbol is in. "
     (fi::clman-remove-chars-from-string '(?\ ?\n)
 					(buffer-substring begin (point)))))
 
-
 (defun fi::clman-backward-copy-symbol-as-kill ()
-  (skip-chars-backward "[a-zA-Z\-:+*0-9]")
+   (skip-chars-backward "[a-zA-Z\-:+*#0-9]")
   (let* ((begin (point)) end sym)
-    (skip-chars-forward "[a-zA-Z\-:+*0-9]")
+    (skip-chars-forward "[a-zA-Z\-:+*#0-9]")
     (fi::clman-remove-chars-from-string '(?\ ?\n)
 					(buffer-substring begin (point)))))
 
