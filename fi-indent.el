@@ -31,7 +31,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.31 1991/08/22 21:28:15 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.32 1991/09/10 11:20:20 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If non-nil, semicolons that begin comments are indented as they are
@@ -48,7 +48,11 @@ of `t' (indent comment just like an s-expression), `nil' (don't change the
 indentation of the comment, i.e. leave the semicolon where it is), a non-
 negative integer (specifying the absolute column to which the comment is to
 be indented), or a negative integer (specifying a negative offset for the
-comment relative to the current column).")
+comment relative to the current column).
+
+NOTE: if the buffer local variable comment-column is changed, then the
+first element of fi:lisp-comment-indent-specification is changed to contain
+the value of comment-column.")
 
 (make-variable-buffer-local 'fi:lisp-comment-indent-specification)
 
@@ -631,7 +635,8 @@ of the start of the containing expression."
 	   'fi:lisp-indent-hook)
       (and (or (string-match "^with-" name)
 	       (string-match "^do-" name))
-	   1)))
+	   1)
+      (and (string-match "^def" name) 2)))
 
 (defun fi::lisp-invoke-method (form-start method depth count state
 			       indent-point)
@@ -1548,7 +1553,7 @@ if matched at the beginning of a line, means don't indent that line."
        (quote (if (fi:lisp-atom-p 2)
 		  ((1 3 lambda-list) (0 t 3))
 		((1 2 lambda-list) (0 t 2)))))
-  (put 'define-condition tag '(like defclass))
+  (put 'define-condition tag '((1 1 quote) (0 t 2)))
   (put 'defmacro tag '((1 2 (recursive lambda-list)) (0 t 2)))
   (put 'defmethod tag 
        (quote (if (fi:lisp-atom-p 2)
