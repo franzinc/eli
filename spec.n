@@ -1,7 +1,7 @@
-
+				    
 	      Franz Inc. GNU Emacs/Common Lisp Interface
 
-$Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.10 1988/04/27 09:45:48 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.11 1988/04/27 10:29:58 layer Exp $
 
 This document is a specification of the Franz Inc. GNU Emacs interface
 to Common Lisp, which is written entirely in GNU Emacs Lisp (for GNU
@@ -9,10 +9,10 @@ Emacs version 18.50).
 
 0. Concepts and Terminology
 
-   People familiar with Emacs and UNIX networking may wish to skip
+   People familiar with GNU Emacs and UNIX networking may wish to skip
 this section.
 
-   In Emacs, each buffer has a `mode'.  A mode is a collection of key
+   In Emacs, each buffer has a `mode.'  A mode is a collection of key
 and variable `bindings' which are specialized to a certain task.  When
 the cursor is in a `buffer' and you depress a key, its action is
 determined by the binding found in the `keymap' associated with that
@@ -22,14 +22,21 @@ Thus, a mode is usually implemented by creating a buffer-local keymap
 and adding bindings to do specific tasks.  The result is that certain
 keys act differently in the buffer but most keys act just as they do
 in all the other buffers.  Usually the mode of a buffer is displayed
-in parenthesis at the bottom of the screen (in what is called the
+in parentheses at the bottom of the screen (in what is called the
 `mode line').
+
+   Two terms used interchangeably in this document are `subprocess' and
+`inferior process'.  They both refer to the interaction between Emacs
+and running program, and their names come from the fact that UNIX
+processes are part of a hierarchical structure--each process has a
+parent and some processes have children.  Here, Lisp is run as a child
+of Emacs, or a subordinate process under Emacs.
 
    Most machines available today have a `network' interface.  There
 are several `protocols' in use today, of which `TCP/IP' (Transmission
 Control Protocol) is one.  TCP/IP is most commonly used for
 communication between machines using `ethernet'--ethernet is the
-hardward and TCP/IP is the software.  TCP/IP is available on Berkeley
+hardware and TCP/IP is the software.  TCP/IP is available on Berkeley
 UNIX and some other UNIX systems, and is a powerful tool for making
 resources from a large number of machines easily available to all
 users on the network.  The X window system, for example, uses TCP/IP
@@ -50,14 +57,14 @@ from programs running on the same machine.  However the flexibility of
 using file names in UNIX domain addresses allows the Emacs to Lisp
 interface to choose unique addresses for each user running on a
 machine.  The file name convention we use is this: when user `smith'
-starts up Lisp, the UNIX domain address ~smith/.excl_to_emacs is used
+starts up Lisp, the UNIX domain address `~smith/.excl_to_emacs' is used
 by Lisp.  When `smith' directs Emacs to connect to Lisp, it knows it
-was started by smith and thus talks to address ~smith/.excl_to_emacs.
+was started by smith and thus talks to address `~smith/.excl_to_emacs'.
 Thus multiple users on a given machine can run the Emacs to Lisp
 interface.
 
    The Emacs/Lisp interface in this document can use both of these
-methods of communication, but the preferrable method uses UNIX domain
+methods of communication, but the preferred method uses UNIX domain
 sockets, because more than one person on a machine may use the
 Lisp/Emacs interface.
 
@@ -74,8 +81,8 @@ down into three modes:
 	* TCP Lisp.
 
 The first is for editing Lisp programs, the second for starting up a
-Lisp subprocess under Emacs, and the third for the TCP/IP
-communication between Emacs and Lisp.
+Lisp subprocess under Emacs, and the third for TCP/IP communication
+between Emacs and Lisp.
 
    While editing Lisp source code, there are commands that make it
 easy to send expressions to, and receive information from, a Lisp
@@ -114,7 +121,7 @@ information with a Lisp process.  Users can obtain information about
 Lisp function argument lists and symbol documentation, macroexpand Lisp
 forms, and locate source definitions of Lisp symbols (which are recorded
 by Lisp when a symbol is defined, usually by loading a file).  All these
-features are accessible with a few keystrokes.
+features are accessible with a few key-strokes.
 
    Aside from the Lisp interface proper, this package provides useful
 features for subprocess manipulation, including an input ring for
@@ -122,13 +129,13 @@ handy retrieval of previously-typed input, filename completion,
 special handling of certain subprocess-specific keys (e.g., ^C or ^D),
 and continuously showing output from a subprocess in a visible buffer.
 
-2. Editing Lisp Source
+2. Editing Common Lisp
 
    This package modifies `auto-mode-alist' so that the major modes
 defined in this package are invoked when certain types of source files
 are edited.  The filename extensions `.lisp' and `.cl' cause
 `fi:common-lisp-mode' to be invoked.  The important actions done by
-the two modes are (in order):
+Common Lisp mode are (in order):
 
 	1. set up local variables specific to the mode;
 	2. check for package information;
@@ -168,7 +175,8 @@ which contains the name of the package:
 
 %% fi:package
 
-There are three ways to automatically set this variable:
+There are three ways to automatically set this variable (the first and
+third items here are standard GNU Emacs features):
 
   1. If the first line in the file contains text surrounded by -*-,
      the `package' field of this line is parsed for the package name.
@@ -261,17 +269,18 @@ Then after the above listener daemon is started, the following command
 to Emacs will open a second buffer onto the same Lisp (giving a prefix
 argument to `fi:another-common-lisp'):
 
-	C-u 1 M-x fi:another-common-lisp
+	C-u M-x fi:another-common-lisp
 
-The resulting process will be talking to Lisp over a TCP/IP socket via
-a UNIX domain socket (using the file ~/.excl_to_emacs).  The following
-command would create a separate Lisp process in a new buffer (called
-`*common-lisp-3*' if all the above commands where evaluated first):
+The resulting internal Lisp `lightweight' process will be talking to
+Emacs over a TCP/IP socket via a UNIX domain socket (using the file
+~/.excl_to_emacs).  The following command would create a separate Lisp
+process in a new buffer (called `*common-lisp-3*' if all the above
+commands were evaluated first):
 
 	M-x fi:another-common-lisp
 
-   To connect to a Lisp on another machine, say `akbar', put the
-following in ~/.emacs on the local machine:
+   To connect to a Lisp on another machine, say `akbar', using TCP/IP,
+put the following in ~/.emacs on the local machine
 
 	(setq fi:unix-domain nil)
 	(setq fi:local-host-name "akbar")	   ; the remote host name
@@ -284,9 +293,25 @@ and start emacs.  On `akbar', put this in ~/.clinit.cl
 
 and start a Common Lisp.  Now on the local machine, this
 
-	C-u 1 M-x fi:another-common-lisp
+	C-u M-x fi:common-lisp
 
-will open a connection to the Lisp on `akbar'.
+will open a connection to the Lisp on `akbar'.  NOTE: this assumes
+that on both the local machine and on `akbar' /etc/services has an
+entry or the service named `excl' and that the port number is the same
+on both machines (the default in Emacs and Lisp is 1123).
+
+   It is also possible to use inferior Lisp mode with a remote Lisp
+process by modifying the Emacs variables `fi:explicit-common-lisp-file-name'
+and `fi:explicit-common-lisp-image-arguments'.  For example, typing the
+following to Emacs will start a Lisp process on host `akbar'.
+
+	M-x set-variable RET
+	fi:explicit-common-lisp-file-name RET
+	"rsh" RET
+	M-x set-variable RET
+	fi:explicit-common-lisp-image-arguments RET
+	'("akbar" "cl") RET
+	M-x fi:another-common-lisp
 
 3.1 Bindings
 
@@ -442,28 +467,24 @@ to the file ~/.clinit.cl:
       (or (find-package :ipc) (load "ipc.fasl"))
       (ipc:start-lisp-listener-daemon)
 
-This will load and start the Lisp multiprocessing system and then
-start a Lisp process that waits for connections from Emacs.
+After using `fi:common-lisp' to start up a Lisp, this will load and
+start the Lisp multiprocessing system and then start a Lisp process
+that waits for connections from Emacs.
 
 			      APPENDIX A
 			       Examples
 
-A.1 Sample .emacs and .clinit.cl
+A.1 Sample ~/.emacs and ~/.clinit.cl
 
-   The following code in your .emacs will load the package in this
-document:
+   The following code in ~/.emacs will load the package described in
+this document:
 
     (load "fi/site-init.el")
     ;; turn on superkeys in subprocess modes
     (setq-default fi:subprocess-enable-superkeys t)
 
-The following in your .clinit.cl file will define an alias which will
-start the Lisp Listener Daemon:
-
-    (or (find-package :ipc) (load "ipc.fasl"))
-    (ipc:start-lisp-listener-daemon)
-
 A.2 Remote Lisps
+
    To start a remote Common Lisp called `cl' on machine `akbar', put
 the following in ~/.emacs:
 
@@ -471,7 +492,10 @@ the following in ~/.emacs:
     (setq explicit-common-lisp-image-arguments '("akbar" "cl"))
 
 A.3 X11R2
-    ;; toy mouse bindings when using X windows
+
+    ;; Put the this text in ~/.emacs to play with these
+    ;; toy mouse bindings when using Emacs compiled with the X window
+    ;; interface
 
     (require 'x-mouse)
 
@@ -536,7 +560,6 @@ current working directory of the inferior Lisp process:
       (format t "~a~%" *directory-stack*))
 
     (tpl:alias ("cd" :string) (dir)
-      ;; the following does update *default-pathname-defaults*
       (setf (car *directory-stack*)
 	(apply #'chdir
 	       (if (string= "" dir) nil (list dir))))
