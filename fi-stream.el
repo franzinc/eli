@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-stream.el,v 1.8 1991/09/30 11:39:27 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-stream.el,v 1.9 1992/04/28 14:02:33 layer Exp $
 ;;
 
 (defmacro fi::with-keywords (variables rest-arg &rest body)
@@ -25,13 +25,13 @@
 
 (defun lep::create-listener-stream (&optional args)
   (fi:lisp-push-window-configuration)
-  (fi::with-keywords (parent x y width height splitp) args
+  (fi::with-keywords (parent x y width height splitp name) args
     (let* ((fi::listener-protocol ':stream)
 	   (proc
 	    (save-window-excursion
 	      (fi:open-lisp-listener
 	       -1
-	       "background-interaction"
+	       (if name name "background-interaction")
 	       (function
 		(lambda (proc)
 		  (format "%d\n%d\n"
