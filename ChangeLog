@@ -11,6 +11,28 @@ Tests for new features:	<`no new features', `no tests for new features', or
 	* <changes go here...>
 
 *******************************************************************************
+2.0.20.pre-beta.5 (note the change from beta to pre-beta!!!!)
+
+Documentation changes:	UserGuide.n
+Tests for new features:	no tests for new features
+
+Mon Jan 06 16:55:49 1997    <layer@HOBART>
+
+	* fi-filec.el: fi::last-input-end is not a marker now
+	* fi-indent.el: fix fi:lisp-indent-line so that ``;;;<TAB>''
+	doesn't move the point.
+	* fi-keys.el: fi::last-input-end is not a marker now, it's an
+	point value--this was to work around (what I think is) a bug in
+	emacs on windows where marker's position slot magically changes.
+	* fi-lep.el: fix fi::cl-file-position-to-point to be more accurate
+	* fi-modes.el: install put auto-filling of comments when indent
+	handling is turned `on'.
+	* fi-subproc.el: fi:common-lisp-subprocess-timeout, initial value
+	30, is now used on windows as the timeout for starting up lisp.
+	* fi-utils.el: support for fi:common-lisp-subprocess-timeout; new
+	fi::do-auto-fill.
+
+*******************************************************************************
 2.0.20.beta.4
 
 Documentation changes:	none

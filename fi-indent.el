@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-indent.el,v 1.55 1996/08/01 22:36:00 layer Exp $
+;; $Id: fi-indent.el,v 1.56 1997/01/07 01:04:01 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If non-nil, semicolons that begin comments are indented as they are
@@ -329,7 +329,8 @@ status of that parse."
 With argument, indent any additional lines of the same expression
 rigidly along with this one."
   (interactive "P")
-  (let ((indent (fi::calculate-lisp-indent))
+  (let ((saved-point (point))
+	(indent (fi::calculate-lisp-indent))
 	shift-amt beg end
 	(pos (- (point-max) (point))))
     (beginning-of-line)
@@ -349,7 +350,8 @@ rigidly along with this one."
 	      (setq indent nil)
 	    (setq indent ind)))))
 
-    (when indent
+    (cond
+     (indent
       (if (listp indent) (setq indent (car indent)))
       (setq shift-amt (- indent (current-column)))
       (if (zerop shift-amt)
@@ -376,7 +378,8 @@ rigidly along with this one."
 	     (forward-line 1)
 	     (setq beg (point))
 	     (> end beg))
-	   (fi:indent-code-rigidly beg end shift-amt)))))
+	   (fi:indent-code-rigidly beg end shift-amt)))
+     (t (goto-char saved-point)))))
 
 (defun fi::calculate-lisp-indent (&optional parse-start)
   "Return appropriate indentation for current line as Lisp code.

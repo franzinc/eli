@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.181 1996/12/20 19:44:24 layer Exp $
+;; $Id: fi-subproc.el,v 1.182 1997/01/07 01:04:15 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -310,6 +310,11 @@ buffer local.")
   "When creating an inferior cl process, the value to bind
 process-connection-type (q.v.).")
 
+(defvar fi:common-lisp-subprocess-timeout 30
+  "*This variable only has an effect on Windows.  The value is the timeout,
+in seconds, that Emacs will wait for Lisp to startup, when no connection
+can be made in fi:common-lisp.")
+
 (defun fi:common-lisp (&optional buffer-name directory executable-image-name
 				 image-args host executable-image-file)
   "Create a Common Lisp subprocess and put it in buffer named by
@@ -431,12 +436,14 @@ be a string. Use 6th argument for image file."))
 		    (condition-case condition
 			(progn
 			  (setq process
-			    (fi::make-tcp-connection
-			     buffer-name 1
-			     'fi:lisp-listener-mode
-			     fi:common-lisp-prompt-pattern
-			     fi::lisp-host fi::lisp-port fi::lisp-password
-			     fi::lisp-ipc-version 'fi::setup-tcp-connection))
+			    (let ((fi::muffle-open-network-stream-errors t))
+			      (fi::make-tcp-connection
+			       buffer-name 1
+			       'fi:lisp-listener-mode
+			       fi:common-lisp-prompt-pattern
+			       fi::lisp-host fi::lisp-port
+			       fi::lisp-password fi::lisp-ipc-version
+			       'fi::setup-tcp-connection)))
 			  nil)
 		      (error
 		       (and fi::last-network-condition
@@ -444,18 +451,30 @@ be a string. Use 6th argument for image file."))
 			    (eq 'file-error (first fi::last-network-condition))
 			    (equal "connection failed"
 				   (second fi::last-network-condition)))))
-		  (when (> i 4)
-		    (error "Couldn't make connection to existing Lisp."))
+		  (cond
+		   ((and (> i 0) (zerop (mod i 10)))
+		    ;; Every 10 seconds, ask if they still want to wait:
+		    (when (not (y-or-n-p
+				"Continue waiting for ACL to startup? "))
+		      (error "Connection aborted.")))
+		   (t
+		    (when (> i fi:common-lisp-subprocess-timeout)
+		      (error "Couldn't make connection to existing Lisp."))))
 		  (when start-lisp-after-failed-connection
-		    (let ((p
-			   (fi::socket-start-lisp
-			    "common-lisp"
-			    executable-image-name
-			    real-args)))
+		    (save-excursion
+		      (set-buffer (get-buffer-create buffer-name))
+		      (setq default-directory directory))
+		    (let* ((default-directory directory)
+			   (p
+			    (fi::socket-start-lisp
+			     buffer-name
+			     "common-lisp"
+			     executable-image-name
+			     real-args)))
 		      (unless (eq 'run (process-status p))
 			(error "Program %s died." executable-image-name))
 		      (setq start-lisp-after-failed-connection nil)))
-		  (sleep-for 3)
+		  (sleep-for 1)
 		  (setq i (+ i 1)))
 		(unless process
 		  (error "Couldn't make connection to existing Lisp."))
@@ -549,10 +568,13 @@ be a string. Use 6th argument for image file."))
     (append (nreverse dlisp-args) (nreverse other-args))))
 	 
 
-(defun fi::socket-start-lisp (process-name image arguments)
+(defun fi::socket-start-lisp (buffer-name process-name image arguments)
   (let ((win32-start-process-show-window t)
 	(win32-quote-process-args t))
-    (apply (function start-process) process-name nil image arguments)))
+    (apply (function start-process)
+	   process-name
+	   nil ;; buffer-name
+	   image arguments)))
 
 (defun fi:open-lisp-listener (&optional buffer-number buffer-name
 					setup-function)

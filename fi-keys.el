@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 1.104 1996/12/12 18:55:07 layer Exp $
+;; $Id: fi-keys.el,v 1.105 1997/01/07 01:04:04 layer Exp $
 
 (cond ((eq fi::emacs-type 'xemacs19)
        (require 'tags "etags"))
@@ -250,9 +250,9 @@ indent again."
   (if fi:lisp-mode-auto-indent
       (progn
 	(save-excursion (funcall indent-line-function))
-	(newline)
+	(newline 1)
 	(funcall indent-line-function))
-    (newline)))
+    (newline 1)))
 
 (defvar fi:raw-mode nil
   "*If non-nil, then the inferior lisp process gets characters as they are
@@ -352,11 +352,11 @@ When called from a program give START and END buffer positions."
 	 (string (buffer-substring start end)))
     (goto-char (point-max))
     (setq start (point))
-    (move-marker fi::last-input-start (point))
+    (setq fi::last-input-start (point))
     (insert string)
     (if (not (bolp)) (insert "\n"))
     (setq end (point))
-    (move-marker fi::last-input-end (point))
+    (setq fi::last-input-end (point))
     (send-region process start end)
     (fi::input-ring-save fi::last-input-start (1- fi::last-input-end))
     (set-marker (process-mark process) (point))))
@@ -392,11 +392,12 @@ the enclosing s-expression(s) is(are) processed.  If lists are being
 parsed, the enclosing list is processed."
   (if (and (eobp) (null arg))
       (progn
-	(move-marker fi::last-input-start
-		     (process-mark (get-buffer-process (current-buffer))))
+	(setq fi::last-input-start
+	  (marker-position
+	   (process-mark (get-buffer-process (current-buffer)))))
 	(insert "\n")
 	(funcall indent-line-function)
-	(move-marker fi::last-input-end (point)))
+	(setq fi::last-input-end (point)))
 
     ;; we are in the middle of the buffer somewhere and need to collect
     ;; and s-exp to re-send
@@ -437,14 +438,14 @@ parsed, the enclosing list is processed."
 	  (progn
 	    (insert "\n")
 	    (funcall indent-line-function)
-	    (move-marker fi::last-input-start start-resend)
-	    (move-marker fi::last-input-end (point-max)))
+	    (setq fi::last-input-start start-resend)
+	    (setq fi::last-input-end (point-max)))
 	(progn
 	  (goto-char (point-max))
-	  (move-marker fi::last-input-start (point))
+	  (setq fi::last-input-start (point))
 	  (insert exp-to-resend)
 	  (if (not (bolp)) (insert "\n"))
-	  (move-marker fi::last-input-end (point))))))
+	  (setq fi::last-input-end (point))))))
   (let ((process (get-buffer-process (current-buffer))))
     (send-region process fi::last-input-start fi::last-input-end)
     (fi::input-ring-save fi::last-input-start (1- fi::last-input-end))
@@ -520,21 +521,22 @@ subprocess mode."
   (end-of-line)
   (if (eobp)
       (progn
-	(move-marker fi::last-input-start
-		     (process-mark (get-buffer-process (current-buffer))))
+	(setq fi::last-input-start
+	  (marker-position
+	   (process-mark (get-buffer-process (current-buffer)))))
 	(if (and (on-ms-windows) (not *on-windows-nt*))
 	    (insert "\n\r")
 	  (insert "\n"))
-	(move-marker fi::last-input-end (point)))
+	(setq fi::last-input-end (point)))
     (let ((max (point)))
       (beginning-of-line)
       (re-search-forward fi::prompt-pattern max t))
     (let ((copy (buffer-substring (point)
 				  (progn (forward-line 1) (point)))))
       (goto-char (point-max))
-      (move-marker fi::last-input-start (point))
+      (setq fi::last-input-start (point))
       (insert copy)
-      (move-marker fi::last-input-end (point))))
+      (setq fi::last-input-end (point))))
   (fi::subprocess-watch-for-special-commands)
   (let ((process (get-buffer-process (current-buffer))))
     (send-region process fi::last-input-start fi::last-input-end)
@@ -885,7 +887,9 @@ the paragraph as well."
 	(let ((fill-prefix (buffer-substring (match-beginning 1)
 					     (match-end 1))))
 	  (fill-paragraph arg))
-      (fill-paragraph arg))))
+      (fill-paragraph arg)))
+  ;; We return `t' because we did all the work:
+  t)
 
 (defun fi:extract-list (arg)
   "Take the list after the point and remove the surrounding list.  With

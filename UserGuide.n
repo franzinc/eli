@@ -2,7 +2,7 @@
 			      User Guide
 			     Release 2.0
 				   
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.54 1996/10/30 17:59:47 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.55 1997/01/07 01:03:57 layer Exp $
 
 			     Introduction
 
@@ -445,6 +445,7 @@ Functions and Variables for Interacting with a Common Lisp subprocess
 %% fi:common-lisp-image-arguments
 %% fi:common-lisp-host
 %% fi:common-lisp-prompt-pattern
+%% fi:common-lisp-subprocess-timeout
 %% fi:start-lisp-interface-arguments
 %% fi:use-background-streams
 %% fi:start-lisp-interface-hook

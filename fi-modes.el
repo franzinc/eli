@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-modes.el,v 1.67 1996/08/07 22:01:07 layer Exp $
+;; $Id: fi-modes.el,v 1.68 1997/01/07 01:04:10 layer Exp $
 
 ;;;; Mode initializations
 
@@ -349,6 +349,15 @@ any other mode setup."
 
   (if fi:lisp-do-indentation
       (progn
+	(setq fill-column 75)
+	(auto-fill-mode 1)
+	
+	(make-local-variable 'fill-paragraph-function)
+	(setq fill-paragraph-function 'fi:fill-paragraph)
+
+	(make-local-variable 'auto-fill-function)
+	(setq auto-fill-function 'fi::do-auto-fill)
+  
 	(make-local-variable 'indent-line-function)
 	(setq indent-line-function 'fi:lisp-indent-line)
 

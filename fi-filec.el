@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-filec.el,v 1.21 1996/10/30 17:59:49 layer Exp $
+;; $Id: fi-filec.el,v 1.22 1997/01/07 01:03:59 layer Exp $
 
 ;; Command and file name completion
 
@@ -32,10 +32,7 @@ as Common Lisp or rlogin buffers)."
 	 (opoint (point))
 	 (input-start
 	  (save-excursion
-	    (goto-char
-	     (if (marker-buffer fi::last-input-end)
-		 fi::last-input-end
-	       0))
+	    (goto-char fi::last-input-end)
 	    (if (re-search-forward fi::prompt-pattern opoint t)
 		(point)))))
     (if input-start

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 1.58 1996/08/29 17:05:31 layer Exp $
+;; $Id: fi-utils.el,v 1.59 1997/01/07 01:04:17 layer Exp $
 
 ;;; Misc utilities
 
@@ -312,24 +312,27 @@ for the emacs-lisp interface to function properly."
 
 (defvar fi::last-network-condition nil)
 
+(defvar fi::muffle-open-network-stream-errors nil)
+
 (defun fi::open-network-stream (name buffer host service)
   (condition-case condition
       (open-network-stream name buffer host service)
     (error
      (setq fi::last-network-condition condition)
-     (cond
-      ((and (not (on-ms-windows))
-	    (not (file-readable-p "/etc/hosts")))
-       (fi:error "
+     (when (not fi::muffle-open-network-stream-errors)
+       (cond
+	((and (not (on-ms-windows))
+	      (not (file-readable-p "/etc/hosts")))
+	 (fi:error "
 Can't connect to host %s.  This is probably due to /etc/hosts not being
 readable.  The error from open-network-stream was:
   %s"
-		 host (car (cdr condition))))
-      (t
-       (fi:error "
+		   host (car (cdr condition))))
+	(t
+	 (fi:error "
 Can't connect to host %s.  The error from open-network-stream was:
   %s"
-		 host (car (cdr condition)))))
+		   host (car (cdr condition))))))
      nil)))
 
 (defun fi:note (format-string &rest args)
@@ -735,3 +738,120 @@ created by fi:common-lisp."
       (t
        (fset 'fi::mark 'mark)
        (fset 'fi::prin1-to-string 'prin1-to-string)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; The rest of the code in this file is modified from code in GNU Emacs, so
+;; the following copyright applies:
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Copyright (C) 1985, 86, 87, 93, 94, 95 Free Software Foundation, Inc.
+;;
+;; GNU Emacs is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation; either version 2, or (at your option)
+;; any later version.
+
+;; GNU Emacs is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with GNU Emacs; see the file COPYING.  If not, write to the
+;; Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+;; Boston, MA 02111-1307, USA.
+
+(defun fi::do-auto-fill ()
+  ;; This function is just like do-auto-fill, except in these ways:
+  ;; 1. no justification is done
+  ;; 2. it calls (indent-according-to-mode) at the end to indent the line
+  ;; 3. use adaptive-fill-regexp to get the fill-prefix 
+  (let ((fill-prefix fill-prefix)
+	(fc (current-fill-column))
+	(give-up nil))
+;;;; fi changes:
+    ;; Remove code to conditionally execute the rest of the code in this
+    ;; function, as well as justification code.
+;;;; ...end fi changes.
+    
+    ;; Choose a fill-prefix automatically.
+    (if (and adaptive-fill-mode
+	     (or (null fill-prefix) (string= fill-prefix "")))
+	(let ((prefix
+;;;; fi changes:
+	       (save-excursion
+		 (beginning-of-line)
+		 (if (looking-at adaptive-fill-regexp)
+		     (buffer-substring (match-beginning 0)
+				       (match-end 0))
+		   ""))))
+;;;; ...end fi changes.
+	  (and prefix
+	       (not (equal prefix ""))
+	       (setq fill-prefix prefix))))
+
+    (while (and (not give-up) (> (current-column) fc))
+      ;; Determine where to split the line.
+      (let ((fill-point
+	     (let ((opoint (point))
+		   bounce
+		   (first t))
+	       (save-excursion
+		 (move-to-column (1+ fc))
+		 ;; Move back to a word boundary.
+		 (while (or first
+			    ;; If this is after period and a single space,
+			    ;; move back once more--we don't want to break
+			    ;; the line there and make it look like a
+			    ;; sentence end.
+			    (and (not (bobp))
+				 (not bounce)
+				 sentence-end-double-space
+				 (save-excursion
+				   (forward-char -1)
+				   (and (looking-at "\\. ")
+					(not (looking-at "\\.  "))))))
+		   (setq first nil)
+		   (skip-chars-backward "^ \t\n")
+		   ;; If we find nowhere on the line to break it,
+		   ;; break after one word.  Set bounce to t
+		   ;; so we will not keep going in this while loop.
+		   (if (bolp)
+		       (progn
+			 (re-search-forward "[ \t]" opoint t)
+			 (setq bounce t)))
+		   (skip-chars-backward " \t"))
+		 ;; Let fill-point be set to the place where we end up.
+		 (point)))))
+	;; If that place is not the beginning of the line,
+	;; break the line there.
+	(if (save-excursion
+	      (goto-char fill-point)
+	      (not (bolp)))
+	    (let ((prev-column (current-column)))
+	      ;; If point is at the fill-point, do not `save-excursion'.
+	      ;; Otherwise, if a comment prefix or fill-prefix is inserted,
+	      ;; point will end up before it rather than after it.
+	      (if (save-excursion
+		    (skip-chars-backward " \t")
+		    (= (point) fill-point))
+		  (indent-new-comment-line t)
+		(save-excursion
+		  (goto-char fill-point)
+		  (indent-new-comment-line t)))
+		
+;;;; fi changes:
+	      ;; Remove justification code.
+;;;; ...end fi changes.
+
+	      ;; If making the new line didn't reduce the hpos of
+	      ;; the end of the line, then give up now;
+	      ;; trying again will not help.
+	      (if (>= (current-column) prev-column)
+		  (setq give-up t)))
+	  ;; No place to break => stop trying.
+	  (setq give-up t))))
+;;;; fi changes:
+    ;; Indent last line.
+    (indent-according-to-mode)
+;;;; ...end fi changes.
+    t))

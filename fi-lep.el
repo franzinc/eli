@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 1.73 1996/10/29 20:52:29 layer Exp $
+;; $Id: fi-lep.el,v 1.74 1997/01/07 01:04:08 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -284,9 +284,23 @@ time."
 	  (when pop-stack (fi::pop-metadot-session))))
     (message "cannot find file for %s" thing)))
 
-(defun fi::cl-file-position-to-point (file-position)
+(defun fi::cl-file-position-to-point (real-file-position)
+  ;; This function is only called on Windows.
+
+  ;; REAL-FILE-POSITION is the cl:file-position with the file in binary
+  ;; mode (CR and LF terminates each line).  The job of this function is to
+  ;; find the point associated with this file position.
+  ;;
+  ;; We start from the beginning of the file and go forward line by line,
+  ;; counting by adding an extra character for the LF that isn't in the
+  ;; buffer.
+  
   (save-excursion
-    (let ((p 0)
+    (let ((file-position (+ real-file-position
+			    ;; add two because the file-position is just
+			    ;; before the form:
+			    2))
+	  (p 0)
 	  chars-on-line)
       (goto-char (point-min))
       (block done
@@ -294,7 +308,9 @@ time."
 		 (setq chars-on-line
 		   (- (save-excursion (end-of-line) (point))
 		      (point)))
-		 (setq file-position (- file-position chars-on-line 2))
+		 (setq file-position (- file-position chars-on-line
+					;; one for CR and LF:
+					2))
 		 t)
 	  (cond
 	   ((> file-position 0)
