@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 1.72.6.3 2001/12/12 01:45:51 layer Exp $
+;; $Id: fi-utils.el,v 1.72.6.4 2002/01/29 17:47:34 layer Exp $
 
 ;;; Misc utilities
 
@@ -1083,8 +1083,8 @@ created by fi:common-lisp."
 	  (error "couldn't parse connection string in %s." file))
       (fi::set-connection-vars command))
 
-    ;; need to change the name of this one:
-    (let ((fi:connect-to-windows t)
+    (let (;; need to change the name of this one:
+	  (fi:connect-to-windows t)
 	  (host fi::lisp-host)
 	  (port fi::lisp-port)
 	  (pw fi::lisp-password)
@@ -1099,5 +1099,7 @@ created by fi:common-lisp."
       (setq-default fi::lisp-port port)
       (setq-default fi::lisp-password pw)
       (setq-default fi::lisp-ipc-version version))
-    (fi::make-connection-to-lisp
-     fi::lisp-host fi::lisp-port fi::lisp-password fi::lisp-ipc-version)))
+    ;; Make the backdoor connection, too:
+    (fi::make-connection-to-lisp fi::lisp-host fi::lisp-port
+				 fi::lisp-password fi::lisp-ipc-version)
+    (fi:show-run-status)))

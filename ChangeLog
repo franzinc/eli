@@ -7,6 +7,17 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 ******************************************************************************
+2.3.1
+
+2002-01-28  Kevin Layer  <layer@crikey>
+
+	* fi-sublisp.el (fi:show-run-status),
+	* fi-utils.el (fi:start-interface-via-file): bug11616: show run
+	bar, too
+
+	* fi-subproc.el (fi:common-lisp-image-name): rfe5015
+
+******************************************************************************
 join from acl61 to acl6 branch
 command: ../../join.sh acl61 acl61_to_acl6_merge1 acl61_to_acl6_merge2 eli
 

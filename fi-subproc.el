@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.208.6.4 2001/06/05 16:01:45 layer Exp $
+;; $Id: fi-subproc.el,v 1.208.6.5 2002/01/29 17:47:34 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -183,7 +183,7 @@ fi:common-lisp when a new buffer name is used.")
 (defvar fi:common-lisp-directory nil
   "*Default directory in which the process started by fi:common-lisp uses.")
 
-(defvar fi:common-lisp-image-name "lisp"
+(defvar fi:common-lisp-image-name "alisp"
   "*Default Common Lisp executable image used by fi:common-lisp.  The value
 is a string that names the executable image fi:common-lisp invokes.")
 

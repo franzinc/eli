@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-sublisp.el,v 1.66.32.1 2001/06/05 16:01:45 layer Exp $
+;; $Id: fi-sublisp.el,v 1.66.32.2 2002/01/29 17:47:34 layer Exp $
 
 (defun fi:set-associated-sublisp (buffer-name mode)
   "Use BUFFER-NAME as the name of a buffer which contains a Lisp subprocess
@@ -79,7 +79,8 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 	     (setq fi::process-name fi:franz-lisp-process-name)))
 	((eq major-mode 'fi:common-lisp-mode)
 	 (if fi::common-lisp-backdoor-main-process-name
-	     (setq fi::process-name fi::common-lisp-backdoor-main-process-name)))
+	     (setq fi::process-name
+	       fi::common-lisp-backdoor-main-process-name)))
 	(t
 	 (if fi::common-lisp-backdoor-main-process-name
 	     (setq fi::process-name fi::common-lisp-backdoor-main-process-name)
@@ -112,23 +113,31 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
   "Cause CL to show Run/Wait/GC status in ACL buffer mode lines.
 This is normally called automatically from fi:start-lisp-interface-hook."
   (interactive "")
-  (if (or (null fi::common-lisp-backdoor-main-process-name)
-	  (not (fi:process-running-p
-		(get-process fi::common-lisp-backdoor-main-process-name))))
-      (error "Common Lisp must be running to show run bars."))
+  (if fi:connect-to-windows
+      (fi::ensure-lep-connection)
+    (if (fi::lep-open-connection-p)
+	nil
+      (if (or (null fi::common-lisp-backdoor-main-process-name)
+	      (not (fi:process-running-p
+		    (get-process fi::common-lisp-backdoor-main-process-name))))
+	  (error "Common Lisp must be running to show run bars."))))
   (save-excursion
     (let* ((buffer
-	    (process-buffer
-	     (get-process fi::common-lisp-backdoor-main-process-name)))
+	    (if fi::common-lisp-backdoor-main-process-name
+		(process-buffer
+		 (get-process fi::common-lisp-backdoor-main-process-name))
+	      (fi::connection-buffer fi::*connection*)))
 	   (proc (fi::open-network-stream "Run Bar Process"
 					  nil
 					  (fi::get-buffer-host buffer)
 					  (fi::get-buffer-port buffer))))
       (set-process-filter   proc 'fi::show-run-status-filter)
       (set-process-sentinel proc 'fi::show-run-status-sentinel)
-      (process-send-string proc (format "%s \n" (fi::prin1-to-string fi::listener-protocol)))
+      (process-send-string
+       proc (format "%s \n" (fi::prin1-to-string fi::listener-protocol)))
       (process-send-string proc (format "\"%s\" \n" (process-name proc)))
-      (process-send-string proc (format "%d \n" (fi::get-buffer-password buffer)))
+      (process-send-string
+       proc (format "%d \n" (fi::get-buffer-password buffer)))
       (process-send-string proc "
  (progn (ignore-errors (excl::run-status-process))
         (mp:process-kill mp:*current-process*)) 
