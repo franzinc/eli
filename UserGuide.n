@@ -2,7 +2,7 @@
 			      User Guide
 			    Release 2.0.4
 
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.34 1993/03/23 10:15:11 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.35 1993/03/23 10:25:29 layer Exp $
 
 			     Introduction
 
@@ -1299,7 +1299,6 @@ Miscellaneous programming aids
 %% fi:clman-next-entry
 %% fi:clman-package-help
 %% fi:clman-package-info
-%% fi:clman-package-nicknames
 %% fi:clman-view-file
 
 ===============================================================================
