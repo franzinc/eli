@@ -1,32 +1,40 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.74 1993/06/29 22:01:48 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.75 1993/06/29 23:20:57 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
 
-emacs = /beat/emacs/lemacs-19.6/src/xemacs
+#the following works, but is not backward compatible--you can't load
+#the .elc files compiled with lemacs into emacs 18.xxx.
+# emacs = /beat/emacs/lemacs-19.6/src/xemacs
+emacs = emacs
 
-elcs = modes.elc indent.elc subproc.elc sublisp.elc filec.elc ring.elc\
-	su.elc telnet.elc rlogin.elc shell.elc keys.elc\
-	utils.elc clman.elc Doc.elc\
-	basic-lep.elc lep.elc lze.elc db.elc\
-	stream.elc dmode.elc composer.elc changes.elc\
-	leep0.elc leep.elc
+elcs = fi-modes.elc fi-indent.elc fi-subproc.elc fi-sublisp.elc fi-filec.elc\
+	fi-ring.elc\
+	fi-su.elc fi-telnet.elc fi-rlogin.elc fi-shell.elc fi-keys.elc\
+	fi-utils.elc fi-clman.elc Doc.elc\
+	fi-basic-lep.elc fi-lep.elc fi-lze.elc fi-db.elc\
+	fi-stream.elc fi-dmode.elc fi-composer.elc fi-changes.elc\
+	fi-leep0.elc fi-leep.elc
 
-compile_time_env = -l cl -l bytecomp -l `pwd`/utils -l `pwd`/basic-lep
+# cl.el instead of cl is needed because of a bug in emacs 18.59 (the
+# cl.elc there is bogus and doesn't expand setf methods prooperly).
+
+compile_time_env = -l cl.el -l bytecomp -l `pwd`/fi-utils -l `pwd`/fi-basic-lep
+
+default:	elcs test.out tags
+
+fi-leep.elc:
+	$(emacs) -nw -batch -q $(compile_time_env)\
+		-l `pwd`/fi-leep0.elc -f batch-byte-compile $*.el
 
 .SUFFIXES:
 .SUFFIXES: .el .elc
 .el.elc: 
 	$(emacs) -nw -batch -q $(compile_time_env) -f batch-byte-compile $*.el
 
-default:	elcs testit tags
-
-leep.elc:
-	$(emacs) -nw -batch -q $(compile_time_env)\
-		-l `pwd`/leep0.elc -f batch-byte-compile $*.el
-
-testit:
-	$(emacs) -nw -batch -q -l test.el
+test.out:	$(elcs) fi-test.el
+	$(emacs) -nw -batch -q -l fi-test.el
+	@echo date > test.out
 
 all:	clean default docs # fasls
 
@@ -34,20 +42,6 @@ clean:
 	rm -f *.elc
 
 docs: UserGuide.doc RefMan.doc RefCard.doc
-
-#cl = /usr/local/cl
-#
-# if the following is null, then the .fasl files will be compiled into
-# excl::*library-code-pathname*
-#cl_library = 
-#
-#fasls:	emacs.fasl ipc.fasl
-#
-#emacs.fasl:
-#	./docompile.sh emacs ${cl} ${cl_library}
-#
-#ipc.fasl:
-#	./docompile.sh ipc ${cl} ${cl_library}
 
 elcs: ${elcs}
 

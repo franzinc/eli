@@ -1,8 +1,8 @@
-;; $Header: /repo/cvs.copy/eli/fi-test.el,v 1.1 1993/04/12 16:37:08 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-test.el,v 1.2 1993/06/29 23:21:02 layer Exp $
 
-(setq load-path (cons "/usr/emacs/lisp-interface" load-path))
+(setq load-path (cons default-directory load-path))
 
-(load "fi/site-init")
+(load "fi-site-init")
 
 (defmacro test-equal (compare test)
   (list 'let (list (list 'result test))

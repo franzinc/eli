@@ -1,3 +1,16 @@
+Tue Jun 29 16:04:48 1993  Kevin Layer  (layer@sole)
+
+	* Doc.el: *.el -> fi-*.el
+	* Makefile: *.el -> fi-*.el
+	* fi-site-init.el: *.el -> fi-*.el
+	* fi-site-load.el: *.el -> fi-*.el
+	* fi-test.el: *.el -> fi-*.el
+	* fi-utils.el: fix test for lemacs
+
+*******************************************************************************
+renamed files (*.el -> fi-*.el)
+*******************************************************************************
+
 Tue Jun 29 15:00:03 1993  Kevin Layer  (layer at sole)
 
 	* Makefile: use lemacs instead of emacs
