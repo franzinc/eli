@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.32 1989/06/01 22:32:44 layer Rel $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.33 1990/08/31 23:47:07 layer Exp $
 
 ;;;; Mode initializations
 
@@ -60,13 +60,15 @@ Lisp mode.")
 (defvar fi:emacs-lisp-mode-syntax-table nil
   "The value of which is the syntax table for Emacs Lisp mode.")
 
-
 (defvar fi:common-lisp-file-types '(".cl" ".lisp" ".lsp")
   "A list of the files which are automatically put in fi:common-lisp-mode.
 This variable should be set before this package is loaded.")
 
 (defvar fi:lisp-do-indentation t
   "When non-nil, do FI-style indentation in Lisp modes.")
+
+(defvar fi:subprocess-mode nil
+  "Non-nil when buffer has a subprocess.")
 
 ;;;;
 ;;; The Modes
@@ -212,6 +214,8 @@ value is non-nil."
   (fi::lisp-mode-setup-common))
 
 (defun fi::lisp-subprocess-mode-variables ()
+  (make-local-variable 'fi:subprocess-mode)
+  (setq fi:subprocess-mode t)
   (fi::lisp-mode-setup-common))
 
 (defun fi::lisp-mode-setup-common ()
@@ -431,14 +435,15 @@ for the \"mode:\" local variable.  For that, use  hack-local-variables."
       (modify-syntax-entry ?\) ")(  " fi:emacs-lisp-mode-syntax-table)
       (modify-syntax-entry ?\[ "(]  " fi:emacs-lisp-mode-syntax-table)
       (modify-syntax-entry ?\] ")[  " fi:emacs-lisp-mode-syntax-table)
-      ;;(modify-syntax-entry ?_   "w   " fi:lisp-mode-syntax-table)
-      ;;(modify-syntax-entry ?-   "w   " fi:lisp-mode-syntax-table)
       ))
 
 (if (not fi:lisp-mode-syntax-table)
     (progn
       (setq fi:lisp-mode-syntax-table
 	(copy-syntax-table fi:emacs-lisp-mode-syntax-table))
+      ;;(modify-syntax-entry ?_   "w   " fi:lisp-mode-syntax-table)
+      ;;(modify-syntax-entry ?-   "w   " fi:lisp-mode-syntax-table)
+      (modify-syntax-entry ?*   "w   " fi:lisp-mode-syntax-table)
       (modify-syntax-entry ?\| "\"   " fi:lisp-mode-syntax-table)
       (modify-syntax-entry ?\[ "_   " fi:lisp-mode-syntax-table)
       (modify-syntax-entry ?\] "_   " fi:lisp-mode-syntax-table)))
