@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.25 1992/07/17 15:29:04 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.26 1992/07/20 10:09:47 layer Exp $
 ;;
 ;; Code the implements evaluation in via the backdoor
 
@@ -193,7 +193,8 @@ with this buffer."
 	  (when results
 	    (fi:show-some-text nil results)))
 	(when fi:pop-to-sublisp-buffer-after-lisp-eval ; bug2683
-	  (pop-to-buffer fi:common-lisp-buffer-name)))
+	  (pop-to-buffer fi:common-lisp-buffer-name)
+	  (goto-char (point-max))))
       ((buffer compilep) (error)
 	(save-excursion
 	  (set-buffer buffer)
