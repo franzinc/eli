@@ -11,6 +11,24 @@ Tests for new features:	<`no new features', `no tests for new features', or
 	* <changes go here...>
 
 *******************************************************************************
+2.0.20.pre-beta.6
+
+Documentation changes:	none
+Tests for new features:	no tests for new features
+
+Wed Jan 08 15:36:37 1997    <layer@HOBART>
+
+	* fi-indent.el: comment-start is always ";", so remove code that
+	think it is a regexp
+	* fi-keys.el: in fi:comment-region and fi::log-comment-start,
+	hardwire the comment prefix to ";;".  Previously, it was using
+	comment-start, which is a single ;.
+	* fi-utils.el: improve auto-filling of lisp expressions.
+	* local-fi-developer-hooks.el: use `bsd' C mode instead of the
+	undefined "cc-mode".  Remove c mode hook, since not everyone will
+	want it.
+
+*******************************************************************************
 2.0.20.pre-beta.5 (note the change from beta to pre-beta!!!!)
 
 Documentation changes:	UserGuide.n

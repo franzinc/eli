@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-indent.el,v 1.56 1997/01/07 01:04:01 layer Exp $
+;; $Id: fi-indent.el,v 1.57 1997/01/08 23:54:42 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If non-nil, semicolons that begin comments are indented as they are
@@ -213,11 +213,6 @@ little consing as possible.")
       (goto-char begin)
       (skip-chars-forward ";")
       (setq count (- (point) begin)))
-    (cond ((and (= count 0) (not (string= comment-start ";")))
-           (let ((len (length comment-start)))
-             (while (and (< count len)
-                         (eql (elt comment-start count) ?\;))
-               (setq count (+ count 1))))))
     (setq spec
       (if (> count spec-length)
 	  (nth (1- spec-length) comment-spec)

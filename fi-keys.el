@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 1.105 1997/01/07 01:04:04 layer Exp $
+;; $Id: fi-keys.el,v 1.106 1997/01/08 23:54:45 layer Exp $
 
 (cond ((eq fi::emacs-type 'xemacs19)
        (require 'tags "etags"))
@@ -739,17 +739,19 @@ at the head of the function."
     (funcall indent-line-function)))
 
 (defun fi::log-comment-start ()
-  (if (and (boundp 'fi:lisp-comment-indent-specification)
-	   fi:lisp-comment-indent-specification)
-      (let ((list fi:lisp-comment-indent-specification)
-	    (done nil)
-	    (res ""))
-	(while (and list (not done))
-	  (if (eq t (car list)) (setq done t))
-	  (setq res (concat res comment-start))
-	  (setq list (cdr list)))
-	res)
-    comment-start))
+  (let ((comment-prefix ";;"))
+    (if (and (boundp 'fi:lisp-comment-indent-specification)
+	     fi:lisp-comment-indent-specification)
+	(let ((list fi:lisp-comment-indent-specification)
+	      (done nil)
+	    
+	      (res ""))
+	  (while (and list (not done))
+	    (if (eq t (car list)) (setq done t))
+	    (setq res (concat res comment-prefix))
+	    (setq list (cdr list)))
+	  res)
+      comment-prefix)))
 
 (defun fi:beginning-of-defun (&optional arg)
   "Move the point to the start of the current top-level form.
@@ -925,13 +927,7 @@ positions, and UNCOMMENT."
 			  (skip-chars-backward " \t\n")) ;skip blank lines
 		      (end-of-line)
 		      (point)))
-	  (comment-prefix
-	   (let ((count 0)
-		 (len (length comment-start)))
-             (while (and (< count len)
-                         (eql (elt comment-start count) ?\;))
-               (setq count (+ count 1)))
-	     (make-string count (string-to-char ";")))))
+	  (comment-prefix ";;;"))
       (goto-char end)
       (if (not uncomment)
 	  ;;Comment Region

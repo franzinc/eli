@@ -1,5 +1,5 @@
 ;; local-fi-developer-hooks.el
-;; $Id: local-fi-developer-hooks.el,v 2.6 1996/11/22 01:14:42 layer Exp $
+;; $Id: local-fi-developer-hooks.el,v 2.7 1997/01/08 23:54:54 layer Exp $
 
 ;; This file is not for public distribution.
 ;; It contains extra hooks for fi developers only, things like special
@@ -78,29 +78,15 @@
   nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; setup C code editing
+;; setup C code edit mode
 
-(setq c-auto-newline nil)
-(setq c-tab-always-indent t)
+(require 'cc-mode)
 
-(add-hook 'c-mode-hook   'local-fi::c-mode-hook-func)
-(add-hook 'c++-mode-hook 'local-fi::c-mode-hook-func)
+(push '("\\.c$" . c-mode) auto-mode-alist)
+(push '("\\.h$" . c-mode) auto-mode-alist)
 
-(if (and (on-ms-windows)
-	 (not (eq system-type 'windows-nt)))
-    (load "cxx-mode")
-  (require 'cc-mode))
-
-(push '("\\.h$" . c++-mode) auto-mode-alist)
-(push '("\\.c$" . c++-mode) auto-mode-alist)
-(push '("\\.cc$" . c++-mode) auto-mode-alist)
+(push '("\\.C$"   . c++-mode) auto-mode-alist)
+(push '("\\.cc$"  . c++-mode) auto-mode-alist)
 (push '("\\.cpp$" . c++-mode) auto-mode-alist)
 
-(defun local-fi::c-mode-hook-func ()
-  (auto-fill-mode 1)
-  (cond ((eq fi::emacs-type 'emacs19)
-	 (c-set-style "cc-mode"))
-	)
-;;;; This is way too slow:
-  ;;(when (fboundp 'font-lock-mode) (font-lock-mode 1))
-  )
+(c-set-style "bsd")

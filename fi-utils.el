@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 1.59 1997/01/07 01:04:17 layer Exp $
+;; $Id: fi-utils.el,v 1.60 1997/01/08 23:54:51 layer Exp $
 
 ;;; Misc utilities
 
@@ -778,12 +778,7 @@ created by fi:common-lisp."
 	     (or (null fill-prefix) (string= fill-prefix "")))
 	(let ((prefix
 ;;;; fi changes:
-	       (save-excursion
-		 (beginning-of-line)
-		 (if (looking-at adaptive-fill-regexp)
-		     (buffer-substring (match-beginning 0)
-				       (match-end 0))
-		   ""))))
+	       (fi::find-fill-prefix-from-current-line)))
 ;;;; ...end fi changes.
 	  (and prefix
 	       (not (equal prefix ""))
@@ -855,3 +850,40 @@ created by fi:common-lisp."
     (indent-according-to-mode)
 ;;;; ...end fi changes.
     t))
+
+(defun fi::find-fill-prefix-from-current-line ()
+  (save-excursion
+    (let ((bol (progn (beginning-of-line) (point)))
+	  eol m0-start m0-end)
+      (cond
+       ((looking-at adaptive-fill-regexp)
+	(setq m0-start (match-beginning 0))
+	(setq m0-end (match-end 0))
+	(if (match-beginning 1)
+	    ;; there is only a comment on this line, so determining the
+	    ;; fill-prefix is simple, just the entire match:
+	    (buffer-substring m0-start m0-end)
+	  ;; There is something other than a comment on this line, so we
+	  ;; have to do work to find the real fill-prefix.	  
+	  (setq eol (progn (end-of-line) (point)))
+	  (goto-char bol)
+	  (condition-case nil
+	      (progn
+		(forward-sexp 1)
+		(skip-chars-forward " \t")
+		(if (not (looking-at ";+ +"))
+		    ;; Punt:
+		    ""
+		  ;; Return a string with the same number of characters at the
+		  ;; current position on the line:
+		  (concat
+		   (make-string (- (point) (save-excursion
+					     (beginning-of-line)
+					     (point)))
+				? )
+		   (buffer-substring (match-beginning 0)
+				     (match-end 0)))))
+	    (error
+	     ;; Most likely, the forward-sexp got an error, so punt:
+	     ""))))
+       (t "")))))
