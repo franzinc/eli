@@ -45,7 +45,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.43 1990/09/08 02:23:24 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.44 1990/10/13 19:37:26 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -230,7 +230,8 @@ most recently started sublisp.  If neither of these exist, runs the command
 franz-lisp or common-lisp, depending on the major mode of the buffer."
   ;; see if sublisp is named yet.  if its not, name it intelligently.
   (cond (fi::sublisp-name)
-	((eq major-mode 'fi:inferior-common-lisp-mode)
+	((or (eq major-mode 'fi:inferior-common-lisp-mode)
+	     (eq major-mode 'fi:tcp-common-lisp-mode))
 	 (setq fi::sublisp-name fi::freshest-common-sublisp-name))
 	((eq major-mode 'fi:inferior-franz-lisp-mode)
 	 (setq fi::sublisp-name fi::freshest-franz-sublisp-name))
