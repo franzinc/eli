@@ -1,4 +1,4 @@
-;;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.14 1988/03/22 09:24:35 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.15 1988/03/28 17:33:30 layer Exp $
 ;;;
 ;;; Interaction with a Lisp subprocess
 
@@ -48,12 +48,12 @@ the dot as the search word.")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
-;;; User Visible/Interactive Functions
+;;; User Visible/Interactively Called Functions
 ;;;
 
 (defun fi:inferior-lisp-newline ()
   "Bound to newline in an inferior lisp buffer so that indentation of lisp
-forms is done."
+forms is done while they are entered."
   (interactive)
   (if (eobp)
       (let ((start (marker-position
@@ -89,7 +89,7 @@ forms is done."
   (interactive "P")
   (fi:inferior-lisp-send-input arg 'lists))
 
-(defun fi:eval-last-sexp (compile-file-p)
+(defun fi:lisp-eval-last-sexp (compile-file-p)
   "Send sexp before point to the Lisp subprocess fi::sublisp-name.
 If fi::sublisp-name is nil, startup the appropriate Lisp, based on
 the major-mode of the buffer."
@@ -103,7 +103,7 @@ the major-mode of the buffer."
 		   (set-syntax-table stab))))
     (fi::eval-send start (point) compile-file-p)))
 
-(defun fi:eval-defun (compile-file-p)
+(defun fi:lisp-eval-defun (compile-file-p)
   "Send the current `defun' to the Lisp subprocess fi::sublisp-name.
 If fi::sublisp-name is nil, startup an appropriate sublisp, based on
 the major-mode of the buffer."
@@ -114,7 +114,7 @@ the major-mode of the buffer."
 		  (point))))
     (fi::eval-send start end compile-file-p)))
 
-(defun fi:eval-region (compile-file-p)
+(defun fi:lisp-eval-region (compile-file-p)
   "Send the region to the Lisp subprocess fi::sublisp-name an sexp at a time.
 If fi::sublisp-name is nil, startup an appropriate sublisp, based on
 the major-mode of the buffer."
@@ -123,7 +123,7 @@ the major-mode of the buffer."
 		 (max (point) (mark))
 		 compile-file-p))
 
-(defun fi:eval-current-buffer (compile-file-p)
+(defun fi:lisp-eval-current-buffer (compile-file-p)
   "Send the entire current buffer to the Lisp subprocess fi::sublisp-name.
 If fi::sublisp-name is nil, startup an appropriate sublisp, based on
 the major-mode of the buffer."
@@ -138,21 +138,21 @@ the major-mode of the buffer."
     (error "No such process buffer.")))
 
 ;;;
-;;; Interactive commands requiring the socket to lisp
+;;; Interactive functions requiring the socket to lisp
 ;;;
 
 (defun fi:lisp-arglist (&optional symbol)
   "Asks the sublisp to run arglist on a symbol."
-  (interactive (fi::get-cl-symbol nil t "Function: "))
-  (setq symbol (fi::get-cl-symbol symbol t))
+  (interactive)
+  (setq symbol (fi::add-package-info (fi::get-cl-symbol nil t "Function: ")))
   (process-send-string
    (fi::background-sublisp-process)
    (format
     "(progn
       (format t  \"~:[()~;~:*~{~a~^ ~}~]\"
        (cond
-	((special-form-p '%s) '(\"%s is a special form\"))
 	((macro-function '%s) '(\"%s is a macro\"))
+	((special-form-p '%s) '(\"%s is a special form\"))
 	((not (fboundp '%s)) '(\"%s has no function binding\"))
 	(t (excl::arglist '%s))))
       (values))\n"
@@ -160,35 +160,38 @@ the major-mode of the buffer."
 
 (defun fi:lisp-describe (&optional symbol)
   "Asks the sublisp to describe a symbol."
-  (interactive (fi::get-cl-symbol nil nil "Describe symbol: "))
-  (setq symbol (fi::get-cl-symbol symbol nil))
+  (interactive)
+  (setq symbol (fi::add-package-info
+		(fi::get-cl-symbol nil nil "Describe symbol: ")))
   (process-send-string
    (fi::background-sublisp-process)
    (format "(progn (lisp:describe '%s) (values))\n" symbol)))
 
 (defun fi:lisp-function-documentation (&optional symbol)
   "Asks the sublisp for function documentation of symbol."
-  (interactive (fi::get-cl-symbol
-		nil nil "Function documentation for symbol: "))
-  (setq symbol (fi::get-cl-symbol symbol nil))
+  (interactive)
+  (setq symbol (fi::add-package-info
+		(fi::get-cl-symbol
+		 nil nil "Function documentation for symbol: ")))
   (process-send-string
    (fi::background-sublisp-process)
    (format "(princ (lisp:documentation '%s 'lisp:function))\n" symbol)))
 
 (defun fi:lisp-find-tag (&optional symbol)
   "Find the common lisp source for SYMBOL."
-  (interactive (fi::get-cl-symbol nil nil "Source for symbol: "))
-  (setq symbol (fi::get-cl-symbol symbol nil))
-  (condition-case ()
-      (process-send-string
-       (fi::background-sublisp-process)
-       (format "(format t \"\2~s\" (cons '%s (source-file '%s t)))\n"
-	       symbol symbol))
-    (error
-     ;; the backdoor-lisp-listener is not listening...
-     (if fi:source-info-not-found-hook
-	 (funcall fi:source-info-not-found-hook symbol)
-       (message "The source location of `%s' is unknown." symbol)))))
+  (interactive)
+  (setq symbol (fi::get-cl-symbol nil nil "Source for symbol: "))
+  (let ((s (fi::add-package-info symbol)))
+    (condition-case ()
+	(process-send-string
+	 (fi::background-sublisp-process)
+	 (format "(format t \"\2~s\" (cons '%s (source-file '%s t)))\n"
+		 s s))
+      (error
+       ;; the backdoor-lisp-listener is not listening...
+       (if fi:source-info-not-found-hook
+	   (funcall fi:source-info-not-found-hook (symbol-name symbol))
+	 (message "The source location of `%s' is unknown." symbol))))))
 
 (defun fi:lisp-tags-loop-continue (&optional symbol)
   "Not implemented yet."
@@ -219,46 +222,110 @@ backdoor lisp listener."
       #'break \"interrupt from emacs\")\n"
    (buffer-name (current-buffer))))
 
-(defun fi:lisp-macroexpand ()
-  "Macroexpand the form at the cursor using the backdoor Lisp process."
-  (interactive)
+(defvar fi::lisp-macroexpand-command
+  "(progn
+    (errorset
+     (let ((*print-pretty* t)(excl::*print-nickname* t)(*package* %s))
+       (with-open-file (*standard-input* \"%s\")
+	 (lisp:prin1 (%s (lisp:read)))))
+     t)
+    (values))\n")
+
+(defun fi::lisp-macroexpand-common (handler)
   (save-excursion
     (skip-chars-forward " \t")
     (if (not (looking-at "("))
-	(up-list -1))
+      (up-list -1))
     (let ((filename (format "/tmp/emlisp%d"
-			    (process-id (get-process
-					 fi::freshest-common-sublisp-name))))
+			    (process-id
+			     (get-process fi::freshest-common-sublisp-name))))
 	  (start (point)))
       (forward-sexp)
       (write-region start (point) filename nil 'nomessage)
       (fi::background-sublisp-process)
       (process-send-string
        fi::background-sublisp-process
-       (format "(progn
-                  (errorset
-                   (let ((*print-pretty* t)(excl::*print-nickname* t)
-                         (*package* %s))
-                     (with-open-file (*standard-input* \"%s\")
-                        (lisp:prin1 (lisp:macroexpand (lisp:read)))))
-                  t)
-                (values))\n"
+       (format fi::lisp-macroexpand-command
 	       (if (and (boundp 'fi::package) fi::package)
-		   (format "(or (find-package :%s) (make-package :%s))"
-			   fi::package fi::package)
+		 (format "(or (find-package :%s) (make-package :%s))"
+			 fi::package fi::package)
 		 "*package*")
-	       filename)))))
+	       filename
+	       handler)))))
+
+(defun fi:lisp-macroexpand ()
+  "Macroexpand the form at the cursor using the backdoor Lisp process."
+  (interactive)
+  (fi::lisp-macroexpand-common "lisp:macroexpand"))
+
+(defun fi:lisp-walk (arg)
+  "Fully macroexpand (via excl:walk) the form at the cursor using the backdoor
+Lisp process.  With an argument, use excl:compiler-walk instead."
+  (interactive "P")
+  (fi::lisp-macroexpand-common (if arg "excl:compiler-walk" "excl:walk")))
+
+(defun fi:backdoor-eval (string &rest args)
+  "Evaluate apply format to STRING and ARGS and evaluate this in Common
+Lisp at the other end of our socket."
+  (process-send-string
+   (fi::background-sublisp-process)
+   (format "(progn (format t \"\1\") %s)\n"
+	   (apply 'format string args))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; Internals
 ;;;
 
+(defun fi::add-package-info (symbol)
+  (let ((p (get symbol 'fi::package)))
+    (cond (p (format "%s::%s" p symbol))
+	  ((and (boundp 'fi::package) fi::package)
+	   (format "%s::%s" fi::package symbol))
+	  (t (symbol-name symbol)))))
+
+(defun fi::remove-package-info (symbol)
+  (let (p s)
+    (cond ((string-match ":?:" symbol nil)
+	   (setq p (substring symbol 0 (match-beginning 0)))
+	   (setq s (intern (substring symbol (match-end 0))))
+	   (put s 'fi::package p))
+	  (t
+	   (setq s (intern symbol))
+	   (if (and (boundp 'fi::package) fi::package)
+	       (put s 'fi::package fi::package))))
+    s))
+
+(defun fi::get-cl-symbol (symbol up-p &optional interactive)
+  ;; Ask the user for a CL symbol to be investigated.
+  ;; If INTERACTIVE, then that prompt is used.
+  ;; If UP-P, then the default is the symbol at the car of the form at the
+  ;; cursor.  Otherwise, it is the symbol at the cursor.
+  (if (interactive-p) (setq symbol (read-string interactive)))
+  (if (or (null symbol) (equal symbol ""))
+      (setq symbol
+	(if up-p
+	    (save-excursion
+	      (buffer-substring (progn (up-list -1)
+				       (forward-char 1)
+				       (point))
+				(progn (forward-sexp 1) (point))))
+	  (save-excursion
+	    (buffer-substring (progn (forward-char 1)
+				     (backward-sexp 1)
+				     (skip-chars-forward "#'")
+				     (point))
+			      (progn (forward-sexp 1) (point)))))))
+  (fi::remove-package-info symbol))
+
 (defvar fi::background-sublisp-process nil
   "Process connected to sublist socket for fi:lisp-arglist and friends.")
 
 (defvar fi::background-sublisp-form
- "(progn
+  "(progn
+ (setf (getf (mp:process-property-list mp:*current-process*)
+             ':no-interrupts)
+       t)
  (loop
   (princ \"\n\")
   (errorset (eval (read)) t)))\n"
@@ -270,7 +337,7 @@ backdoor lisp listener."
       (if nomake
 	  (setq fi::background-sublisp-process nil)
 	(progn
-	  (message "starting a backdoor lisp listener")
+	  (message "trying to start a backdoor lisp listener")
 	  (and fi::background-sublisp-process
 	       (delete-process fi::background-sublisp-process))
 	  (setq fi::background-sublisp-process
@@ -347,7 +414,9 @@ backdoor lisp listener."
 			     (car form) (cdr form))
 			  (if fi:source-info-not-found-hook
 			      (funcall fi:source-info-not-found-hook
-				       (symbol-name (car form)))
+				       (symbol-name
+					(fi::remove-package-info
+					 (symbol-name (car form)))))
 			    (message "The source location of `%s' is unknown."
 				     (car form))))))
 		     (t  
@@ -358,14 +427,6 @@ backdoor lisp listener."
 			    (princ fi::sublisp-returns))
 			(message fi::sublisp-returns))
 		      (setq fi::sublisp-returns "")))))))))
-
-(defun fi:backdoor-eval (string &rest args)
-  "Evaluate apply format to STRING and ARGS and evaluate this in Common
-Lisp at the other end of our socket."
-  (process-send-string
-   (fi::background-sublisp-process)
-   (format "(progn (format t \"\1\") %s)\n"
-	   (apply 'format string args))))
 
 (defun fi::find-source-from-lisp-info (xname info)
   ;; info is an alist of (type . filename)
@@ -405,32 +466,6 @@ Lisp at the other end of our socket."
 	   nil t)
 	  (beginning-of-line)
 	(message "couldn't find form in file")))))
-
-(defun fi::get-cl-symbol (symbol up-p &optional interactive)
-  ;; Ask the user for a CL symbol to be investigated.
-  ;; If INTERACTIVE, then that prompt is used.
-  ;; If UP-P, then the default is the symbol at the car of the form at the
-  ;; cursor.  Otherwise, it is the symbol at the cursor.
-  (if interactive (setq symbol (read-string interactive)))
-  (if (or (null symbol) (equal symbol ""))
-      (setq symbol
-	(if up-p
-	    (save-excursion
-	      (buffer-substring (progn (up-list -1)
-				       (forward-char 1)
-				       (point))
-				(progn (forward-sexp 1) (point))))
-	  (save-excursion
-	    (buffer-substring (progn (forward-char 1)
-				     (backward-sexp 1)
-				     (skip-chars-forward "#'")
-				     (point))
-			      (progn (forward-sexp 1) (point)))))))
-  (if (and (boundp 'fi::package)
-	   fi::package
-	   (not (string-match ":" symbol nil)))
-      (setq symbol (format "%s::%s" fi::package symbol)))
-  (if interactive (list symbol) symbol))
 
 (defun fi:inferior-lisp-send-input (arg type)
   "Send ARG, which is an s-expression, to the Lisp subprocess. TYPE
@@ -518,7 +553,6 @@ correct fi::package, of course."
      sublisp-process stuff fi:subprocess-map-nl-to-cr compile-file-p)
     (fi::send-string-split sublisp-process "\n" fi:subprocess-map-nl-to-cr)
     (switch-to-buffer-other-window (process-buffer sublisp-process))
-    ;;(fi::input-ring-save-string stuff)
     (goto-char (point-max))))
 
 (defun fi::sublisp-select ()
@@ -567,9 +601,10 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 	(setq fi::emacs-to-lisp-transaction-file
 	  (let* ((filename (buffer-file-name (current-buffer))))
 	    (format "/tmp/,%s" (file-name-nondirectory filename))))
-	(setq fi::emacs-to-lisp-package (if fi::package
-					(format "(in-package :%s)\n" fi::package)
-				      nil))
+	(setq fi::emacs-to-lisp-package
+	  (if fi::package
+	      (format "(in-package :%s)\n" fi::package)
+	    nil))
 	(setq fi::emacs-to-lisp-transaction-buf
 	  (let ((name (file-name-nondirectory
 		       fi::emacs-to-lisp-transaction-file)))
@@ -593,9 +628,11 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
   (let ((load-string
 	 (if compile-file-p
 	     (format
-	      "(progn (excl::compile-file-if-needed \"%s\")
-		      (load \"%s\"))"
+	      "(let ((*record-source-files* nil))
+ 		 (excl::compile-file-if-needed \"%s.cl\")
+		 (load \"%s.fasl\"))"
 	      fi::emacs-to-lisp-transaction-file
 	      fi::emacs-to-lisp-transaction-file)
-	   (format "(load \"%s\")" fi::emacs-to-lisp-transaction-file))))
+	   (format "(let ((*record-source-files* nil)) (load \"%s\"))"
+		   fi::emacs-to-lisp-transaction-file))))
     (fi::send-string-split process load-string nl-to-cr)))
