@@ -46,11 +46,11 @@ the on-line manual with and without the CLIM 2.x manual pages.  On
 ftp.uu.net there are the following files:
 
    /vendor/franz/emacs/eli-2.0.8.tar.gz (250 Kb)
-   /vendor/franz/emacs/clman-4.1.tar.gz (950 Kb)
-   /vendor/franz/emacs/clman-4.1-clim2.tar.gz (1306 Kb)
+   /vendor/franz/emacs/clman-4.1-v2.tar.gz (950 Kb)
+   /vendor/franz/emacs/clman-4.1-v2-clim2.tar.gz (1306 Kb)
 
 Grab the first one and one of either the second or third files.
-Uncompressed clman-4.1.tar.gz is 4280 Kb and clman-4.1-clim2.tar.gz is
+Uncompressed clman-4.1-v2.tar.gz is 4280 Kb and clman-4.1-v2-clim2.tar.gz is
 6110 Kb.
 
 Note: the .gz means you need gzip (GNU zip) to uncompress these files.
@@ -74,7 +74,7 @@ This will extract the directory fi-2.0.8 from the .tar.gz file.  Next,
 if you want to install the on-line manual pages then do this:
 
 	% cd fi-2.0.8
-	% gzip -d < clman-4.1-clim2.tar.gz | tar xf -
+	% gzip -d < clman-4.1-v2-clim2.tar.gz | tar xf -
 
 This will extract a new more files.  Next, to build the `clman'
 program, type:

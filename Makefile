@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.90 1993/08/31 23:25:55 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.91 1993/09/10 15:49:29 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -146,9 +146,10 @@ fi-dist:	all
 	tar cf - $(fi_release_files) | (cd $(fi_release_directory); tar xf -)
 	(cd $(fi_release_directory);tar cf - .|gzip -9 > $(fi_release_gztar))
 
-clman_version = 4.1
+clman_version = 4.1-v2
 
-clman_files_common	  = Makefile clman.c clman.h clmanaux.c
+clman_files_common	  = Makefile clman.c clman.h clmanaux.c \
+			    makeman.c makeman.el
 clman_release_files       = $(clman_files_common) \
 			    -C small_manual manual/OBLIST.el \
 			    -C small_manual clman.data
