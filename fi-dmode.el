@@ -24,36 +24,22 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.4 1991/03/13 15:03:18 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.5 1991/03/13 21:41:52 layer Exp $
 ;;
 
 ;; Create a mode in which each line is a definition and . on that
 ;; definition brings up the definition in another window
 
-(defvar dmode-map ())
+(defvar dmode-saved-window-configuration nil)
+
+(defvar dmode-map nil)
   
-(if dmode-map 
-    nil
-  (setq dmode-map (make-sparse-keymap)))
-(define-key dmode-map "\c-." 'dmode-goto-definition)
-(define-key dmode-map "." 'dmode-goto-definition)
-(define-key dmode-map "p" 'dmode-goto-previous)
-(define-key dmode-map "n" 'dmode-goto-next)
-(define-key dmode-map "q" 'dmode-quit)
-(define-key dmode-map "\e."	'fi:lisp-find-tag)
-
 (defvar dmode-mouse-map nil)
-
-;(if dmode-mouse-map
-;    nil
-;  (progn
-;    (setq dmode-mouse-map (create-mouse-map))
-;    (define-mouse dmode-mouse-map mouse-left mouse-down 'dmode-mouse-select)))
 
 (defun dmode-quit ()
   (interactive)
-  (kill-buffer (current-buffer))
-  (delete-window))
+  (bury-buffer)
+  (set-window-configuration dmode-saved-window-configuration))
 
 (defvar definitions nil)
 
@@ -106,7 +92,7 @@
 		   :pathname (buffer-file-name buffer))
 		  ;; Normal continuation
 		  ((buffer fi:package) (the-definitions)
-		   (display-some-definitions 
+		   (lep:display-some-definitions 
 		    fi:package
 		    the-definitions (list 'find-buffer-definition
 						 buffer)))
@@ -134,9 +120,11 @@
 		   (error "Cannot find the definition of %s in %s: %s"
 			  string buffer error))))
 
-(defun display-some-definitions (package buffer-definitions
-				   fn-and-arguments
-				   &optional buffer-name)
+(defun lep:display-some-definitions (package buffer-definitions
+				     fn-and-arguments
+				     &optional buffer-name)
+  (setq dmode-saved-window-configuration
+    (current-window-configuration))
   (switch-to-buffer-other-window (or buffer-name "*definitions*"))
   (setq buffer-read-only nil)
   (erase-buffer)
@@ -158,6 +146,21 @@
   (let ((height (window-height)))
     (when (> height 5) (shrink-window (- height 5))))
   (beginning-of-buffer)
-  (dmode-goto-definition))
+  ;;don't go to the first definition, by default
+  ;; (dmode-goto-definition)
+  )
 
+(if dmode-map 
+    nil
+  (setq dmode-map (make-sparse-keymap))
+  (define-key dmode-map "\c-." 'dmode-goto-definition)
+  (define-key dmode-map "." 'dmode-goto-definition)
+  (define-key dmode-map "p" 'dmode-goto-previous)
+  (define-key dmode-map "n" 'dmode-goto-next)
+  (define-key dmode-map "q" 'dmode-quit)
+  (define-key dmode-map "\e."	'fi:lisp-find-tag))
 
+;;(if dmode-mouse-map
+;;    nil
+;;  (setq dmode-mouse-map (create-mouse-map))
+;;  (define-mouse dmode-mouse-map mouse-left mouse-down 'dmode-mouse-select))
