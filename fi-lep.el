@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.23 1991/04/22 16:09:14 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.24 1991/04/22 23:25:44 layer Exp $
 ;;
 
 (defvar fi:always-in-a-window nil)
@@ -378,7 +378,9 @@ environment in which the bug occurs.  A :zoom and other related information
 is obtained from the \"Initial Lisp Listener\".  See M-x mail for more
 information on how to send the mail." 
   (interactive)
-  (make-request (lep::bug-report-session)
+  (make-request (lep::bug-report-session
+		 :process-name (lep::read-lisp-process-name
+				"Process for stack :zoom: "))
 		;; Normal continuation
 		(() (error-message stack lisp-info)
 		 (mail)
