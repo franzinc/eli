@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.18 1988/04/25 15:23:17 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.19 1988/04/26 09:26:40 layer Exp $
 
 ;; Interaction with a Lisp subprocess
 
@@ -62,7 +62,11 @@
 (defvar fi:unix-domain t
   "If non-nil, then `fi:unix-domain-socket' specifies the name of the
 socket file.  It is recommended that this interface be used, and not
-internet ports.  But, if you really want to use them, here are the steps:
+internet ports, because when internet ports are used only one process on a
+machine may use this interface (it is a global resource).  When using UNIX
+domain sockets, communication is done through a socket file in the user's
+home directory.  But, if you really want to use them, here are the steps to
+take:
 
 1. Set this variable to nil.
 2. Add the following line to /etc/services:
@@ -89,9 +93,10 @@ when fi:unix-domain is nil.")
 
 (defvar fi:source-info-not-found-hook 'find-tag
   "The value of this variable is funcalled when source information is not
-present for a symbol.  The function is given one argument, the name for
-which source is desired (a string).  The null string means use the word at
-the point as the search word.")
+present in Lisp for a symbol.  The function is given one argument, the name
+for which source is desired (a string).  The null string means use the word
+at the point as the search word.  This allows the GNU Emacs tags facility
+to be used when the information is not present in Lisp.")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -147,9 +152,10 @@ prefix argument, the source sent to the subprocess is compiled."
     (fi::eval-send start (point) compile-file-p)))
 
 (defun fi:lisp-eval-defun (compile-file-p)
-  "Send the current `defun' to the Lisp subprocess.  If a Lisp subprocess
-has not been started, then one is started.  With a prefix argument, the
-source sent to the subprocess is compiled."
+  "Send the current top-level form to the Lisp subprocess.  A `top-level'
+form is one that starts in column 0.  If a Lisp subprocess has not been
+started, then one is started.  With a prefix argument, the source sent to
+the subprocess is compiled."
   (interactive "P")
   (let* ((end (save-excursion (end-of-defun) (point)))
 	 (start (save-excursion
@@ -158,10 +164,10 @@ source sent to the subprocess is compiled."
     (fi::eval-send start end compile-file-p)))
 
 (defun fi:lisp-eval-region (compile-file-p)
-  "Send the text in the region to the Lisp subprocess, one sexp at a time
-if there is more than one complete sexp.  If a Lisp subprocess has not been
-started, then one is started.  With a prefix argument, the source sent to
-the subprocess is compiled."
+  "Send the text in the region to the Lisp subprocess, one expression at a
+time if there is more than one complete expression.  If a Lisp subprocess
+has not been started, then one is started.  With a prefix argument, the
+source sent to the subprocess is compiled."
   (interactive "P")
   (fi::eval-send (min (point) (mark))
 		 (max (point) (mark))
@@ -175,8 +181,8 @@ source sent to the subprocess is compiled."
   (fi::eval-send (point-min) (point-max) compile-file-p))
 
 (defun fi:set-associated-sublisp (buffer-name)
-  "Set the sublisp associated with a Lisp source file to the prompted
-for BUFFER-NAME, which is the name of a buffer."
+  "Set the Lisp process associated with a Lisp source file.  The buffer
+name is interactively read and must be the name of an existing buffer."
   (interactive "bBuffer name containing a Lisp process: ")
   (let ((process (get-buffer-process (get-buffer buffer-name))))
     (if process
@@ -325,10 +331,11 @@ backdoor lisp listener."
   (fi::lisp-macroexpand-common "lisp:macroexpand"))
 
 (defun fi:lisp-walk (arg)
-  "Print the full macroexpansion, using excl:walk, the form at the point.
-With an prefix argument, use excl:compiler-walk instead."
+  "Print the full macroexpansion, using excl::walk, the form at the point.
+With a prefix argument, use excl::compiler-walk instead."
   (interactive "P")
-  (fi::lisp-macroexpand-common (if arg "excl:compiler-walk" "excl:walk")))
+  (fi::lisp-macroexpand-common
+   (if arg "excl::compiler-walk" "excl::walk")))
 
 (defun fi:backdoor-eval (string &rest args)
   "Evaluate apply format to STRING and ARGS and evaluate this in Common

@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.18 1988/04/25 15:22:23 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.19 1988/04/26 09:26:09 layer Exp $
 
 ;;;; Mode initializations
 
@@ -68,39 +68,7 @@ modes.")
 ;;;;
 
 (defun fi:inferior-common-lisp-mode ()
-  "Major mode for interacting with an inferior Common Lisp subprocess.
-\\[fi:inferior-lisp-newline] at end of buffer causes input to be collected
-and send to the subprocess when a complete sexp has been seen, and when
-seen elsewhere it causes the line on which it was typed to be sent to the
-subprocess, less the prompt if there was one.
-
-An input ring saves input sent to the shell subprocess. \\[fi:pop-input]
-recalls previous input, traveling backward in the ring. \\[fi:push-input]
-recalls previous input, traveling forward in the ring.
-\\[fi:re-search-backward-input] searches backward in the input ring for a
-previous input that contains a regular expression.
-\\[fi:re-search-forward-input] searches forward in the input ring for a
-previous input that contains a regular expression. \\[fi:list-input-ring]
-lists the contents of the input ring.
-
-The value of the variable `fi:inferior-common-lisp-mode-map' is the local
-keymap used in inferior-common-lisp mode.
-
-Keys that are bound to `fi:subprocess-superkey' invoke their bindings in
-the map bound (a buffer-local) called `fi:subprocess-super-key-map' when at
-the end of the buffer, otherwise they invoke their globally-bound
-functions. The super-keymap is taken from the variable
-`fi:inferior-common-lisp-mode-super-key-map'.
-
-Entry to this mode applies the values of `fi:lisp-mode-hook',
-`fi:subprocess-mode-hook' and `fi:inferior-common-lisp-mode-hook', in this
-order and each with no args, if their values are names of functions.
-
-:cd, :pushd and :popd top-level commands given to the shell are watched by
-Emacs to keep the buffer's default directory the same as the shell's
-working directory.  The variables `fi:shell-cd-regexp',
-`fi:shell-pushd-regexp' and `fi:shell-popd-regexp' are used to match these
-command names, and are buffer-local variables."
+  "Major mode for interacting with an inferior Common Lisp subprocess."
   (interactive)
   (kill-all-local-variables)
   (setq major-mode 'fi:inferior-common-lisp-mode)
@@ -124,27 +92,7 @@ command names, and are buffer-local variables."
 	     'fi:subprocess-mode-hook 'fi:inferior-common-lisp-mode-hook))
 
 (defun fi:inferior-franz-lisp-mode ()
-  "Major mode for interacting with an inferior Franz Lisp subprocess.
-\\[fi:inferior-lisp-newline] at end of buffer causes input to be collected
-and send to the subprocess when a complete sexp has been seen, and when
-seen elsewhere it causes the line on which it was typed to be sent to the
-subprocess, less the prompt if there was one.
-
-An input ring facility is also available (see
-`fi:inferior-common-lisp-mode').
-
-The value of the variable `fi:inferior-franz-lisp-mode-map' is the local
-keymap used in inferior-lisp mode.
-
-Keys that are bound to `fi:subprocess-superkey' invoke their bindings in
-the map bound (a buffer-local) called `fi:subprocess-super-key-map' when at
-the end of the buffer, otherwise they invoke their globally-bound
-functions. The super-keymap is taken from the variable
-`fi:inferior-franz-lisp-mode-super-key-map'.
-
-Entry to this mode applies the values of `fi:subprocess-mode-hook' and
-`fi:inferior-franz-lisp-mode-hook', in this order and each with no args, if
-their values are names of functions."
+  "Major mode for interacting with an inferior Franz Lisp subprocess."
   (interactive)
   (kill-all-local-variables)
   (setq major-mode 'fi:inferior-franz-lisp-mode)
@@ -169,34 +117,7 @@ their values are names of functions."
 	     'fi:subprocess-mode-hook 'fi:inferior-franz-lisp-mode-hook))
 
 (defun fi:tcp-lisp-mode ()
-  "Major mode for interacting with a Common Lisp over a TCP , where the
-communication channel is a UNIX domain or internet socket.  The Emacs
-buffer name and the lisp process have the same name, including asterisks.
-The difference between this mode and inferior-lisp mode is that operations
-such sending interrupt or quit signals cannot be done on sockets.  For this
-reason, some of these operations are implemented via a different mechanism.
-\\[fi:tcp-lisp-send-eof] does a db:debug-pop on the Lisp process, 
-\\[fi:tcp-lisp-kill-process] does a mp:process-kill, and
-\\[fi:tcp-lisp-interrupt-process] does a mp:process-interrupt with break.
-
-An input ring facility is also available (see `fi:inferior-common-lisp-mode').
-
-The value of the variable `fi:tcp-lisp-mode-map' is the local keymap
-used in tcp-lisp mode.
-
-Keys that are bound to `fi:subprocess-superkey' invoke their bindings in
-the map bound (a buffer-local) called `fi:subprocess-super-key-map' when at
-the end of the buffer, otherwise they invoke their globally-bound
-functions. The super-keymap is taken from the variable
-`fi:tcp-lisp-mode-super-key-map'.
-
-Entry to this mode applies the values of `fi:subprocess-mode-hook' and
-`fi:tcp-lisp-mode-hook', in this order and each with no args,
-if their values are names of functions.
-
-:cd, :pushd and :popd top-level commands (Allegro CL aliases, which
-emulate the C shell commands) behave as they do in
-`fi:inferior-common-lisp-mode'."
+  "Major mode for interacting with a Common Lisp over a TCP/IP socket."
   (interactive)
   (kill-all-local-variables)
   (setq major-mode 'fi:tcp-lisp-mode)
@@ -284,9 +205,6 @@ Entry to this mode calls the value of `fi:lisp-mode-hook' and
 
 (defun fi::check-for-package-info ()
   (interactive)
-  (make-local-variable 'fi:package)
-  (setq fi:package nil)
-  
   (save-excursion
     ;; look for -*- ... package: xxx; .... -*-
     (let (beg end mode)
@@ -341,10 +259,10 @@ Entry to this mode calls the value of `fi:lisp-mode-hook' and
 			   (if (= (elt name 0) ?:)
 			       (substring name 1)
 			     name)))
-			((stringp p) p)))))
-	  (if fi:package
-	      fi:package
-	    (setq fi:package "user")))))))
+			((stringp p) p)))))))))
+  (if (or (not (boundp 'fi:package))
+	  (null fi:package))
+      (setq fi:package "user")))
 
 ;;;;
 ;;; Key defs

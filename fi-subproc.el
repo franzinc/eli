@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.22 1988/04/25 15:18:22 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.23 1988/04/26 09:26:24 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -92,7 +92,8 @@ be set before starting any subprocesses.  The superkeys are C-a, C-d, C-o,
 C-u, C-w, C-z, and C-\\, which will behave as they would in the current
 local keymap when typed at the end of a subprocess buffer.  If typed
 elsewhere, these keys have their normal global binding.  This is a
-buffer-local symbol.")
+buffer-local symbol.  This variable should be set before starting-up the
+first subprocess.")
 
 (defvar fi:explicit-franz-lisp-file-name nil
   "Explicit Franz Lisp image to invoke from (fi:franz-lisp).")
@@ -119,7 +120,7 @@ buffer-local symbol.")
   "^\\(\\[[0-9]+c?\\] \\|\\[step\\] \\)?<[-A-Za-z]* ?[0-9]*?> "
   "Regexp for Newline command in inferior-common-lisp mode to match Common
 Lisp prompts. Anything from beginning of line up to the end of what this
-pattern matches is deemed to be prompt, and is not re-executed.")
+pattern matches is deemed to be a prompt.")
 
 (defvar fi:franz-lisp-prompt-pattern
   "^[-=]> +\\|^c{[0-9]+} +"
@@ -147,10 +148,13 @@ daemon via a TCP/IP socket.  Returns the new process.  See
     proc))
 
 (defun fi:another-common-lisp (&optional tcp-lisp)
-  "With no prefix argument, start a new Common Lisp subprocess in 
-buffer *common-lisp-N*, otherwise try and connect to a Lisp Listener
-daemon via a TCP/IP socket, using a buffer of the same name.  Returns the
-new process.  See `fi:unix-domain'."
+  "With no prefix argument, start a new inferior Common Lisp process,
+otherwise try connecting to a Lisp Listener daemon via a TCP/IP socket.  If
+the socket connection succeeds, then lightweight Lisp process (not Emacs!)
+is started up automatically and this process is tied to the buffer created.
+The name of the buffer is *common-lisp-N*, where N will be chosen so that a
+new buffer is created (if N is 0, then the buffer is named *common-lisp*).
+Returns the new process.  See `fi:unix-domain'."
   (interactive "P")
   (let ((proc (fi::make-process
 	       "common-lisp" "common-lisp"
@@ -172,9 +176,9 @@ Returns the new process."
     proc))
 
 (defun fi:another-franz-lisp ()
-  "Run a new Franz Lisp subprocess, with IO through buffer *franz-lisp-N*.
-Returns the new process.  This function always creates a
-new subprocess and buffer."
+  "Run a new Franz Lisp subprocess, with IO through a buffer called
+*franz-lisp-N*, where N will be chosen so that a new buffer is created (if
+N is 0, then the buffer is named *common-lisp*).  Returns the new process."
   (interactive)
   (let ((proc (fi::make-process "franz-lisp" "franz-lisp"
 				'fi:inferior-franz-lisp-mode nil t)))
@@ -273,7 +277,7 @@ possible.  This regexp should start with \"^\"."
     (set-marker (process-mark process) (point))))
 
 (defun fi:subprocess-send-eof ()
-  "Send eof to the subprocess."
+  "Send an end of file to the subprocess."
   (interactive)
   (process-send-eof))
 
@@ -766,6 +770,7 @@ This function implements continuous output to visible buffers."
 	'(fi:shell-popd-regexp
 	  fi:shell-pushd-regexp 
 	  fi:shell-cd-regexp
+	  fi:package
 	  fi::shell-directory-stack
 	  fi:subprocess-map-nl-to-cr
 	  fi:subprocess-continuously-show-output-in-visible-buffer
