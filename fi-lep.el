@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.22 1991/04/22 13:40:59 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.23 1991/04/22 16:09:14 layer Exp $
 ;;
 
 (defvar fi:always-in-a-window nil)
@@ -730,15 +730,15 @@ Use ``\\<fi:common-lisp-mode-map>\\[fi:lisp-tags-loop-continue]'' to find the ne
 (defun lep::find-a-definition (string type list-buffer)
   (fi::lisp-find-tag-common string nil t type))
 
-(defun lep::edit-somethings (fspec generator)
+(defun lep::edit-somethings (fspec generator &optional other-window-p)
   (if lep:*meta-dot-session* (lep::kill-session lep:*meta-dot-session*))
   (setq lep:*meta-dot-session*
     (make-complex-request
      (scm::edit-sequence-session :generator generator
 				 :package (string-to-keyword fi:package)
 				 :fspec fspec)
-     ((fspec) (pathname point n-more)
-      (show-found-definition fspec pathname point n-more))
+     ((other-window-p fspec) (pathname point n-more)
+      (show-found-definition fspec pathname point n-more other-window-p))
      ((fspec) (error)
       (delete-metadot-session)
       (error "Cannot edit sequence %s: %s" fspec error)))))
@@ -830,10 +830,15 @@ time."
   (make-request (lep::list-undefined-functions-session)
 		((fi:package) (undeffuncs)
 		 (message "Finding undefined functions...done.")
-		 (lep:display-some-inverse-definitions fi:package
-						       undeffuncs))
+		 (lep:display-some-inverse-definitions
+		  fi:package
+		  undeffuncs
+		  (list 'lep::edit-undefined-function-callers)))
 		(() (error)
 		 (message "error: %s" error))))
+
+(defun lep::edit-undefined-function-callers (fspec &rest ignore)
+  (lep::edit-somethings fspec 'lep::who-calls t))
 
 (defun lep::eval-from-lisp (string)
   (list (eval (car (read-from-string string)))))

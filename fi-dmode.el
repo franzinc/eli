@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.9 1991/04/20 23:25:13 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.10 1991/04/22 16:09:18 layer Exp $
 ;;
 
 ;; Create a mode in which each line is a definition and . on that
@@ -105,15 +105,16 @@ Entry to this mode runs the fi:definition-mode-hook."
   (make-local-variable 'lep::definitions)
   (make-local-variable 'lep::definition-types)
   (make-local-variable 'lep::definition-other-args)
+  (make-local-variable 'lep::definition-finding-function)
 
   (if (null fi:inverse-definition-mode-map)
       (let ((map (make-keymap)))
 	(define-key map "\C-_" 'fi::dmode-undo)
 	(define-key map "\e."  'fi:lisp-find-tag)
-	(define-key map "."    nil)
-	(define-key map "n"    nil)
+	(define-key map "."    'fi:definition-mode-goto-definition)
+	(define-key map "n"    'fi:definition-mode-goto-next)
 	(define-key map "c"    'fi:inverse-definition-who-calls)
-	(define-key map "p"    nil)
+	(define-key map "p"    'fi:definition-mode-goto-previous)
 	(define-key map "q"    'fi:inverse-definition-mode-quit)
 	(setq fi:inverse-definition-mode-map map)))
 
@@ -190,15 +191,6 @@ was before inverse-definition mode was entered."
 	     def type buffer
 	     (append other (cdr lep::definition-finding-function))))))
 
-(defun fi:definition-mode-toggle-trace ()
-  (interactive)
-  (let* ((n (count-lines (point-min)
-			 (save-excursion (beginning-of-line) (point))))
-	 (def (nth n lep::definitions))
-	 (type (nth n lep::definition-types)))
-    (when (not (equal type '(nil)))
-      (fi:toggle-trace-definition def))))
-
 (defun fi:inverse-definition-who-calls ()
   (interactive)
   (let* ((n (count-lines (point-min)
@@ -207,6 +199,15 @@ was before inverse-definition mode was entered."
 	 (type (nth n lep::definition-types)))
     (when (not (equal type '(nil)))
       (fi:list-who-calls def))))
+
+(defun fi:definition-mode-toggle-trace ()
+  (interactive)
+  (let* ((n (count-lines (point-min)
+			 (save-excursion (beginning-of-line) (point))))
+	 (def (nth n lep::definitions))
+	 (type (nth n lep::definition-types)))
+    (when (not (equal type '(nil)))
+      (fi:toggle-trace-definition def))))
 
 (defun fi:definition-mode-goto-next ()
   "Find the definition on the next line.  Equivalent to ``\\<global-map>\\[next-line]''
@@ -263,7 +264,7 @@ in definition mode."
 	    (insert "\n"))
 	  buffer-definitions)
   (fi:definition-mode)
-  (not-modified)
+  (set-buffer-modified-p nil)
   (setq buffer-read-only t)
   (setq lep::definitions (mapcar 'car buffer-definitions))
   (setq lep::definition-types (mapcar 'second buffer-definitions))
@@ -276,6 +277,7 @@ in definition mode."
   (beginning-of-buffer))
 
 (defun lep:display-some-inverse-definitions (package buffer-definitions
+					     fn-and-arguments
 					     &optional buffer-name)
   (setq lep::inverse-definition-mode-saved-window-configuration
     (current-window-configuration))
@@ -293,11 +295,12 @@ in definition mode."
 	    (insert "\n"))
 	  buffer-definitions)
   (fi:inverse-definition-mode)
-  (not-modified)
+  (set-buffer-modified-p nil)
   (setq buffer-read-only t)
   (setq lep::definitions (mapcar 'car buffer-definitions))
   (setq lep::definition-types (mapcar 'second buffer-definitions))
   (setq lep::definition-other-args (mapcar 'third buffer-definitions))
+  (setq lep::definition-finding-function fn-and-arguments)
   (setq fi:package package)
   (let ((height (window-height)))
     (when (and (> height 5) (not (one-window-p)))
