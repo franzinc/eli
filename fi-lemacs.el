@@ -10,62 +10,62 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/Attic/fi-lemacs.el,v 2.10 1993/09/08 00:21:46 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-lemacs.el,v 2.11 1993/09/09 18:08:32 layer Exp $
 
 (defconst fi:allegro-file-menu
     '("ACLFile"
       ["Run/Restart Common Lisp, new window" fi:menu-common-lisp-new-screen
-       fi::connection-not-open]
-      ["Run/Restart Common Lisp" fi:menu-common-lisp fi::connection-not-open]
+       (fi::connection-not-open)]
+      ["Run/Restart Common Lisp" fi:menu-common-lisp (fi::connection-not-open)]
       ["Create Listener, new window" fi:menu-open-lisp-listener-new-screen
-       fi::connection-open]
-      ["Create Listener" fi:open-lisp-listener fi::connection-open]
+       (fi::connection-open)]
+      ["Create Listener" fi:open-lisp-listener (fi::connection-open)]
       "----"
       ["Compile region or form"
-       fi:lisp-compile-active-region-or-defun
-       fi::connection-open]
+       fi:lisp-compile-active-region-or-defun (fi::connection-open)]
       ("Compile other"
-       ["region" fi:lisp-compile-region fi::connection-open]
-       ["last s-exp" fi:lisp-compile-last-sexp fi::connection-open]
-       ["buffer" fi:lisp-compile-current-buffer fi::connection-open])
+       ["region" fi:lisp-compile-region (fi::connection-open)]
+       ["last s-exp" fi:lisp-compile-last-sexp (fi::connection-open)]
+       ["buffer" fi:lisp-compile-current-buffer (fi::connection-open)])
       "----"
       ("Changed definitions"
        ["List all changed definitions" fi:list-changed-definitions
-	fi::connection-open]
+	(fi::connection-open)]
        ["List buffer changed definitions"
 	fi:list-buffer-changed-definitions
-	fi::connection-open]
+	(fi::connection-open)]
        ["Compile all changed definitions" fi:compile-changed-definitions
-	fi::connection-open]
+	(fi::connection-open)]
        ["Compile buffer changed definitions"
 	fi:compile-buffer-changed-definitions
-	fi::connection-open]
+	(fi::connection-open)]
        ["Eval all changed definitions" fi:eval-changed-definitions
-	fi::connection-open]
+	(fi::connection-open)]
        ["Eval buffer changed definitions"
 	fi:eval-buffer-changed-definitions
-	fi::connection-open]
+	(fi::connection-open)]
        ["Copy all changed definitions" fi:copy-changed-definitions
-	fi::connection-open]
+	(fi::connection-open)]
        ["Copy buffer changed definitions" fi:copy-buffer-changed-definitions
-	fi::connection-open]
-       ["Compare source files" fi:compare-source-files fi::connection-open]
+	(fi::connection-open)]
+       ["Compare source files" fi:compare-source-files (fi::connection-open)]
        )
-      ["Compile file" fi:compile-file fi::connection-open]
-      ["Load file" fi:load-file fi::connection-open]
+      ["Compile file" fi:compile-file (fi::connection-open)]
+      ["Load file" fi:load-file (fi::connection-open)]
       "----"
       ["List buffer definitions" fi:list-buffer-definitions
-       fi::connection-open]
+       (fi::connection-open)]
       "----"
-      ["Exit Allegro CL" fi:exit-lisp fi::connection-open]
+      ["Exit Allegro CL" fi:exit-lisp (fi::connection-open)]
       ))
 
 (defconst fi:allegro-edit-menu
     '("ACLEdit"
-      ["Find definition" fi:lisp-find-definition fi::connection-open]
+      ["Find definition" fi:lisp-find-definition (fi::connection-open)]
       ["Find definition other window" fi:lisp-find-definition-other-window
-       fi::connection-open]
-      ["Find next definition" fi:lisp-find-next-definition fi::connection-open]
+       (fi::connection-open)]
+      ["Find next definition" fi:lisp-find-next-definition
+       (fi::connection-open)]
       "----"
       ["Center defun" fi:center-defun t]
       ["Extract list" fi:extract-list t]
@@ -76,89 +76,90 @@
 
 (defconst fi:allegro-help-menu
     '("ACLHelp"
-      ["Arglist" fi:lisp-arglist fi::connection-open]
-      ["Describe" fi:describe-symbol fi::connection-open]
-      ["Apropos" fi:lisp-apropos fi::connection-open]
+      ["Arglist" fi:lisp-arglist (fi::connection-open)]
+      ["Describe" fi:describe-symbol (fi::connection-open)]
+      ["Apropos" fi:lisp-apropos (fi::connection-open)]
       ["Function Documentation" fi:lisp-function-documentation
-       fi::connection-open]
+       (fi::connection-open)]
       "----"
       ["CL reference manual" fi:clman t]
       ))
 
 (defconst fi:allegro-debug-menu
     '("ACLDebug"
-      ["Toggle trace" fi:toggle-trace-definition fi::connection-open]
-      ["Debug process" fi:scan-stack fi::connection-open]
-      ["Macroexpand" fi:lisp-macroexpand fi::connection-open]
+      ["Toggle trace" fi:toggle-trace-definition (fi::connection-open)]
+      ["Debug process" fi:scan-stack (fi::connection-open)]
+      ["Macroexpand" fi:lisp-macroexpand (fi::connection-open)]
       ["Recursive macroexpand" fi:lisp-macroexpand-recursively
-       fi::connection-open]
+       (fi::connection-open)]
       ["List undefined functions" fi:list-undefined-functions
-       fi::connection-open]
-      ["List unused functions" fi:list-unused-functions fi::connection-open]
-      ["Kill definition" fi:kill-definition fi::connection-open]
+       (fi::connection-open)]
+      ["List unused functions" fi:list-unused-functions (fi::connection-open)]
+      ["Kill definition" fi:kill-definition (fi::connection-open)]
       "----"
       ["List generic function methods" fi:list-generic-function-methods
-       fi::connection-open]
+       (fi::connection-open)]
       ["Edit generic function methods" fi:edit-generic-function-methods
-       fi::connection-open]
+       (fi::connection-open)]
       ("Cross reference"
-       ["List calls to" fi:list-who-calls fi::connection-open]
-       ["List callers of" fi:list-who-is-called-by fi::connection-open]
-       ["Edit calls to" fi:edit-who-calls fi::connection-open]
-       ["Edit callers of" fi:edit-who-is-called-by fi::connection-open])
+       ["List calls to" fi:list-who-calls (fi::connection-open)]
+       ["List callers of" fi:list-who-is-called-by (fi::connection-open)]
+       ["Edit calls to" fi:edit-who-calls (fi::connection-open)]
+       ["Edit callers of" fi:edit-who-is-called-by (fi::connection-open)])
       ))
 
 (defconst fi:composer-menu
     '("Composer"
       ["Start Composer" fi:start-composer
-       fi::connection-open-composer-loaded-and-stopped]
+       (fi::connection-open-composer-loaded-and-stopped)]
       ["Start Composer w/mouse line" fi:start-composer-mouse-line
-       fi::connection-open-composer-loaded-and-stopped]
+       (fi::connection-open-composer-loaded-and-stopped)]
       "----"
       ("CLOS"
-       ["Inspect class" fi:inspect-class fi::composer-connection-open]
+       ["Inspect class" fi:inspect-class (fi::composer-connection-open)]
        ["Inspect generic function" fi:inspect-function
-	fi::composer-connection-open]
+	(fi::composer-connection-open)]
        ["Show class subclasses" fi:show-subclasses
-	fi::composer-connection-open]
+	(fi::composer-connection-open)]
        ["Show class superclasses" fi:show-superclasses
-	fi::composer-connection-open]
+	(fi::composer-connection-open)]
        )
       ("Xref"
-       ["Show calls to" fi:show-calls-to fi::composer-connection-open]
-       ["Show calls from" fi:show-calls-from fi::composer-connection-open]
-       ["Show calls to and from" fi:xxx fi::composer-connection-open]
-       ["Discard info" fi:xxx fi::composer-connection-open]
+       ["Show calls to" fi:show-calls-to (fi::composer-connection-open)]
+       ["Show calls from" fi:show-calls-from (fi::composer-connection-open)]
+       ["Show calls to and from" fi:xxx (fi::composer-connection-open)]
+       ["Discard info" fi:xxx (fi::composer-connection-open)]
        )
       ("Profiler"
        ["Start time profiler" fi:composer-start-time-profiler
-	fi::composer-connection-open]
+	(fi::composer-connection-open)]
        ["Start space profiler" fi:composer-start-space-profiler
-	fi::composer-connection-open]
-       ["Stop profiler" fi:composer-stop-profiler fi::composer-connection-open]
+	(fi::composer-connection-open)]
+       ["Stop profiler" fi:composer-stop-profiler
+	(fi::composer-connection-open)]
        ["Display time" fi:composer-display-time-profiler
-	fi::composer-connection-open]
+	(fi::composer-connection-open)]
        ["Display space" fi:composer-display-space-profiler
-	fi::composer-connection-open]
-       ["Options" fi:composer-profiler-options fi::composer-connection-open]
+	(fi::composer-connection-open)]
+       ["Options" fi:composer-profiler-options (fi::composer-connection-open)]
        )
       ("Other"
-       ["Inspect" fi:inspect-value fi::composer-connection-open]
+       ["Inspect" fi:inspect-value (fi::composer-connection-open)]
        ["Presenting Listener" composer::make-presenting-listener
-	fi::composer-connection-open]
-       ["Processes" fi:composer-process-browser fi::composer-connection-open]
-       ["Systems" fi:composer-defsys-browser fi::composer-connection-open]
+	(fi::composer-connection-open)]
+       ["Processes" fi:composer-process-browser (fi::composer-connection-open)]
+       ["Systems" fi:composer-defsys-browser (fi::composer-connection-open)]
        ["Reinitialize resources" fi:composer-reinitialize-resources
-	fi::composer-connection-open]
-       ["Options" fi:composer-other-options fi::composer-connection-open]
+	(fi::composer-connection-open)]
+       ["Options" fi:composer-other-options (fi::composer-connection-open)]
        )
       ("Help"
-       ["Help" fi:composer-help fi::composer-connection-open]
+       ["Help" fi:composer-help (fi::composer-connection-open)]
        ["Current pointer gesture bindings" fi:composer-help-gesture-bindings
-	fi::composer-connection-open])
+	(fi::composer-connection-open)])
       "----"
       ["Exit Composer/Common Windows" fi:composer-exit
-       fi::composer-connection-open]
+       (fi::composer-connection-open)]
       ))
 
 (defun fi::connection-open ()
