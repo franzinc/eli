@@ -7,6 +7,13 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.1.0
+
+2000-09-05  Kevin Layer  <layer@ultra>
+
+	* local.mak: remove html files from release_files
+
+*******************************************************************************
 2.1.beta.0
 
 2000-07-29  Kevin Layer  <layer@ultra>
