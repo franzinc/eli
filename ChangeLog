@@ -17,6 +17,7 @@ Wed Jun 24 10:22:28 1998  Kevin Layer  <layer@ultra>
     added files:
 	* Doc0.el
 	* eli.htm
+	* relnotes.htm (will be merged into eli.htm)
     changed files:
 	* Doc.el: move engine to Doc0.el
  	* Makefile: remove old doc stuff
