@@ -1,6 +1,8 @@
 
 (require 'cl)
 
+(defvar fi::clman-big-oblist)
+
 (do ((ll fi::clman-big-oblist (cdr ll))
      xx)
     ((null ll) (kill-emacs 0))

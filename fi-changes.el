@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-changes.el,v 1.15 1994/08/01 22:48:08 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-changes.el,v 1.16 1996/06/28 00:03:11 layer Exp $
 ;;
 ;; Support for changed definitions
 
@@ -136,18 +136,23 @@ OLD-FILE."
 	    (dolist (buffer (buffer-list))
 	      (set-buffer buffer)
 	      (if (fi::check-buffer-for-changes-p since)
-		  (push (fi::compute-file-changed-values-for-current-buffer)
+		  (push (fi::compute-file-changed-values-for-current-buffer
+			 since)
 			args))))
 	  (if args
 	      (apply (function fi::do-buffer-changed-definitions-1)
+		     operation since
 		     copy-file-name
 		     (fi::transpose-list args))
 	    (message "There are no changes.")))
       (if (fi::check-buffer-for-changes-p since)
 	  (apply (function fi::do-buffer-changed-definitions-1)
+		 operation since
 		 copy-file-name
-		 (fi::compute-file-changed-values-for-current-buffer))
+		 (fi::compute-file-changed-values-for-current-buffer since))
 	(message "There are no changes.")))))
+
+(defvar fi::unlock-file-suffix ",0")
 
 (defun fi::check-buffer-for-changes-p (since)
   "Decide whether this buffer is worth checking for changes."
@@ -155,25 +160,26 @@ OLD-FILE."
        (buffer-file-name)
        (ecase since
 	 (comma-zero
-	  (file-exists-p (concat (buffer-file-name) unlock-file-suffix)))
+	  (file-exists-p (concat (buffer-file-name) fi::unlock-file-suffix)))
 	 (file-first-read (or (buffer-modified-p) buffer-backed-up))
 	 (buffer-save (buffer-modified-p))
 	 (last-compile-or-eval
 	  ;; Its like this buffer needs an every-modified-flag
 	  t))))
 
-(defun fi::compute-file-changed-values-for-current-buffer ()
+(defun fi::compute-file-changed-values-for-current-buffer (since)
   (let ((actual-file (buffer-file-name))
 	(old-file 
 	 (case since
-	   (comma-zero (concat (buffer-file-name) unlock-file-suffix))
+	   (comma-zero (concat (buffer-file-name) fi::unlock-file-suffix))
 	   (t (if (and (not (eq since 'buffer-save))
 		       buffer-backed-up)
 		  (fi::find-most-recent-backup-file-name (buffer-file-name))
 		(buffer-file-name))))))
     (list actual-file old-file actual-file)))
 
-(defun fi::do-buffer-changed-definitions-1 (copy-file-name actual-file
+(defun fi::do-buffer-changed-definitions-1 (operation since
+					    copy-file-name actual-file
 					    old-file new-file)
   (fi::make-request (scm::list-changed-definitions
 		     :operation operation

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-telnet.el,v 1.11 1996/06/05 20:31:53 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-telnet.el,v 1.12 1996/06/28 00:03:36 layer Exp $
 
 (defvar fi:telnet-mode-map nil
   "The telnet major-mode keymap.")
@@ -111,7 +111,8 @@ The telnet image file and image arguments are taken from the variables
   "Filter for `fi:telnet' subprocess buffers.
 Watch for the first shell prompt from the telnet, then send the
 string bound to fi:telnet-initial-input, and turn ourself off."
-  (let ((old-buffer (fi::subprocess-filter process output t)))
+  (let ((old-buffer (fi::subprocess-filter process output t))
+	(password nil))
     (cond
      ((string-match "assword" output)
       (setq password (fi::read-password))

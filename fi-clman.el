@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 2.10 1995/04/07 01:37:16 georgej Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 2.11 1996/06/28 00:03:13 layer Exp $
 
 (defvar fi::clman-prog
     (or (fi::find-path load-path "clman")
@@ -19,6 +19,7 @@
     (or (fi::find-path load-path "manual/")
 	(error "Couldn't find the manual directory in load-path")))
 
+(defvar fi::clman-big-oblist)
 (unless (boundp 'fi::clman-big-oblist)
   (load (concat fi::manual-dir "OBLIST")))
 

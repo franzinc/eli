@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.119 1996/03/27 03:05:41 georgej Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.120 1996/06/28 00:03:05 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -8,53 +8,14 @@ CFLAGS = -O
 
 emacs = emacs
 
-elcs = fi-modes.elc fi-indent.elc fi-subproc.elc fi-sublisp.elc fi-filec.elc \
-       fi-xemacs.elc fi-emacs19.elc fi-emacs18.elc fi-ring.elc \
-       fi-su.elc fi-telnet.elc fi-rlogin.elc fi-shell.elc fi-keys.elc \
-       fi-gnu.elc fi-utils.elc fi-clman.elc Doc.elc \
-       fi-basic-lep.elc fi-lep.elc fi-lze.elc fi-db.elc \
-       fi-stream.elc fi-dmode.elc fi-composer.elc fi-changes.elc \
-       fi-leep0.elc fi-leep.elc fi-leep-xemacs.elc makeman.elc \
-       local-fi-developer-hooks.elc
+default:	compile test.out clman
 
-# use cl.el instead of cl because of a bug in emacs 18.59 (the
-# cl.elc in the distribution is bogus and doesn't expand setf methods
-# properly).
+all:	compile test.out docs tags
 
-compile_time_env = -l fi-version.el -l cl.el -l bytecomp \
-	-l `pwd`/fi-utils -l `pwd`/fi-basic-lep
-
-default:	elcs test.out clman
-
-all:	elcs test.out docs tags
-
-fi-leep.elc:
-	$(emacs) -nw -batch -q $(compile_time_env) \
-		-l `pwd`/fi-leep0.elc -f batch-byte-compile $*.el
-
-fi-leep-xemacs.elc:
-	$(emacs) -nw -batch -q $(compile_time_env) \
-		-l `pwd`/fi-leep0.elc -f batch-byte-compile $*.el
-
-.SUFFIXES:
-.SUFFIXES: .el .elc
-
-.el.elc:
-	$(emacs) -nw -batch -q $(compile_time_env) -f batch-byte-compile $*.el
-
-# This file contains only some obscure local developer hooks andis not
-# distributed.  These rules cause it to be ignored cleanly.
-
-local-fi-developer-hooks.el:
-
-local-fi-developer-hooks.elc:	local-fi-developer-hooks.el
-	@if test -f $*.el; then\
-	  $(emacs) -nw -batch -q $(compile_time_env) -f batch-byte-compile $*.el;\
-	fi
+compile:
+	$(emacs) -nw -batch -q -l `pwd`/fi-compile.el -kill
 
 docs: UserGuide.doc RefMan.doc RefCard.doc
-
-elcs: ${elcs}
 
 RefMan.n:	UserGuide.n
 	rm -f RefMan.n

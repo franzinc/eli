@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.74 1996/06/11 15:51:48 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.75 1996/06/28 00:03:28 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -67,24 +67,38 @@ function, it is changed to a list of functions."
 Otherwise, the .elc will be loaded in preference to the .el file, if it
 exists.")
 
+(defvar fi::load-el-files-only nil)
+
 (defun fi::load (file &rest load-before-compile)
-  (cond (fi:compile-at-load-time
-	 (let ((lib-file (locate-library file))
-	       el-lib-file)
-	   (unless lib-file (error "can't find file %s" file))
-	   (dolist (required-file load-before-compile)
-	     (load required-file))
-	   (cond ((string-match "\\.el$" lib-file)
-		  ;; this compiles and loads:
-		  (byte-compile-file lib-file t))
-		 ((and (string-match "\\.elc$" lib-file)
-		       (file-newer-than-file-p
-			(setq el-lib-file
-			  (substring lib-file 0 (- (length lib-file) 1)))
-			lib-file))
-		  (byte-compile-file el-lib-file t))
-		 (t (load lib-file)))))
-	(t (load file))))
+  (cond
+   (fi::load-el-files-only
+    (let ((lib-file (locate-library file))
+	  el-lib-file)
+      (unless lib-file (error "can't find file %s" file))
+      (dolist (required-file load-before-compile)
+	(load required-file))
+      (cond ((string-match "\\.el$" lib-file)
+	     (load lib-file))
+	    ((string-match "\\.elc$" lib-file)
+	     (load (substring lib-file 0 (- (length lib-file) 1))))
+	    (t (error "not el or elc")))))
+   (fi:compile-at-load-time
+    (let ((lib-file (locate-library file))
+	  el-lib-file)
+      (unless lib-file (error "can't find file %s" file))
+      (dolist (required-file load-before-compile)
+	(load required-file))
+      (cond ((string-match "\\.el$" lib-file)
+	     ;; this compiles and loads:
+	     (byte-compile-file lib-file t))
+	    ((and (string-match "\\.elc$" lib-file)
+		  (file-newer-than-file-p
+		   (setq el-lib-file
+		     (substring lib-file 0 (- (length lib-file) 1)))
+		   lib-file))
+	     (byte-compile-file el-lib-file t))
+	    (t (load lib-file)))))
+   (t (load file))))
 
 (defun fi::load-compiled (file &rest load-before-compile)
   (let ((lib-file (locate-library file)))

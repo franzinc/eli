@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.40 1995/04/07 01:37:10 georgej Exp $
+;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.41 1996/06/28 00:03:04 layer Exp $
 
 ;; This file is used to assemble documentation files
 ;; It is provided (in distributions) purely for informational purposes,
@@ -13,10 +13,14 @@
 (load "fi-clman") ;; autoloaded
 
 (setq args (cdr (fi:member-equal "--" command-line-args)))
+(defvar input-file)
 (setq input-file (car args))
+(defvar output-file)
 (setq output-file (car (cdr args)))
 
 (message "input-file %s, output-file %s" input-file output-file)
+
+(defvar current-local-map-var)
 
 (defun xxx-doc-xxx ()
   (switch-to-buffer "*foo*")

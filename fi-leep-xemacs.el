@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-leep-xemacs.el,v 2.1 1995/01/10 00:43:37 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-leep-xemacs.el,v 2.2 1996/06/28 00:03:24 layer Exp $
 
 ;; The xemacs side of presentations in a lisp-listener window.
 
@@ -190,7 +190,7 @@ Each entry is a list of:
 The function should be defined in this way:
 
    (defun fi:epoch-gesture-select (e)
-     (interactive "e")
+     (interactive \"e\")
      (fi::interrupt-process-for-gesture e ':select))
 ")
 

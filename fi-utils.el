@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.55 1995/01/10 00:43:45 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.56 1996/06/28 00:03:38 layer Exp $
 
 ;;; Misc utilities
 
@@ -34,7 +34,8 @@
 	 (len (length string))
 	 (len-1 (- len 1))
 	 s
-	 c)
+	 c
+	 x)
     (while (< i len)
       (setq x i)
       (setq s "")
@@ -209,12 +210,12 @@ arguments."
 	(setq index (+ index 1))))
     found))
 
-(defun fi:process-running-p (thing)
+(defun fi:process-running-p (thing &optional buffer-name)
   (let ((running-states '(run stop open)) temp)
     (cond ((processp thing)
 	   (memq (process-status thing) running-states))
 	  ((stringp thing)
-	   (and (setq temp (get-buffer buffer-name))
+	   (and (setq temp (get-buffer (or buffer-name thing)))
 		(setq temp (get-buffer-process temp))
 		(memq (process-status temp) running-states)))
 	  (t nil))))
@@ -355,6 +356,8 @@ at the beginning of the line."
   ;; fi-xemacs.el uses this to cause the fi:common-lisp-mode specific menu
   ;; to be able to grab the thing at the point.
   )
+
+(defvar ignore-keywords)
 
 (defun fi::get-default-symbol (prompt &optional up-p ignore-keywords)
   (let ((symbol-at-point (fi::get-symbol-at-point up-p)))

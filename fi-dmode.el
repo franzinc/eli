@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.25 1994/08/01 22:48:11 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.26 1996/06/28 00:03:15 layer Exp $
 
 ;; Create a mode in which each line is a definition and . on that
 ;; definition brings up the definition in another window
@@ -26,6 +26,12 @@
   "*A hook run from fi:definition-mode.")
 (defvar fi:inverse-definition-mode-hook nil
   "*A hook run from fi:inverse-definition-mode.")
+
+(defvar lep::definitions)
+(defvar lep::definition-types)
+(defvar lep::definition-other-args)
+(defvar lep::definition-finding-function)
+(defvar lep::inverse-definitions)
 
 (defun fi:definition-mode ()
   "A major mode for viewing definitions of objects defined in the Common

@@ -19,7 +19,7 @@
 ;; along with GNU Emacs; see the file COPYING.  If not, write to
 ;; the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 
-;; $Header: /repo/cvs.copy/eli/fi-gnu.el,v 2.1 1993/08/31 19:03:41 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-gnu.el,v 2.2 1996/06/28 00:03:19 layer Exp $
 
 (defun fi::find-most-recent-backup-file-name (fn)
   (if (eq version-control 'never)
@@ -38,8 +38,8 @@
 	  (make-backup-file-name fn)
 	(concat fn ".~" (int-to-string high-water-mark) "~")))))
 
-(defun fi::backup-extract-version (fn)
-  (if (and (string-match "[0-9]+~$" fn bv-length)
-	   (= (match-beginning 0) bv-length))
-      (string-to-int (substring fn bv-length -1))
-      0))
+;;(defun fi::backup-extract-version (fn)
+;;  (if (and (string-match "[0-9]+~$" fn bv-length)
+;;	   (= (match-beginning 0) bv-length))
+;;      (string-to-int (substring fn bv-length -1))
+;;      0))

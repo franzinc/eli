@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-emacs19.el,v 2.15 1996/06/11 15:51:46 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-emacs19.el,v 2.16 1996/06/28 00:03:17 layer Exp $
 
 
 (unless (string-match "^18." emacs-version) ;Allows compilation on 18.
@@ -602,6 +602,8 @@
 
 (add-hook 'fi:inferior-common-lisp-mode-hook 'fi::install-mode-menus)
 (add-hook 'fi:common-lisp-mode-hook 'fi::install-mode-menus)
+
+(defvar lisp-font-lock-keywords-2)
 
 (add-hook 'fi:common-lisp-mode-hook
 	  (function

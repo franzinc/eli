@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.161 1996/05/31 18:38:08 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.162 1996/06/28 00:03:32 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -234,6 +234,10 @@ buffer.")
 (defvar fi::shell-directory-stack nil
   "List of directories saved by pushd in this buffer's shell.")
 (make-variable-buffer-local 'fi::shell-directory-stack)
+
+(defvar subprocess-prompt-pattern)
+
+(defvar fi:franz-lisp-directory)
 
 ;;;;;;;;;;;;;;;;;;;;;; lisp mode specific internal variables
 
@@ -452,7 +456,8 @@ the buffer name is the second optional argument."
   (interactive "p")
   (if (or (null fi::common-lisp-backdoor-main-process-name)
 	  (not (fi:process-running-p
-		(get-process fi::common-lisp-backdoor-main-process-name))))
+		(get-process fi::common-lisp-backdoor-main-process-name)
+		buffer-name)))
       (error "Common Lisp must be running to open a lisp listener."))
   (let* ((buffer (process-buffer
 		  (get-process fi::common-lisp-backdoor-main-process-name))))
@@ -608,7 +613,8 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		 (or (null buffer)
 		     (not (get-buffer-process buffer))
 		     (not (fi:process-running-p
-			   (get-buffer-process buffer))))))
+			   (get-buffer-process buffer)
+			   buffer-name)))))
 	(list (setq buffer-name (read-buffer "Buffer: " buffer-name))
 	      (progn
 		(setq host (read-string "Host: " host))
@@ -642,7 +648,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 (defun fi::common-lisp-subprocess-filter (process output &optional stay
 								   cruft)
   (let ((val (catch 'cl-subproc-filter-foo
-	       (fi::common-lisp-subprocess-filter-1 process))))
+	       (fi::common-lisp-subprocess-filter-1 process output))))
     (case val
       (normal
        (fi::subprocess-filter process output stay cruft)
@@ -654,7 +660,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	     (fi::switch-to-buffer "*Help*"))
 	 (fi::subprocess-filter process output stay cruft))))))
 
-(defun fi::common-lisp-subprocess-filter-1 (process)
+(defun fi::common-lisp-subprocess-filter-1 (process output)
   ;; This is a temporary filter, which is used until the rendezvous with
   ;; Lisp is made.
   (save-excursion
@@ -721,7 +727,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		     (get-buffer-create buffer-name)))
 	 (buffer-name (buffer-name buffer))
 	 (process (get-buffer-process buffer))
-	 (runningp (fi:process-running-p process))
+	 (runningp (fi:process-running-p process buffer-name))
 	 start-up-feed-name)
 
     (if (not runningp)
@@ -757,7 +763,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	  ;; do the following after the sentinel is established so we don't get
 	  ;; an ugly message in the subprocess buffer
 	  ;;
-	  (when (not (fi:process-running-p process))
+	  (when (not (fi:process-running-p process buffer-name))
 	    (error "Couldn't startup %s" image-file))
 
 	  (set-process-filter process (or filter 'fi::subprocess-filter))
@@ -838,7 +844,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		       (fi::get-buffer-password process-buffer)))
 	 (proc (get-buffer-process buffer)))
 
-    (unless (fi:process-running-p proc)
+    (unless (fi:process-running-p proc buffer-name)
       (save-excursion
 	(save-window-excursion
 	  (switch-to-buffer buffer)
@@ -1026,11 +1032,10 @@ This function implements continuous output to visible buffers."
 	 (cond ((> number 1) (concat name "<" number ">"))
 	       ((< number 0)
 		(let (buffer-name n)
-		  (if (not (fi:process-running-p (setq buffer-name name)))
+		  (if (not (fi:process-running-p name name))
 		      buffer-name
 		    (setq n 2)
-		    (while (fi:process-running-p
-			    (setq buffer-name (concat name "<" n ">")))
+		    (while (fi:process-running-p (concat name "<" n ">"))
 		      (setq n (+ n 1)))
 		    buffer-name)))
 	       (t name))))

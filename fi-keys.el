@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.94 1996/05/21 21:12:26 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.95 1996/06/28 00:03:21 layer Exp $
 
 (cond ((eq fi::emacs-type 'xemacs19)
        (require 'tags "etags"))
@@ -802,7 +802,8 @@ If they are not, position the point at the first syntax error found."
 	(cond-symbol-chars "-+:a-zA-Z.0-9"))
     (goto-char (point-min))
     (while (and (not (eobp))
-		(let ((done nil))
+		(let ((done nil)
+		      (char nil))
 		  (while (and (not (eobp)) (not done))
 		    (skip-chars-forward "\f\n\t ")
 		    (setq char (char-after (point)))

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.68 1996/02/13 23:35:26 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.69 1996/06/28 00:03:26 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -325,6 +325,8 @@ since the Emacs-Lisp interface will not create it."
   "Get the buffer tick if it is supported"
   (and (fboundp 'buffer-modified-tick) (buffer-modified-tick)))
 
+(require 'sendmail) ;; for mail-to
+
 (defun fi:bug-report ()
   "Create a mail buffer which contains information about the Common Lisp
 environment in which the bug occurs.  A :zoom and other related information
@@ -567,7 +569,7 @@ beginning of words in target symbols."
   (erase-buffer)
   (insert string)
   (goto-char (point-min))
-  (fi::ensure-minibuffer-visible (current-buffer)))
+  (fi::ensure-minibuffer-visible))
 
 (defun lep::write-string-to-hidden-buffer (string buffer)
   "Like lep::display-string-in-buffer, but don't display the buffer."
