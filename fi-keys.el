@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.23 1990/09/01 20:15:19 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.24 1990/09/02 18:33:05 layer Exp $
 
 ;;;;
 ;;; Key defs
@@ -85,7 +85,12 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
   (define-key map "\e" (make-sparse-keymap))
   (define-key map "\C-x" (make-sparse-keymap))
 
-  (if supermap (define-key map "\C-c" supermap))
+  (if supermap
+      (define-key map "\C-c" supermap)
+    ;; editing mode
+    (let ((c-map (make-sparse-keymap)))
+      (define-key map "\C-c" c-map)
+      (define-key c-map "-" 'fi:log-functional-change)))
   
   (if fi:lisp-do-indentation
       (progn
@@ -96,7 +101,7 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
       (define-key map "\e\C-q"		'indent-sexp)))
 
   (define-key map "\C-?"	'backward-delete-char-untabify)
-  
+
   (cond
     ((memq mode '(sub-lisp tcp-lisp))
      (define-key map "\r"	'fi:inferior-lisp-newline)
@@ -340,14 +345,15 @@ the point as the default tag."
   "Print the arglist (using excl:arglist) for a symbol, which is read from
 the minibuffer.  The word around the point is used as the default."
   (interactive (fi::get-default-symbol "Function" t))
-  (let ((string
-	 (format "(progn
+  (let* ((symbol (fi::case-frob symbol))
+	 (string
+	  (format "(progn
                     (format t  \"~:[()~;~:*~{~a~^ ~}~]\"
                     (cond
                      ((not (fboundp '%s)) '(\"%s has no function binding\"))
                      (t (excl::arglist '%s))))
                     (values))\n"
-		 symbol symbol symbol symbol symbol)))
+		  symbol symbol symbol symbol symbol)))
     (if (fi::background-sublisp-process)
 	(process-send-string fi::backdoor-process string)
       (fi::eval-string-send string nil t))))
@@ -356,7 +362,8 @@ the minibuffer.  The word around the point is used as the default."
   "Describe a symbol, which is read from the minibuffer.  The word around
 the point is used as the default."
   (interactive (fi::get-default-symbol "Describe symbol"))
-  (let ((string (format "(progn (lisp:describe '%s) (values))\n" symbol)))
+  (let ((string (format "(progn (lisp:describe '%s) (values))\n"
+			(fi::case-frob symbol))))
     (if (fi::background-sublisp-process)
 	(process-send-string fi::backdoor-process string)
       (fi::eval-string-send string nil t))))
@@ -367,7 +374,7 @@ minibuffer.  The word around the point is used as the default."
   (interactive
    (fi::get-default-symbol "Function documentation for symbol"))
   (let ((string (format "(princ (lisp:documentation '%s 'lisp:function))\n"
-			symbol)))
+			(fi::case-frob symbol))))
     (if (fi::background-sublisp-process)
 	(process-send-string fi::backdoor-process string)
       (fi::eval-string-send string nil t))))
@@ -399,7 +406,7 @@ With a prefix argument, macroexpand the code as the compiler would."
 			      fi:package fi:package)
 		    "*package*")
 		  filename
-		  handler)))
+		  (fi::case-frob handler))))
     (if start
 	(write-region start (point) filename nil 'nomessage)
       (let ((form (read-string (format "form to %s: " type)))
@@ -421,7 +428,8 @@ from the sexp around the point."
   ;; Since this takes a while, tell the user that it has started.
   (message "finding callers of %s..." symbol)
   (let ((string (format
-		 "(progn (excl::who-references '%s) (values))\n" symbol)))
+		 "(progn (excl::who-references '%s) (values))\n"
+		 (fi::case-frob symbol))))
     (if (fi::background-sublisp-process)
 	(process-send-string fi::backdoor-process string)
       (fi::eval-string-send string nil t))))
@@ -677,3 +685,41 @@ Also move the point there."
   (interactive)
   (kill-region (process-mark (get-buffer-process (current-buffer)))
 	       (point)))
+
+(defun fi:log-functional-change ()
+  "Indicate that a function has changed by putting in a description message
+at the head of the function."
+  (interactive)
+  (let* ((case-fold-search t)
+	 (bof
+	  (cond ((string-match "lisp" mode-name)
+		 'beginning-of-defun)
+		((string= mode-name "C")
+		 '(lambda () (re-search-backward "^{" nil t)))
+		(t (error "can't handle this mode: %s" mode-name)))))
+    (if (not (funcall bof)) (error "no function to annotate")))
+  (end-of-line)
+  (newline)
+  (funcall indent-line-function)
+  (insert-string (concat (format "%s- " (fi::log-comment-start))
+			 (current-time-string) " by " 
+			 (user-login-name) " - "))
+  (save-excursion
+    (forward-line)
+    (beginning-of-line)
+    (insert (format "%s\n" comment-end))
+    (forward-line -1)
+    (funcall indent-line-function)))
+
+(defun fi::log-comment-start ()
+  (if (and (boundp 'fi:lisp-comment-indent-specification)
+	   fi:lisp-comment-indent-specification)
+      (let ((list fi:lisp-comment-indent-specification)
+	    (done nil)
+	    (res ""))
+	(while (and list (not done))
+	  (if (eq t (car list)) (setq done t))
+	  (setq res (concat res comment-start))
+	  (setq list (cdr list)))
+	res)
+    comment-start))
