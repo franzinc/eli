@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.60 1990/09/04 10:40:08 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.61 1990/09/04 10:54:28 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -403,7 +403,6 @@ are read from the minibuffer."
 
     (if (not runningp)
 	(progn				; hack image-file
-	  (message "foo") (sleep-for 4)
 	  (if (consp image-file)
 	      (if (not (stringp (setq image-file (funcall image-file))))
 		  (error "image-file function didn't return a string"))
