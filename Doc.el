@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.18 1990/09/02 18:59:29 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.19 1991/01/31 14:47:17 layer Exp $
 
 (setq load-path
   (cons (file-name-directory (directory-file-name default-directory))
@@ -13,6 +13,13 @@
   (fi:common-lisp-mode)
   (fi:franz-lisp-mode)
   (fi:tcp-common-lisp-mode)
+  (fi:tcp-common-lisp-mode)
+  (fi:clman-mode)
+  (fi:emacs-lisp-mode)
+  (fi:shell-mode)
+  (fi:su-mode)
+  (fi:telnet-mode)
+  (fi:rlogin-mode)
   (fundamental-mode)
 
   (insert-file "spec.n")
@@ -23,23 +30,47 @@
     (beginning-of-line)
     (cond
       ((looking-at "^%% ")
-       (delete-char 3)
-       (let* ((debug-on-error nil)
-	      (var-string (buffer-substring
-			   (point) (progn (end-of-line) (point))))
+       (let* ( ;;(debug-on-error nil)
+	      (bol (point))
+	      (xx (re-search-forward
+		   "^%% \\([^ \t]+\\)[ \t]*\\([^ \t]+\\)?$"
+		   (save-excursion (end-of-line) (point))))
+	      (var-string
+	       (buffer-substring (match-beginning 1) (match-end 1)))
+	      (mode-string
+	       (when (match-beginning 2)
+		 (buffer-substring (match-beginning 2) (match-end 2))))
 	      (var (intern var-string))
+	      (mode (when (and mode-string (not (string= "" mode-string)))
+		      (intern mode-string)))
+	      (xmode-name
+	       (when mode
+		 (if (string-match "\\(.*\\)-map" mode-string)
+		     (substring mode-string (match-beginning 1)
+				(match-end 1)))))
+	      (xx (progn (beginning-of-line)
+			 (re-search-forward
+			  "^%% \\([^ \t]+\\)[ \t]*\\([^ \t]+\\)?$"
+			  (save-excursion (end-of-line) (point)))
+			 (replace-match "\\1")))
+	      (func (if mode
+			"[interactive function]"
+		      "[function]"))
 	      val doc)
+	 ;;(message "%s" var)
 	 (cond
 	   ((fboundp var)
-	    (insert-char ?. (- 78 (length "[function]")
-			       (length (symbol-name var))))
-	    (setq current-local-map-var (current-local-map))
+	    (insert-char ?. (- 78 (length func)
+			       (length var-string)))
+	    (when (symbol-value mode)
+	      (setq current-local-map-var (symbol-value mode)))
 	    (let ((key (substitute-command-keys
 			(format "\\<current-local-map-var>\\[%s]" var))))
-	      (insert "[function]\n")
+	      (insert func)
+	      (insert "\n")
 	      (if (/= 0 (or (string-match "M-x" key) 1))
-		  (insert (format "   Invoke with: %s in %s mode.\n"
-				  key mode-name)))
+		  (insert (format "   Invoke with \"%s\" in %s.\n"
+				  key xmode-name)))
 	      (insert (format "   %s")
 		      (or (documentation var)
 			  "NO DOCUMENTATION AVAILABLE"))))
