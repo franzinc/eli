@@ -1,6 +1,8 @@
 
 		  Notes on GNU Emacs/Lisp Interface
 
+;; $Header: /repo/cvs.copy/eli/README,v 1.5 1989/08/28 20:19:56 layer Rel $
+
 To use this interface, see the dot.* files.  A guide to the files:
 
 README		this file.
