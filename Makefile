@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.92 1993/09/10 17:40:58 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.93 1993/09/10 19:29:23 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -129,6 +129,12 @@ fi_release_directory = fi-$(version)
 fi_release_files = ChangeLog fi-*.el fi-*.elc Makefile *.doc examples/*.el
 fi_release_gztar = $(release_root)/eli-$(version).tar.gz
 
+acl_release_files = ChangeLog fi-*.el fi-*.elc Makefile *.doc examples/*.el \
+	$(acl_clman_release_files)
+
+echo_acl_release_files:
+	@echo $(acl_release_files)
+
 fi-dist:	all
 	@if test -z "$(version)"; then\
 	  echo Make variable version is null; exit 1;\
@@ -152,6 +158,7 @@ clman_version = 4.1-v2
 
 clman_files_common	  = Makefile clman.c clman.h clmanaux.c \
 			    makeman.c makeman.el
+acl_clman_release_files	  = $(clman_files_common) manual/OBLIST.el clman.data
 clman_release_files       = $(clman_files_common) \
 			    -C small_manual manual/OBLIST.el \
 			    -C small_manual clman.data
