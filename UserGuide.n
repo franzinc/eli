@@ -2,7 +2,7 @@
 			      User Guide
 			   Release 2.0beta
 
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.24 1991/10/10 11:37:08 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.25 1991/11/11 14:44:27 layer Exp $
 
 			     Introduction
 
@@ -484,7 +484,6 @@ Functions and Variables for Interacting with a Common Lisp subprocess
 %% fi:eval-in-lisp-asynchronous
 %% fi:filename-frobber-hook
 %% fi:lisp-evalserver-number-reads
-%% fi:lisp-evalserver-timeout
 %% fi:raw-mode
 %% fi:raw-mode-echo
 %% fi:shell-cd-regexp
