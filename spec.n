@@ -1,19 +1,5 @@
-		      ##########################
-		      ## DRAFT FOR TEKTRONIX ###
-		      ##########################
-
-			FOR INTERNAL USE ONLY
-
-			     Comments to:
-
-			     Kevin Layer
-			 1995 University Ave.
-			      Suite 275
-			  Berkeley, CA 94704
-			     415 548-3600
-
 	      Franz Inc. GNU Emacs/Common Lisp Interface
-	 $Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.14 1988/05/12 12:52:12 layer Exp $
+	 $Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.15 1988/05/12 22:56:54 layer Exp $
 
 This document is a specification of the Franz Inc. GNU Emacs interface
 to Common Lisp, which is written entirely in GNU Emacs Lisp (for GNU
@@ -366,6 +352,8 @@ with the name `fi:<IMAGE>-prompt-pattern' or from the following:
 %% fi:common-lisp-prompt-pattern
 
 %% fi:subprocess-enable-superkeys
+
+%% fi:pop-to-sublisp-buffer-after-lisp-eval
 
    The following variables are used in TCP Common Lisp mode:
 
