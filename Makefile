@@ -1,11 +1,11 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.27 1989/02/14 17:43:27 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.28 1989/02/15 23:18:43 layer Exp $
 
 cl = /usr/local/cl3.0
 emacs = /usr/local/emacs
 
 elc-files = modes.elc subproc.elc sublisp.elc filec.elc ring.elc\
-	    tools/doc.elc rlogin.elc shell.elc keys.elc tcplisp.elc utils.elc\
-	    ltags.elc clman.elc clman-oblist.elc
+	    ../tools/doc.elc rlogin.elc shell.elc keys.elc tcplisp.elc\
+	    utils.elc ltags.elc clman.elc clman-oblist.elc
 
 precompile = (set-case-mode :case-sensitive-lower)(require :process)(require :foreign)(require :cstructs)
 
@@ -28,8 +28,8 @@ all:	default
 
 depend: ${elc-files}
 
-spec.out:	spec.n ${elc-files} tools/doc.el
-	$(emacs) -batch -q -l tools/doc.elc
+spec.out:	spec.n ${elc-files}
+	$(emacs) -batch -q -l ../tools/doc.elc
 
 FASL = XXX
 CL = XXX
