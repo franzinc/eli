@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.26 1996/06/28 00:03:15 layer Exp $
+;; $Id: fi-dmode.el,v 1.27 1996/08/01 22:35:48 layer Exp $
 
 ;; Create a mode in which each line is a definition and . on that
 ;; definition brings up the definition in another window

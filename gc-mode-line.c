@@ -1,8 +1,10 @@
-/* gc-mode-line.c	-[Thu Jul 28 17:53:11 1994 by smh]-
+/* gc-mode-line.c	-[Thu Aug  1 15:31:34 1996 by layer]-
  *
  * This and the accompanying gc-mode-line.cl file implement `Run Bars' in the
- * Emacs mode line for Common Lisp buffers, both interaction and source buffers.
+ * Emacs mode line for Common Lisp buffers, both interaction and
+ * source buffers.
  * See the comments in that file for instructions.
+ * $Id: gc-mode-line.c,v 2.2 1996/08/01 22:36:46 layer Exp $
  */
 
 static int mode_line_fd = 0;

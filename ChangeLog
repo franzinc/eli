@@ -1,3 +1,10 @@
+Thu Aug  1 15:34:55 1996  Kevin Layer  <layer@freezer>
+
+	* change $Header: /repo/cvs.copy/eli/ChangeLog,v 2.94 1996/08/01 22:35:25 layer Exp $ to $Id: ChangeLog,v 2.94 1996/08/01 22:35:25 layer Exp $
+
+	* Makefile: don't run `docs' rule, since it's broken; test
+	`updates' rule that uses `rsync' (which itself doesn't work yet)
+
 Thu Aug  1 13:10:38 1996  Kevin Layer  <layer@freezer>
 
 	* fi-compile.el: set byte-compile-compatibility for

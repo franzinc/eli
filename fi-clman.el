@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 2.11 1996/06/28 00:03:13 layer Exp $
+;; $Id: fi-clman.el,v 2.12 1996/08/01 22:35:38 layer Exp $
 
 (defvar fi::clman-prog
     (or (fi::find-path load-path "clman")

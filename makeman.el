@@ -1,3 +1,4 @@
+;; $Id: makeman.el,v 2.3 1996/08/01 22:36:52 layer Exp $
 
 (require 'cl)
 

@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-emacs18.el,v 2.2 1995/01/18 05:04:08 smh Exp $
+;; $Id: fi-emacs18.el,v 2.3 1996/08/01 22:35:50 layer Exp $
 
 (defun fi::ensure-buffer-visible (buffer)
   nil)

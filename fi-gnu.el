@@ -19,7 +19,7 @@
 ;; along with GNU Emacs; see the file COPYING.  If not, write to
 ;; the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 
-;; $Header: /repo/cvs.copy/eli/fi-gnu.el,v 2.2 1996/06/28 00:03:19 layer Exp $
+;; $Id: fi-gnu.el,v 2.3 1996/08/01 22:35:55 layer Exp $
 
 (defun fi::find-most-recent-backup-file-name (fn)
   (if (eq version-control 'never)

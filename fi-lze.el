@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.34 1995/04/29 18:34:41 smh Exp $
+;; $Id: fi-lze.el,v 1.35 1996/08/01 22:36:11 layer Exp $
 ;;
 ;; Code the implements evaluation in via the backdoor
 

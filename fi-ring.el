@@ -18,7 +18,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-ring.el,v 1.16 1993/07/23 03:49:11 layer Exp $
+;; $Id: fi-ring.el,v 1.17 1996/08/01 22:36:13 layer Exp $
 
 ;; This code is very similar to the kill-ring implementation
 ;; and implements the fi::subprocess input ring.  Each fi::subprocess buffer

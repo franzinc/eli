@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-stream.el,v 1.14 1995/04/29 18:34:44 smh Exp $
+;; $Id: fi-stream.el,v 1.15 1996/08/01 22:36:18 layer Exp $
 ;;
 
 (defmacro fi::with-keywords (variables rest-arg &rest body)

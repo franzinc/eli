@@ -1,4 +1,5 @@
 ;; local-fi-developer-hooks.el
+;; $Id: local-fi-developer-hooks.el,v 2.4 1996/08/01 22:36:49 layer Exp $
 
 ;; This file is not for public distribution.
 ;; It contains extra hooks for fi developers only, things like special

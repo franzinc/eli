@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-leep-xemacs.el,v 2.2 1996/06/28 00:03:24 layer Exp $
+;; $Id: fi-leep-xemacs.el,v 2.3 1996/08/01 22:36:05 layer Exp $
 
 ;; The xemacs side of presentations in a lisp-listener window.
 

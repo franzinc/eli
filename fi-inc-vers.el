@@ -16,6 +16,7 @@
 ;; along with GNU Emacs; see the file COPYING.  If not, write to
 ;; the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 
+;; $Id: fi-inc-vers.el,v 2.6 1996/08/01 22:35:57 layer Exp $
 
 ;; Find the file version.el in the path for lisp files, 
 ;; and set version-file.

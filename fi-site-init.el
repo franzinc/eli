@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.75 1996/06/28 00:03:28 layer Exp $
+;; $Id: fi-site-init.el,v 1.76 1996/08/01 22:36:17 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 

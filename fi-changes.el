@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-changes.el,v 1.16 1996/06/28 00:03:11 layer Exp $
+;; $Id: fi-changes.el,v 1.17 1996/08/01 22:35:35 layer Exp $
 ;;
 ;; Support for changed definitions
 

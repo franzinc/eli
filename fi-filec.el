@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-filec.el,v 1.19 1993/07/23 03:48:46 layer Exp $
+;; $Id: fi-filec.el,v 1.20 1996/08/01 22:35:54 layer Exp $
 
 ;; Command and file name completion
 

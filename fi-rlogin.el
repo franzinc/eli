@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.27 1996/06/05 20:31:47 layer Exp $
+;; $Id: fi-rlogin.el,v 1.28 1996/08/01 22:36:14 layer Exp $
 
 (defvar fi:rlogin-mode-map nil
   "The rlogin major-mode keymap.")

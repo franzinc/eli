@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-emacs19.el,v 2.16 1996/06/28 00:03:17 layer Exp $
+;; $Id: fi-emacs19.el,v 2.17 1996/08/01 22:35:52 layer Exp $
 
 
 (unless (string-match "^18." emacs-version) ;Allows compilation on 18.

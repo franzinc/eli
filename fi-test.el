@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-test.el,v 1.2 1993/06/29 23:21:02 layer Exp $
+;; $Id: fi-test.el,v 1.3 1996/08/01 22:36:34 layer Exp $
 
 (setq load-path (cons default-directory load-path))
 

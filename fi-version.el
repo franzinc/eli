@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/Attic/fi-version.el,v 2.5 1996/05/31 18:38:11 layer Exp $
+;; $Id: fi-version.el,v 2.6 1996/08/01 22:36:40 layer Exp $
 
 ;; This is in a separate file so that it can be loaded at byte-compile time
 

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-leep0.el,v 1.3 1993/07/23 03:49:00 layer Exp $
+;; $Id: fi-leep0.el,v 1.4 1996/08/01 22:36:08 layer Exp $
 
 ;; The epoch side of presentations in a lisp-listener window.
 

@@ -1,6 +1,6 @@
 /* Copyright (C) 1993, Franz Inc., Berkeley, CA.  All rights reserved. */
 
-/* $Header: /repo/cvs.copy/eli/Attic/makeman.c,v 2.2 1993/07/27 20:12:30 layer Exp $ */
+/* $Id: makeman.c,v 2.3 1996/08/01 22:36:50 layer Exp $ */
 
 #include "clman.h"
 

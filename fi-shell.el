@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-shell.el,v 1.22 1996/06/05 20:31:49 layer Exp $
+;; $Id: fi-shell.el,v 1.23 1996/08/01 22:36:15 layer Exp $
 
 (defvar fi:shell-mode-map nil
   "The shell major-mode keymap.")

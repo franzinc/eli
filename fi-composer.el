@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.19 1995/02/02 23:18:34 smh Exp $
+;; $Id: fi-composer.el,v 1.20 1996/08/01 22:35:42 layer Exp $
 
 (defun composer::make-listener (new-screen-p)
   (when (and new-screen-p (fboundp 'create-screen))

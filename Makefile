@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.120 1996/06/28 00:03:05 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.121 1996/08/01 22:35:29 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -10,7 +10,7 @@ emacs = emacs
 
 default:	compile test.out clman
 
-all:	compile test.out docs tags
+all:	compile test.out tags # docs
 
 compile:
 	$(emacs) -nw -batch -q -l `pwd`/fi-compile.el -kill
@@ -42,7 +42,7 @@ clean_OS:
 	rm -f *.o clman makeman
 
 clean:	clean_OS
-	rm -f fi-*.elc *.doc
+	rm -f *.elc *.doc
 
 tags:	TAGS
 
@@ -197,3 +197,20 @@ save_version:
 	@for host in ${hosts}; do\
 		echo rsh $$host -n mv $(to) $(elib_root)/fi-$(version);\
 	done
+
+###############################################################################
+
+UPDATE_FILES = Makefile Doc.el ChangeLog *.doc fi-*.el fi-*.elc \
+	       local-fi-*.el local-fi-*.elc \
+	       clman.c clman.h clmanaux.c \
+	       gc-mode-line.cl gc-mode-line.c 
+
+TMP = eli-test
+
+updates:
+	rm -fr $(TMP)
+	mkdir $(TMP)
+	cp -p $(UPDATE_FILES) $(TMP)
+	(cd $(TMP); ln -s /net/vapor/scm/emacs-lib/src/eli/clman.data clman.data)
+	(cd $(TMP); ln -s /net/vapor/scm/emacs-lib/src/clman manual)
+	(cd $(TMP); rsync -va --delete -n . freezer:eli-test)
