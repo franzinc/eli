@@ -45,7 +45,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.4 1989/03/22 00:13:49 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.5 1989/03/23 22:32:10 layer Exp $
 
 (defvar lisp-electric-semicolon nil
   "*If `t', semicolons that begin comments are indented as they are typed.")
@@ -274,8 +274,8 @@ status of that parse."
 			    ;;   column.
 			    (if (not (bobp)) (just-one-space)))
 			(indent-to to-column 0)))
-		(error "sexp parse anomaly: no comment where expected")))))))
- 
+		(error "sexp parse anomaly: no comment where expected"))))))))
+
 (defvar lisp-most-recent-parse-result '(0 0 0 0 nil nil nil 0)
   "Most recent parse result: point at parse end and parse state.
 A list that is the `cons' of the point at which the most recent
@@ -357,76 +357,76 @@ of the start of the containing expression."
 	(setq retry nil)
 	(setq last-sexp (nth 2 state))
 	(setq containing-sexp (car (cdr state)))
- 	;; Position following last unclosed open.
+	;; Position following last unclosed open.
 	(goto-char (1+ containing-sexp))
- 	;; Is there a complete sexp since then?
+	;; Is there a complete sexp since then?
 	(if (and last-sexp (> last-sexp (point)))
- 	    ;; Yes, but is there a containing sexp after that?
+	    ;; Yes, but is there a containing sexp after that?
 	    (let ((peek (parse-partial-sexp last-sexp indent-point 0)))
 	      (if (setq retry (car (cdr peek)))
 		  (setq state peek))))
 	(rplaca lisp-most-recent-parse-result (point))
 	(rplacd lisp-most-recent-parse-result (copy-sequence state))
 	
-	(if (not retry)
- 	    ;; Innermost containing sexp found
-	    (progn
-	      (goto-char (1+ containing-sexp))
-	      (if (not last-sexp)
- 		  ;; indent-point immediately follows open paren.
- 		  ;; Don't call hook.
-		  (setq desired-indent (current-column))
- 		;; Move to first sexp after containing open paren
-		(parse-partial-sexp (point) last-sexp 0 t nil
-				    ;; the result goes here:
-				    (cdr lisp-most-recent-parse-result))
-		(rplaca lisp-most-recent-parse-result (point))
-		(cond
-		 ((looking-at "\\s(")
- 		  ;; Looking at a list.  Don't call hook.
-		  (if (not (> (save-excursion (forward-line 1) (point))
-			      last-sexp))
-		      (progn (goto-char last-sexp)
-			     (beginning-of-line)
-			     (parse-partial-sexp
-			      (point) last-sexp 0 t nil
-			      ;; the result goes here:
-			      (cdr lisp-most-recent-parse-result))
-			     (rplaca lisp-most-recent-parse-result (point))))
- 		  ;; Indent under the list or under the first sexp on the
- 		  ;; same line as last-sexp.  Note that first thing on that
- 		  ;; line has to be complete sexp since we are inside the
- 		  ;; innermost containing sexp.
-		  (backward-prefix-chars)
-		  (setq desired-indent (current-column)))
-		 ((> (save-excursion (forward-line 1) (point))
-		     last-sexp)
- 		  ;; Last sexp is on same line as containing sexp.
- 		  ;; It's almost certainly a function call.
-		  (parse-partial-sexp (point) last-sexp 0 t nil
-				      ;; the result goes here:
-				      (cdr lisp-most-recent-parse-result))
-		  (rplaca lisp-most-recent-parse-result (point))
-		  (if (/= (point) last-sexp)
- 		      ;; Indent beneath first argument or, if only one sexp
- 		      ;; on line, indent beneath that.
-		      (progn (forward-sexp 1)
-			     (parse-partial-sexp
-			      (point) last-sexp 0 t nil
-			      ;; the result goes here:
-			      (cdr lisp-most-recent-parse-result))
-			     (rplaca lisp-most-recent-parse-result (point))))
-		  (backward-prefix-chars))
-		 (t
- 		  ;; Indent beneath first sexp on same line as last-sexp.
- 		  ;; Again, it's almost certainly a function call.
-		  (goto-char last-sexp)
-		  (beginning-of-line)
-		  (parse-partial-sexp (point) last-sexp 0 t nil
-				      ;; the result goes here:
-				      (cdr lisp-most-recent-parse-result))
-		  (rplaca lisp-most-recent-parse-result (point))
-		  (backward-prefix-chars)))))))
+	(if retry
+	    nil
+	  ;; Innermost containing sexp found
+	  (goto-char (1+ containing-sexp))
+	  (if (not last-sexp)
+	      ;; indent-point immediately follows open paren.
+	      ;; Don't call hook.
+	      (setq desired-indent (current-column))
+	    ;; Move to first sexp after containing open paren
+	    (parse-partial-sexp (point) last-sexp 0 t nil
+				;; the result goes here:
+				(cdr lisp-most-recent-parse-result))
+	    (rplaca lisp-most-recent-parse-result (point))
+	    (cond
+	     ((looking-at "\\s(")
+	      ;; Looking at a list.  Don't call hook.
+	      (if (not (> (save-excursion (forward-line 1) (point))
+			  last-sexp))
+		  (progn (goto-char last-sexp)
+			 (beginning-of-line)
+			 (parse-partial-sexp
+			  (point) last-sexp 0 t nil
+			  ;; the result goes here:
+			  (cdr lisp-most-recent-parse-result))
+			 (rplaca lisp-most-recent-parse-result (point))))
+	      ;; Indent under the list or under the first sexp on the
+	      ;; same line as last-sexp.  Note that first thing on that
+	      ;; line has to be complete sexp since we are inside the
+	      ;; innermost containing sexp.
+	      (backward-prefix-chars)
+	      (setq desired-indent (current-column)))
+	     ((> (save-excursion (forward-line 1) (point))
+		 last-sexp)
+	      ;; Last sexp is on same line as containing sexp.
+	      ;; It's almost certainly a function call.
+	      (parse-partial-sexp (point) last-sexp 0 t nil
+				  ;; the result goes here:
+				  (cdr lisp-most-recent-parse-result))
+	      (rplaca lisp-most-recent-parse-result (point))
+	      (if (/= (point) last-sexp)
+		  ;; Indent beneath first argument or, if only one sexp
+		  ;; on line, indent beneath that.
+		  (progn (forward-sexp 1)
+			 (parse-partial-sexp
+			  (point) last-sexp 0 t nil
+			  ;; the result goes here:
+			  (cdr lisp-most-recent-parse-result))
+			 (rplaca lisp-most-recent-parse-result (point))))
+	      (backward-prefix-chars))
+	     (t
+	      ;; Indent beneath first sexp on same line as last-sexp.
+	      ;; Again, it's almost certainly a function call.
+	      (goto-char last-sexp)
+	      (beginning-of-line)
+	      (parse-partial-sexp (point) last-sexp 0 t nil
+				  ;; the result goes here:
+				  (cdr lisp-most-recent-parse-result))
+	      (rplaca lisp-most-recent-parse-result (point))
+	      (backward-prefix-chars))))))
       ;; Point is at the point to indent under unless we are inside a string.
       ;; Call indentation hook except when overriden by lisp-indent-offset
       ;; or if the desired indentation has already been computed.
@@ -436,7 +436,7 @@ of the start of the containing expression."
 	     (skip-chars-forward " \t")
 	     (setq desired-indent (current-column)))
 	    ((and (integerp lisp-indent-offset) containing-sexp)
- 	     ;; Indent by constant offset
+	     ;; Indent by constant offset
 	     (goto-char containing-sexp)
 	     (setq desired-indent (+ lisp-indent-offset (current-column))))
 	    ((not (or desired-indent
@@ -444,11 +444,11 @@ of the start of the containing expression."
 			   lisp-indent-hook
 			   (not retry)
 			   (setq desired-indent
-				 (funcall lisp-indent-hook
-					  indent-point state)))))
- 	     ;; Use default indentation if not computed yet
+			     (funcall lisp-indent-hook
+				      indent-point state)))))
+	     ;; Use default indentation if not computed yet
 	     (setq desired-indent (current-column))))
-      desired-indent))))
+      desired-indent)))
 
 (defvar lisp-indent-state-temp '(nil nil nil nil nil nil nil)
   "Used as the last argument to parse-partial-sexp so we can do as little
@@ -585,22 +585,29 @@ consing as possible.")
 	 (lisp-indent-quoted-list depth count state indent-point))
 	((integerp method)
 	 (lisp-indent-specform method depth count state indent-point))
-        ((consp method)
-	 (cond ((eq (car method) 'recursive)
-		(lisp-invoke-method
-		 form-start (nth 1 method) 0 count state indent-point))
-	       ((eq (car method) 'if)
-		(lisp-invoke-method
-		 form-start
-		 (apply 'lisp-if-indent
-			depth count state indent-point
-			(cdr method))
-		 depth count state indent-point))
-	       ((and (symbolp (car method)) (fboundp (car method)))
-		(apply (car method)
-		       depth count state indent-point
-		       (cdr method)))
-	       (t (lisp-indent-struct method depth count state indent-point))))
+	((consp method)
+	 (cond
+	  ((eq 'like (car method))
+	   ;; indent this form like (cadr method)
+	   (lisp-invoke-method form-start
+			       (lisp-get-method
+				(symbol-name (car (cdr method))))
+			       depth count state indent-point))
+	  ((eq 'funcall (car method))
+	   (funcall (car (cdr method)) depth count state indent-point))
+	  ((eq (car method) 'recursive)
+	   (lisp-invoke-method form-start (nth 1 method)
+			       0 count state indent-point))
+	  ((eq 'if (car method))
+	   (lisp-invoke-method form-start
+			       (apply 'lisp-if-indent
+				      depth count state indent-point
+				      (cdr method))
+			       depth count state indent-point))
+	  ((and (symbolp (car method)) (fboundp (car method)))
+	   (apply (car method) depth count state indent-point
+		  (cdr method)))
+	  (t (lisp-indent-struct method depth count state indent-point))))
 	((eq method 'quote)
 	 (lisp-indent-quoted-list depth count state indent-point))
 	((memq method '(tag tagbody))
@@ -613,14 +620,6 @@ consing as possible.")
 				   nil nil nil "&optional" "&rest" "&key"
 				   "&allow-other-keys" "&aux" "&body"
 				   "&whole" "&env"))
-	((and method (symbolp method))
-	 ;; this is how one form shadows the indenation of another, though
-	 ;; I suppose that this could loop infinitely!
-	 (lisp-invoke-method form-start
-			     (lisp-get-method (symbol-name method))
-			     depth count state indent-point))
-	((fboundp method)
-	 (funcall method depth count state indent-point))
 	(method (error "can't handle method %s" method))))
 
 (defun lisp-indent-struct (methods depth count state indent-point)
@@ -721,7 +720,9 @@ treated just like a LAMBDA (whose method is '((1 1 lambda-list) (0 t 1)))."
   "Function for indenting quoted lists."
   (goto-char (1+ (car (cdr state))))
   (current-column))
- 
+
+(defvar lisp-if*-hack nil)
+
 (defun lisp-indent-keyword-list (depth count state indent-point
 				 quotedp keyword-arg-pairs-p
 				 &optional keyword-count
@@ -776,8 +777,8 @@ be recognized if the first s-expression following any distinguished
 s-expressions is not a keyword.)
 
 Any further arguments to this function constitute the specific keywords to
-be recognized.  If no keywords are explicitly specified, all keywords
-(atoms beginning with a colon) are recognized."
+be recognized.  If no keywords are explicitly specified, all keywords (atoms
+beginning with a colon) are recognized."
   (if (> depth 0)
       nil
     (save-excursion
@@ -837,7 +838,9 @@ be recognized.  If no keywords are explicitly specified, all keywords
 		    (< keywords-found keyword-count))
 	       (cond
 		((and special-keys
-		      (lisp-find-special-keyword-indent keyword special-keys)))
+		      (+ sexp-column
+			 (car (lisp-find-special-keyword-indent
+			       keyword special-keys)))))
 		((and special-keyword-count
 		      (< keywords-found special-keyword-count))
 		 (+ sexp-column (* 2 lisp-body-indent)))
@@ -847,6 +850,8 @@ be recognized.  If no keywords are explicitly specified, all keywords
 			  keyword-at state indent-point))
 		(t
 		 (+ sexp-column lisp-keyword-indentation))))
+	      ((integerp lisp-if*-hack)
+	       (+ sexp-column lisp-if*-hack))
 	      ((and special-keyword-count
 		    (<= keywords-found special-keyword-count)
 		    (integerp nonkeywords-found)
@@ -998,6 +1003,24 @@ non-keyword s-expression."
     (list last-keyword-start last-keyword-arg-start last-sexp-start
 	  count (or ignore-keywords nonkeyword-count))))
 
+(defun lisp-indent-if* (depth count state indent-point)
+  "Function for indenting the IF* special form of Allegro CL."
+  (let ((lisp-keyword-argument-indentation t)
+	(lisp-if*-hack 8))
+    (lisp-indent-keyword-list
+     depth count state indent-point
+     nil			; quotedp
+     nil			; keyword-arg-pairs-p
+     4				; keyword-count
+     4				; special-keyword-count
+     1				; special-count
+     nil			; ignore-after-count
+     ;; the keywords:
+     '("then" 3)
+     '("thenret" 3)
+     '("else" 3)
+     '("elseif" 1))))
+
 (defun lisp-indent-tagbody (depth count state indent-point
 			    &optional spec-count
 			    &rest keywords)
@@ -1073,7 +1096,10 @@ THEN-SPEC is used, otherwise the indentation specification given by
 ELSE-SPEC is used."
   (if (apply (car test) depth count state indent-point
 	     (cdr test))
-      then-spec
+      (progn
+	(message "%s then-spec" depth) (sleep-for 2)
+	then-spec)
+    (message "%s else-spec" depth) (sleep-for 2)
     else-spec))
 
 (defun lisp-atom-p (depth count state indent-point element)
@@ -1112,7 +1138,7 @@ NIL otherwise.  The ELEMENT is the number of the element, zero indexed."
 			(setq atomic (not (eq (following-char) ?\()))))
 		  (goto-char end-sexp)
 		  (setq count (1+ count))
-		  (parse-partial-sex{ (point) indent-point 1 t nil
+		  (parse-partial-sexp (point) indent-point 1 t nil
 				      lisp-indent-state-temp))
 	      (error nil))))
     (list atomic found)))
@@ -1369,40 +1395,40 @@ if matched at the beginning of a line, means don't indent that line."
   (put 'block tag 1)
   (put 'case tag '((1 (2 t) ((1 0 quote) (0 t nil))) (0 t 1)))
   (put 'catch tag 1)
-  (put 'ccase tag 'case)
+  (put 'ccase tag '(like case))
   (put 'check-type tag 2)
   (put 'compiler-let tag '((1 1 quote) (0 t 1)))
   (put 'concatenate tag 1)
-  (put 'ctypecase tag 'case)
-  (put 'defconstant tag 'defvar)
+  (put 'ctypecase tag '(like case))
+  (put 'defconstant tag '(like defvar))
   (put 'define-modify-macro tag '((1 2 lambda-list) (0 t 2)))
   (put 'define-setf-method tag '((1 2 lambda-list) (0 t 2)))
   (put 'defmacro tag '((1 2 lambda-list) (0 t 2)))
-  (put 'defparameter tag 'defvar)
+  (put 'defparameter tag '(like defvar))
   (put 'defsetf tag '((1 2 lambda-list) (0 t 3)))
   (put 'defstruct tag '((1 1 quote) (0 t 1)))
   (put 'deftype tag '((1 2 lambda-list) (0 t 2)))
   (put 'defun tag '((1 2 lambda-list) (0 t 2)))
   (put 'defvar tag 2)
   (put 'do tag '((1 1 1) (1 2 1) (0 t (lisp-indent-tagbody 2))))
-  (put 'do* tag 'do)
-  (put 'do-all-symbols tag 'dolist)
-  (put 'do-external-symbols tag 'dolist)
-  (put 'do-symbols tag 'dolist)
+  (put 'do* tag '(like do))
+  (put 'do-all-symbols tag '(like dolist))
+  (put 'do-external-symbols tag '(like dolist))
+  (put 'do-symbols tag '(like dolist))
   (put 'dolist tag '((1 1 1) (0 t (lisp-indent-tagbody 1))))
-  (put 'dotimes tag 'dolist)
-  (put 'ecase tag 'case)
-  (put 'etypecase tag 'case)
+  (put 'dotimes tag '(like dolist))
+  (put 'ecase tag '(like case))
+  (put 'etypecase tag '(like case))
   (put 'eval-when tag 1)
   (put 'flet tag '((2 1 ((1 1 lambda-list) (0 t 1))) (0 t 1)))
   (put 'if tag 2)
-  (put 'labels tag 'flet)
+  (put 'labels tag '(like flet))
   (put 'lambda tag '((1 1 lambda-list) (0 t 1)))
   (put 'let tag '((1 1 quote) (0 t 1)))
-  (put 'let* tag 'let)
-  (put 'locally tag 'lisp-indent-predicated-special)
+  (put 'let* tag '(like let))
+  (put 'locally tag '(funcall lisp-indent-predicated-special))
   (put 'loop tag 'tagbody)
-  (put 'macrolet tag 'flet)
+  (put 'macrolet tag '(like flet))
   (put 'map tag 1)
   (put 'multiple-value-bind tag '((1 1 quote) (0 t 2)))
   (put 'multiple-value-call tag 1)
@@ -1410,7 +1436,7 @@ if matched at the beginning of a line, means don't indent that line."
   (put 'multiple-value-prog1 tag 1)
   (put 'multiple-value-setq tag '((1 1 quote) (0 t 1)))
   (put 'prog tag '((0 1 1) (0 t tagbody)))
-  (put 'prog* tag 'prog)
+  (put 'prog* tag '(like prog))
   (put 'prog1 tag 1)
   (put 'prog2 tag 2)
   (put 'progn tag 0)
@@ -1422,7 +1448,7 @@ if matched at the beginning of a line, means don't indent that line."
   (put 'tagbody tag 'tagbody)
   (put 'the tag 1)
   (put 'throw tag 1)
-  (put 'typecase tag 'case)
+  (put 'typecase tag '(like case))
   (put 'unless tag 1)
   (put 'unwind-protect tag 1)
   (put 'when tag 1)
@@ -1434,8 +1460,8 @@ if matched at the beginning of a line, means don't indent that line."
   ;; the condition system (v18)
 
   (put 'define-condition tag '((1 (4 t) nil) (1 3 quote) (0 t 3)))
-  (put 'handler-bind tag 'case)
-  (put 'handler-case tag 'let)
+  (put 'handler-bind tag '(like case))
+  (put 'handler-case tag '(like let))
 
   (put 'restart-bind tag
        '((2 1 ((0 t (lisp-indent-keyword-list
@@ -1461,16 +1487,22 @@ if matched at the beginning of a line, means don't indent that line."
 			 ":report" ":interactive"))))
 	 (0 t 1)))
 
-  (put 'with-simple-restart tag 'when)
+  (put 'with-simple-restart tag '(like when))
 
   ;; CLOS
 
+  ;;(put 'defmethod 'lisp-indent-hook '((1 2 lambda-list) (0 t 2)))
+  (put 'defmethod tag 
+       '(if (lisp-atom-p 2)
+	    ((1 3 lambda-list) (0 t 3))
+	 ((1 2 lambda-list) (0 t 2))))
+  
   (put 'make-instance tag 1)
 
   ;; Flavors
 
   (put 'defflavor tag '((1 2 quote) (1 3 quote) (0 t 3)))
-  (put 'defmethod tag '((1 1 quote) (1 2 lambda-list) (0 t 2)))
+  ;;(put 'defmethod tag '((1 1 quote) (1 2 lambda-list) (0 t 2)))
   (put 'defwhopper tag '((1 1 quote) (1 2 lambda-list) (0 t 2)))
   (put 'defwrapper tag '((1 1 quote) (1 2 lambda-list) (0 t 2)))
   )
@@ -1480,19 +1512,17 @@ if matched at the beginning of a line, means don't indent that line."
   ;; generic Common Lisp
   
   (put 'defmacro tag '((1 2 (recursive lambda-list)) (0 t 2)))
-  (put 'destructuring-bind tag 'defmacro)
+  (put 'destructuring-bind tag '(like defmacro))
   (put 'defsetf tag '(if (lisp-atom-p 2) 2 ((1 2 lambda-list) (0 t 3))))
 
   ;; Allegro CL
 
   (put 'tpl:alias tag 2)
-  (put 'if* tag
-       '(lisp-indent-keyword-list
-	 nil nil 4 0 0 nil "then" "thenret" "else" ("elseif" . 1)))
+  (put 'if* tag '(funcall lisp-indent-if*))
   )
 
 (let ((tag 'franz-lisp-indent-hook))
-  (put 'caseq tag 'case)
+  (put 'caseq tag '(like case))
   (put 'c-declare tag '((1 t 1) (0 t 0)))
   (put '*catch tag 1)
   (put 'def tag '((1 2 ((1 1 lambda-list) (0 t 1))) (0 t 1)))
@@ -1500,7 +1530,7 @@ if matched at the beginning of a line, means don't indent that line."
   (put 'defsubst tag '((1 2 lambda-list) (0 t 2)))
   (put 'errset tag 1)
   (put 'fexpr tag '((1 1 lambda-list) (0 t 1)))
-  ;;(put 'if tag 'if*)
+  ;;(put 'if tag '(like if*))
   ;;(put 'label tag '((1 2 ((1 1 lambda-list) (0 t 1))) (0 t 1)))
   (put 'let-closed tag '((1 1 quote) (0 t 1)))
   (put 'lexpr tag '((1 1 lambda-list) (0 t 1)))
