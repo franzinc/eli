@@ -4,3 +4,5 @@ RefMan.n
 RefCard.n
 fi-vers.el
 *.tar.gz
+dists
+tmp

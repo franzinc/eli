@@ -1,7 +1,9 @@
-# $Id: local.mak,v 2.4 1997/12/18 00:16:58 layer Exp $
+# $Id: local.mak,v 2.5 1997/12/18 18:38:49 layer Exp $
 
 TGZFILE = eli-$(VERSION).tar.gz
-DIR = eli-$(VERSION)
+DISTDIR = eli-$(VERSION)
+README_HTM = readme.htm
+README_TXT = readme.txt
 
 release_files = Makefile version.mak Doc.el Doc.elc fi-*.el fi-*.elc *.doc \
 	examples/emacs.el
@@ -10,16 +12,23 @@ echo_release_files:
 	@echo $(release_files)
 
 dist:	FORCE
-	rm -fr eli-$(VERSION)
-	mkdir eli-$(VERSION)
-	sed -e 's/%%VERSION%%/$(VERSION)/g' \
-	    -e 's/%%TGZFILE%%/$(TGZFILE)/g' \
-	    -e 's/%%DIR%%/$(DIR)/g' \
+	@if test ! -d tmp; then mkdir tmp; fi
+	rm -fr dists/$(DISTDIR)
+	mkdir dists/$(DISTDIR)
+	rm -fr tmp/$(DISTDIR)
+	mkdir tmp/$(DISTDIR)
+	cp -p $(release_files) tmp/$(DISTDIR)
+	sed -e 's/__VERSION__/$(VERSION)/g' \
+	    -e 's/__TGZFILE__/$(TGZFILE)/g' \
+	    -e 's/__README_HTM__/$(README_HTM)/g' \
+	    -e 's/__README_TXT__/$(README_TXT)/g' \
+	    -e 's/__DISTDIR__/$(DISTDIR)/g' \
 		< readme.htm \
-		> readme-$(VERSION).htm
-	cp -p $(release_files) eli-$(VERSION)
-	echo '# intentionally empty' > eli-$(VERSION)/local.mak
-	gtar zcf eli-$(VERSION).tar.gz eli-$(VERSION)
+		> tmp/$(DISTDIR)/$(README_HTM)
+	echo '# intentionally empty' > tmp/$(DISTDIR)/local.mak
+	gtar Czcf tmp dists/$(DISTDIR)/$(TGZFILE) $(DISTDIR)
+	cp -p tmp/$(DISTDIR)/$(README_HTM) dists/$(DISTDIR)
+	rm -fr tmp/$(DISTDIR)
 
 ###############################################################################
 

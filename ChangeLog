@@ -7,6 +7,18 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.pre-beta.12
+
+Thu Dec 18 10:36:03 1997  Kevin Layer  <layer@ultra>
+
+    renamed files:
+	* local-fi-developer-hooks.el -> localfidev.el
+    changed files:
+	* fi-compile.el: for renaming above
+	* local.mak: dist fixes
+	* readme.htm: first good version of this one
+
+*******************************************************************************
 2.0.21.pre-beta.11
 
 Wed Dec 17 19:00:28 1997  Kevin Layer  <layer@ultra>

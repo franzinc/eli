@@ -1,4 +1,4 @@
-;; $Id: fi-site-init.el,v 1.110 1997/12/11 00:28:29 layer Exp $
+;; $Id: fi-site-init.el,v 1.111 1997/12/18 18:38:49 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -243,7 +243,7 @@ exists.")
   (fi::load "fi-su"))
 
 (condition-case nil
-    (fi::load "local-fi-developer-hooks")
+    (fi::load "localfidev")
   (error nil))
 
 (setq fi:package-loaded t)

@@ -1,4 +1,4 @@
-;; $Id: fi-compile.el,v 2.5 1997/12/12 17:14:43 layer Exp $
+;; $Id: fi-compile.el,v 2.6 1997/12/18 18:38:48 layer Exp $
 
 (require 'cl)
 
@@ -21,7 +21,7 @@
     "fi-lep" "fi-lze" "fi-modes" "fi-ring" "fi-rlogin" "fi-shell"
     "fi-stream" "fi-su" "fi-sublisp" "fi-subproc" "fi-telnet" "fi-utils"))
 
-(setq fi-developer-files '("local-fi-developer-hooks"))
+(setq fi-developer-files '("localfidev"))
 
 (dolist (file fi-files)
   (let ((el (format "%s.el" file))
