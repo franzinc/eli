@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.45 1991/06/20 10:29:31 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.46 1991/06/27 15:26:17 layer Exp $
 
 ;;;; Mode initializations
 
@@ -323,24 +323,22 @@ any other mode setup."
   (make-local-variable 'comment-column)
   (setq comment-column 40)
   
-  (make-local-variable 'fi:lisp-comment-indent-specification)
-  (setq fi:lisp-comment-indent-specification (list comment-column t nil 0))
   (if fi:lisp-do-indentation
       (progn
-	(mapcar
-	 'make-local-variable
-	 '(indent-line-function comment-indent-hook
-	   parse-sexp-ignore-comments fi::lisp-most-recent-parse-result
-	   fi::lisp-indent-state-temp fi::calculate-lisp-indent-state-temp))
-	
+	(make-local-variable 'indent-line-function)
 	(setq indent-line-function 'fi:lisp-indent-line)
+
+	(make-local-variable 'comment-indent-hook)
 	(setq comment-indent-hook 'fi:lisp-comment-indent)
+
+	(make-local-variable 'parse-sexp-ignore-comments)
 	;; This variable must be `nil' when comments end in newlines.
 	(setq parse-sexp-ignore-comments nil)
+
 	(setq fi::lisp-most-recent-parse-result (list 0 0 0 0 nil nil nil 0))
 	(setq fi::calculate-lisp-indent-state-temp (list 0 0 0 nil nil nil 0))
-	(setq fi::lisp-indent-state-temp
-	  (list nil nil nil nil nil nil nil)))))
+	(setq fi::lisp-indent-state-temp (list nil nil nil nil nil nil nil))
+	)))
 
 (defun fi:parse-mode-line-and-package ()
   "Determine the current package in which the buffer is defined.
