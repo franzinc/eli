@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.83 1993/07/23 07:09:57 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.84 1993/07/23 07:10:56 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -167,6 +167,7 @@ clman-dist:	clean_clman all_clman
 		>> $(clman_release_stats)
 	gzip -d < $(clman_release_gztar_clim2) | wc -c \
 		>> $(clman_release_stats)
+	cp -p clman.data $(clman_data_release)
 
 ###############################################################################
 
