@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.43 1988/11/18 19:03:20 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.44 1988/11/18 21:04:10 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -320,9 +320,6 @@ are read from the minibuffer."
     (if (memq status '(run stop))
 	(goto-char (point-max))
       (setq default-directory default-dir)
-      (let ((saved-input-ring fi::input-ring))
-	(funcall mode-function)
-	(setq fi::input-ring saved-input-ring))     
       (if process (delete-process process))
       (setq process (apply 'start-process
 			   (append (list buffer-name buffer image-file)
@@ -344,6 +341,9 @@ are read from the minibuffer."
 				fi:subprocess-map-nl-to-cr)))
       (goto-char (point-max))
       (set-marker (process-mark process) (point))
+      (let ((saved-input-ring fi::input-ring))
+	(funcall mode-function)
+	(setq fi::input-ring saved-input-ring))
       (make-local-variable 'subprocess-prompt-pattern)
       (setq subprocess-prompt-pattern image-prompt)
       (fi::make-subprocess-variables))
