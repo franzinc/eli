@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.10 1991/03/16 13:56:55 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.11 1991/04/20 23:24:49 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -60,6 +60,11 @@
   (or (lep::lep-open-connection-p)
       (try-and-start-lep-connection)
       (error "no connection")))
+
+(defun fi:reset-lep-connection ()
+  "Reset the Lisp-editor protocol connection."
+  (interactive)
+  (setq lep::*connection* nil))
 
 ;;; Start up a connection as soon as we know where to connect to.
 
@@ -527,3 +532,16 @@ handle it"
     (if (third result-cons)
 	(error (second result-cons))
       (second result-cons))))
+
+(defun lep::make-request-in-session-and-wait (session function &rest arguments)
+  "Send a request to SESSION consisting of FUNCTION and ARGUMENTS and wait
+for the reply to come back. It returns a list of values."
+  (let* ((result-cons (list nil nil nil))
+	 (session (lep::send-request-in-session
+		   session
+		   function
+		   arguments
+		   (list (function immediate-reply-continuation) result-cons)
+		   (list (function immediate-reply-error-continuation)
+			 result-cons))))
+    (wait-for-reply-to-come-back result-cons)))
