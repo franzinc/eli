@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.41 1991/10/03 15:33:54 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.42 1991/10/15 11:40:34 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -832,18 +832,42 @@ EXCL:*RECORD-XREF-INFO*."
   (interactive)
   (message "Finding undefined functions...")
   (fi::make-request
-   (lep::list-undefined-functions-session)
-   ((fi:package) (undeffuncs)
-    (message "Finding undefined functions...done.")
-    (lep:display-some-inverse-definitions
-     fi:package
-     undeffuncs
-     (list 'lep::edit-undefined-function-callers)))
-   (() (error)
-    (message "error: %s" error))))
+      (lep::list-undefined-functions-session)
+    ((fi:package) (undeffuncs)
+      (message "Finding undefined functions...done.")
+      (lep:display-some-inverse-definitions
+       fi:package
+       undeffuncs
+       (list 'lep::edit-undefined-function-callers)))
+    (() (error)
+      (message "error: %s" error))))
 
 (defun lep::edit-undefined-function-callers (fspec &rest ignore)
   (lep::edit-somethings fspec 'lep::who-calls t))
+
+(defvar fi::list-unused-functions-ignored-packages
+    nil ;; '(:comp :r)
+  )
+
+(defun fi:list-unused-functions ()
+  "Using the cross referencing database in the Lisp environment and
+definition mode, find and display all the functions which are
+defined but not called.  See the documentation for fi:definition-mode for
+more information on finding the definitions of the unused functions.  See
+the Allegro CL variable EXCL:*RECORD-XREF-INFO*."
+  (interactive)
+  (message "Finding unused functions...")
+  (fi::make-request
+      (lep::list-unused-functions-session
+       :ignore-packages fi::list-unused-functions-ignored-packages)
+    ((fi:package) (funcs)
+      (message "Finding unused functions...done.")
+      (lep:display-some-definitions
+       fi:package
+       funcs
+       (list 'lep::find-a-definition "unused function" nil)))
+    (() (error)
+      (message "error: %s" error))))
 
 (defun lep::eval-from-lisp (string)
   (list (eval (car (read-from-string string)))))
