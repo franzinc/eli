@@ -45,7 +45,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.2 1989/03/21 18:10:50 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.3 1989/03/21 23:13:44 layer Exp $
 
 (defvar lisp-electric-semicolon nil
   "*If `t', semicolons that begin comments are indented as they are typed.")
@@ -251,10 +251,11 @@ status of that parse."
   (save-excursion
     (let ((new-point (point))
 	  (old-point (if at at (point)))
-	  (parse-state (if last-state last-state '(0 0 0 nil nil nil))))
+	  (parse-state (if last-state last-state '(0 0 0 nil nil nil 0))))
       (if (and last-state (< old-point (point)))
 	  (setq parse-state
-		(parse-partial-sexp old-point (point) nil nil last-state))
+		(parse-partial-sexp
+		 old-point (point) nil nil last-state last-state))
 	(progn
 	  ;; Find beginning of the top-level list.
 	  (save-excursion
@@ -273,7 +274,8 @@ status of that parse."
 	  (if (= old-point (point))
 	      (setq old-point 1))
 	  (setq parse-state
-		(parse-partial-sexp old-point (point) nil nil nil))))
+		(parse-partial-sexp
+		 old-point (point) nil nil nil parse-state))))
       (if (not (or (nth 3 parse-state)
 		   (nth 4 parse-state)
 		   (nth 5 parse-state)))
@@ -313,6 +315,11 @@ status of that parse."
 			(indent-to to-column 0)))
 		(error "sexp parse anomaly: no comment where expected"))))))))
  
+(defvar lisp-most-recent-parse-result '(0 0 0 0 nil nil nil 0)
+  "Most recent parse result: point at parse end and parse state.
+A list that is the `cons' of the point at which the most recent
+parse ended and the parse state from `parse-partial-sexp'.")
+
 (defun lisp-indent-line (&optional whole-exp)
   "Indent current line as Lisp code.
 With argument, indent any additional lines of the same expression
@@ -353,14 +360,10 @@ rigidly along with this one."
 	     (> end beg))
 	   (indent-code-rigidly beg end shift-amt)))))
  
-;;; It would be better for functions that use `parse-partial-sexp' to
-;;; return parse information as part of a multiple-valued result, but
-;;; GNU Emacs doesn't have multiple values. [HW]
-(defvar lisp-most-recent-parse-result '(0 0 0 0 nil nil nil)
-  "Most recent parse result: point at parse end and parse state.
-A list that is the `cons' of the point at which the most recent
-parse ended and the parse state from `parse-partial-sexp'.")
- 
+(defvar calculate-lisp-indent-state-temp '(0 0 0 nil nil nil 0)
+  "Used as the last argument to parse-partial-sexp so we do as little
+consing as is possible.")
+
 (defun calculate-lisp-indent (&optional parse-start)
   "Return appropriate indentation for current line as Lisp code.
 In usual case returns an integer: the column to indent to.
@@ -371,15 +374,21 @@ The second element of the list is the buffer position
 of the start of the containing expression."
   (save-excursion
     (beginning-of-line)
-    (let ((indent-point (point)) state paren-depth desired-indent (retry t)
+    (let ((indent-point (point))
+	  (state calculate-lisp-indent-state-temp)
+	  paren-depth desired-indent (retry t)
 	  last-sexp containing-sexp)
       (if parse-start
 	  (goto-char parse-start)
 	(beginning-of-defun))
       ;; Find outermost containing sexp
       (while (< (point) indent-point)
-	(setq state (parse-partial-sexp (point) indent-point 0)))
-      (setq lisp-most-recent-parse-result (cons (point) state))
+	(setq state (parse-partial-sexp
+		     (point) indent-point 0 nil nil state)))
+
+      (rplaca lisp-most-recent-parse-result (point))
+      (rplacd lisp-most-recent-parse-result (copy-sequence state))
+      
       ;; Find innermost containing sexp
       (while (and retry (setq paren-depth (car state)) (> paren-depth 0))
 	(setq retry nil)
@@ -391,8 +400,10 @@ of the start of the containing expression."
 	(if (and last-sexp (> last-sexp (point)))
  	    ;; Yes, but is there a containing sexp after that?
 	    (let ((peek (parse-partial-sexp last-sexp indent-point 0)))
-	      (if (setq retry (car (cdr peek))) (setq state peek))))
-	(setq lisp-most-recent-parse-result (cons (point) state))
+	      (if (setq retry (car (cdr peek)))
+		  (setq state peek))))
+	(rplaca lisp-most-recent-parse-result (point))
+	(rplacd lisp-most-recent-parse-result (copy-sequence state))
 	(if (not retry)
  	    ;; Innermost containing sexp found
 	    (progn
@@ -402,10 +413,10 @@ of the start of the containing expression."
  		  ;; Don't call hook.
 		  (setq desired-indent (current-column))
  		;; Move to first sexp after containing open paren
-		(setq lisp-most-recent-parse-result
-		      (parse-partial-sexp (point) last-sexp 0 t))
-		(setq lisp-most-recent-parse-result
-		      (cons (point) lisp-most-recent-parse-result))
+		(parse-partial-sexp (point) last-sexp 0 t nil
+				    ;; the result goes here:
+				    (cdr lisp-most-recent-parse-result))
+		(rplaca lisp-most-recent-parse-result (point))
 		(cond
 		 ((looking-at "\\s(")
  		  ;; Looking at a list.  Don't call hook.
@@ -413,11 +424,11 @@ of the start of the containing expression."
 			      last-sexp))
 		      (progn (goto-char last-sexp)
 			     (beginning-of-line)
-			     (setq lisp-most-recent-parse-result
-				   (parse-partial-sexp (point) last-sexp 0 t))
-			     (setq lisp-most-recent-parse-result
-				   (cons (point)
-					 lisp-most-recent-parse-result))))
+			     (parse-partial-sexp
+			      (point) last-sexp 0 t nil
+			      ;; the result goes here:
+			      (cdr lisp-most-recent-parse-result))
+			     (rplaca lisp-most-recent-parse-result (point))))
  		  ;; Indent under the list or under the first sexp on the
  		  ;; same line as last-sexp.  Note that first thing on that
  		  ;; line has to be complete sexp since we are inside the
@@ -428,29 +439,29 @@ of the start of the containing expression."
 		     last-sexp)
  		  ;; Last sexp is on same line as containing sexp.
  		  ;; It's almost certainly a function call.
-		  (setq lisp-most-recent-parse-result
-			(parse-partial-sexp (point) last-sexp 0 t))
-		  (setq lisp-most-recent-parse-result
-			(cons (point) lisp-most-recent-parse-result))
+		  (parse-partial-sexp (point) last-sexp 0 t nil
+				      ;; the result goes here:
+				      (cdr lisp-most-recent-parse-result))
+		  (rplaca lisp-most-recent-parse-result (point))
 		  (if (/= (point) last-sexp)
  		      ;; Indent beneath first argument or, if only one sexp
  		      ;; on line, indent beneath that.
 		      (progn (forward-sexp 1)
-			     (setq lisp-most-recent-parse-result
-				   (parse-partial-sexp (point) last-sexp 0 t))
-			     (setq lisp-most-recent-parse-result
-				   (cons (point)
-					 lisp-most-recent-parse-result))))
+			     (parse-partial-sexp
+			      (point) last-sexp 0 t nil
+			      ;; the result goes here:
+			      (cdr lisp-most-recent-parse-result))
+			     (rplaca lisp-most-recent-parse-result (point))))
 		  (backward-prefix-chars))
 		 (t
  		  ;; Indent beneath first sexp on same line as last-sexp.
  		  ;; Again, it's almost certainly a function call.
 		  (goto-char last-sexp)
 		  (beginning-of-line)
-		  (setq lisp-most-recent-parse-result
-			(parse-partial-sexp (point) last-sexp 0 t))
-		  (setq lisp-most-recent-parse-result
-			(cons (point) lisp-most-recent-parse-result))
+		  (parse-partial-sexp (point) last-sexp 0 t nil
+				      ;; the result goes here:
+				      (cdr lisp-most-recent-parse-result))
+		  (rplaca lisp-most-recent-parse-result (point))
 		  (backward-prefix-chars)))))))
       ;; Point is at the point to indent under unless we are inside a string.
       ;; Call indentation hook except when overriden by lisp-indent-offset
@@ -498,9 +509,12 @@ of the start of the containing expression."
 	     (setq desired-indent (current-column))))
       desired-indent)))
 
+(defvar escape-syntax-characters nil
+  "A per-buffer variable which is setup in the mode specific code in
+modes.el.  It is a list of escape characters in the current syntax table.")
+
 (defun find-start-of-string-or-comment (state indent-point containing-sexp)
-  (let* ((escapers (find-syntax-chars ?\\))
-	 (char (nth 3 state))
+  (let* ((char (nth 3 state))
 	 (commentp (memq char lisp-comment-delimiters))
 	 (stop (max (or (nth 2 state)
 			containing-sexp
@@ -520,12 +534,13 @@ of the start of the containing expression."
     ;;   comments, GNU Emacs cannot parse them correctly.
     (while (and (>= point stop) (null done))
       (if (and (= (char-after point) char)
-	       (not (memq (char-after (- point 1)) escapers)))
+	       (not (memq (char-after (- point 1)) escape-syntax-characters)))
 	  (if commentp
 	      (progn (cond ((and (memq (char-after (- point 1))
 				       lisp-comment-second-delimiters)
-				 (not (memq (char-after (- point 2))
-							escapers)))
+				 (not (memq (char-after
+					     (- point 2))
+					    escape-syntax-characters)))
 			    (setq depth (1- depth)))
 			   ((memq (char-after (+ point 1))
 				  lisp-comment-second-delimiters)
@@ -546,6 +561,10 @@ syntax table."
       (setq i (1+ i)))
     list))
 
+(defvar lisp-indent-state-temp '(nil nil nil nil nil nil nil)
+  "Used as the last argument to parse-partial-sexp so we can do as little
+consing as possible.")
+
 (defun lisp-indent-hook (indent-point state)
   (let ((normal-indent (current-column))
 	(calculated-indent nil))
@@ -556,12 +575,14 @@ syntax table."
 	  (let ((function (buffer-substring (progn (forward-char -1) (point))
 					    (progn (forward-sexp 1) (point))))
 		(count 1))
-	    (parse-partial-sexp (point) indent-point 1 t)
+	    (parse-partial-sexp (point) indent-point 1 t nil
+				lisp-indent-state-temp)
 	    (while (and (condition-case nil
 			    (progn
 			      (forward-sexp 1)
 			      (parse-partial-sexp
-			       (point) indent-point 1 t))
+			       (point) indent-point 1 t nil
+			       lisp-indent-state-temp))
 			  (error nil))
 			(< (point) indent-point))
 	      (setq count (1+ count)))
@@ -597,12 +618,14 @@ syntax table."
 		      (setq function (buffer-substring
 				      (progn (forward-char -1) (point))
 				      (progn (forward-sexp 1) (point))))
-		      (parse-partial-sexp (point) indent-point 1 t)
+		      (parse-partial-sexp (point) indent-point 1 t nil
+					  lisp-indent-state-temp)
 		      (while (and (condition-case nil
 				      (progn
 					(forward-sexp 1)
 					(parse-partial-sexp
-					 (point) indent-point 1 t))
+					 (point) indent-point 1 t nil
+					 lisp-indent-state-temp))
 				    (error nil))
 				  (< (point) indent-point))
 			(setq count (1+ count)))
@@ -681,13 +704,13 @@ syntax table."
 		(lisp-invoke-method
 		 form-start
 		 (apply 'lisp-if-indent
-			(append (list depth count state indent-point)
-				(cdr method)))
+			depth count state indent-point
+			(cdr method))
 		 depth count state indent-point))
 	       ((and (symbolp (car method)) (fboundp (car method)))
 		(apply (car method)
-		       (append (list depth count state indent-point)
-			       (cdr method))))
+		       depth count state indent-point
+		       (cdr method)))
 	       (t (lisp-indent-struct method depth count state indent-point))))
 	((eq method 'quote)
 	 (lisp-indent-quoted-list depth count state indent-point))
@@ -780,12 +803,14 @@ treated just like a LAMBDA (whose method is '((1 1 lambda-list) (0 t 1)))."
 	      (condition-case nil
 		  (progn
 		    (forward-char 1)
-		    (parse-partial-sexp (point) indent-point 1 t)
+		    (parse-partial-sexp (point) indent-point 1 t nil
+					lisp-indent-state-temp)
 		    (while (and (condition-case nil
 				    (progn
 				      (forward-sexp 1)
 				      (parse-partial-sexp
-				       (point) indent-point 1 t))
+				       (point) indent-point 1 t nil
+				       lisp-indent-state-temp))
 				  (error nil))
 				(< (point) indent-point))
 		      (setq count (1+ count))))
@@ -1025,7 +1050,8 @@ non-keyword s-expression."
     (forward-char 1)
     (if ignore-car
 	(progn (forward-sexp 1)
-	       (parse-partial-sexp (point) indent-point 1 t)))
+	       (parse-partial-sexp (point) indent-point 1 t nil
+				   lisp-indent-state-temp)))
     (while (and
 	    (< (point) indent-point)
 	    (not ignore-keywords)
@@ -1077,7 +1103,8 @@ non-keyword s-expression."
 			  (setq last-keyword-arg-start (point))
 			  (setq last-was-keyword nil))))
 		  (goto-char end-sexp)
-		  (parse-partial-sexp (point) indent-point 1 t))
+		  (parse-partial-sexp (point) indent-point 1 t nil
+				      lisp-indent-state-temp))
 	      (error nil))))
     (list last-keyword-start last-keyword-arg-start last-sexp-start
 	  count (or ignore-keywords nonkeyword-count))))
@@ -1149,14 +1176,14 @@ keyword."
 	 sexp-at)))))
 
 (defun lisp-if-indent (depth count state indent-point test then-spec else-spec)
-  "Indent a form conditionally.
-The TEST form is used to generate a Lisp form that is evaluated.  The form
-evaluated will be `(apply (car TEST) (append (list depth count state
-indent-point) (cdr TEST)))'.  If this application returns non-NIL, the
-indentation specification given by THEN-SPEC is used, otherwise the
-indentation specification given by ELSE-SPEC is used."
-  (if (apply (car test)
-	     (append (list depth count state indent-point) (cdr test)))
+  "Indent a form conditionally.  The TEST form is used to generate a Lisp
+form that is evaluated.  The form evaluated will be:
+	(apply (car TEST) depth count state indent-point (cdr TEST))
+If this application returns non-NIL, the indentation specification given by
+THEN-SPEC is used, otherwise the indentation specification given by
+ELSE-SPEC is used."
+  (if (apply (car test) depth count state indent-point
+	     (cdr test))
       then-spec
     else-spec))
 
@@ -1196,7 +1223,8 @@ NIL otherwise.  The ELEMENT is the number of the element, zero indexed."
 			(setq atomic (not (eq (following-char) ?\()))))
 		  (goto-char end-sexp)
 		  (setq count (1+ count))
-		  (parse-partial-sexp (point) indent-point 1 t))
+		  (parse-partial-sex{ (point) indent-point 1 t nil
+				      lisp-indent-state-temp))
 	      (error nil))))
     (list atomic found)))
 
@@ -1234,7 +1262,9 @@ distinguished."
 					(setq spec-count (1+ spec-count)))
 				    (forward-sexp 1)))
 			      (setq count (1+ count))
-			      (parse-partial-sexp (point) indent-point 1 t))
+			      (parse-partial-sexp
+			       (point) indent-point 1 t nil
+			       lisp-indent-state-temp))
 			  (error nil))))
 	    (if (<= count spec-count)
 		nil
@@ -1289,13 +1319,15 @@ distinguished."
       (forward-char 1)
       (forward-sexp 1)
       ;; Now find the start of the last form.
-      (parse-partial-sexp (point) indent-point 1 t)
+      (parse-partial-sexp (point) indent-point 1 t nil
+			  lisp-indent-state-temp)
       (while (and (< (point) indent-point)
 		  (condition-case nil
 		      (progn
 			(setq spec-count (1- spec-count))
 			(forward-sexp 1)
-			(parse-partial-sexp (point) indent-point 1 t))
+			(parse-partial-sexp (point) indent-point 1 t nil
+					    lisp-indent-state-temp))
 		    (error nil))))
       ;; Point is sitting on first character of last (or spec-count) sexp.
       (if (> spec-count 0)
@@ -1406,10 +1438,9 @@ if matched at the beginning of a line, means don't indent that line."
       (setq end (point-marker))
       (goto-char start)
       (or (bolp)
-	  (setq state (parse-partial-sexp (point)
-					  (progn
-					    (forward-line 1) (point))
-					  nil nil state)))
+	  (setq state
+	    (parse-partial-sexp (point) (progn (forward-line 1) (point)))))
+      (if (null state) (setq state '(nil nil nil nil nil nil nil)))
       (while (< (point) end)
 	(or (and (nth 3 state)
 		 (not (or (and lisp-multiline-string-indentation
@@ -1427,10 +1458,9 @@ if matched at the beginning of a line, means don't indent that line."
 			     (progn (skip-chars-forward " \t") (point)))
 	      (or (eolp)
 		  (indent-to (max 0 (+ indent arg)) 0))))
-	(setq state (parse-partial-sexp (point)
-					(progn
-					  (forward-line 1) (point))
-					nil nil state))))))
+	(setq state (parse-partial-sexp
+		     (point) (progn (forward-line 1) (point))
+		     nil nil state state))))))
 
 (defun find-line-comment ()
   "Return point of first comment character on this line, or nil."
