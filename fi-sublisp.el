@@ -45,7 +45,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.36 1989/05/22 15:48:25 layer Rel $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.37 1990/08/31 23:45:32 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -297,11 +297,11 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
     (let ((load-string
 	   (if compile-file-p
 	       (format
-		"(let ((*record-source-files* nil)
+		"(let ((excl::*record-source-files* nil)
 		       (*package* *package*))
 		   %s
  		   (excl::compile-file-if-needed \"%s\")
-		   (load \"%s.fasl\"))"
+		   (load (format nil \"%s.~a\" sys::*fasl-default-type*)))"
 		(if pkg pkg "")
 		fi::emacs-to-lisp-transaction-file
 		(fi::file-name-sans-type fi::emacs-to-lisp-transaction-file))
@@ -312,7 +312,8 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 			       (stm (make-echo-stream istm *terminal-io*)))
 			   %s
 			   (princ \" ;; eval from emacs: \") (fresh-line)
-			   (load stm :verbose nil)))"
+			   (load stm :verbose nil :print t)
+			   (values)))"
 			 fi::emacs-to-lisp-transaction-file
 			 (if pkg pkg ""))
 	       (format "(let ((*record-source-files* nil)
