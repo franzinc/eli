@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.72 1991/11/21 13:16:19 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.73 1992/01/12 11:48:31 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -122,6 +122,7 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
   (define-key map "\C-c;"	'fi:comment-region)
   (define-key map "\C-c\C-e"	'fi:end-of-defun)
   (define-key map "\C-c]"	'fi:super-paren)
+  (define-key map "\C-cl"	'fi:toggle-to-lisp)
   
   (if fi:lisp-do-indentation
       (progn
@@ -162,10 +163,10 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
   
   (when (memq major-mode '(fi:common-lisp-mode fi:franz-lisp-mode
 			   fi:lisp-mode))
-    (define-key map "\e\C-x"	'fi:lisp-eval-defun)
-    (define-key map "\C-c\C-b"	'fi:lisp-eval-current-buffer)
-    (define-key map "\C-c\C-s"	'fi:lisp-eval-last-sexp)
-    (define-key map "\C-c\C-r"	'fi:lisp-eval-region))
+    (define-key map "\e\C-x"	'fi:lisp-eval-or-compile-defun)
+    (define-key map "\C-c\C-b"	'fi:lisp-eval-or-compile-current-buffer)
+    (define-key map "\C-c\C-s"	'fi:lisp-eval-or-compile-last-sexp)
+    (define-key map "\C-c\C-r"	'fi:lisp-eval-or-compile-region))
   
   map)
 
@@ -1016,3 +1017,15 @@ window, leaving the point unchanged"
     (recenter 0)
     (goto-char p)))
 
+(defvar fi::toggle-to-lisp-window-config nil)
+
+(defun fi:toggle-to-lisp ()
+  "On each invocation, switch back and forth between the Lisp subprocess
+buffer and the source buffer from which this function was invoked."
+  (interactive)
+  (if (and fi::toggle-to-lisp-window-config
+	   (eq major-mode 'fi:inferior-common-lisp-mode))
+      (set-window-configuration fi::toggle-to-lisp-window-config)
+    (progn (setq fi::toggle-to-lisp-window-config
+	     (current-window-configuration))
+	   (call-interactively 'fi:common-lisp))))
