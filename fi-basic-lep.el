@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.14 1991/05/28 16:17:29 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.15 1991/05/29 09:06:39 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -93,7 +93,7 @@
 (defun fi::find-session (connection id)
   "Search a CONNECTION looking for a session with the ID"
   (let ((sessions (fi::connection-sessions connection)))
-    (while (and sessions (not (eq (session-id (car sessions)) id)))
+    (while (and sessions (not (eq (fi::session-id (car sessions)) id)))
       (setq sessions (cdr sessions)))
     (and sessions (car sessions))))
 
