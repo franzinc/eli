@@ -144,7 +144,7 @@ Obtaining the interface:
 The sources are available by ftp from ftp.uu.net as the
 following files:
 
-   /vendor/franz/emacs/eli-2.0.16.tar.gz (250 Kb)
+   /vendor/franz/emacs/eli-2.0.16.tar.gz (280 Kb)
    /vendor/franz/emacs/clman-4.1-v2.tar.gz (950 Kb)
    /vendor/franz/emacs/clman-4.1-v2-clim2.tar.gz (1306 Kb)
 
