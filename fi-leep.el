@@ -8,53 +8,102 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-leep.el,v 1.5 1991/12/05 16:52:26 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-leep.el,v 1.6 1992/04/28 14:02:39 layer Exp $
 
 ;; The epoch side of presentations in a lisp-listener window.
 
-;;(defvar fi::normal-button-style nil)
-;;(defvar fi::normal-style nil)
-(defvar fi::highlighted-button-style nil)
+(defvar fi::epoch-has-zones nil)
+
+(if (and (boundp 'epoch::version)
+	 (string-match "Epoch 4.0" epoch::version))
+    (setq fi::epoch-has-zones t)
+  (setq fi::epoch-has-zones nil))
+
+(defvar fi::highlighted-zone-style nil)
 (defvar fi::highlighted-style nil)
 
-(defun fi::initialize-for-presenting-listeners ()
-  ;;(when fi::normal-button-style
-  ;;  (release-attribute fi::normal-button-style))
-  ;;(setq fi::normal-button-style (reserve-attribute))
-  (when fi::highlighted-button-style
-    (release-attribute fi::highlighted-button-style))
-  (setq fi::highlighted-button-style (reserve-attribute))
-  ;;(setq fi::normal-style      (epoch::make-style))
-  (setq fi::highlighted-style (epoch::make-style))
-  ;;(epoch::set-style-foreground fi::normal-style      (epoch::foreground))
-  ;;(epoch::set-style-background fi::normal-style      (epoch::background))
-  (epoch::set-style-foreground fi::highlighted-style (epoch::foreground))
-  (epoch::set-style-background fi::highlighted-style (epoch::background))
-  (epoch::set-style-underline  fi::highlighted-style (epoch::foreground))
-  ;;(epoch::set-attribute-style fi::normal-button-style      fi::normal-style)
-  (epoch::set-attribute-style fi::highlighted-button-style fi::highlighted-style)
+(defvar fi::highlighted-zone-color "slategray")
+
+(unless fi::epoch-has-zones
+  (defun make-style ()
+    (epoch::make-style))
+  
+  (defun epoch::move-zone (a b c)
+    (epoch::move-button a b c))
+  
+  (defun epoch::make-zone ()
+    (epoch::make-button))
+
+  (defun epoch::set-zone-read-only (a b)
+    (epoch::set-button-read-only a b))
+  
+  (defun epoch::set-zone-style (a b)
+    (set-button-attribute a b))
   )
+
+(defun fi::initialize-for-presenting-listeners ()
+  (setq fi::highlighted-style (make-style))
+  (if (and fi::highlighted-zone-color
+	   fi::epoch-has-zones
+	   (fboundp 'epoch::number-of-colors)
+	   (> (epoch::number-of-colors) 2))
+      (epoch::set-style-background fi::highlighted-style
+				   fi::highlighted-zone-color)
+    (epoch::set-style-background fi::highlighted-style (epoch::background)))
+  
+  (unless fi::epoch-has-zones
+    (when fi::highlighted-zone-style
+      (release-attribute fi::highlighted-zone-style))
+    (setq fi::highlighted-zone-style (reserve-attribute)))
+  
+  (epoch::set-style-foreground fi::highlighted-style (epoch::foreground))
+  
+  (epoch::set-style-underline fi::highlighted-style
+			      (if (and fi::highlighted-zone-color
+				       fi::epoch-has-zones
+				       (fboundp 'epoch::number-of-colors)
+				       (> (epoch::number-of-colors) 2))
+				  nil
+				(epoch::foreground)))
+  (if fi::epoch-has-zones
+      (progn
+	(setq fi::normal-style (make-style))
+	(epoch::set-style-foreground fi::normal-style (epoch::foreground))
+	(epoch::set-style-background fi::normal-style (epoch::background))
+
+	(setq fi::highlighted-zone-style fi::highlighted-style))
+    (epoch::set-attribute-style fi::highlighted-zone-style
+				fi::highlighted-style)))
 
 (when (boundp 'epoch::version)
   (fi::initialize-for-presenting-listeners))
 
 (defun composer::setup-buffer-for-presentations (buffer)
+  (message "Setup...")
+  (sit-for 3)
+  (set-buffer buffer)
   (make-local-variable 'highlighted-presentation)
-  (setq highlighted-presentation nil)
+  (setq-default highlighted-presentation 'no-value) ;default value for
+						    ;non-lisp buffers
+
   (make-local-variable 'window-stream-presentation)
   (setq window-stream-presentation (make-presentation :start 0 :end 8388607))
-  (set-buffer buffer)
+  
   (make-local-variable 'presentation-stack)
   (setq presentation-stack (list window-stream-presentation))
+  
   (make-local-variable 'incomplete-input)
   (setq incomplete-input nil)
-  (make-local-variable 'highlight-button)
-  (setq highlight-button (epoch::make-button))
-  (make-local-variable 'read-only-button)
-  (setq read-only-button (epoch::make-button))
-  (epoch::move-button read-only-button 1 (point-max))
-  (epoch::set-button-read-only read-only-button t)
-  (set-button-attribute highlight-button fi::highlighted-button-style)
+  
+  (make-local-variable 'highlighted-zone)
+  (setq highlighted-zone (epoch::make-zone))
+  
+  (make-local-variable 'read-only-zone)
+  (setq read-only-zone (epoch::make-zone))
+  
+  (epoch::move-zone read-only-zone 1 (point-max))
+  (epoch::set-zone-read-only read-only-zone t)
+  (epoch::set-zone-style highlighted-zone fi::highlighted-zone-style)
   (fi:setup-epoch-gesture-bindings))
 
 (defvar fi:default-epoch-gesture-binding-list
@@ -220,7 +269,7 @@ The function should be defined in this way:
 		 (set-marker marker (point))
 		 (setq pnt (+ index 1)))
 		((eq (aref output index) ?<)
-		 (let* ((pres (make-presentation :start (point) :end 0) :data 0)
+		 (let* ((pres (make-presentation :start (point) :end 0 :data 0))
 			(parent (car presentation-stack))
 			(subs (presentation-subpresentation-vector parent))
 			(window-stream-presentation nil)) ;flag stream busy
@@ -247,8 +296,9 @@ The function should be defined in this way:
 		   (setf (presentation-data pres)
 		     (car (read-from-string output (match-beginning 1) (match-end 1))))
 		   (let ((p (point)))
+		     ;;(message "point is %s" (point))(sleep-for 2)
 		     (set-marker marker p)
-		     (epoch::move-button read-only-button 1 p))))
+		     (epoch::move-zone read-only-zone 1 p))))
 		((> (- len pnt) 10)	;broken protocol!!!
 		 (fi::insert-string output pnt len)
 		 (set-marker marker (point))
@@ -273,66 +323,126 @@ The function should be defined in this way:
        (stay old-buffer)
        (t (set-buffer old-buffer))))))
 
-;; I shouldn't redefine this -- rather I should push my own handler.
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Mouse tracking for presentation highlighting...
+;;;
 
-(defun motion::handler (type value scr)
-  (if (null mouse-down-marker) (set-mouse-marker))
-  (if (and (boundp 'mouse::downp) mouse::downp)
-      (progn (when (and (boundp 'highlighted-presentation)
-			highlighted-presentation)
-	       (set-highlight-button-to-presentation nil)
-	       (setq highlighted-button nil))
-	     (mouse-sweep-update))
-    ;; The existence of the buffer variable serves as a flag that
-    ;; mouse events are interesting.
-    (when (boundp 'highlighted-presentation)
-      (let ((epoch::event-handler-abort nil)
-	    (coords (coords-at-mouse))
-	    presentation)
-	(when coords
-	  (save-excursion
-	    (set-buffer (cadr coords))
-	    (setq presentation
-	      (presentation-at-point (car coords) window-stream-presentation))
-	    (unless (eq presentation highlighted-presentation)
-	      (set-highlight-button-to-presentation
-	       (setq highlighted-presentation presentation))
-	      (epoch::redisplay-screen))))))))
+(defun fi::leep-mouse-tracker (type value scr)
+  ;; The existence of the buffer variable serves as a flag that
+  ;; mouse events are interesting.
+  (when (fi::leep-mouse-p)
+    (fi::leep-mouse-tracker1 type value scr))
 
-(defun coords-at-mouse ()
+  ;; Pass event to next handler.
+  (fi::pass-event type value scr)
+
+  ;; Keep feeding myself fresh motion events.
+  (epoch::query-pointer))
+
+(defun fi::leep-mouse-button-handler (type value scr)
+  (when (fi::leep-mouse-p)
+    (fi::leep-mouse-button1 type value scr))
+  (fi::pass-event type value scr))
+
+;;; Pass event to next handler...
+(defun fi::pass-event (type value scr)
+  (let* ((myself (pop-event type))
+	 (next-handler (pop-event type)))
+    (push-event type next-handler)
+    (when (and next-handler (functionp next-handler))
+      (funcall next-handler type value scr))
+    (push-event type myself)))
+
+;;; Button handler...
+(defun fi::leep-mouse-button1 (type value scr)
+  ;; Clear presentations when mouse is down.
+  (when (and (boundp 'mouse::downp) mouse::downp)
+    (fi::leep-mouse-tracker1 type value scr)))
+
+;;; Predicate for determining when handler is applicable.
+(defun fi::leep-mouse-p ()
+  (let ((epoch::event-handler-abort nil)
+	(coords (fi::coords-at-mouse)))
+    (when coords
+      (save-excursion
+	;; Look at the value of highlighted-presentation in the buffer
+	;; where the mouse is, (not the current buffer which may not be
+	;; where the mouse is).  See if there is a value assigned that
+	;; indicates that this is a presenting listener...
+	(set-buffer (cadr coords))
+	(if (and (boundp 'highlighted-presentation)
+		 (not (eq highlighted-presentation 'no-value)))
+	    t
+	  nil)))))
+
+;;; Tracker...
+(defun fi::leep-mouse-tracker1 (type value scr)
+  ;; By default, Epoch only passes motion events when a button is down
+  ;; (yuch).  Modified to pass all motion events, this *actually* gives
+  ;; mouse sensitive, highlighted presentation
+
+  ;; Highlight applicable presentation.
+  (let ((epoch::event-handler-abort nil)
+	(coords (fi::coords-at-mouse))
+	presentation)
+    (when coords
+      (save-excursion
+	(set-buffer (cadr coords))
+	(setq presentation
+	  (fi::presentation-at-point (car coords) window-stream-presentation))
+
+	(cond ((null presentation)	;outside a presentation
+	       (fi::set-highlight-zone-to-presentation nil))
+
+	      ;; Make sure dragging outside and back in again highlights
+	      ;; presentation.
+	      ((eq presentation highlighted-presentation)
+	       (fi::set-highlight-zone-to-presentation highlighted-presentation))
+
+	      ;; New highlighted presentation.
+	      (t
+	       (setq highlighted-presentation presentation)
+	       (fi::set-highlight-zone-to-presentation
+		highlighted-presentation)))))))
+
+(defun fi::add-leep-mouse-tracker ()
+  (push-event 'motion 'fi::leep-mouse-tracker)
+  (push-event 'button 'fi::leep-mouse-button-handler))
+
+;;; this is dangerous.
+(defun fi::remove-leep-mouse-tracker ()
+  (pop-event 'motion)
+  (pop-event 'button))
+
+;;; Install.
+(when (boundp 'epoch::version)
+  (fi::add-leep-mouse-tracker))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun fi::coords-at-mouse ()
   (let* (x y pos
 	 (w (selected-window))
-	 (w-edges (window-edges w))
+	 (w-edges
+	  (if fi::epoch-has-zones
+	      (window-pixedges w)
+	    (window-edges w)))
 	 (left (car w-edges))
-	 (top (elt w-edges 1))
-	 ;;(right (- (elt w-edges 2) (+ 2 left)))
-	 ;;(bottom (- (elt w-edges 3) (+ 2 top)))
-	 )
-    (setq pos (query-mouse))
+	 (top (elt w-edges 1)))
+    (setq pos
+      (if fi::epoch-has-zones
+	  (query-pointer)
+	(query-mouse)))
     ;;convert to window relative co-ordinates
     (setq x (- (car pos) left))
     (setq y (- (elt pos 1) top))
-    ;;(setq x (max 0 (min right x)))
-    ;;(setq y (max 0 (min bottom y)))
     (epoch::coords-to-point (+ x left) (+ y top))))
-
-;(defun presentation-at-point (point window-stream-presentation)
-;  (when point				;sometimes is nil
-;    (do ((p window-stream-presentation)
-;	 (winner nil))
-;	((null p) (unless (eq winner window-stream-presentation) winner))
-;      (let ((start (presentation-start p)))
-;	(if (<= start point)
-;	    (if (<= (presentation-end p) point)
-;		(setq p (presentation-next p))
-;	      (setq winner p)
-;	      (setq p (presentation-first p)))
-;	  (setq p nil))))))
 
 ;; This assumes that the presentations in the subpresentation-vector
 ;; do not have overlapping extents.
 
-(defun presentation-at-point (point p)
+(defun fi::presentation-at-point (point p)
   (when (and point			;sometimes is nil
 	     p)				;nil flags that window is being written
     (do ((winner nil)
@@ -353,41 +463,16 @@ The function should be defined in this way:
 		(t (setq p pres)
 		   (setq winner pres))))))))
 
-(defun set-highlight-button-to-presentation (presentation)
-  (if presentation
-      (epoch::move-button highlight-button
+(defun fi::set-highlight-zone-to-presentation (presentation)
+  (when highlighted-zone
+    (if presentation
+	(epoch::move-zone highlighted-zone
 			  (presentation-start presentation)
 			  (presentation-end   presentation))
-    (epoch::move-button highlight-button 1 1)))
-
-;(defun fi::interrupt-process-for-click (gesture shifts)
-;  (let ((coords (coords-at-mouse)))
-;    (when coords
-;      (save-excursion
-;	(set-buffer (cadr coords))
-;	(fi:eval-in-lisp
-;	 (format
-;	  "(mp:process-interrupt
-;		(mp::process-name-to-process \"%s\")
-;		#'composer::epoch-click %s %s %s)\n"
-;	  (buffer-name (current-buffer))
-;	  (let ((pres (presentation-at-point (car coords) window-stream-presentation)))
-;	    (when pres (presentation-data pres)))
-;	  gesture shifts))))))
-;
-;(defun fi:epoch-click-left (x)
-;  (fi::interrupt-process-for-click 0 0))
-;
-;(defun fi:epoch-click-middle (x)
-;  (fi::interrupt-process-for-click 1 0))
-;
-;(defun fi:epoch-click-right (x)
-;  (fi::interrupt-process-for-click 2 0))
-
-;;;;;;;;;;  The new mechanism.
+      (epoch::move-zone highlighted-zone 1 1))))
 
 (defun fi::interrupt-process-for-gesture (gesture)
-  (let ((coords (coords-at-mouse)))
+  (let ((coords (fi::coords-at-mouse)))
     (when coords
       (save-excursion
 	(set-buffer (cadr coords))
@@ -397,6 +482,6 @@ The function should be defined in this way:
 		(mp::process-name-to-process \"%s\")
 		#'composer::epoch-gesture %s %s)\n"
 	  (buffer-name (current-buffer))
-	  (let ((pres (presentation-at-point (car coords) window-stream-presentation)))
+	  (let ((pres (fi::presentation-at-point (car coords) window-stream-presentation)))
 	    (when pres (presentation-data pres)))
 	  gesture))))))
