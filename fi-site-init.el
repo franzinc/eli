@@ -1,7 +1,9 @@
-;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.20 1991/02/15 23:37:07 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.21 1991/02/27 13:30:52 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface:
 ;;
+
+(defvar fi:use-lep nil)
 
 (setq fi:emacs-lisp-interface-version "2.0alpha")
 
@@ -14,8 +16,9 @@
 (load "fi/subproc.elc")
 (load "fi/sublisp.elc")
 (load "fi/tcplisp.elc")
-(load "fi/nonlep/query.elc")		; non-lep only
-(load "fi/nonlep/ltags.elc")		; non-lep only
+(cond (fi:use-lep (load "fi/lep/lep-init"))
+      (t (load "fi/nonlep/query.elc")
+	 (load "fi/nonlep/ltags.elc")))
 (load "fi/ring.elc")
 (load "fi/filec.elc")
 (load "fi/utils.elc")
@@ -30,11 +33,8 @@
 (autoload 'fi:clman-mode    "fi/clman" nil t)
 (autoload 'fi:clman-apropos "fi/clman" nil t)
 
-(setq fi:package-loaded t)
-
 (defvar fi::lep-loaded)
-
-(setq fi::lep-loaded nil)
+(setq fi::lep-loaded fi:use-lep)
 
 (defun fi:toggle-lep ()
   (interactive)
@@ -48,3 +48,5 @@
     (load "fi/lep/lep-init")
     ;; fi::lep-loaded set in lep-init
     ))
+
+(setq fi:package-loaded t)
