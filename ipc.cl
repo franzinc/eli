@@ -1,4 +1,4 @@
-;;					-[Mon Aug  7 16:19:39 1989 by layer]-
+;;					-[Mon Aug  7 16:50:44 1989 by layer]-
 ;;
 ;; Allegro CL IPC interface
 ;;
@@ -15,8 +15,17 @@
 ;; restrictions of Restricted Rights for Commercial Software developed
 ;; at private expense as specified in DOD FAR 52.227-7013 (c) (1) (ii).
 ;;
-;;
-;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.24 1989/08/07 16:38:07 layer Exp $
+
+(eval-when (compile)
+  (if (find-symbol (symbol-name :rcsnote) (find-package :si))
+      (push :has-rcsnote *features*))
+  )
+
+#+has-rcsnote
+(si::rcsnote
+ "ipc"
+ "$Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.25 1989/08/07 16:50:58 layer Exp $")
+
 ;; $Locker: layer $
 
 (provide :ipc)
