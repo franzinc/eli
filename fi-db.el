@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.10 1991/03/13 10:37:30 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.11 1991/03/13 10:39:15 layer Exp $
 ;;
 
 (defconst lep:current-frame-regexp "^ ->")
@@ -97,12 +97,12 @@ process. With a prefix argument, do a \":zoom :all t\"."
 		     (beginning-of-buffer)
 		     (re-search-forward lep:current-frame-regexp)
 		     (beginning-of-line)
-		     (lep::scan-stack-mode from-buffer process-name)))
+		     (fi:scan-stack-mode from-buffer process-name)))
 		  ;; Error continuation
 		  (() (error)
 		   (message "Cannot zoom on stack: %s" error)))))
 
-(defun lep::scan-stack-mode (from-buffer process-name)
+(defun fi:scan-stack-mode (from-buffer process-name)
   "Major mode for debugging a Common Lisp process.
 The keymap for this mode is bound to fi:scan-stack-mode-map
 \\{fi:scan-stack-mode-map}
