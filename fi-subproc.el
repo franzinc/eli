@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.112 1991/06/20 20:02:38 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.113 1991/06/20 20:22:42 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -300,17 +300,17 @@ programmatically, which means look for, and use if found, numbered buffers
 of the form \"*common-lisp*<N>\" for N > 2.  If BUFFER-NAME < 0, then find
 the first \"free\" buffer name and start a subprocess in that buffer."
   (interactive
-   (fi::get-lisp-interactive-arguments 'fi::common-lisp-first-time
-				       'fi:common-lisp-buffer-name
+   (fi::get-lisp-interactive-arguments fi::common-lisp-first-time
+				       fi:common-lisp-buffer-name
 				       (let ((name "*common-lisp*"))
 					 (if (numberp current-prefix-arg)
 					     (fi::buffer-number-to-buffer
 					      name current-prefix-arg)
 					   (get-buffer-create name)))
-				       'fi:common-lisp-directory
-				       'fi:common-lisp-image-name
-				       'fi:common-lisp-image-arguments
-				       'fi:common-lisp-host))
+				       fi:common-lisp-directory
+				       fi:common-lisp-image-name
+				       fi:common-lisp-image-arguments
+				       fi:common-lisp-host))
   (let* ((buffer-name (or buffer-name fi:common-lisp-buffer-name))
 	 (directory (expand-file-name (or directory fi:common-lisp-directory)))
 	 (image-name (or image-name fi:common-lisp-image-name))
@@ -353,7 +353,12 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 			   (cd dir)
 			 (error nil))))))
 		local host directory)))
-    (setq fi::common-lisp-first-time nil)
+    (setq fi::common-lisp-first-time nil
+	  fi:common-lisp-buffer-name buffer-name
+	  fi:common-lisp-directory directory
+	  fi:common-lisp-image-name image-name
+	  fi:common-lisp-image-arguments image-args
+	  fi:common-lisp-host host)
     proc))
 
 (defun fi:goto-common-lisp ()
@@ -416,17 +421,17 @@ programmatically, which means look for, and use if found, numbered buffers
 of the form \"*franz-lisp*<N>\" for N > 2.  If BUFFER-NAME < 0, then find
 the first \"free\" buffer name and start a subprocess in that buffer."
   (interactive
-   (fi::get-lisp-interactive-arguments 'fi::franz-lisp-first-time
-				       'fi:franz-lisp-buffer-name
+   (fi::get-lisp-interactive-arguments fi::franz-lisp-first-time
+				       fi:franz-lisp-buffer-name
 				       (let ((name "*franz-lisp*"))
 					 (if (numberp current-prefix-arg)
 					     (fi::buffer-number-to-buffer
 					      name current-prefix-arg)
 					   (get-buffer-create name)))
-				       'fi:franz-lisp-directory
-				       'fi:franz-lisp-image-name
-				       'fi:franz-lisp-image-arguments
-				       'fi:franz-lisp-host))
+				       fi:franz-lisp-directory
+				       fi:franz-lisp-image-name
+				       fi:franz-lisp-image-arguments
+				       fi:franz-lisp-host))
   (let* ((buffer-name (or buffer-name fi:franz-lisp-buffer-name))
 	 (directory (or directory fi:franz-lisp-directory))
 	 (image-name (or image-name fi:franz-lisp-image-name))
@@ -460,7 +465,12 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		       (error nil)))))
 		local directory)))
     (setq fi:franz-lisp-process-name (process-name proc))
-    (setq fi::franz-lisp-first-time nil)
+    (setq fi::franz-lisp-first-time nil
+	  fi:franz-lisp-buffer-name buffer-name
+	  fi:franz-lisp-directory directory
+	  fi:franz-lisp-image-name image-name
+	  fi:franz-lisp-image-arguments image-args
+	  fi:franz-lisp-host host)
     proc))
 
 ;;;;
@@ -477,17 +487,11 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	  image-args
 	  '("'")))
 
-(defun fi::get-lisp-interactive-arguments (s-first-time s-buffer-name
-					   buffer
-					   s-directory s-image-name
-					   s-image-args s-host)
-  (let ((first-time (symbol-value s-first-time))
-	(buffer-name (or (and buffer (buffer-name buffer))
-			 (symbol-value s-buffer-name)))
-	(directory (symbol-value s-directory))
-	(image-name (symbol-value s-image-name))
-	(image-args (symbol-value s-image-args))
-	(host (symbol-value s-host))
+(defun fi::get-lisp-interactive-arguments (first-time buffer-name buffer
+					   directory image-name image-args
+					   host)
+  (let ((buffer-name (or (and buffer (buffer-name buffer))
+			 buffer-name))
 	local)
     (if (or first-time
 	    (and current-prefix-arg
@@ -495,48 +499,42 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		     (not (get-buffer-process buffer))
 		     (not (fi:process-running-p
 			   (get-buffer-process buffer))))))
-	(prog1
-	    (list (setq buffer-name
-		    (or current-prefix-arg
-			(read-buffer "Buffer: " buffer-name)))
-		  (progn
-		    (setq host (read-string "Host: " host))
-		    (setq local (or (string= "localhost" host)
-				    (string= host (system-name))))
-		    (let ((dir (expand-file-name
-				(read-file-name "Process directory: "
-						(or directory
-						    default-directory)
-						(or directory
-						    default-directory)
-						local))))
-		      (setq directory
-			(if (= ?/ (aref dir (- (length dir) 1)))
-			    dir
-			  (concat dir "/")))))
-		  (let ((image
-			 (fi::canonicalize-filename
-			  (expand-file-name
-			   (if (stringp image-name)
-			       (if (= ?/ (aref image-name 0))
-				   image-name
-				 (format "%s%s" directory image-name))
-			     directory)))))
-		    (setq image-name
+	(list (setq buffer-name
+		(or current-prefix-arg
+		    (read-buffer "Buffer: " buffer-name)))
+	      (progn
+		(setq host (read-string "Host: " host))
+		(setq local (or (string= "localhost" host)
+				(string= host (system-name))))
+		(let ((dir (expand-file-name
+			    (read-file-name "Process directory: "
+					    (or directory
+						default-directory)
+					    (or directory
+						default-directory)
+					    local))))
+		  (setq directory
+		    (if (= ?/ (aref dir (- (length dir) 1)))
+			dir
+		      (concat dir "/")))))
+	      (let ((image
+		     (fi::canonicalize-filename
 		      (expand-file-name
-		       (read-file-name (format "Image name [%s]: " image)
-				       directory image local))))
-		  (setq image-args
-		    (fi::listify-string
-		     (read-from-minibuffer
-		      "Image arguments (separate by spaces): "
-		      (mapconcat 'concat image-args " "))))
-		  host)
-	  (set s-buffer-name buffer-name)
-	  (set s-directory directory)
-	  (set s-image-name image-name)
-	  (set s-image-args image-args)
-	  (set s-host host))
+		       (if (stringp image-name)
+			   (if (= ?/ (aref image-name 0))
+			       image-name
+			     (format "%s%s" directory image-name))
+			 directory)))))
+		(setq image-name
+		  (expand-file-name
+		   (read-file-name (format "Image name [%s]: " image)
+				   directory image local))))
+	      (setq image-args
+		(fi::listify-string
+		 (read-from-minibuffer
+		  "Image arguments (separate by spaces): "
+		  (mapconcat 'concat image-args " "))))
+	      host)
       (list buffer-name directory image-name image-args host))))
 
 (defun fi::common-lisp-subprocess-filter (process output &optional stay cruft)
