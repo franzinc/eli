@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 1.79 1997/12/06 19:54:10 layer Exp $
+;; $Id: fi-lep.el,v 1.79.20.1 1998/09/23 16:35:00 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -494,11 +494,16 @@ beginning of words in target symbols."
 	 (pattern (buffer-substring beg end))
 	 (functions-only (if (eq (char-after (1- real-beg)) ?\() t nil))
 	 (downcase (not (fi::all-upper-case-p pattern)))
-	 (xalist (fi::lisp-complete-1 pattern xpackage functions-only))
+	 (xxalist (fi::lisp-complete-1 pattern xpackage functions-only))
+	 (xalist
+	  (if xpackage
+	      (fi::package-frob-completion-alist xxalist)
+	    xxalist))
 	 (alist (if downcase
 		    (mapcar 'fi::downcase-alist-elt xalist)
 		  xalist))
 	 (completion (if alist (try-completion pattern alist))))
+
     (cond ((eq completion t)
 	   (message "Completion is unique."))
 	  ((and (null completion) (null alist))
@@ -530,7 +535,9 @@ beginning of words in target symbols."
 		 ;; more than one choice, so insert what completion we have
 		 ;; and give the choices to the user
 		 (not (assoc pattern alist))))
-	   (delete-region beg end)
+	   (if xpackage
+	       (delete-region real-beg end)
+	     (delete-region beg end))
 	   (insert completion)
 	   (message "Making completion list...")
 	   (with-output-to-temp-buffer "*Completions*"
