@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 3.7.4.3 2004/08/03 21:08:37 layer Exp $
+;; $Id: fi-subproc.el,v 3.7.4.4 2004/08/04 16:49:42 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -323,6 +323,8 @@ process-connection-type (q.v.).")
 in seconds, that Emacs will wait for Lisp to startup, when no connection
 can be made in fi:common-lisp.")
 
+(defvar fi::common-lisp-compatibility-mode-timeout 1)
+
 (defvar fi:common-lisp-subprocess-wait-forever nil
   "*This variable only has an effect on Windows.  If the value is non-nil,
 then wait forever for the Lisp to startup.  Use with caution.  The
@@ -514,7 +516,8 @@ be a string. Use the 6th argument for image file."))
 		       (fi::socket-start-lisp fi::cl-process-name
 					      executable-image-name
 					      real-args))))
-		(sleep-for 1) ;; wait for process to start
+		;; wait for process to start
+		(sleep-for fi::common-lisp-compatibility-mode-timeout)
 		(if (and fi:eli-compatibility-mode
 			 (fi::eli-compat-mode-p 9666))
 		    ;; A Lisp running an older version of eli was detected,

@@ -1,6 +1,13 @@
 *******************************************************************************
 post 7.0.beta release
 
+2004-08-04    <layer@HOBART>
+
+	* fi-subproc.el (fi::common-lisp-compatibility-mode-timeout):
+	  mikel's machine is a little slow and starting older lisps with
+	  the newer eli wasn't reliable.  Parameterize it in case others
+	  need it.
+
 2004-08-03    <layer@HOBART>
 
     for bug14313:
@@ -4959,4 +4966,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.9.4.3 $
+$Revision: 3.9.4.4 $
