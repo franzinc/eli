@@ -2,7 +2,7 @@
 ;; The Franz Inc. Lisp/Emacs interface:
 ;;
 (load "fi/modes.elc")
-(if fi:lisp-do-indentation		; default is `nil'
+(if fi:lisp-do-indentation		; default is `t'
     (load "fi/indent.elc"))
 (load "fi/keys.elc")
 (load "fi/subproc.elc")
