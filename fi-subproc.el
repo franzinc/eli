@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.69 1990/09/13 23:28:27 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.70 1990/10/09 10:48:37 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -276,13 +276,13 @@ See fi:explicit-remote-common-lisp."
 	       fi:common-lisp-prompt-pattern
 	       "rsh"
 	       (append
-		(list
-		 host
-		 (format
-		  "sh -ec 'EMACS=t TERM=emacs TERMCAP=emacs:co#%d:tc=unknown: "
-		  (screen-width))
-		 fi:common-lisp-image-name)
-		fi:common-lisp-image-arguments)
+		(list host
+		      (format
+		       "sh -ec 'EMACS=t TERM=emacs TERMCAP=emacs:co#%d:tc=unknown: "
+		       (screen-width))
+		      fi:common-lisp-image-name)
+		fi:common-lisp-image-arguments
+		'("'"))
 	       nil
 	       fi:start-lisp-interface-function)))
     (setq fi::freshest-common-sublisp-name (process-name proc))
@@ -307,13 +307,13 @@ arguments are read from the minibuffer."
 	       fi:common-lisp-prompt-pattern
 	       "rsh"
 	       (append
-		(list
-		 host
-		 (format
-		  "sh -ec 'EMACS=t TERM=emacs TERMCAP=emacs:co#%d:tc=unknown: "
-		  (screen-width))
-		 image-name)
-		image-arguments '("'"))
+		(list host
+		      (format
+		       "sh -ec 'EMACS=t TERM=emacs TERMCAP=emacs:co#%d:tc=unknown: "
+		       (screen-width))
+		      image-name)
+		image-arguments
+		'("'"))
 	       nil
 	       fi:start-lisp-interface-function)))
     (setq fi::freshest-common-sublisp-name (process-name proc))
@@ -557,10 +557,12 @@ are read from the minibuffer."
   (send-string
    process
    (if fi:unix-domain
-       "(progn(excl::require :ipc)(excl::require :emacs))
-	(progn(setq ipc::*unix-domain* t)(ipc:start-lisp-listener-daemon))\n"
-     "(progn(excl::require :ipc)(excl::require :emacs))
-      (ipc:start-lisp-listener-daemon)\n")))
+       "(progn(princ \";Starting socket daemon
+   \")(require :ipc)(require :emacs)(setq ipc::*unix-domain* t)
+   (ipc:start-lisp-listener-daemon)(values))\n"
+     "(progn(princ \";Starting socket interface
+   \")(require :ipc)(require :emacs)
+   (ipc:start-lisp-listener-daemon)(values))\n")))
 
 (defun fi::make-subprocess-variables ()
   (setq fi::input-ring-max fi:default-input-ring-max)
