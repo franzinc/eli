@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-emacs21.el,v 1.1.2.5 2003/08/11 20:53:54 layer Exp $
+;; $Id: fi-emacs21.el,v 1.1.2.6 2003/08/11 22:13:02 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; emacs specific stuff
@@ -1016,19 +1016,18 @@
 
 (require 'font-lock)
 
-(add-hook 'fi:common-lisp-mode-hook 'turn-on-font-lock)
-(add-hook 'fi:emacs-lisp-mode-hook 'turn-on-font-lock)
+(defvar fi:lisp-font-lock-keywords lisp-font-lock-keywords-2)
 
-(setq fi::lisp-font-lock-keywords
-  '(("^(\\(def\\(\\(const\\(ant\\|\\)\\|ine-key\\(\\|-after\\)\\|var\\)\\|\\(class\\|struct\\|type\\)\\|\\([^ \t\n()]+\\)\\)\\)[ \t'(]*\\([-.a-zA-Z0-9]+\\)?"
-     (1 font-lock-keyword-face) (8 (cond ((match-beginning 3) font-lock-variable-name-face) ((match-beginning 6) font-lock-type-face) (t font-lock-function-name-face)) nil t))))
+(defun fi::turn-on-font-lock ()
+  (make-local-variable 'font-lock-defaults)
+  (setq font-lock-defaults
+    '(fi:lisp-font-lock-keywords	; KEYWORDS
+      nil				; KEYWORDS-ONLY
+      nil				; CASE-FOLD
+      (("+-*/.<>=!?$%_&~^:" . "w"))	; SYNTAX-ALIST
+      beginning-of-defun		; SYNTAX-BEGIN
+      (font-lock-mark-block-function . mark-defun)))
+  (turn-on-font-lock))
 
-(push '(fi:common-lisp-mode
-	(fi::lisp-font-lock-keywords)
-	nil
-	nil
-	(("+-*/.<>=!?$%_&~^:" . "w"))
-	beginning-of-defun
-	(font-lock-comment-start-regexp . ";")
-	(font-lock-mark-block-function . mark-defun))
-      font-lock-defaults-alist)
+(add-hook 'fi:common-lisp-mode-hook 'fi::turn-on-font-lock)
+(add-hook 'fi:emacs-lisp-mode-hook 'fi::turn-on-font-lock)
