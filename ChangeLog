@@ -9,6 +9,12 @@ Documentation changes:	<`none' or give pointer to them>
 	* <changes go here...>
 
 *******************************************************************************
+
+Wed Nov 12 16:06:23 1997  Kevin Layer  <layer@ultra>
+
+	* makefile.win32: remove compile of clman.exe
+
+*******************************************************************************
 2.0.21.pre-beta.3
 
 Documentation changes:	UserGuide.n
