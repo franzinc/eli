@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.23 1991/10/01 19:32:00 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.24 1991/10/02 13:11:47 layer Exp $
 
 ;;; Misc utilities
 
@@ -299,8 +299,7 @@ at the beginning of the line."
 (defvar fi::original-package nil)
 
 (defun fi::get-default-symbol (prompt &optional up-p)
-  (let* ((symbol-at-point
-	  (fi::get-symbol-at-point up-p))
+  (let* ((symbol-at-point (fi::get-symbol-at-point up-p))
 	 (read-symbol
 	  (let ((fi::original-package fi:package))
 	    (if (fboundp 'epoch::mapraised-screen)
@@ -309,12 +308,53 @@ at the beginning of the line."
 	     (if symbol-at-point
 		 (format "%s: (default %s) " prompt symbol-at-point)
 	       (format "%s: " prompt))
-	     'fi::minibuffer-complete)))
-	 (symbol (if (string= read-symbol "")
-		     symbol-at-point
-		   read-symbol))
-	 (colonp (string-match ":?:" symbol nil)))
-    (list symbol)))
+	     'fi::minibuffer-complete))))
+    (list (if (string= read-symbol "")
+	      symbol-at-point
+	    read-symbol))))
+
+(defun fi::minibuffer-complete (pattern predicate what)
+  (let ((fi:package fi::original-package))
+    (let (package deletion)
+      (if (string-match ":?:" pattern)
+	  (setq package
+	    (concat
+	     ":" (substring pattern 0 (match-beginning 0)))
+	    deletion (substring pattern 0 (match-end 0))
+	    pattern
+	    (substring pattern (match-end 0))))
+      (let* ((alist (fi::lisp-complete-1 pattern package nil))
+	     (completion (and alist (try-completion pattern alist))))
+	(ecase what
+	  ((nil) (cond ((eq completion t) t)
+		       ((and (null completion) (null alist))
+			;; no match
+			nil)
+		       ((and (null completion) alist (null (cdr alist)))
+			;; one match for abbrev
+			(cdr (car alist)))
+		       ((and (null completion) alist)
+			;; more than one match for abbrev
+			(fi::abbrev-to-symbol pattern alist))
+		       ((null (string= pattern completion))
+			;; we can complete further than pattern
+			(let ((new (cdr (assoc completion alist))))
+			  (if new
+			      new
+			    completion)))
+		       ((and alist (null (cdr alist)))
+			;; one match
+			(if (string-match "::" (cdr (car alist)))
+			    (cdr (car alist))
+			  (concat deletion (cdr (car alist)))))
+		       (t
+			;; more than one match, just return completion,
+			;; with possible package prefix
+			(if (and completion (string-match "::" completion))
+			    completion
+			  (concat deletion completion)))))
+	  ((t) (mapcar (function cdr) alist))
+	  (lambda (eq completion t)))))))
 
 (defun fi::get-symbol-at-point (&optional up-p)
   (let ((symbol (condition-case ()
@@ -356,25 +396,64 @@ at the beginning of the line."
 	(if (and up-p (null symbol))
 	    (fi::get-symbol-at-point)))))
 
-(defun fi::minibuffer-complete (pattern predicate what)
-  (let ((fi:package fi::original-package))
-    (let (package deletion)
-      (if (string-match ":?:" pattern)
-	  (setq package
-	    (concat
-	     ":" (substring pattern 0 (match-beginning 0)))
-	    deletion (substring pattern 0 (match-end 0))
-	    pattern
-	    (substring pattern (match-end 0))))
-      (let* ((alist
-	      (fi::lisp-complete-1 pattern package nil))
-	     (completion (and alist (try-completion pattern alist))))
-	(ecase what
-	  ((nil)
-	   (cond ((eq completion t) t)
-		 ((and alist (null (cdr alist)))
-		  (concat deletion (car (car alist))))
-		 (t (concat deletion completion))))
-	  ((t)
-	   (mapcar (function cdr) alist))
-	  (lambda (not (not alist))))))))
+(defun fi::abbrev-to-symbol (pattern alist)
+  (let* ((suffix (and (string-match ".*-\\(.*\\)" pattern)
+		      (substring pattern
+				 (match-beginning 1)
+				 (match-end 1))))
+	 (nwords
+	  (let ((n 0) (i 0) (max (length pattern)))
+	    (while (< i max)
+	      (if (= ?- (aref pattern i))
+		  (setq n (+ n 1)))
+	      (setq i (+ i 1)))
+	    n))
+	 (n 0)
+	 (words nil)
+	 abbrev-word
+	 expanded-word
+	 xx)
+    (while (< n nwords)
+      (setq abbrev-word (fi::word pattern n))
+      (setq xx
+	(mapcar (function (lambda (x) (fi::word (car x) n)))
+		alist))
+      (setq expanded-word (car xx))
+      (if (let (done)
+	    (while (and (not done) xx)
+	      (if (and (cdr xx)
+		       (not (string= (car xx) (car (cdr xx)))))
+		  (setq done t))
+	      (setq xx (cdr xx)))
+	    done)
+	  ;; words aren't the same
+	  (setq words (cons abbrev-word words))
+	(setq words (cons expanded-word words)))
+      (setq n (+ n 1)))
+    
+    (format "%s-%s" (mapconcat 'identity (nreverse words) "-") suffix)))
+
+(defun fi::word (string word)
+  ;; (fi::word "foo-bar-baz" 0) returns "foo"
+  ;; (fi::word "foo-bar-baz" 1) returns "bar"
+  ;; (fi::word "foo-bar-baz" 2) returns "baz"
+  ;; (fi::word "foo-bar-baz" 3) returns nil
+  (let* ((n 0)
+	 (i 0)
+	 (res nil)
+	 (max (length string))
+	 c
+	 done)
+    (while (and (not done) (< n word))
+      (if (= i max)
+	  (setq done t)
+	(if (= ?- (aref string i))
+	    (setq n (+ n 1)))
+	(setq i (+ i 1))))
+    
+    (while (and (< i max)
+		(not (= ?- (setq c (aref string i)))))
+      (setq res (concat res (char-to-string c)))
+      (setq i (+ i 1)))
+
+    res))

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.38 1991/10/01 13:36:20 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.39 1991/10/02 13:12:19 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -404,39 +404,53 @@ beginning of words in target symbols."
 		(let ((opoint (point)))
 		  (if (re-search-forward ":?:" end t)
 		      (setq package
-			(concat
-			 ":" (buffer-substring opoint (match-beginning 0))))))
+			(concat ":"
+				(buffer-substring opoint
+						  (match-beginning 0))))))
 		(point)))
 	 (pattern (buffer-substring beg end))
 	 (functions-only (if (eq (char-after (1- real-beg)) ?\() t nil))
-	 (alist
-	  (fi::lisp-complete-1 pattern package functions-only))
+	 (alist (fi::lisp-complete-1 pattern package functions-only))
 	 (completion (if alist (try-completion pattern alist))))
-    (cond ((eq completion t))
+    (cond ((eq completion t)
+	   (message "Completion is unique."))
 	  ((and (null completion) (null alist))
 	   (message "Can't find completion for \"%s\"" pattern)
 	   (ding))
+;;;; the next two clauses are for abbrev expansion:
 	  ((and (null completion) alist (null (cdr alist)))
-	   (delete-region beg end)
-	   (insert (car (car alist))))
+	   (delete-region real-beg end)
+	   (insert (cdr (car alist))))
 	  ((and (null completion) alist)
+	   ;; pattern is something like l-a-comp.  The next hack is to turn
+	   ;; this into something like list-all-comp...
+	   (delete-region real-beg end)
+	   (insert (fi::abbrev-to-symbol pattern alist))
+	   
 	   (message "Making completion list...")
 	   (with-output-to-temp-buffer "*Help*"
-	     (display-completion-list (mapcar 'car alist)))
+	     (display-completion-list (mapcar 'cdr alist)))
 	   (message "Making completion list...done"))
-	  ((not (string= pattern completion))
+;;;;
+	  ((null (string= pattern completion))
 	   (let ((new (cdr (assoc completion alist))))
 	     (if new
 		 (progn
 		   (delete-region real-beg end)
 		   (insert new))
 	       (delete-region beg end)
-	       (insert completion))))
+	       (insert completion)))
+	   (if (cdr alist)
+	       (message "Complete, but not unique.")
+	     (message "Completion is unique.")))
 	  (t
 	   (message "Making completion list...")
 	   (with-output-to-temp-buffer "*Help*"
 	     (display-completion-list
-	      (all-completions pattern alist)))
+	      (mapcar 'cdr alist)
+;;;; the following is superfluous, since alist is the list of completions
+;;;;	      (all-completions pattern alist)
+	      ))
 	   (message "Making completion list...done")))))
 
 (defun fi::lisp-complete-1 (pattern package functions-only)
@@ -454,7 +468,7 @@ beginning of words in target symbols."
 		 ':functions-only-p (intern
 				     (fi::frob-case-to-lisp
 				      functions-only)))))))
-    (fi::lisp-complete-2 completions)))
+    (fi::lisp-complete-2 completions nil)))
 
 (defun fi::lisp-complete-2 (completions &optional dont-strip-package)
   (if (consp completions)
@@ -473,6 +487,7 @@ beginning of words in target symbols."
 					     (match-end 2))))))
 		   (cons name whole-name))))
 	      completions))))
+
 
 (defun lep::my-find-file (filename)
   (find-file filename))
@@ -511,7 +526,7 @@ beginning of words in target symbols."
 (defun lep::completing-read (prompt require-match initial-input)
   (if (fboundp 'epoch::mapraised-screen)
       (epoch::mapraised-screen (minibuf-screen)))
-  (list (completing-read 
+  (list (completing-read
 	 prompt
 	 'lep::completing-read-complete
 	 nil
@@ -532,7 +547,7 @@ beginning of words in target symbols."
     (ecase what
       ((nil) completion)
       ((t) (mapcar (function cdr) alist))
-      (lambda (not (not alist))))))
+      (lambda (eq completion t)))))
 
 (defun lep::show-clman (string)
   (if string 
