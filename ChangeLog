@@ -7,6 +7,21 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.pre-beta.13
+
+Fri Dec 19 16:22:11 1997    <layer@HOBART>
+
+    removed files:
+	* make.bat
+	* makefile.win32
+    changed files:
+	* Makefile: make it work on Windows
+	* fi-modes.el: new fi:auto-fill to appease the gathering crowd.
+	* fi-subproc.el: fi:common-lisp: make sure lep isn't running
+	before trying to make a new connection
+	* UserGuide.n: document fi:auto-fill
+
+*******************************************************************************
 2.0.21.pre-beta.12
 
 Thu Dec 18 10:36:03 1997  Kevin Layer  <layer@ultra>

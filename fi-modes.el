@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-modes.el,v 1.69 1997/02/27 17:34:13 layer Exp $
+;; $Id: fi-modes.el,v 1.70 1997/12/20 00:25:48 layer Exp $
 
 ;;;; Mode initializations
 
@@ -52,6 +52,10 @@ effect.")
 
 (defvar fi:lisp-do-indentation t
   "*When non-nil, do FI-style indentation in Lisp modes.")
+
+(defvar fi:auto-fill nil
+  "*When non-nil, and fi:lisp-do-indentation is non-nil, turn on auto-fill
+mode in Lisp editing modes.")
 
 (defvar fi:subprocess-mode nil
   "Non-nil when buffer has a subprocess.")
@@ -349,14 +353,14 @@ any other mode setup."
 
   (if fi:lisp-do-indentation
       (progn
-	(setq fill-column 75)
-	(auto-fill-mode 1)
-	
 	(make-local-variable 'fill-paragraph-function)
 	(setq fill-paragraph-function 'fi:fill-paragraph)
-
-	(make-local-variable 'auto-fill-function)
-	(setq auto-fill-function 'fi::do-auto-fill)
+	
+	(when fi:auto-fill
+	  (setq fill-column 75)
+	  (auto-fill-mode 1)
+	  (make-local-variable 'auto-fill-function)
+	  (setq auto-fill-function 'fi::do-auto-fill))
   
 	(make-local-variable 'indent-line-function)
 	(setq indent-line-function 'fi:lisp-indent-line)

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.133 1997/12/11 00:55:31 layer Exp $
+# $Id: Makefile,v 1.134 1997/12/20 00:25:47 layer Exp $
 # This makefile requires GNU make.
 
 include version.mak
@@ -6,17 +6,20 @@ include version.mak
 # for some system V machines:
 SHELL = /bin/sh
 
+ifeq ($(OS),Windows_NT)
+emacs = /d/emacs-19.34/bin/emacs.exe
+pwd = $(shell ../bin/pwd)
+else
+has_xemacs = t
+endif
+
 ifndef emacs
 emacs = emacs
 endif
 
-ifdef emacs_pwd
-pwd = $(emacs_pwd)
-else
-pwd = pwd
+ifndef pwd
+pwd = $(shell pwd)
 endif
-
-has_xemacs = t
 
 xemacs = xemacs
 
@@ -25,9 +28,9 @@ default:	fi-vers.el compile
 all:	fi-vers.el compile test.out tags docs
 
 compile:	fi-vers.el
-	$(emacs) -nw -batch -q -l `$(pwd)`/fi-compile.el -kill
+	$(emacs) -nw -batch -q -l $(pwd)/fi-compile.el -kill
 ifeq ($(has_xemacs),t)
-	$(xemacs) -nw -batch -q -l `$(pwd)`/fi-xcompile.el -kill
+	$(xemacs) -nw -batch -q -l $(pwd)/fi-xcompile.el -kill
 endif
 
 fi-vers.el: Makefile version.mak

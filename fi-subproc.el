@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.196 1997/12/18 03:01:12 layer Exp $
+;; $Id: fi-subproc.el,v 1.197 1997/12/20 00:25:48 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -532,7 +532,7 @@ be a string. Use the 6th argument for image file."))
 			  (cd dir)
 			(error nil))))))
 	       local host directory)))))
-    (when (on-ms-windows)
+    (when (and (on-ms-windows) (not (fi::lep-open-connection-p)))
       (fi::start-backdoor-interface proc)
       (fi::ensure-lep-connection)
       (condition-case ()
