@@ -1,7 +1,7 @@
 
 	      Franz Inc. GNU Emacs/Common Lisp Interface
 
-$Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.6 1988/04/26 09:25:47 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.7 1988/04/26 18:27:36 layer Exp $
 
 This document is a specification of the Franz Inc. GNU Emacs interface
 to Common Lisp, which is written entirely in GNU Emacs Lisp (for GNU
@@ -14,12 +14,6 @@ Lisp environment.  To this end, GNU Emacs and Lisp have been tightly
 coupled, and in the case of Sun Common Lisp 3.0 (or Allegro CL 3.0)
 the interface uses TCP/IP UNIX domain sockets.
 
-   Aside from the Lisp interface proper, this package provides useful
-features for subprocess manipulation, including an input ring for
-handy retrieval of previously-typed input, filename completion,
-special handling of certain subprocess-specific keys (e.g., ^C or ^D),
-and continuously showing output from a subprocess in a visible buffer.
-
    While editing Lisp source code, there are commands that make it
 easy to send expressions to, and receive information from, a Lisp
 process.  For example: a function can be sent to Lisp from a source
@@ -27,31 +21,42 @@ buffer, a form in a Lisp source buffer can be macroexpanded, and
 source for functions defined by loading files into Lisp may be found
 via "ESC ." in Emacs.
 
-   For the bindings set-up in the editing modes to be useful, there
-must be a Lisp to which Emacs can communicate.  In this area the
-interface can be broken down into three parts, which allow users to
-run an inferior Lisp process in an Emacs buffer, create an Emacs
-buffer onto an existing Lisp process via a TCP/IP socket, and query
-the Lisp environment for information which can be used in the Emacs
-environment (also using TCP/IP sockets).
+   For the bindings set up in the editing modes to be useful, there must
+be a Lisp to which Emacs can communicate.  In this area the interface
+can be broken down into three parts: an enhanced mode for running an
+inferior Lisp process in an Emacs buffer, a new mode that creates an
+Emacs buffer onto an existing Lisp process via a TCP/IP socket, and
+mechanisms to query the Lisp environment for information which can be
+used in the Emacs environment (also using TCP/IP sockets).
 
    Running an inferior Lisp in an Emacs buffer is not new--Emacs
-currently supports this--and allows users to interact directly with
-Lisp while editing Lisp source code.  The addition this package has
-made is in the area of subprocess management.
+supports this `off the shelf.'  This feature allows users to interact
+directly with Lisp while editing Lisp source code.  Although the
+existing inferior Lisp mode has been enhanced and a new mode added to
+support socket connections to Lisp, the most significant contribution of
+this package is in offering tighter coupling of the Lisp and Emacs
+environments and in providing better subprocess management tools.
 
-   By using the Lisp scheduler and multiprocessing (Lisp processes
-share everything but execution stack), an Emacs buffer can be opened
-onto a Lisp not started as an inferior to Emacs--now this is new!
-This connection uses TCP/IP sockets (UNIX or internet domain), which
-in turn means that Emacs can talk to Lisp on any machine which is
-reachable on the network.
+   By taking advantage of Lisp multiprocessing, an Emacs buffer can be
+opened onto a Lisp not started as a subprocess of Emacs.  This
+connection uses TCP/IP sockets (UNIX or internet domain), which in turn
+means that Emacs can talk to a Lisp running on any machine on the
+network.  Sockets and multiprocessing also mean that one can establish
+more than one connection between Lisp and Emacs.
 
-   This socket connection to Lisp is then used to further integrate
-the two environments.  Loading a file into Lisp enables Emacs to know
-where the source definition for a symbol is located!  Up to the minute
-arglist, function documentation, and macroexpansions are available
-from Emacs, information which is dynamically obtained from the Lisp.
+   These socket connections to Lisp are the key to the integration of
+the two environments.  Emacs uses a `back door' connection to exchange
+information with a Lisp process.  Users can obtain information about
+Lisp function argument lists and symbol documentation, macroexpand Lisp
+forms, and locate source definitions of Lisp symbols (which are recorded
+by Lisp when a symbol is defined, usually by loading a file).  All these
+features are accessible with a few keystrokes.
+
+   Aside from the Lisp interface proper, this package provides useful
+features for subprocess manipulation, including an input ring for
+handy retrieval of previously-typed input, filename completion,
+special handling of certain subprocess-specific keys (e.g., ^C or ^D),
+and continuously showing output from a subprocess in a visible buffer.
 
 2. Editing Lisp Source
 
@@ -61,22 +66,32 @@ are edited.  The filename extensions `.lisp' and `.cl' cause
 `fi:common-lisp-mode' to be invoked.  The important actions done by
 the two modes are (in order):
 
-	1. set-up local variables specific to the mode;
+	1. set up local variables specific to the mode;
 	2. check for package information;
-	3. set-up keymaps; and
+	3. set up keymaps; and
 	4. call hooks.
 
-The above functions are enhancements to the currently available GNU
+The above functions are enhancements to the standard available GNU
 Emacs Lisp mode.
+
+2.1 Bindings
 
+   The key bindings for Common Lisp mode are set up only once, the
+first time the mode is entered, and are taken from the variable
+`fi:common-lisp-mode-map'.  Users wanting to change the bindings could
+explicitly set this variable or augment the map from within the hooks
+for the mode.
 
-2.1 Buffer-Local Variables
+   The initial local bindings for Common Lisp mode are:
 
-   All local variables are killed when a mode is entered--this is a
+%mode: fi:common-lisp-mode
+%% fi:common-lisp-mode-map
+
+2.2 Variables
+
+   All local variables are killed when the mode is entered--this is a
 convention to insure that there are no name conflicts with user
 variables.
-
-2.2 Package Set-up
 
    To correctly deal with the Common Lisp package system, Emacs must
 know the package for each file, so that it may use this when sending
@@ -102,25 +117,19 @@ there are three ways to automatically set this variable:
      fi:package:
 
 	^L
-	Local Variables: **
-	eval: (setq fi:package "inthelastpage") **
-	End: **
+	;; Local Variables:
+	;; eval: (setq fi:package "excl")
+	;; End:
 
      Note that the normal method for setting a variable will not work,
      because `fi:package' contains a `:' and this confuses the GNU
-     Emacs' standard parsers for local variables.
+     Emacs, hence the use of `eval'.
 
-2.3 Keymaps
+2.3 Functions
 
-   The keymaps are set-up only once, the first time a mode is entered.
-The name of the variable that has the value of the keymap for a given
-mode is obtained by adding the suffix `-map' to the name of the mode
-function.
+   The following functions are either bound to keys in Common Lisp
+mode or are available as extended commands:
 
-   The initial local bindings for Common Lisp mode are:
-
-%mode: fi:common-lisp-mode
-%% fi:common-lisp-mode-map
 %% fi:lisp-reindent-newline-indent
 %% fi:lisp-eval-region
 %% fi:lisp-eval-last-sexp
@@ -138,65 +147,29 @@ require the TCP/IP communication channel to Lisp:
 %% fi:lisp-macroexpand
 %% fi:lisp-walk
 
-   On a per-buffer basis, the following function may be used to tell
-Emacs where to send Lisp expressions for the above interactive
-commands:
-
 %% fi:set-associated-sublisp
-
-
-2.4 Hooks
+
+2.3 Hooks
 
    The hooks run for Common Lisp mode are fi:lisp-mode-hook and
-fi:common-lisp-mode-hook.  They are done last during mode initialization.
+fi:common-lisp-mode-hook.  They are done last during mode
+initialization.  For example, the following hook enables auto-fill
+in Common Lisp mode:
+
+    (setq fi:lisp-mode-hook
+      '(lambda ()
+	(setq fill-column 75)
+	(make-local-variable 'auto-fill-hook)
+	(setq auto-fill-hook 'lisp-do-auto-fill)))
 
 3. Running Lisp
 
-   The following commands make a buffer through which Emacs and Lisp
-interact:
-
-%mode: fi:inferior-common-lisp-mode
-%% fi:common-lisp
-%% fi:another-common-lisp
-
-   The name of the Common Lisp image to activate for an inferior Lisp
-is taken from the following variables:
-
-%% fi:explicit-common-lisp-file-name
-%% fi:default-common-lisp-file-name
-
-   After the image name as been determined and the process has been
-started, a file in the user's home directory called .emacs_<IMAGE> is
-fed to the newly created process.  This could be used to customize a
-initialization file on the name of the Lisp binary.
-
-   The command line arguments passed to the activated image are taken
-from the following variables:
-
-%% fi:default-common-lisp-image-arguments
-%% fi:explicit-common-lisp-image-arguments
-
-   The prompt pattern for the inferior Lisp is taken from a variable
-with the name `fi:<IMAGE>-prompt-pattern' or from the following:
-
-%% fi:common-lisp-prompt-pattern
-
-
-
-   Superkeys are keys that are handled specially at the end of a
-buffer.  At the end of a buffer it has a buffer-specific meaning, but
-anywhere else in the buffer it has the normal global meaning (obtained
-by looking the key up in the global keymap).  This way, ^D can send an
-EOF to the Lisp process at the end of a buffer but invoke delete-char
-("delete character") anywhere else.
+   In this section are described the features, functions and key
+bindings of the ways the user can interact with Common Lisp:
+subprocesses and TCP/IP sockets.
  
-   Superkeys for this mode are taken from the bindings contained in
-value of the variable `fi:inferior-common-lisp-mode-super-key-map',
-which must be a keymap.
-
-   Superkeys are turned off by default.
-
-%% fi:subprocess-enable-superkeys
+
+3.1 Bindings
 
    The initial local bindings for Inferior Common Lisp mode are:
 
@@ -208,10 +181,75 @@ and for the TCP Lisp mode:
 %mode: fi:tcp-lisp-mode
 %% fi:tcp-lisp-mode-map
 
+   Superkeys are keys that are handled specially at the end of a
+buffer.  At the end of a buffer it has a buffer-specific meaning, but
+anywhere else in the buffer it has the normal global meaning (obtained
+by looking the key up in the global keymap).  This way, ^D can send an
+EOF to the Lisp process at the end of a buffer but invoke delete-char
+("delete character") anywhere else.
+ 
+   The values of `fi:inferior-common-lisp-mode-super-key-map' and
+`fi:tcp-lisp-mode-super-key-map' are used as superkey maps for
+Inferior Common Lisp and TCP Lisp modes.
+   
+   Superkeys are turned off by default.
+
+3.2 Variables
 
-   The following functions are bound in both the above modes:
+   The name of the Common Lisp image to activate for an inferior Lisp
+is taken from the following variables:
+
+%% fi:explicit-common-lisp-file-name
+%% fi:default-common-lisp-file-name
+
+   After the image name as been determined and the process has been
+started, a file in the user's home directory called .emacs_<IMAGE>,
+where <IMAGE> is the image name, is fed to the newly created process.
+This could be used to customize a initialization file on the name of
+the Lisp binary.
+
+   The command-line arguments passed to the activated image are taken
+from the following variables:
+
+%% fi:default-common-lisp-image-arguments
+%% fi:explicit-common-lisp-image-arguments
+
+   The prompt pattern for the inferior Lisp is taken from a variable
+with the name `fi:<IMAGE>-prompt-pattern' or from the following:
+
+%% fi:common-lisp-prompt-pattern
+
+%% fi:subprocess-enable-superkeys
+
+   The following variables are used in TCP Lisp mode:
+
+%% fi:unix-domain
+%% fi:unix-domain-socket
+%% fi:excl-service-name
+%% fi:local-host-name
+%% fi:source-info-not-found-hook
+
+   The following are miscellaneous subprocess variables:
+
+%% fi:default-input-ring-max
+%% fi:shell-token-pattern
+%% fi:subprocess-continuously-show-output-in-visible-buffer
+
+   The following three variables are used to track the shell commands
+which change the current working directory.  For Common Lisp, the
+aliases in Appendix A together with these variables will allow Common
+Lisp to emulate the shell commands and for Emacs to track them:
+
+%% fi:shell-cd-regexp
+%% fi:shell-popd-regexp
+%% fi:shell-pushd-regexp
+
+3.3 Functions
 
 %mode: fi:inferior-common-lisp-mode
+%% fi:common-lisp
+%% fi:another-common-lisp
+
 %% fi:inferior-lisp-newline
 %% fi:shell-file-name-completion
 %% fi:subprocess-kill-input
@@ -248,31 +286,44 @@ following functions retrieve input and manipulate the ring:
 %% fi:list-input-ring
 %% fi:re-search-backward-input
 %% fi:re-search-forward-input
-%% fi:input-region
+
+3.4 Hooks
 
-   The following variables are used in TCP Lisp mode:
+   The hooks run at the end of Inferior Common Lisp mode
+initialization are:
 
-%% fi:unix-domain
-%% fi:unix-domain-socket
-%% fi:excl-service-name
-%% fi:local-host-name
-%% fi:source-info-not-found-hook
+	fi:lisp-mode-hook
+	fi:subprocess-mode-hook
+	fi:inferior-common-lisp-mode-hook
 
-   The following are miscellaneous subprocess variables:
+and for TCP Lisp mode are:
 
-%% fi:default-input-ring-max
-%% fi:shell-token-pattern
-%% fi:subprocess-continuously-show-output-in-visible-buffer
+	fi:lisp-mode-hook
+	fi:subprocess-mode-hook
+	fi:tcp-lisp-mode-hook
+
+4. Using this Package
 
-   The following three variables are used to track the shell commands
-which change the current working directory.  For Common Lisp, the
-aliases in Appendix A together with these variables will allow Common
-Lisp to emulate the shell commands and for Emacs to track them:
+   The files are contained in the directory `fi', which is meant to be
+put in the `emacs/lisp' directory.  If this is the case, then the
+following expression in the file .emacs will load this package:
 
-%% fi:shell-cd-regexp
-%% fi:shell-popd-regexp
-%% fi:shell-pushd-regexp
+	(load "fi/site-init.el")
 
+Note that the byte-compiled files in this directory were compiled with
+version 18.50, and may not work with other versions of GNU Emacs.
+
+   To use the TCP/IP related features, the following should be added
+to the file ~/.clinit.cl:
+
+
+      (if (or (find-package :ipc)
+	      (errorset (load "ipc.fasl")))
+	  (funcall (find-symbol "start-lisp-listener-daemon"
+				(find-package :ipc))))
+
+This will load and start the Lisp multiprocessing system and then
+start a Lisp process that waits for connections from Emacs.
 
 			      APPENDIX A
 			       Examples
@@ -388,6 +439,11 @@ current working directory of the inferior Lisp process:
 
 B.1 Introduction
 
+   Franz Lisp is handled very similar to Common Lisp, the only
+difference being that Franz Lisp does not support TCP/IP socket
+communication.  In all other ways, the features, function and variable
+names mirror that of the Common Lisp functions and variables.
+
 B.2 Editing Franz Lisp Source
 
    As with Common Lisp, editing a Franz Lisp source file (.l
@@ -398,24 +454,51 @@ setup in the mode follows that of fi:common-lisp-mode.
 
    Franz Lisp does not support the commands depending on TCP/IP.
 
-   The mode function and keymap:
+B.2.1 Bindings
 
 %mode: fi:franz-lisp-mode
 %% fi:franz-lisp-mode-map
 
+B.2.2 Variables
+
+   The buffer-local variable fi:package is set up as in
+fi:common-lisp-mode.
+
+B.2.3 Functions
+
+   The functions in the keymaps are a subset of those in Common Lisp
+mode--refer to the main document for a description of those commands.
+
+B.2.4 Hooks
+
    The hooks run are fi:lisp-mode-hook and fi:franz-lisp-mode-hook,
 and are done last in the mode initialization.
+
+B.3 Running Franz Lisp
 
-   The commands for starting up Franz Lisp processes:
+B.3.1 Bindings
 
 %mode: fi:inferior-franz-lisp-mode
+%% fi:inferior-franz-lisp-mode-map
+
+B.3.2 Variables
+
+%% fi:explicit-franz-lisp-file-name
+%% fi:default-franz-lisp-file-name
+%% fi:explicit-franz-lisp-image-arguments
+%% fi:default-franz-lisp-image-arguments
+%% fi:franz-lisp-prompt-pattern
+
+B.3.3 Functions
+
 %% fi:franz-lisp
 %% fi:another-franz-lisp
-%% fi:franz-lisp-prompt-pattern
-%% fi:default-franz-lisp-file-name
-%% fi:default-franz-lisp-image-arguments
-%% fi:explicit-franz-lisp-file-name
-%% fi:explicit-franz-lisp-image-arguments
-%% fi:inferior-franz-lisp-mode
-%% fi:inferior-franz-lisp-mode-map
-%% fi:inferior-franz-lisp-mode-super-key-map
+
+B.3.3 Hooks
+
+   The following hooks are run when starting up an inferior Franz
+Lisp:
+
+	fi:lisp-mode-hook
+	fi:subprocess-mode-hook
+	fi:inferior-franz-lisp-mode-hook
