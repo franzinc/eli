@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.42 1991/03/15 12:42:51 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.43 1991/05/28 16:17:20 layer Exp $
 
 ;;;; Mode initializations
 
@@ -229,6 +229,20 @@ any other mode setup."
   (setq fi:lisp-indent-hook-property 'fi:common-lisp-indent-hook)
   (run-hooks 'fi:lisp-mode-hook 'fi:common-lisp-mode-hook))
 
+(defun lisp-mode (&optional mode-hook)
+  "See fi:common-lisp-mode.  This function is here so that set-auto-mode
+will go into the FI Common Lisp mode when ``mode: lisp'' appears in
+the file modeline."
+  (interactive)
+  (fi:common-lisp-mode mode-hook))
+
+(defun common-lisp-mode (&optional mode-hook)
+  "See fi:common-lisp-mode.  This function is here so that set-auto-mode
+will go into the FI Common Lisp mode when ``mode: common-lisp'' appears in
+the file modeline."
+  (interactive)
+  (fi:common-lisp-mode mode-hook))
+
 (defun fi:franz-lisp-mode (&optional mode-hook)
   "Major mode for editing Lisp code to run in Franz Lisp.
 The keymap for this mode is bound to fi:franz-lisp-mode-map:
@@ -403,57 +417,6 @@ package."
 	(setq fi:package "user")
 	(message "using default package specification of `%s'" fi:package))
     (message "package specification is `%s'" fi:package)))
-
-(defun set-auto-mode ()
-  "Select major mode appropriate for current buffer.
-May base decision on visited file name (See variable  auto-mode-list)
-or on buffer contents (-*- line or local variables spec), but does not look
-for the \"mode:\" local variable.  For that, use  hack-local-variables."
-  ;; Look for -*-MODENAME-*- or -*- ... mode: MODENAME; ... -*-
-  (let (beg end mode)
-    (save-excursion
-      (goto-char (point-min))
-      (skip-chars-forward " \t\n")
-      (if (and (search-forward "-*-" (save-excursion (end-of-line) (point)) t)
-	       (progn
-		 (skip-chars-forward " \t")
-		 (setq beg (point))
-		 (search-forward "-*-" (save-excursion (end-of-line) (point)) t))
-	       (progn
-		 (forward-char -3)
-		 (skip-chars-backward " \t")
-		 (setq end (point))
-		 (goto-char beg)
-		 (if (search-forward ":" end t)
-		     (progn
-		       (goto-char beg)
-		       (if (let ((case-fold-search t))
-			     (search-forward "mode:" end t))
-			   (progn
-			     (skip-chars-forward " \t")
-			     (setq beg (point))
-			     (if (search-forward ";" end t)
-				 (forward-char -1)
-			       (goto-char end))
-			     (skip-chars-backward " \t")
-			     (setq mode (buffer-substring beg (point))))))
-		   (setq mode (buffer-substring beg end)))))
-	  (progn
-	    (setq mode (downcase mode))
-	    (if (or (equal mode "lisp") (equal mode "common-lisp"))
-		(setq mode "fi:common-lisp"))
-	    (funcall (intern (concat mode "-mode"))))
-	(let ((alist auto-mode-alist)
-	      (name buffer-file-name))
-	  (let ((case-fold-search (eq system-type 'vax-vms)))
-	    ;; Remove backup-suffixes from file name.
-	    (setq name (file-name-sans-versions name))
-	    ;; Find first matching alist entry.
-	    (while (and (not mode) alist)
-	      (if (string-match (car (car alist)) name)
-		  (setq mode (cdr (car alist))))
-	      (setq alist (cdr alist))))
-	  (if mode (funcall mode)))))))
 
 ;;;;
 ;;; Initializations
