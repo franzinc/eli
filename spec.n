@@ -1,7 +1,7 @@
 				    
 	      Franz Inc. GNU Emacs/Common Lisp Interface
 
-$Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.11 1988/04/27 10:29:58 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.12 1988/05/12 10:19:36 layer Exp $
 
 This document is a specification of the Franz Inc. GNU Emacs interface
 to Common Lisp, which is written entirely in GNU Emacs Lisp (for GNU
@@ -228,6 +228,7 @@ require the TCP/IP communication channel to Lisp:
 %% fi:lisp-function-documentation
 %% fi:lisp-macroexpand
 %% fi:lisp-walk
+%% fi:lisp-who-calls
 
 %% fi:set-associated-sublisp
 
@@ -254,9 +255,9 @@ overview of the entry points to these modes.
 	M-x fi:common-lisp
 
 will start up an inferior Common Lisp in a buffer called
-`*common-lisp*'.  The image activated by Emacs depends of the values
-of `fi:explicit-common-lisp-file-name' and
-`fi:default-common-lisp-file-name', in this order.
+`*common-lisp*'.  The image activated by Emacs is taken from the value
+of the symbol `fi:common-lisp-image-name' and the arguments from the
+value of the symbol `fi:common-lisp-image-arguments'.
 
    After an inferior Lisp has been started, as in the above example,
 the following can be evaluated by the newly created Lisp process to
@@ -266,24 +267,22 @@ initiate a Lisp listener daemon to which Emacs can connect:
 	(ipc:start-lisp-listener-daemon)
 
 Then after the above listener daemon is started, the following command
-to Emacs will open a second buffer onto the same Lisp (giving a prefix
-argument to `fi:another-common-lisp'):
+to Emacs will open a second buffer onto the same Lisp:
 
-	C-u M-x fi:another-common-lisp
+	M-x fi:tcp-lisp
 
 The resulting internal Lisp `lightweight' process will be talking to
 Emacs over a TCP/IP socket via a UNIX domain socket (using the file
-~/.excl_to_emacs).  The following command would create a separate Lisp
-process in a new buffer (called `*common-lisp-3*' if all the above
-commands were evaluated first):
+~/.excl_to_emacs).  The following command creates a separate Lisp
+process in a new buffer (called `*common-lisp-2*'):
 
-	M-x fi:another-common-lisp
+	C-u 2 M-x fi:common-lisp
 
    To connect to a Lisp on another machine, say `akbar', using TCP/IP,
 put the following in ~/.emacs on the local machine
 
 	(setq fi:unix-domain nil)
-	(setq fi:local-host-name "akbar")	   ; the remote host name
+	(setq fi:local-host-name "akbar")	; the remote host name
 
 and start emacs.  On `akbar', put this in ~/.clinit.cl
 
@@ -293,25 +292,18 @@ and start emacs.  On `akbar', put this in ~/.clinit.cl
 
 and start a Common Lisp.  Now on the local machine, this
 
-	C-u M-x fi:common-lisp
+	M-x fi:tcp-lisp
 
 will open a connection to the Lisp on `akbar'.  NOTE: this assumes
 that on both the local machine and on `akbar' /etc/services has an
 entry or the service named `excl' and that the port number is the same
 on both machines (the default in Emacs and Lisp is 1123).
 
-   It is also possible to use inferior Lisp mode with a remote Lisp
-process by modifying the Emacs variables `fi:explicit-common-lisp-file-name'
-and `fi:explicit-common-lisp-image-arguments'.  For example, typing the
-following to Emacs will start a Lisp process on host `akbar'.
+   It is also possible to run Common Lisp on another machine.  For
+example, typing the following to Emacs will start a Lisp process on
+host `akbar':
 
-	M-x set-variable RET
-	fi:explicit-common-lisp-file-name RET
-	"rsh" RET
-	M-x set-variable RET
-	fi:explicit-common-lisp-image-arguments RET
-	'("akbar" "cl") RET
-	M-x fi:another-common-lisp
+	M-x fi:remote-common-lisp
 
 3.1 Bindings
 
@@ -322,8 +314,8 @@ following to Emacs will start a Lisp process on host `akbar'.
 
 and for the TCP Lisp mode:
 
-%mode: fi:tcp-lisp-mode
-%% fi:tcp-lisp-mode-map
+%mode: fi:tcp-common-lisp-mode
+%% fi:tcp-common-lisp-mode-map
 
    Superkeys are keys that are handled specially at the end of a
 buffer.  At the end of a buffer it has a buffer-specific meaning, but
@@ -333,7 +325,7 @@ EOF to the Lisp process at the end of a buffer but invoke delete-char
 ("delete character") anywhere else.
  
    The values of `fi:inferior-common-lisp-mode-super-key-map' and
-`fi:tcp-lisp-mode-super-key-map' are used as superkey maps for
+`fi:tcp-common-lisp-mode-super-key-map' are used as superkey maps for
 Inferior Common Lisp and TCP Lisp modes.
    
    Superkeys are turned off by default.
@@ -343,11 +335,10 @@ Inferior Common Lisp and TCP Lisp modes.
    The name of the Common Lisp image to activate for an inferior Lisp
 is taken from the following variables:
 
-%% fi:explicit-common-lisp-file-name
-%% fi:default-common-lisp-file-name
+%% fi:common-lisp-image-name
 
 NOTE: The Sun Common Lisp 3.0 binary is called `lisp', not `cl'
-      which is the initial value of `fi:default-common-lisp-file-name'.
+      which is the initial value of `fi:common-lisp-image-name'.
 
    After the image name as been determined and the process has been
 started, a file in the user's home directory called .emacs_<IMAGE>,
@@ -358,8 +349,7 @@ the Lisp binary.
    The command-line arguments passed to the activated image are taken
 from the following variables:
 
-%% fi:default-common-lisp-image-arguments
-%% fi:explicit-common-lisp-image-arguments
+%% fi:common-lisp-image-arguments
 
    The prompt pattern for the inferior Lisp is taken from a variable
 with the name `fi:<IMAGE>-prompt-pattern' or from the following:
@@ -395,7 +385,11 @@ Lisp to emulate the shell commands and for Emacs to track them:
 
 %mode: fi:inferior-common-lisp-mode
 %% fi:common-lisp
-%% fi:another-common-lisp
+%% fi:explicit-common-lisp
+%% fi:remote-common-lisp
+%% fi:explicit-remote-common-lisp
+%% fi:tcp-common-lisp
+%% fi:explicit-tcp-common-lisp
 
 %% fi:inferior-lisp-newline
 %% fi:shell-file-name-completion
@@ -415,11 +409,11 @@ interrupt, kill or input an end-of-file to the Lisp process:
 %% fi:subprocess-kill
 %% fi:subprocess-send-eof
 
-   The following three functions are used in fi:tcp-lisp-mode to
+   The following three functions are used in fi:tcp-common-lisp-mode to
 interrupt, kill and input an end-of-file to the Lisp process at the
 other end of the TCP/IP socket:
 
-%mode: fi:tcp-lisp-mode
+%mode: fi:tcp-common-lisp-mode
 %% fi:tcp-lisp-interrupt-process
 %% fi:tcp-lisp-kill-process
 %% fi:tcp-lisp-send-eof
@@ -447,7 +441,7 @@ and for TCP Lisp mode are:
 
 	fi:lisp-mode-hook
 	fi:subprocess-mode-hook
-	fi:tcp-lisp-mode-hook
+	fi:tcp-common-lisp-mode-hook
 
 4. Using this Package
 
@@ -455,14 +449,13 @@ and for TCP Lisp mode are:
 put in the `emacs/lisp' directory.  If this is the case, then the
 following expression in the file .emacs will load this package:
 
-	(load "fi/site-init.el")
+      (load "fi/site-init.el")
 
 Note that the byte-compiled files in this directory were compiled with
 version 18.50, and may not work with other versions of GNU Emacs.
 
    To use the TCP/IP related features, the following should be added
 to the file ~/.clinit.cl:
-
 
       (or (find-package :ipc) (load "ipc.fasl"))
       (ipc:start-lisp-listener-daemon)
@@ -483,15 +476,7 @@ this document:
     ;; turn on superkeys in subprocess modes
     (setq-default fi:subprocess-enable-superkeys t)
 
-A.2 Remote Lisps
-
-   To start a remote Common Lisp called `cl' on machine `akbar', put
-the following in ~/.emacs:
-
-    (setq explicit-common-lisp-file-name "rsh")
-    (setq explicit-common-lisp-image-arguments '("akbar" "cl"))
-
-A.3 X11R2
+A.2 X11R2
 
     ;; Put the this text in ~/.emacs to play with these
     ;; toy mouse bindings when using Emacs compiled with the X window
@@ -530,7 +515,7 @@ A.3 X11R2
 			      APPENDIX A
 			       Examples
 
-A.4 Allegro CL top-level alias example
+A.3 Allegro CL top-level alias example
 
    Putting the following expressions into ~/.clinit.cl will allow
 emacs, for buffers in fi:inferior-common-lisp-mode, to track the
@@ -615,7 +600,7 @@ and are done last in the mode initialization.
 B.3 Running Franz Lisp
 
    As with Common Lisp, there are two entry points for running an
-inferior Franz Lisp. `M-x fi:franz-lisp' and `M-x fi:another-franz-lisp' 
+inferior Franz Lisp. `M-x fi:franz-lisp' and `M-x fi:explicit-franz-lisp'
 create Franz Lisp processes.  The default name of the Franz Lisp image
 is `lisp'.
 
@@ -626,16 +611,14 @@ B.3.1 Bindings
 
 B.3.2 Variables
 
-%% fi:explicit-franz-lisp-file-name
-%% fi:default-franz-lisp-file-name
-%% fi:explicit-franz-lisp-image-arguments
-%% fi:default-franz-lisp-image-arguments
+%% fi:franz-lisp-image-name
+%% fi:franz-lisp-image-arguments
 %% fi:franz-lisp-prompt-pattern
 
 B.3.3 Functions
 
 %% fi:franz-lisp
-%% fi:another-franz-lisp
+%% fi:explicit-franz-lisp
 
 B.3.3 Hooks
 
