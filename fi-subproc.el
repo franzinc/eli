@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.208 2000/06/26 20:15:34 layer Exp $
+;; $Id: fi-subproc.el,v 1.208.30.1 2001/01/03 18:03:25 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -256,6 +256,10 @@ buffer.")
 (make-variable-buffer-local 'fi::prompt-pattern)
 
 (defvar fi:franz-lisp-directory)
+
+(defconst fi:subprocess-max-buffer-lines nil
+  "*If non-nil, keep buffers created by fi:common-lisp, et al to a maximum
+of this number of lines when inserting new output.")
 
 ;;;;;;;;;;;;;;;;;;;;;; lisp mode specific internal variables
 
@@ -1291,9 +1295,20 @@ This function implements continuous output to visible buffers."
 	      (set-window-point window-of-buffer old-point)))
 	(goto-char new-point))
       (cond
-       (in-buffer nil)
+       (in-buffer
+	(when fi:subprocess-max-buffer-lines (fi:truncate-buffer))      
+	nil)
        (stay old-buffer)
        (t (set-buffer old-buffer))))))
+
+(defun fi:truncate-buffer ()
+  "Truncate the buffer to `fi:subprocess-max-buffer-lines'."
+  (interactive)
+  (save-excursion
+    (goto-char (process-mark (get-buffer-process (current-buffer))))
+    (forward-line (- fi:subprocess-max-buffer-lines))
+    (beginning-of-line)
+    (delete-region (point-min) (point))))
 
 (defun fi::buffer-number-to-buffer (name number)
   (if (string-match "^\\(.*\\)<[0-9]+>$" name)
