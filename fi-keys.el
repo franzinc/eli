@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.79 1992/09/17 10:49:09 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.80 1993/03/23 10:14:04 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -129,6 +129,8 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
 	(define-key map ";"		'fi:lisp-semicolon)
 	(define-key map "\t"		'fi:lisp-indent-line)
 	(define-key map "\e\C-q"	'fi:indent-sexp))
+    ;;not sure if the following should be added:
+    ;;   (lisp-mode-commands map)
     (define-key map "\t"		'lisp-indent-line)
     (define-key map "\e\C-q"		'indent-sexp))
 
