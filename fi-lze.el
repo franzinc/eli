@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.21 1992/01/16 11:09:39 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.22 1992/01/17 11:21:21 layer Exp $
 ;;
 ;; Code the implements evaluation in via the backdoor
 
@@ -51,10 +51,11 @@
 ;;;;;;;;;;;;;
 
 (defvar fi:lisp-evals-always-compile nil
-  "*If non-nil, then the fi:lisp-eval-or-compile-* functions will compile
-the form in the Lisp environment, regardless of the presence of a prefix
-argument to these functions, which is what normally determines whether a
-form is compiled.")
+  "*This variable controls whether or not the fi:lisp-eval-or-compile-*
+functions will compile or evaluated when those functions are not given a
+prefix argument.  If non-nil, then compilation is the default, otherwise
+evaluation is the default.  When one is the default, the other
+functionality can be invoked by using a prefix argument.")
 
 (defun fi:lisp-eval-or-compile-defun (compilep)
   "Send the current top-level (or nearest previous) form to the Lisp
@@ -62,7 +63,8 @@ subprocess associated with this buffer.  A `top-level' form is one that
 starts in column 1.  With a prefix argument, the source sent to the
 subprocess is compiled."
   (interactive "P")
-  (if (or compilep fi:lisp-evals-always-compile)
+  (if (or (and fi:lisp-evals-always-compile (null compilep))
+	  (and (null fi:lisp-evals-always-compile) compilep))
       (fi:lisp-compile-defun)
     (fi:lisp-eval-defun)))
 
@@ -72,7 +74,8 @@ buffer, one expression at a time if there is more than one complete
 expression.  With a prefix argument, the source sent to the subprocess is
 compiled."
   (interactive "P")
-  (if (or compilep fi:lisp-evals-always-compile)
+  (if (or (and fi:lisp-evals-always-compile (null compilep))
+	  (and (null fi:lisp-evals-always-compile) compilep))
       (fi:lisp-compile-region)
     (fi:lisp-eval-region)))
 
@@ -81,7 +84,8 @@ compiled."
 this buffer.  With a prefix argument, the source sent to the subprocess is
 compiled."
   (interactive "P")
-  (if (or compilep fi:lisp-evals-always-compile)
+  (if (or (and fi:lisp-evals-always-compile (null compilep))
+	  (and (null fi:lisp-evals-always-compile) compilep))
       (fi:lisp-compile-last-sexp)
     (fi:lisp-eval-last-sexp)))
 
@@ -89,7 +93,8 @@ compiled."
   "Send the entire buffer to the Lisp subprocess associated with this
 buffer."
   (interactive "P")
-  (if (or compilep fi:lisp-evals-always-compile)
+  (if (or (and fi:lisp-evals-always-compile (null compilep))
+	  (and (null fi:lisp-evals-always-compile) compilep))
       (fi:lisp-compile-current-buffer)
     (fi:lisp-eval-current-buffer)))
 
