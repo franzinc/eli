@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.17 1991/05/28 16:18:43 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.18 1991/05/28 16:24:01 layer Exp $
 ;;
 
 (defconst fi::ss-help
@@ -52,7 +52,9 @@ Type SPACE to hide this help summary.
 ")
 
 (defconst fi:scan-stack-mode-map nil)
-(defconst fi:scan-stack-mode-display-help t)
+(defconst fi:scan-stack-mode-display-help t
+  "*If non-nil, then display help text at the beginning of the scan stack
+mode buffer.")
 
 ;;;;;
 
