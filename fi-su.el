@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-su.el,v 1.9 1991/06/19 22:16:22 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-su.el,v 1.10 1991/09/11 15:21:49 layer Exp $
 
 (defvar fi:su-mode-map nil
   "The su major-mode keymap.")
@@ -164,13 +164,14 @@ The host name is read from the minibuffer."
 Watch for the first shell prompt from the su, then send the
 string bound to fi:su-initial-input, and turn ourself off."
   (fi::subprocess-filter process output)
-  (switch-to-buffer (process-buffer process))
-  (cond ((string-match "assword" output)
-	 (setq password (fi::read-password))
-	 (send-string process (concat password "\n")))
-	(t (if (save-excursion (beginning-of-line)
-			       (looking-at subprocess-prompt-pattern))
-	       (progn
-		 (set-process-filter process 'fi::subprocess-filter)
-		 (if fi:su-initial-input
-		     (send-string process fi:su-initial-input)))))))
+  (save-excursion
+    (set-buffer (process-buffer process))
+    (cond ((string-match "assword" output)
+	   (setq password (fi::read-password))
+	   (send-string process (concat password "\n")))
+	  (t (if (save-excursion (beginning-of-line)
+				 (looking-at subprocess-prompt-pattern))
+		 (progn
+		   (set-process-filter process 'fi::subprocess-filter)
+		   (if fi:su-initial-input
+		       (send-string process fi:su-initial-input))))))))
