@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.22 1991/09/30 11:38:58 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.23 1991/10/01 19:32:00 layer Exp $
 
 ;;; Misc utilities
 
@@ -292,3 +292,89 @@ at the beginning of the line."
   (while (and (= 0 (progn (beginning-of-line) (forward-line 1)))
 	      (not (eobp)))
     (apply function args)))
+
+;; This is a pretty bad hack but it appears that within completing-read
+;; fi:package has the wrong value so we bind this variable to get around
+;; the problem.
+(defvar fi::original-package nil)
+
+(defun fi::get-default-symbol (prompt &optional up-p)
+  (let* ((symbol-at-point
+	  (fi::get-symbol-at-point up-p))
+	 (read-symbol
+	  (let ((fi::original-package fi:package))
+	    (if (fboundp 'epoch::mapraised-screen)
+		(epoch::mapraised-screen (minibuf-screen)))
+	    (completing-read
+	     (if symbol-at-point
+		 (format "%s: (default %s) " prompt symbol-at-point)
+	       (format "%s: " prompt))
+	     'fi::minibuffer-complete)))
+	 (symbol (if (string= read-symbol "")
+		     symbol-at-point
+		   read-symbol))
+	 (colonp (string-match ":?:" symbol nil)))
+    (list symbol)))
+
+(defun fi::get-symbol-at-point (&optional up-p)
+  (let ((symbol (condition-case ()
+		    (save-excursion
+		      (if up-p
+			  (let ((opoint (point)))
+			    (cond ((= (following-char) ?\()
+				   (forward-char 1))
+				  ((= (preceding-char) ?\))
+				   (forward-char -1)))
+			    (up-list -1)
+			    (forward-char 1)
+			    (if (looking-at "def")
+				(goto-char opoint)
+			      (if (looking-at "funcall\\|apply")
+				  (progn
+				    (forward-sexp 2)
+				    (backward-sexp 1)
+				    (if (looking-at "#'")
+					(forward-char 2)
+				      (if (looking-at "(function")
+					  (progn
+					    (forward-char 1)
+					    (forward-sexp 2)
+					    (backward-sexp 1)))))))))
+		      (while (looking-at "\\sw\\|\\s_")
+			(forward-char 1))
+		      (if (re-search-backward "\\sw\\|\\s_" nil t)
+			  (progn (forward-char 1)
+				 (buffer-substring
+				  (point)
+				  (progn (forward-sexp -1)
+					 (while (looking-at "\\s'")
+					   (forward-char 1))
+					 (point))))
+			nil))
+		  (error nil))))
+    (or symbol
+	(if (and up-p (null symbol))
+	    (fi::get-symbol-at-point)))))
+
+(defun fi::minibuffer-complete (pattern predicate what)
+  (let ((fi:package fi::original-package))
+    (let (package deletion)
+      (if (string-match ":?:" pattern)
+	  (setq package
+	    (concat
+	     ":" (substring pattern 0 (match-beginning 0)))
+	    deletion (substring pattern 0 (match-end 0))
+	    pattern
+	    (substring pattern (match-end 0))))
+      (let* ((alist
+	      (fi::lisp-complete-1 pattern package nil))
+	     (completion (and alist (try-completion pattern alist))))
+	(ecase what
+	  ((nil)
+	   (cond ((eq completion t) t)
+		 ((and alist (null (cdr alist)))
+		  (concat deletion (car (car alist))))
+		 (t (concat deletion completion))))
+	  ((t)
+	   (mapcar (function cdr) alist))
+	  (lambda (not (not alist))))))))
