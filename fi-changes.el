@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-changes.el,v 1.9 1992/08/19 07:14:45 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-changes.el,v 1.10 1992/09/17 10:48:57 layer Exp $
 ;;
 ;; Support for changed definitions
 
@@ -92,10 +92,11 @@ OLD-FILE."
   (find-file new-file)
   (let ((package fi:package))
     (fi::make-request
-     (scm::list-changed-definitions
-      :operation ':list
-      :old-file old-file
-      :new-file new-file)
+	(scm::list-changed-definitions
+	 :transaction-directory fi:emacs-to-lisp-transaction-directory
+	 :operation ':list
+	 :old-file old-file
+	 :new-file new-file)
      ((package) (changes)
       (if changes
 	  (fi::show-changes changes nil package)
