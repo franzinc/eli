@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.27 1988/05/12 22:55:32 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.28 1988/05/13 10:28:57 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -60,8 +60,8 @@ for `eval' commands."
 			major-mode)
 		   (let* ((alist '(("common-lisp" . fi:common-lisp-mode)
 				   ("franz-lisp" . fi:franz-lisp-mode)))
-			  (type (completing-read "Lisp type (? for help): "
-						 alist nil t nil)))
+			  (type (completing-read "Lisp type: "
+						 alist nil t "common-lisp")))
 		     (cdr (assoc type alist))))))
     (if process
 	(let ((buffers (buffer-list))
@@ -175,6 +175,18 @@ correct fi:package, of course."
 	  (switch-to-buffer-other-window (process-buffer sublisp-process))
 	  (goto-char (point-max))))))
 
+(defun fi::eval-string-send (string compile-file-p &optional always-pop-to-p)
+  "Send STRING to the sublisp, in the correct package, of course."
+  (fi::sublisp-select)
+  (let ((sublisp-process (get-process fi::sublisp-name)))
+    (fi::send-string-load
+     sublisp-process string fi:subprocess-map-nl-to-cr compile-file-p)
+    (fi::send-string-split sublisp-process "\n" fi:subprocess-map-nl-to-cr)
+    (if (or always-pop-to-p fi:pop-to-sublisp-buffer-after-lisp-eval)
+	(progn
+	  (switch-to-buffer-other-window (process-buffer sublisp-process))
+	  (goto-char (point-max))))))
+
 (defun fi::sublisp-select ()
   "Find a sublisp for eval commands to send code to.  Result stored in
 the variable fi::sublisp-name.  If fi::sublisp-name is set, and there is an
@@ -185,11 +197,15 @@ most recently started sublisp.  If neither of these exist, runs the command
 franz-lisp or common-lisp, depending on the major mode of the buffer."
   ;; see if sublisp is named yet.  if its not, name it intelligently.
   (cond (fi::sublisp-name t)
-	((eql major-mode 'fi:franz-lisp-mode)
+	((eq major-mode 'fi:inferior-common-lisp-mode)
+	 (setq fi::sublisp-name fi::freshest-common-sublisp-name))
+	((eq major-mode 'fi:inferior-franz-lisp-mode)
+	 (setq fi::sublisp-name fi::freshest-franz-sublisp-name))
+	((eq major-mode 'fi:franz-lisp-mode)
 	 (if fi::freshest-franz-sublisp-name
 	     (setq fi::sublisp-name fi::freshest-franz-sublisp-name)
 	   (setq fi::sublisp-name "franz-lisp")))
-	((eql major-mode 'fi:common-lisp-mode)
+	((eq major-mode 'fi:common-lisp-mode)
 	 (if fi::freshest-common-sublisp-name
 	     (setq fi::sublisp-name fi::freshest-common-sublisp-name)
 	   (setq fi::sublisp-name "common-lisp")))
@@ -220,7 +236,10 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
       (let ()
 	(setq fi::emacs-to-lisp-transaction-file
 	  (let* ((filename (buffer-file-name (current-buffer))))
-	    (format "/tmp/,%s" (file-name-nondirectory filename))))
+	    (format "/tmp/%s,%s"
+		    (user-login-name)
+		    (if filename (file-name-nondirectory filename)
+		      "noname"))))
 	(setq fi::emacs-to-lisp-package
 	  (if fi:package
 	      (format "(in-package :%s)\n" fi:package)

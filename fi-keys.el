@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.5 1988/05/12 22:58:47 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.6 1988/05/13 10:29:00 layer Exp $
 
 ;;;;
 ;;; Key defs
@@ -277,44 +277,39 @@ the point as the default tag."
   "Print the arglist (using excl:arglist) for a symbol, which is read from
 the minibuffer.  The word around the point is used as the default."
   (interactive (fi::get-default-symbol "Function" t))
-  (process-send-string
-   (fi::background-sublisp-process)
-   (format
-    "(progn
-      (format t  \"~:[()~;~:*~{~a~^ ~}~]\"
-       (cond
-	((macro-function '%s) '(\"%s is a macro\"))
-	((special-form-p '%s) '(\"%s is a special form\"))
-	((not (fboundp '%s)) '(\"%s has no function binding\"))
-	(t (excl::arglist '%s))))
-      (values))\n"
-    symbol symbol symbol symbol symbol symbol symbol)))
+  (let ((string
+	 (format "(progn
+                    (format t  \"~:[()~;~:*~{~a~^ ~}~]\"
+                    (cond
+                     ((macro-function '%s) '(\"%s is a macro\"))
+                     ((special-form-p '%s) '(\"%s is a special form\"))
+                     ((not (fboundp '%s)) '(\"%s has no function binding\"))
+                     (t (excl::arglist '%s))))
+                    (values))\n"
+		 symbol symbol symbol symbol symbol symbol symbol)))
+    (if (fi::background-sublisp-process)
+	(process-send-string fi::backdoor-process string)
+      (fi::eval-string-send string nil t))))
 
 (defun fi:lisp-describe (symbol)
   "Describe a symbol, which is read from the minibuffer.  The word around
 the point is used as the default."
   (interactive (fi::get-default-symbol "Describe symbol"))
-  (process-send-string
-   (fi::background-sublisp-process)
-   (format "(progn (lisp:describe '%s) (values))\n" symbol)))
+  (let ((string (format "(progn (lisp:describe '%s) (values))\n" symbol)))
+    (if (fi::background-sublisp-process)
+	(process-send-string fi::backdoor-process string)
+      (fi::eval-string-send string nil t))))
 
 (defun fi:lisp-function-documentation (symbol)
   "Print the function documentation for a symbol, which is read from the
 minibuffer.  The word around the point is used as the default." 
   (interactive
    (fi::get-default-symbol "Function documentation for symbol"))
-  (process-send-string
-   (fi::background-sublisp-process)
-   (format "(princ (lisp:documentation '%s 'lisp:function))\n" symbol)))
-
-(defun fi:lisp-who-calls (&optional symbol)
-  "Asks the sublisp which functions reference a symbol."
-  (interactive (fi::get-default-symbol "Find references to symbol"))
-  ;; Since this takes a while, tell the user that it has started.
-  (message "searching...")		; Find some way to flush when done...
-  (process-send-string
-   (fi::background-sublisp-process)
-   (format "(progn (excl::who-references '%s) (values))\n" symbol)))
+  (let ((string (format "(princ (lisp:documentation '%s 'lisp:function))\n"
+			symbol)))
+    (if (fi::background-sublisp-process)
+	(process-send-string fi::backdoor-process string)
+      (fi::eval-string-send string nil t))))
 
 (defun fi:lisp-macroexpand ()
   "Print the macroexpansion of the form at the point."
@@ -327,6 +322,33 @@ With a prefix argument, macroexpand the code as the compiler would."
   (interactive "P")
   (fi::lisp-macroexpand-common
    (if arg "excl::compiler-walk" "excl::walk")))
+
+(defun fi::lisp-macroexpand-common (handler)
+  (let* ((start (fi::find-other-end-of-list))
+	 (filename (format "/tmp/%s,mexp" (user-login-name)))
+	 (string
+	  (format fi::lisp-macroexpand-command
+		  (if (and (boundp 'fi:package) fi:package)
+		      (format "(or (find-package :%s) (make-package :%s))"
+			      fi:package fi:package)
+		    "*package*")
+		  filename
+		  handler)))
+    (write-region start (point) filename nil 'nomessage)
+    (if (fi::background-sublisp-process)
+	(process-send-string fi::backdoor-process string)
+      (fi::eval-string-send string nil t))))
+
+(defun fi:lisp-who-calls (&optional symbol)
+  "Asks the sublisp which functions reference a symbol."
+  (interactive (fi::get-default-symbol "Find references to symbol"))
+  ;; Since this takes a while, tell the user that it has started.
+  (message "finding callers of %s..." symbol)
+  (let ((string (format
+		 "(progn (excl::who-references '%s) (values))\n" symbol)))
+    (if (fi::background-sublisp-process)
+	(process-send-string fi::backdoor-process string)
+      (fi::eval-string-send string nil t))))
 
 (defun fi:tcp-lisp-send-eof ()
   "Do a db:debug-pop on the TCP listener."
