@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.49 1991/10/07 13:34:54 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.50 1993/03/23 10:13:44 layer Exp $
 
 ;;;; Mode initializations
 
@@ -61,6 +61,20 @@ fi:common-lisp-mode.")
   "*The initial value of this hook, which is run whenever a Lisp mode is
 entered, causes the `package' to be displayed in the mode line.  It uses
 MODE-LINE-PROCESS, which has no use in non-subprocess buffers.")
+
+(defvar fi:in-package-regexp nil
+  "*If non-nil, the regular expression that describes the IN-PACKAGE form,
+for purposes of tracking package changes in a subprocess Lisp buffer.  The
+value of this is taken from fi:default-in-package-regexp in Lisp subprocess
+buffers, but is nil elsewhere.")
+(make-variable-buffer-local 'fi:in-package-regexp)
+
+(defvar fi:default-in-package-regexp
+  "(in-package\\>\\|:pa\\>\\|:pac\\>\\|:pack\\>\\|:packa\\>\\|:packag\\>\\|:package\\>"
+  "*The regular expression matching the Lisp expression to change the
+current package.  The two things this must match are the IN-PACKAGE macro
+form and all the possible instances of the :package top-level command.
+If nil, no automatic package tracking will be done.")
 
 ;;;;
 ;;; The Modes
@@ -304,8 +318,7 @@ any other mode setup."
   (setq comment-start ";")
   (make-local-variable 'comment-start-skip)
   (setq comment-start-skip ";+[ \t]*")
-  (make-local-variable 'comment-column)
-  (setq comment-column 40)
+  (unless (boundp 'comment-column) (setq comment-column 40))
   
   (if fi:lisp-do-indentation
       (progn
@@ -321,8 +334,9 @@ any other mode setup."
 
 	(setq fi::lisp-most-recent-parse-result (list 0 0 0 0 nil nil nil 0))
 	(setq fi::calculate-lisp-indent-state-temp (list 0 0 0 nil nil nil 0))
-	(setq fi::lisp-indent-state-temp (list nil nil nil nil nil nil nil))
-	)))
+	(setq fi::lisp-indent-state-temp (list nil nil nil nil nil nil nil)))
+    ;; the GNU style
+    (lisp-mode-variables t)))
 
 (defun fi:parse-mode-line-and-package ()
   "Determine the current package in which the buffer is defined.
@@ -422,8 +436,13 @@ package."
     (fi::def-auto-mode (concat "\\" (car list) "$")
 	'fi:common-lisp-mode)
     (setq list (cdr list))))
-(fi::def-auto-mode "\\.el$" 'fi:emacs-lisp-mode)
-(fi::def-auto-mode "[]>:/]\\..*emacs" 'fi:emacs-lisp-mode)
+
+(defvar fi:define-emacs-lisp-mode t
+  "*If non-nil, then use the FI supplied mode for editing .el files.")
+
+(when fi:define-emacs-lisp-mode
+  (fi::def-auto-mode "\\.el$" 'fi:emacs-lisp-mode)
+  (fi::def-auto-mode "[]>:/]\\..*emacs" 'fi:emacs-lisp-mode))
 
 ;;;; the syntax tables for Lisp and Emacs Lisp
 
