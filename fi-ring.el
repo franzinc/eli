@@ -17,7 +17,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-ring.el,v 1.13 1991/09/30 11:38:54 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-ring.el,v 1.14 1992/08/19 07:16:11 layer Exp $
 
 ;; This code is very similar to the kill-ring implementation
 ;; and implements the fi::subprocess input ring.  Each fi::subprocess buffer
@@ -121,6 +121,15 @@ each successive invocation.  With argument ARG, do it that many times."
 	     (set-mark (point))
 	     (insert (car fi::input-ring-yank-pointer))
 	     (if before (exchange-point-and-mark))))))
+
+(defun fi:pop-input-last-word (&optional arg)
+  (interactive "*p")
+  (fi:pop-input arg)
+  (goto-char (mark))
+  (re-search-forward "[^ \t]*[ \t]*$")
+  (goto-char (match-beginning 0))
+  (delete-region (point)(mark))
+  (goto-char (point-max)))
 
 (defun fi:push-input (&optional arg)
   "Yank next text from input ring, and cycle through input ring in reverse
