@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.66 1995/10/02 14:57:06 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.67 1996/01/06 19:39:39 smh Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -150,7 +150,7 @@ at file visit time."
 	(when (fi::pop-metadot-session)
 	  (fi::show-error-text "%s" error))))))
 
-(defun ensure-translated-pathname (pathname)
+(defun fi::ensure-translated-pathname (pathname)
   (if (position ?: pathname)
       (or (ignore-errors
 	   (fi::translate-putative-logical-pathname pathname))
@@ -242,12 +242,12 @@ time."
 (defun fi::show-found-definition (thing pathname point n-more
 				  &optional other-window-p pop-stack)
   (if pathname
-      (if (eq pathname ':top-level)
+      (if (equal pathname "top-level")
 	  (message "%s was defined somewhere at the top-level, %d more definitions"
 		   thing n-more)
 	(let ((mess "")
 	      (xb nil)
-	      (pathname (ensure-translated-pathname pathname)))
+	      (pathname (fi::ensure-translated-pathname pathname)))
 	  (when fi:filename-frobber-hook
 	    (setq pathname (funcall fi:filename-frobber-hook pathname)))
 	  (setq xb (get-file-buffer pathname))
@@ -558,7 +558,7 @@ beginning of words in target symbols."
 	      completions))))
 
 (defun lep::find-file (filename)
-  (list (find-file (ensure-translated-pathname filename))))
+  (list (find-file (fi::ensure-translated-pathname filename))))
 
 (defun lep::display-string-in-buffer (string buffer)
   "Display a string in buffer"

@@ -1,3 +1,18 @@
+Fri Jan  5 11:03:17 1996  Steve Haflich  <smh@vapor>
+
+	* eli/Makefile:	Removed ore hosts from rdist rule.
+
+	* eli/fi-emacs19.el:
+	* eli/fi-xemacs.el:
+	  Removed connected-to-epoch-p conditionalizations.  The menu item availability
+	  code is still flawed and needs rewriting.
+
+	* eli/fi-lep.el:
+	  ensure-translated-pathname renamed fi::ensure-translated-pathname
+
+	* eli/fi-site-init.el: Bump version number to 2.0.19.
+
+
 Wed Nov 15 13:47:00 1995  Steve Haflich  <smh@vapor>
 
 	* Makefile:

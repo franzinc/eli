@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-xemacs.el,v 2.1 1995/01/10 00:43:49 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-xemacs.el,v 2.2 1996/01/06 19:39:43 smh Exp $
 
 (defun fi::switch-to-buffer-new-screen (buffer)
   (cond
@@ -233,7 +233,7 @@
        (or (unless fi::composer-connection-open
 	     (if (let ((fi:package nil))
 		   (fi:eval-in-lisp
-		    "wt::(and (connected-to-epoch-p)
+		    "wt::(and ;;(connected-to-epoch-p)
  			      (common-windows-initialized-p)
 			      (connected-to-server-p))"))
 		 (setq fi::composer-connection-open 'yes)

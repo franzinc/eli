@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-emacs19.el,v 2.10 1995/01/10 00:43:32 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-emacs19.el,v 2.11 1996/01/06 19:39:37 smh Exp $
 
 
 (unless (string-match "^18." emacs-version) ;Allows compilation on 18.
@@ -242,7 +242,7 @@
        (or (unless fi::composer-connection-open
 	     (if (let ((fi:package nil))
 		   (fi:eval-in-lisp
-		    "wt::(and (connected-to-epoch-p)
+		    "wt::(and ;;(connected-to-epoch-p)
  			      (common-windows-initialized-p)
 			      (connected-to-server-p))"))
 		 (setq fi::composer-connection-open 'yes)
