@@ -549,7 +549,7 @@ the remote machine, then use fi:explicit-remote-common-lisp.
 			      Appendix C
 			Sample X11 interaction
 
-%eval: (insert-file "x11.el")
+%eval: (insert-file "dot.emacs_x11")
 
 			      Appendix D
 			  Franz Lisp Support
