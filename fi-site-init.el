@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.12 1989/08/28 20:20:32 layer Rel $
+;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.13 1990/08/31 23:48:20 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface:
 ;;
@@ -17,6 +17,8 @@
 ;; `shell' and `rlogin' modes:
 (load "fi/shell.elc")
 (load "fi/rlogin.elc")
+(load "fi/telnet.elc")
+(load "fi/su.elc")
 
 (autoload 'fi:clman         "fi/clman" nil t)
 (autoload 'fi:clman-mode    "fi/clman" nil t)
