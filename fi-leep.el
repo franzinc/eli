@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-leep.el,v 1.3 1991/09/30 11:39:35 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-leep.el,v 1.4 1991/11/11 14:43:38 layer Exp $
 
 ;; The epoch side of presentations in a lisp-listener window.
 
@@ -106,11 +106,14 @@ The function should be defined in this way:
       (epoch::map-screen screen)
       (epoch::select-screen screen)
       screen))
-  (let* ((proc (fi:open-lisp-listener -1 nil
-				      (function
-				       (lambda (proc)
-					 ;; proc is ignored
-					 composer::init-presentations))))
+  (let* ((proc (fi:open-lisp-listener
+		-1
+		nil
+		(function
+		 (lambda (proc)
+		   (concat
+		    composer::init-presentations
+		    (fi::setup-tcp-connection proc))))))
 	 (buffer (process-buffer proc)))
     (composer::setup-buffer-for-presentations buffer)
     (set-process-filter proc 'fi::leep-subprocess-filter)
