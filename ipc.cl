@@ -20,8 +20,8 @@
 ;; Description:
 ;;  
 
-;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.11 1988/02/18 08:24:48 layer Exp $
-;; $Locker: layer $
+;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.12 1988/02/22 06:31:58 layer Exp $
+;; $Locker:  $
 ;;
 
 ;; This code is a preliminary IPC interface for ExCL.
@@ -104,7 +104,7 @@ files are closed."
 		  :unreferenced-lib-names
 		  (mapcar #'convert-to-lang
 			  '("socket" "bind" "listen" "accept" "getsockname"
-				     "bcopy" "bcmp" "bzero")))
+			    "bcopy" "bcmp" "bzero")))
       (error "foreign load failed"))
     (setq lisp-listener-daemon-ff-loaded t)
     (defforeign-list '((getuid)
@@ -124,11 +124,33 @@ files are closed."
     (setf (getf (process-property-list lisp-listener-daemon) ':no-interrupts)
 	  t)))
 
-(defparameter *port* 1123)
+(defvar AF_UNIX 1
+  "Constant from /usr/include/sys/socket.h: domain type.")
+
+(defvar AF_INET 2
+  "Constant from /usr/include/sys/socket.h: domain type.")
+
+(defvar SOCK_STREAM 1
+  "Constant from /usr/include/sys/socket.h: socket type type.")
+
+(defvar TCP 0
+  "Constant from /usr/include/sys/socket.h")
+
+(defvar *unix-domain* t
+  "If non-nil, then use a unix domain socket, otherwise use an internet
+domain port (see *inet-port*).")
+
+(defparameter *inet-port* 1123
+  "The internet service port number for emacs<-->lisp communication.")
 
 (defun lisp-listener-socket-daemon ()
   (let (listen-socket-fd
-	(listen-sockaddr (make-cstruct 'sockaddr-in))
+	(listen-sockaddr
+	 (if *unix-domain*
+	     (make-cstruct 'sockaddr-un)
+	   (make-cstruct 'sockaddr-in)))
+	(socket-pathname
+	 (format nil "~a/~a" (sys:getenv "HOME") ".excl_to_emacs"))
 	(timeval (make-cstruct 'timeval))
 	(mask-obj (make-cstruct 'unsigned-long))
 	(int (make-cstruct 'unsigned-long))
@@ -138,11 +160,12 @@ files are closed."
 	  (timeval-usec timeval) 0)
     (unwind-protect
 	(progn
-	  (setq listen-socket-fd (socket 2 #|AF_INET|#
-					 1 #|SOCK_STREAM|#
-					 0 #|TCP|# ))
+	  (if *unix-domain* (errorset (delete-file socket-pathname)))
+	  (setq listen-socket-fd (socket
+				  (if *unix-domain* AF_UNIX AF_INET)
+				  SOCK_STREAM
+				  TCP))
 	  (when (< listen-socket-fd 0)
-	    (format t "call to socket failed~%")
 	    (perror "call to socket")
 	    (setq listen-socket-fd nil)
 	    (return-from lisp-listener-socket-daemon nil))
@@ -151,19 +174,23 @@ files are closed."
 	  ;; Compute a select mask for the daemon's socket.
 	  (setq mask (ash 1 listen-socket-fd))
 
-	  ;; Name the daemon's socket.
-	  ;; This *really* should be in AF_UNIX namespace, but alas, Masscomp
-	  ;; doesn't yet support it.  So as a temporary crock, we'll put it in
-	  ;; the AF_INET namespace, also meaning that for right now there can
-	  ;; only be one listener per host.
-	  ;; This will shortly be fixed, but will do for now.
-
-	  (bzero listen-sockaddr (ff::cstruct-len 'sockaddr-in))
-	  (setf (sockaddr-in-family listen-sockaddr) 2 #|AF_INET|#
-		(sockaddr-in-port listen-sockaddr) *port*)
+	  (if* *unix-domain*
+	     then (setf (sockaddr-un-family listen-sockaddr) AF_UNIX)
+		  ;; Set pathname.
+		  (dotimes (i (length socket-pathname)
+			    (setf (sockaddr-un-path listen-sockaddr i) 0))
+		    (setf (sockaddr-un-path listen-sockaddr i)
+		      (char-int (elt socket-pathname i))))
+	     else ;; a crock:
+		  (bzero listen-sockaddr (ff::cstruct-len 'sockaddr-in))
+		  (setf (sockaddr-in-family listen-sockaddr) AF_INET
+			(sockaddr-in-port listen-sockaddr) *inet-port*))
+	  
 	  (unless (zerop (bind listen-socket-fd
 			       listen-sockaddr
-			       (ff::cstruct-len 'sockaddr-in)))
+			       (if *unix-domain*
+				   (+ (length socket-pathname) 2)
+				 (ff::cstruct-len 'sockaddr-in))))
 	    (perror "bind")
 	    (return-from lisp-listener-socket-daemon nil))
 
@@ -177,23 +204,31 @@ files are closed."
 			     (not (zerop (select 32 mask-obj 0 0 timeout))))
 			 mask mask-obj timeval)
 	   (setf (unsigned-long-unsigned-long int)
-		 (ff::cstruct-len 'sockaddr-in))
+	     (if *unix-domain*
+		 (ff::cstruct-len 'sockaddr-un)
+	       (ff::cstruct-len 'sockaddr-in)))
 	   (setq fd (accept listen-socket-fd listen-sockaddr int))
 	   (when (< fd 0)
-	     (format t "accept returned error~%")
 	     (perror "accept")
 	     (return-from lisp-listener-socket-daemon nil))
 	   
-	   (let ((hostaddr (logand (sockaddr-in-addr listen-sockaddr) #xff)))
-	     (format t ";;; starting listener-~d (host ~d)~%" fd
-		     hostaddr)
-	     (if* (not (eql 1 hostaddr))
-		then (format t ";;; access denied for addr ~s~%" hostaddr)
-		     (refuse-connection fd)
-		else (process-run-function
-		       (format nil "TCP Listener ~d" fd)
-		       'lisp-listener-with-fd-as-terminal-io
-		       fd)))))
+	   (if* *unix-domain*
+	      then (process-run-function
+		    (format nil "TCP Listener ~d" fd)
+		    'lisp-listener-with-fd-as-terminal-io
+		    fd)
+	      else (let ((hostaddr (logand
+				    (sockaddr-in-addr listen-sockaddr) #xff)))
+		     (format t ";;; starting listener-~d (host ~d)~%" fd
+			     hostaddr)
+		     (if* (not (eql 1 hostaddr))
+			then (format t ";;; access denied for addr ~s~%"
+				     hostaddr)
+			     (refuse-connection fd)
+			else (process-run-function
+			      (format nil "TCP Listener ~d" fd)
+			      'lisp-listener-with-fd-as-terminal-io
+			      fd))))))
       (when listen-socket-fd
 	(mp::mpunwatchfor listen-socket-fd)
 	(fd-close listen-socket-fd)
@@ -230,7 +265,7 @@ SERVICE may be a named service or an integer port number
 DIRECTION may be :io, :input, or :output
 ELEMENT-TYPE may be string-char or (unsigned-byte 8)
 
-returns the new stream if the connection is established successfully."
+Returns the new stream if the connection is established successfully."
   )
 
 (pushnew :ipc *features*)
