@@ -7,6 +7,11 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+Wed May 22 12:56:23 PDT 2001  Duane Rettig  <duane@beta>
+	
+	* fi-vers.cl: (from cox): increment version to 2.1.6
+
+*******************************************************************************
 2.1.6
 	
 2001-05-14  Charles A. Cox  <cox@freezer>
