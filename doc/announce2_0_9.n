@@ -1,0 +1,102 @@
+Subject: new release of emacs-lisp interface to support version 19 emacs
+
+Version 2.0.9 of Franz Inc.'s GNU Emacs-Allegro CL interface is now
+available.  This release is mostly to add features to support lemacs,
+named readtables and to fix a few bugs.  The versions of emacs now
+supported are:
+
+	- (FSF) GNU Emacs 18.* and 19.*
+	- Epoch 3.2 and 4.2 (not tested with 4.0 or 4.1)
+	- lemacs 19.6 and 19.8
+
+A summary of the new features:
+
+	- support for named readtables, or file mode lines with
+
+		-*- ...; readtable: foo -*-
+
+	  which will cause the named readtable :foo to be used when
+	  evaluations are done in the buffer in which the above
+	  appears.  Lisp support for named readtables will appear in
+	  Allegro CL 4.2 (the final release only),
+
+	- number backups used with the changed-definitions commands
+	  now works,
+
+	- a new variable, fi:change-definitions-since-default,
+	  is used as the default SINCE argument to the changed
+	  definition commands,
+
+	- the interface can be loaded at emacs build time,
+
+	- new clman interface that uses less file space,
+
+	- indent specifications for CLIM 2.x,
+
+	- (lemacs only) menus are automatically added to the menu bar,
+	- (lemacs only) common lisp edit mode buffers have a popup
+	  menu, and
+	- (lemacs only) common lisp subprocess mode buffers have a
+	  popup menu.
+
+This version of the interface is also loaded and installed differently
+than previous versions.  The distribution is in two pieces, the main
+interface and the on-line manual.  Furthermore, there are versions of
+the on-line manual with and without the CLIM 2.x manual pages.  On
+ftp.uu.net there are the following files:
+
+   /vendor/franz/emacs/eli-2.0.9.tar.gz (250 Kb)
+   /vendor/franz/emacs/clman-4.1-v2.tar.gz (950 Kb)
+   /vendor/franz/emacs/clman-4.1-v2-clim2.tar.gz (1306 Kb)
+
+Grab the first one and one of either the second or third files.
+Uncompressed clman-4.1-v2.tar.gz is 4280 Kb and clman-4.1-v2-clim2.tar.gz is
+6110 Kb.
+
+Note: the .gz means you need gzip (GNU zip) to uncompress these files.
+You can get gzip from prep.ai.mit.edu (/pub/gnu/gzip-1.2.3.tar, 778240
+bytes).  We use gzip because it produces much better compression.
+
+*******************************************************************************
+INSTALLATION
+
+Unlike previous versions of the emacs-lisp interface, you don't have
+to install this version in the lisp/ subdirectory in the emacs
+library.  You can put the directory you create from unpacking the file
+eli-2.0.9.tar.gz anywhere.  The lisp/ directory is a good place for
+it, but this location is not required.  The following will assume the
+directory /usr/local/lib/fi-2.0.9 is chosen as the place you will
+install this version of the emacs-lisp interface.  Then you'd do this:
+
+	% cd /usr/local/lib
+	% gzip -d < eli-2.0.9.tar.gz | tar xf -
+
+This will extract the files from the .tar.gz file into the directory
+/usr/local/lib/fi-2.0.9.  Next, if you want to install the on-line
+manual pages then do this:
+
+	% cd fi-2.0.9
+	% gzip -d < clman-4.1-v2-clim2.tar.gz | tar xf -
+
+This will extract a new more files.  Next, to build the `clman'
+program, type:
+
+	% make clman
+
+This will ensure that everything is up-to-date.  If you don't have gcc
+installed, then you'll have to type
+
+	% make CC=cc clman
+
+where `cc' is the name of the C compiler on your system.
+
+Lastly, put the following into your ~/.emacs file:
+
+	(setq load-path (cons "/usr/local/lib/fi-2.0.9" load-path))
+	(load "fi-site-init")
+
+This will probably replace the following item in your ~/.emacs:
+
+	(load "fi/site-init")
+
+which is the old way the interface was loaded.
