@@ -1,13 +1,14 @@
-;;;; $Header: /repo/cvs.copy/eli/fi-filec.el,v 1.1 1988/02/20 22:30:32 layer Exp $
-;;;; File name completions
+;;; $Header: /repo/cvs.copy/eli/fi-filec.el,v 1.2 1988/03/04 09:10:37 layer Exp $
+;;;
+;;; File name completions
 
-(defvar shell-completions-window nil
+(defvar fi::shell-completions-window nil
   "If non-nil, completion window requires cleaning up.")
 
-(defvar shell-token-pattern "[ \t\n()<>&|;=]"
+(defvar fi:shell-token-pattern "[ \t\n()<>&|;=]"
   "*Regexp used by shell name completion to mark path name boundries.")
 
-(defun shell-file-name-completion ()
+(defun fi:shell-file-name-completion ()
   "Preform file name completion in shell mode"
   (interactive)
   (let ((shell-expand-string nil)
@@ -18,11 +19,11 @@
 	(shell-expand-completion nil))
 
     ;; look back
-    (re-search-backward shell-token-pattern nil t)
+    (re-search-backward fi:shell-token-pattern nil t)
     (forward-char)
     (setq shell-expand-begin (point))
     ;; look ahead
-    (if (re-search-forward shell-token-pattern nil 0) (backward-char))
+    (if (re-search-forward fi:shell-token-pattern nil 0) (backward-char))
     (setq shell-expand-end (point))
 
     ;; the name requiring expansion
@@ -43,8 +44,8 @@
       (if (eq shell-expand-completion nil) (message "No match")
 	(if (equal shell-expand-completion shell-expand-file)
 	    (progn
-	      (if shell-completions-window nil
-		(setq shell-completions-window
+	      (if fi::shell-completions-window nil
+		(setq fi::shell-completions-window
 		  (current-window-configuration)))
 	      (message "Making completion list...")
 	      (with-output-to-temp-buffer " *Completions*"
@@ -57,10 +58,10 @@
 	  (search-backward shell-expand-file)
 	  (replace-match shell-expand-completion t t))))))
 
-(defun shell-completion-cleanup ()
+(defun fi::shell-completion-cleanup ()
   "Clean up windows after shell file name completion."
   (interactive)
-  (if shell-completions-window
+  (if fi::shell-completions-window
       (save-excursion
-	(set-window-configuration shell-completions-window)
-	(setq shell-completions-window nil))))
+	(set-window-configuration fi::shell-completions-window)
+	(setq fi::shell-completions-window nil))))

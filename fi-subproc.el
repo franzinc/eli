@@ -1,147 +1,133 @@
-;;; subprocess.el
-;;;   subprocess modes and functions
+;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.12 1988/03/04 09:10:25 layer Exp $
 ;;;
-;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.11 1988/02/29 11:35:56 layer Exp $
+;;; Low-level subprocess mode guts
 
 ;;;;
 ;;; Variables and Constants
 ;;;;
 
-(defvar last-input-start nil
-  "Marker for start of last input in shell-mode or inferior-lisp-mode buffer.")
+(defvar fi::last-input-start nil
+  "Marker for start of last input in fi:shell-mode or fi:inferior-lisp-mode
+buffer.")
 
-(defvar last-input-end nil
-  "Marker for end of last input in shell-mode or inferior-lisp-mode buffer.")
+(defvar fi::last-input-end nil
+  "Marker for end of last input in fi:shell-mode or fi:inferior-lisp-mode
+buffer.")
 
-(defvar sublisp-name nil
+(defvar fi::sublisp-name nil
   "Name of inferior lisp process.")
 
-(defvar freshest-franz-sublisp-name nil
-  "Name of franz lisp subprocess most recently invoked by franz-lisp.")
+(defvar fi::freshest-franz-sublisp-name nil
+  "Name of franz lisp subprocess most recently invoked.")
 
-(defvar freshest-common-sublisp-name nil
+(defvar fi::freshest-common-sublisp-name nil
   "Name of common lisp subprocess most recently invoked.")
 
-(defvar shell-directory-stack nil
+(defvar fi::shell-directory-stack nil
   "List of directories saved by pushd in this buffer's shell.")
 
-(defvar shell-popd-regexp ":?popd"
+(defvar fi:shell-popd-regexp ":?popd"
   "*Regexp to match subshell commands equivalent to popd.
 This variable is buffer-local.  If nil, no automatic directory changes
 will be made.")
 
-(defvar shell-pushd-regexp ":?pushd"
+(defvar fi:shell-pushd-regexp ":?pushd"
   "*Regexp to match subshell commands equivalent to pushd.
 This variable is buffer-local.  If nil, no automatic directory changes
 will be made.")
 
-(defvar shell-cd-regexp ":?cd"
+(defvar fi:shell-cd-regexp ":?cd"
   "*Regexp to match subshell commands equivalent to cd.
 This variable is buffer-local.  If nil, no automatic directory changes
 will be made.")
 
-(defvar subprocess-map-nl-to-cr nil
-  "*If t, map NL (newline) to CR (carriage-return) in input to subprocess.
+(defvar fi:subprocess-map-nl-to-cr nil
+  "*If t, map NL (newline) to CR (carriage-return) in input to fi::subprocess.
 This is a buffer-local symbol.")
 
-(defvar subprocess-continuously-show-output-in-visible-buffer t
-  "*If t, output from a subprocess to a visible buffer is continuously shown.
-If a subprocess buffer is visible and the window point is beyond the process
-output marker, output to that buffer from its associated process will be
-continuously visible.  If the window point is before the process output
-marker, the window is not updated.  This is a buffer-local symbol.")
+(defvar fi:subprocess-continuously-show-output-in-visible-buffer t
+  "*If t, output from a subprocess to a visible buffer is continuously
+shown.  If a subprocess buffer is visible and the window point is beyond
+the process output marker, output to that buffer from its associated
+process will be continuously visible.  If the window point is before the
+process output marker, the window is not updated.  This is a buffer-local
+symbol.")
 
-(defvar subprocess-enable-superkeys nil
+(defvar fi:subprocess-enable-superkeys nil
   "*If t, certain keys become `superkeys' in subprocess buffers.
 The superkeys are C-a, C-d, C-o, C-u, C-w, C-z, and C-\\, which will behave
 as they would in the current local keymap when typed at the end
 of a subprocess buffer.  If typed elsewhere, these keys have their
 normal global binding.  This is a buffer-local symbol.")
 
-(defvar explicit-shell-file-name nil
+(defvar fi:explicit-shell-file-name nil
   "*Explicit Shell image to invoke from (shell).")
-(defvar explicit-rlogin-file-name nil
-  "*Explicit remote-login image to invoke from (rlogin).")
-(defvar explicit-lisp-file-name nil
+(defvar fi:explicit-rlogin-file-name nil
+  "*Explicit remote-login image to invoke from (fi:rlogin).")
+(defvar fi:explicit-lisp-file-name nil
   "*Explicit Lisp image to invoke from (lisp).")
-(defvar explicit-franz-lisp-file-name nil
+(defvar fi:explicit-franz-lisp-file-name nil
   "*Explicit Franz Lisp image to invoke from (franz-lisp).")
-(defvar explicit-common-lisp-file-name nil
+(defvar fi:explicit-common-lisp-file-name nil
   "*Explicit Common Lisp image to invoke from (common-lisp).")
-(defvar explicit-shell-image-arguments nil
+(defvar fi:explicit-shell-image-arguments nil
   "*Explicit Shell image arguments when invoked from (shell).")
-(defvar explicit-rlogin-image-arguments nil
-  "*Explicit remote-login image arguments when invoked from (rlogin).")
-(defvar explicit-lisp-image-arguments nil
+(defvar fi:explicit-rlogin-image-arguments nil
+  "*Explicit remote-login image arguments when invoked from (fi:rlogin).")
+(defvar fi:explicit-lisp-image-arguments nil
   "*Explicit Lisp image arguments when invoked from (lisp).")
-(defvar explicit-franz-lisp-image-arguments nil
+(defvar fi:explicit-franz-lisp-image-arguments nil
   "*Explicit Franz Lisp image arguments when invoked from (franz-lisp).")
-(defvar explicit-common-lisp-image-arguments nil
+(defvar fi:explicit-common-lisp-image-arguments nil
   "*Explicit Common Lisp image arguments when invoked from (common-lisp).")
 
-(defvar default-shell-file-name "sh"
+(defvar fi:default-shell-file-name "sh"
   "*Default Shell image to invoke from (shell).")
-(defvar default-rlogin-file-name "rlogin"
-  "*Default remote-login image to invoke from (rlogin).")
-(defvar default-lisp-file-name "lisp"
+(defvar fi:default-rlogin-file-name "rlogin"
+  "*Default remote-login image to invoke from (fi:rlogin).")
+(defvar fi:default-lisp-file-name "lisp"
   "*Default Lisp image to invoke from (lisp).")
-(defvar default-franz-lisp-file-name "lisp"
+(defvar fi:default-franz-lisp-file-name "lisp"
   "*Default Franz Lisp image to invoke from (franz-lisp).")
-(defvar default-common-lisp-file-name "cl"
+(defvar fi:default-common-lisp-file-name "cl"
   "*Default Common Lisp image to invoke from (common-lisp).")
-(defvar default-shell-image-arguments '("-i")
+(defvar fi:default-shell-image-arguments '("-i")
   "*Default Shell image arguments when invoked from (shell).")
-(defvar default-rlogin-image-arguments nil
-  "*Default remote-login image arguments when invoked from (rlogin).")
-(defvar default-lisp-image-arguments nil
+(defvar fi:default-rlogin-image-arguments nil
+  "*Default remote-login image arguments when invoked from (fi:rlogin).")
+(defvar fi:default-lisp-image-arguments nil
   "*Default Lisp image arguments when invoked from (lisp).")
-(defvar default-franz-lisp-image-arguments nil
+(defvar fi:default-franz-lisp-image-arguments nil
   "*Default Franz Lisp image arguments when invoked from (franz-lisp).")
-(defvar default-common-lisp-image-arguments nil
+(defvar fi:default-common-lisp-image-arguments nil
   "*Default Common Lisp image arguments when invoked from (common-lisp).")
 
-(defvar subprocess-write-quantum 120
+(defvar fi:subprocess-write-quantum 120
   "Maximum size in bytes of a single write request to a subprocess.")
 
-(defvar shell-prompt-pattern
+(defvar fi:shell-prompt-pattern
   "^[-_.a-zA-Z0-9]*[#$%>] *"
   "*Regexp used by Newline command in shell mode to match subshell prompts.
 Anything from beginning of line up to the end of what this pattern matches
 is deemed to be prompt, and is not re-executed.")
 
-(defvar lisp-prompt-pattern
+(defvar fi:lisp-prompt-pattern
   "^[-=]> +\\|^c{[0-9]+} +"
-  "*Regexp used by Newline command in inferior-lisp mode to match Lisp prompts.
-Anything from beginning of line up to the end of what this pattern matches
-is deemed to be prompt, and is not re-executed.")
-
-(defvar franz-lisp-prompt-pattern
-  "^[-=]> +\\|^c{[0-9]+} +"
-  "*Regexp used by Newline command in inferior-lisp mode to match Franz Lisp prompts.
-Anything from beginning of line up to the end of what this pattern matches
-is deemed to be prompt, and is not re-executed.")
-
-(defvar common-lisp-prompt-pattern
-  "^\\(\\[[0-9]+c?\\] \\|\\[step\\] \\)?<[-A-Za-z]* ?[0-9]*> "
-  "*Regexp for Newline command in inferior-lisp mode to match Common Lisp prompts.
-Anything from beginning of line up to the end of what this pattern
+  "*Regexp used by Newline command in inferior-lisp mode to match Lisp
+prompts. Anything from beginning of line up to the end of what this pattern
 matches is deemed to be prompt, and is not re-executed.")
-
-;;;;
-;;; Macros
-;;;;
 
-(defmacro push (x y)
-  (list 'setq y (list 'cons x y)))
+(defvar fi:franz-lisp-prompt-pattern
+  "^[-=]> +\\|^c{[0-9]+} +"
+  "*Regexp used by Newline command in inferior-lisp mode to match Franz
+Lisp prompts. Anything from beginning of line up to the end of what this
+pattern matches is deemed to be prompt, and is not re-executed.")
 
-(defmacro shell-variable-bound-value (&rest name-components)
-  "Macro to compose a symbol name and return its value if bound."
-  (list 'let
-	(list (list 'name-of-symbol
-		    (append (list 'funcall ''concat) name-components)))
-	'(and
-	  (boundp (intern name-of-symbol))
-	  (symbol-value (intern name-of-symbol)))))
+(defvar fi:common-lisp-prompt-pattern
+  "^\\(\\[[0-9]+c?\\] \\|\\[step\\] \\)?<[-A-Za-z]* ?[0-9]*> "
+  "*Regexp for Newline command in inferior-lisp mode to match Common Lisp
+prompts. Anything from beginning of line up to the end of what this pattern
+matches is deemed to be prompt, and is not re-executed.")
 
 ;;;;
 ;;; User visible functions
@@ -149,157 +135,163 @@ matches is deemed to be prompt, and is not re-executed.")
 
 (defun fi:shell ()
   "Run an inferior shell, with input/output through buffer *shell*.
-See `subprocess'."
+See `fi::subprocess'."
   (interactive)
-  (subprocess "shell" "shell"))
+  (fi::subprocess "shell" "shell"))
 
-(defun another-shell ()
+(defun fi:another-shell ()
   "Run a new inferior shell, with input/output through buffer *shell-N*.
-This function always creates a new subprocess and buffer.  See `subprocess'."
+This function always creates a new subprocess and buffer.  See
+`fi::subprocess'."
   (interactive)
-  (subprocess "shell" "shell" nil t))
+  (fi::subprocess "shell" "shell" nil t))
 
-(defun rlogin (host)
+(defun fi:rlogin (host)
   "Run an inferior remote login, with input/output through buffer *<host>*.
-See `subprocess'.  Hook function `rlogin-subprocess-hook' will be applied
-in the buffer if defined."
+See `fi::subprocess'.  Hook function `rlogin-subprocess-hook' will be
+applied in the buffer if defined."
   (interactive "sRemote login to host: \n")
-  (subprocess "rlogin" host nil nil (list host))
-  (setq shell-popd-regexp nil)
-  (setq shell-pushd-regexp nil)
-  (setq shell-cd-regexp nil)
-  (setq rlogin-subprocess-semaphore t)
+  (fi::subprocess "rlogin" host nil nil (list host))
+  (setq fi:shell-popd-regexp nil)
+  (setq fi:shell-pushd-regexp nil)
+  (setq fi:shell-cd-regexp nil)
+  (setq fi::rlogin-subprocess-semaphore t)
   (set-process-filter (get-buffer-process (current-buffer))
-		      'rlogin-filter)
-  (run-hooks 'rlogin-subprocess-hook))
+		      'fi::rlogin-filter)
+  (run-hooks 'fi:rlogin-subprocess-hook))
 
-(defun another-rlogin (host)
+(defun fi:another-rlogin (host)
   "Run a new remote login, with input/output through buffer *<host>-N*.
-This function always creates a new subprocess and buffer.  See `subprocess'.
-Hook function `rlogin-subprocess-hook' will be applied in the newly-created
-buffer if defined."
+This function always creates a new subprocess and buffer.  See
+`fi::subprocess'. Hook function `rlogin-subprocess-hook' will be applied in
+the newly-created buffer if defined."
   (interactive "sRemote login to host: \n")
-  (subprocess "rlogin" host nil t (list host))
-  (setq shell-popd-regexp nil)
-  (setq shell-pushd-regexp nil)
-  (setq shell-cd-regexp nil)
-  (setq rlogin-subprocess-semaphore t)
+  (fi::subprocess "rlogin" host nil t (list host))
+  (setq fi:shell-popd-regexp nil)
+  (setq fi:shell-pushd-regexp nil)
+  (setq fi:shell-cd-regexp nil)
+  (setq fi::rlogin-subprocess-semaphore t)
   (set-process-filter (get-buffer-process (current-buffer))
-		      'rlogin-filter)
-  (run-hooks 'rlogin-subprocess-hook))
+		      'fi::rlogin-filter)
+  (run-hooks 'fi:rlogin-subprocess-hook))
 
-(defun run-common-lisp (&optional tcp-lisp)
-  "With no prefix arg run a Common Lisp subprocess with input/output
+(defun fi:common-lisp (&optional tcp-lisp)
+  "With no prefix arg run a Common Lisp :subprocess with input/output
 through buffer *common-lisp*, otherwise try and connect to a Lisp Listener
 daemon (via a unix or internet domain socket, see `open-network-stream').
 Returns the name of the started subprocess."
   (interactive "P")
   (if tcp-lisp
       (let ((buffer (get-buffer-create "*common-lisp*"))
-	    (host local-host-name)
+	    (host fi:local-host-name)
 	    proc)
 	(save-excursion
 	  (set-buffer buffer)
-	  (if unix-domain
+	  (if fi:unix-domain
 	      (setq proc (open-network-stream
-			  (buffer-name buffer) buffer unix-domain-socket 0))
+			  (buffer-name buffer) buffer
+			  fi::unix-domain-socket 0))
 	    (setq proc (open-network-stream (buffer-name buffer) buffer
-					    local-host-name
-					    excl-service-name)))
+					    fi:local-host-name
+					    fi:excl-service-name)))
 	  ;; first, send the name of the process
 	  (process-send-string proc (format "\"%s\"\n" (buffer-name buffer)))
 	  (goto-char (point-max))
 	  (set-marker (process-mark proc) (point)))
 	(switch-to-buffer buffer)
-	(fi:tcp-lisp-mode common-lisp-prompt-pattern)
-	(setq freshest-common-sublisp-name proc))
-    (setq freshest-common-sublisp-name 
-      (subprocess "common-lisp" "common-lisp"))))
+	(fi:tcp-lisp-mode fi:common-lisp-prompt-pattern)
+	(setq fi::freshest-common-sublisp-name proc))
+    (setq fi::freshest-common-sublisp-name 
+      (fi::subprocess "common-lisp" "common-lisp"))))
 
-(defun run-another-common-lisp (&optional tcp-lisp)
-  "Run a new Common Lisp subprocess, with i/o through buffer *common-lisp-N*.
-Returns the name of the started subprocess.  
-This function always creates a new subprocess and buffer.  See `subprocess'."
+(defun fi:another-common-lisp (&optional tcp-lisp)
+  "Run a new Common Lisp subprocess, with i/o through buffer
+*common-lisp-N*.  Returns the name of the started subprocess.  This
+function always creates a new subprocess and buffer.  See
+`fi::subprocess'."
   (interactive "P")
   (if tcp-lisp
       (let ((buffer
 	     (get-buffer-create
-	      (concat "*" (generate-new-buffer-name "common-lisp" nil) "*")))
-	    (host local-host-name)
+	      (concat "*" (fi::generate-new-buffer-name
+			   "common-lisp" nil) "*")))
+	    (host fi:local-host-name)
 	    proc)
 	(save-excursion
 	  (set-buffer buffer)
-	  (if unix-domain
+	  (if fi:unix-domain
 	      (setq proc (open-network-stream
-			  (buffer-name buffer) buffer unix-domain-socket 0))
+			  (buffer-name buffer) buffer 
+			  fi::unix-domain-socket 0))
 	    (setq proc (open-network-stream (buffer-name buffer) buffer
-					    local-host-name
-					    excl-service-name)))
+					    fi:local-host-name
+					    fi:excl-service-name)))
 	  (process-send-string proc (format "\"%s\"\n" (buffer-name buffer)))
 	  (goto-char (point-max))
 	  (set-marker (process-mark proc) (point)))
 	(switch-to-buffer buffer)
-	(fi:tcp-lisp-mode common-lisp-prompt-pattern)
-	(setq freshest-common-sublisp-name proc))
-    (setq freshest-common-sublisp-name 
-      (subprocess "common-lisp" "common-lisp" nil t))))
+	(fi:tcp-lisp-mode fi:common-lisp-prompt-pattern)
+	(setq fi::freshest-common-sublisp-name proc))
+    (setq fi::freshest-common-sublisp-name 
+      (fi::subprocess "common-lisp" "common-lisp" nil t))))
 
-(defun run-franz-lisp ()
-  "Run a Franz Lisp subprocess, with input/output through buffer *franz-lisp*.
-Returns the name of the started subprocess.  See `subprocess'."
+(defun fi:franz-lisp ()
+  "Run a Franz Lisp subprocess, with input/output through buffer
+*franz-lisp*.   Returns the name of the started subprocess.  See
+`fi::subprocess'."
   (interactive)
-  (setq freshest-franz-sublisp-name 
-    (subprocess "franz-lisp" "franz-lisp")))
+  (setq fi::freshest-franz-sublisp-name 
+    (fi::subprocess "franz-lisp" "franz-lisp")))
 
-(defun run-another-franz-lisp ()
+(defun fi:another-franz-lisp ()
   "Run a new Franz Lisp subprocess, with i/o through buffer *franz-lisp-N*.
-Returns the name of the started subprocess.  
-This function always creates a new subprocess and buffer.  See `subprocess'."
+Returns the name of the started subprocess.  This function always creates a
+new subprocess and buffer.  See `fi::subprocess'."
   (interactive)
-  (setq freshest-franz-sublisp-name 
-    (subprocess "franz-lisp" "franz-lisp" nil t)))
+  (setq fi::freshest-franz-sublisp-name 
+    (fi::subprocess "franz-lisp" "franz-lisp" nil t)))
 
 ;;;;
 ;;; Interactively called functions (from keymaps)
 ;;;;
 
-(defun subprocess-superkey (&optional special-binding)
+(defun fi:subprocess-superkey (&optional special-binding)
   "This function implements superkeys in subprocess buffers.
 A superkey is treated specially when at the end of a subprocess buffer,
 but has its normal, global, binding when used elsewhere in the buffer.
 At the end of the buffer the key has SPECIAL-BINDING.  If SPECIAL-BINDING
-is not given, the key takes its binding from the subprocess-super-key-map
-keymap."
+is not given, the key takes its binding from the
+fi:subprocess-super-key-map keymap."
   (interactive)
   (if (eobp)
       (if special-binding
 	  (call-interactively special-binding)
-	(subprocess-reprocess-keys subprocess-super-key-map))
-    (subprocess-reprocess-keys global-map)))
+	(fi::subprocess-reprocess-keys fi:subprocess-super-key-map))
+    (fi::subprocess-reprocess-keys global-map)))
 
-(defun subprocess-reprocess-keys (&optional map key)
+(defun fi::subprocess-reprocess-keys (&optional map key)
   "Reprocess KEY or the last key sequence (which may be incomplete) in MAP.
 This is used to reprocess a key sequence as if it were seen in another
 context, e.g. to process global bindings of keys from a subprocess
-buffer (in shell-mode or inferior-lisp-mode) when some keys are hit
+buffer (in fi:shell-mode or fi:inferior-lisp-mode) when some keys are hit
 other than at the end of the buffer."
   (if (null map) (setq map global-map))
   (let* ((last-key (if key
-		     (if (integerp key)
-		       (char-to-string key)
-		       key)
+		       (if (integerp key)
+			   (char-to-string key)
+			 key)
 		     (this-command-keys)))
 	 (last-binding (lookup-key map last-key)))
     (while (keymapp last-binding)
       (setq last-binding
-	    (lookup-key last-binding (setq last-key
-					   (char-to-string
-					    (read-char))))))
+	(lookup-key last-binding (setq last-key
+				   (char-to-string
+				    (read-char))))))
     (if (commandp last-binding)
-      (call-interactively last-binding)
+	(call-interactively last-binding)
       (ding))))
 
-(defun subprocess-beginning-of-line (arg)
+(defun fi:subprocess-beginning-of-line (arg)
   "Move to beginning of line, skipping over initial prompt.
 Moves point to beginning of line, just like (beginning-of-line),
 except that if the pattern at the beginning of the line matches the
@@ -307,11 +299,11 @@ current subprocess prompt pattern, this function skips over it."
   (interactive "P")
   (beginning-of-line arg)
   (if (looking-at subprocess-prompt-pattern)
-    (re-search-forward subprocess-prompt-pattern nil t)))
+      (re-search-forward subprocess-prompt-pattern nil t)))
 
-(defun subprocess-backward-kill-word (words)
-  "Kill previous word(s) in current subprocess input line.
- This function takes care not to delete past most recent subprocess output."
+(defun fi:subprocess-backward-kill-word (words)
+  "Kill previous word(s) in current subprocess input line.  This function
+takes care not to delete past most recent subprocess output."
   (interactive "p")
   (save-restriction
     (narrow-to-region
@@ -319,61 +311,54 @@ current subprocess prompt pattern, this function skips over it."
      (point))
     (backward-kill-word words)))
 
-(defun subprocess-send-input ()
-  "Send input to subshell.
-At end of buffer, sends all text after last output
-  as input to the subshell, including a newline inserted at the end.
+(defun fi:subprocess-send-input ()
+  "Send input to subshell.  At end of buffer, sends all text after last
+output as input to the subshell, including a newline inserted at the end.
 Not at end, copies current line to the end of the buffer and sends it,
-  after first attempting to discard any prompt at the beginning of the line
-  by matching the regexp that is the value of shell-prompt-pattern if
-  possible.  This regexp should start with \"^\"."
+after first attempting to discard any prompt at the beginning of the line
+by matching the regexp that is the value of fi:shell-prompt-pattern if
+possible.  This regexp should start with \"^\"."
   (interactive)
-  (if shell-completions-window (shell-completion-cleanup))
+  (if fi::shell-completions-window (fi::shell-completion-cleanup))
   (end-of-line)
   (if (eobp)
       (progn
-	(move-marker last-input-start
+	(move-marker fi::last-input-start
 		     (process-mark (get-buffer-process (current-buffer))))
 	(insert "\n")
-	(move-marker last-input-end (point)))
+	(move-marker fi::last-input-end (point)))
     (let ((max (point)))
       (beginning-of-line)
-      (re-search-forward shell-prompt-pattern max t))
+      (re-search-forward fi:shell-prompt-pattern max t))
     (let ((copy (buffer-substring (point)
 				  (progn (forward-line 1) (point)))))
       (goto-char (point-max))
-      (move-marker last-input-start (point))
+      (move-marker fi::last-input-start (point))
       (insert copy)
-      (move-marker last-input-end (point))))
-  (fi:subprocess-hack-directory)
+      (move-marker fi::last-input-end (point))))
+  (fi::subprocess-hack-directory)
   (let ((process (get-buffer-process (current-buffer))))
-    (send-region-split process last-input-start last-input-end
-		       subprocess-map-nl-to-cr)
-    (input-ring-save last-input-start (1- last-input-end))
+    (fi::send-region-split process fi::last-input-start fi::last-input-end
+			   fi:subprocess-map-nl-to-cr)
+    (fi::input-ring-save fi::last-input-start (1- fi::last-input-end))
     (set-marker (process-mark process) (point))))
 
 (defun fi:shell-send-eof ()
   "Send eof to subshell (or to the program running under it)."
   (interactive)
-  (if rlogin-subprocess-semaphore
-      (rlogin-send-eof)
+  (if fi::rlogin-subprocess-semaphore
+      (fi:rlogin-send-eof)
     (process-send-eof)))
-
-(defun fi:copy-last-shell-input ()
-  "Copy previous shell input, sans newline, and insert before point."
-  (interactive)
-  (insert (buffer-substring last-input-end last-input-start))
-  (delete-char -1))
 
 (defun fi:kill-output-from-shell ()
   "Kill all output from shell since last input."
   (interactive)
   (goto-char (point-max))
-  (kill-region last-input-end (point))
+  (kill-region fi::last-input-end (point))
   (insert "[output flushed]\n"))
 
-(defun shell-send-flush ()
-  "Send `flush output' character (^O) to subprocess."
+(defun fi:shell-send-flush ()
+  "Send `flush output' character (^O) to fi::subprocess."
   (interactive)
   (send-string (get-buffer-process (current-buffer)) "\C-o"))
 
@@ -381,14 +366,14 @@ Not at end, copies current line to the end of the buffer and sends it,
   "Display start of this batch of shell output at top of window.
 Also put cursor there."
   (interactive)
-  (set-window-start (selected-window) last-input-end)
-  (goto-char last-input-end))
+  (set-window-start (selected-window) fi::last-input-end)
+  (goto-char fi::last-input-end))
 
 (defun fi:interrupt-shell-subjob ()
   "Interrupt this shell's current subjob."
   (interactive)
-  (if rlogin-subprocess-semaphore
-      (rlogin-send-interrupt)
+  (if fi::rlogin-subprocess-semaphore
+      (fi:rlogin-send-interrupt)
     (interrupt-process nil t)))
 
 (defun fi:kill-shell-subjob ()
@@ -399,15 +384,15 @@ Also put cursor there."
 (defun fi:quit-shell-subjob ()
   "Send quit signal to this shell's current subjob."
   (interactive)
-  (if rlogin-subprocess-semaphore
-      (rlogin-send-quit)
+  (if fi::rlogin-subprocess-semaphore
+      (fi:rlogin-send-quit)
     (quit-process nil t)))
 
 (defun fi:stop-shell-subjob ()
   "Stop this shell's current subjob."
   (interactive)
-  (if rlogin-subprocess-semaphore
-      (rlogin-send-stop)
+  (if fi::rlogin-subprocess-semaphore
+      (fi:rlogin-send-stop)
     (stop-process nil t)))
 
 (defun fi:kill-shell-input ()
@@ -416,22 +401,22 @@ Also put cursor there."
   (kill-region (process-mark (get-buffer-process (current-buffer)))
 	       (point)))
 
-(defun rlogin-send-eof ()
-  "Send eof to process running through remote login subprocess buffer."
+(defun fi:rlogin-send-eof ()
+  "Send eof to process running through remote login fi::subprocess buffer."
   (interactive)
   (send-string (get-buffer-process (current-buffer)) "\C-d"))
 
-(defun rlogin-send-interrupt ()
+(defun fi:rlogin-send-interrupt ()
   "Send interrupt to process running through remote login subprocess buffer."
   (interactive)
   (send-string (get-buffer-process (current-buffer)) "\C-c"))
 
-(defun rlogin-send-quit ()
+(defun fi:rlogin-send-quit ()
   "Send quit to process running through remote login subprocess buffer."
   (interactive)
   (send-string (get-buffer-process (current-buffer)) "\C-\\"))
 
-(defun rlogin-send-stop ()
+(defun fi:rlogin-send-stop ()
   "Send stop to process running through remote login subprocess buffer."
   (interactive)
   (send-string (get-buffer-process (current-buffer)) "\C-z"))
@@ -440,12 +425,21 @@ Also put cursor there."
 ;;; The Guts (the lowest of the low (level))
 ;;;;
 
-(defun subprocess (image name &optional number another arguments)
+(defmacro fi::shell-variable-bound-value (&rest name-components)
+  "Macro to compose a symbol name and return its value if bound."
+  (list 'let
+	(list (list 'name-of-symbol
+		    (append (list 'funcall ''concat) name-components)))
+	'(and
+	  (boundp (intern name-of-symbol))
+	  (symbol-value (intern name-of-symbol)))))
+
+(defun fi::subprocess (image name &optional number another arguments)
   "Spawn a subprocess with input/output through an Emacs buffer.
 Process NAME or NAME-NUMBER is created.  Returns the name of the
 subprocess buffer without the asterisks.
 If the associated buffer
-\"*NAME*\" or \"*NAME-NUMBER*\" exists but the subprocess is not
+\"*NAME*\" or \"*NAME-NUMBER*\" exists but the fi::subprocess is not
 running, a new subprocess is started in that buffer.  If the optional
 ANOTHER argument is present, a new buffer and subprocess are always
 created.  The image invoked is taken from value of the Emacs symbol
@@ -470,53 +464,53 @@ to this function in the ARGUMENTS parameter will be appended.
 If a file `~/.emacs_<FILE>' exists, where <FILE> is the image being
 invoked, that file is sent to the subprocess as initial input.  The
 subprocess buffer is put in the appropriate mode, either
-`inferior-lisp-mode' if the process name contains a string
-\"[Ll][Ii][Ss][Pp]\" or `shell-mode'.  The subprocess prompt
+`fi:inferior-lisp-mode' if the process name contains a string
+\"[Ll][Ii][Ss][Pp]\" or `fi:shell-mode'.  The subprocess prompt
 is set to the value of variable `<NAME>-prompt-pattern' if found, otherwise
 `<IMAGE>-prompt-pattern'.
-Also see `make-shell' and `make-another-shell'."
+Also see `make-shell' and `fi::make-another-shell'."
   (interactive "sImage name: \nsProcess name: ")
-  (let* ((majuscule-image (remove-chars-from-string '(?-) (upcase image)))
-	 (majuscule-name (remove-chars-from-string '(?-) (upcase name)))
-	 (image-file (or (shell-variable-bound-value
-			  "explicit-" name "-file-name")
-			 (shell-variable-bound-value
-			  "explicit-" image "-file-name")
+  (let* ((majuscule-image (fi::remove-chars-from-string '(?-) (upcase image)))
+	 (majuscule-name (fi::remove-chars-from-string '(?-) (upcase name)))
+	 (image-file (or (fi::shell-variable-bound-value
+			  "fi:explicit-" name "-file-name")
+			 (fi::shell-variable-bound-value
+			  "fi:explicit-" image "-file-name")
 			 (getenv (concat "E" majuscule-name))
 			 (getenv (concat "E" majuscule-image))
 			 (getenv majuscule-name)
 			 (getenv majuscule-image)
-			 (shell-variable-bound-value
-			  "default-" name "-file-name")
-			 (shell-variable-bound-value
-			  "default-" image "-file-name")))
-	 (image-prompt (or (shell-variable-bound-value
-			    name "-prompt-pattern")
-			   (shell-variable-bound-value
-			    image "-prompt-pattern")))
+			 (fi::shell-variable-bound-value
+			  "fi:default-" name "-file-name")
+			 (fi::shell-variable-bound-value
+			  "fi:default-" image "-file-name")))
+	 (image-prompt (or (fi::shell-variable-bound-value
+			    "fi:" name "-prompt-pattern")
+			   (fi::shell-variable-bound-value
+			    "fi:" image "-prompt-pattern")))
 	 (image-arguments (cond
-			   ((shell-variable-bound-value
-			     "explicit-" name "-file-name")
-			    (shell-variable-bound-value
-			     "explicit-" name "-image-arguments"))
-			   ((shell-variable-bound-value
-			     "explicit-" image "-file-name")
-			    (shell-variable-bound-value
-			     "explicit-" image "-image-arguments"))
-			   ((shell-variable-bound-value
-			     "default-" name "-file-name")
-			    (shell-variable-bound-value
-			     "default-" name "-image-arguments"))
-			   ((shell-variable-bound-value
-			     "default-" image "-file-name")
-			    (shell-variable-bound-value
-			     "default-" image "-image-arguments"))
-			   (t
-			    nil)))
+			    ((fi::shell-variable-bound-value
+			      "fi:explicit-" name "-file-name")
+			     (fi::shell-variable-bound-value
+			      "fi:explicit-" name "-image-arguments"))
+			    ((fi::shell-variable-bound-value
+			      "fi:explicit-" image "-file-name")
+			     (fi::shell-variable-bound-value
+			      "fi:explicit-" image "-image-arguments"))
+			    ((fi::shell-variable-bound-value
+			      "fi:default-" name "-file-name")
+			     (fi::shell-variable-bound-value
+			      "fi:default-" name "-image-arguments"))
+			    ((fi::shell-variable-bound-value
+			      "fi:default-" image "-file-name")
+			     (fi::shell-variable-bound-value
+			      "fi:default-" image "-image-arguments"))
+			    (t
+			     nil)))
 	 (start-up-feed-name (concat "~/.emacs_"
 				     (file-name-nondirectory image-file))))
     (apply
-     (if another 'make-another-shell 'fi:make-shell)
+     (if another 'fi::make-another-shell 'fi::make-shell)
      (append
       (list
        name
@@ -527,8 +521,8 @@ Also see `make-shell' and `make-another-shell'."
        image-prompt)
       (append image-arguments arguments))) ))
 
-(defun fi:make-shell (name program &optional startfile prompt-pattern
-			&rest arguments)
+(defun fi::make-shell (name program &optional startfile prompt-pattern
+			    &rest arguments)
   "Create shell or lisp subprocess that does input/output through buffer.
 Returns the name of the created subprocess without the asterisks."
   (let ((buffer (get-buffer-create (concat "*" name "*")))
@@ -544,39 +538,39 @@ Returns the name of the created subprocess without the asterisks."
       (setq proc (apply 'start-process
 			(append (list name buffer program)
 				arguments)))
-      (set-process-sentinel proc 'subprocess-sentinel)
-      (set-process-filter proc 'subprocess-filter)
+      (set-process-sentinel proc 'fi::subprocess-sentinel)
+      (set-process-filter proc 'fi::subprocess-filter)
       (cond
-       (startfile
- 	;; This is guaranteed to wait long enough
- 	;; but has bad results if the shell or Lisp does not prompt at all
- 	;;	     (while (= size (buffer-size))
- 	;;	       (sleep-for 1))
- 	;; I hope 1 second is enough!
-	(sleep-for 1)
-	(goto-char (point-max))
-	(insert-file-contents startfile)
-	(setq startfile (buffer-substring (point) (point-max)))
-	(delete-region (point) (point-max))
-	(send-string-split proc startfile subprocess-map-nl-to-cr)))
+	(startfile
+	 ;; This is guaranteed to wait long enough
+	 ;; but has bad results if the shell or Lisp does not prompt at all
+	 ;;	     (while (= size (buffer-size))
+	 ;;	       (sleep-for 1))
+	 ;; I hope 1 second is enough!
+	 (sleep-for 1)
+	 (goto-char (point-max))
+	 (insert-file-contents startfile)
+	 (setq startfile (buffer-substring (point) (point-max)))
+	 (delete-region (point) (point-max))
+	 (fi::send-string-split proc startfile fi:subprocess-map-nl-to-cr)))
       (setq name (process-name proc)))
     (goto-char (point-max))
     (set-marker (process-mark proc) (point))
     (if (string-match "[Ll][Ii][Ss][Pp]" name)
 	(fi:inferior-lisp-mode prompt-pattern)
-	(fi:shell-mode prompt-pattern))
+      (fi:shell-mode prompt-pattern))
     name))
 
-(defun make-another-shell (name program
-				&optional number startfile prompt-pattern
-				&rest arguments)
+(defun fi::make-another-shell (name program
+				    &optional number startfile prompt-pattern
+				    &rest arguments)
   "Create another subprocess that does input/output through a buffer."
-  (apply 'fi:make-shell
-	 (append (list (generate-new-buffer-name name number)
+  (apply 'fi::make-shell
+	 (append (list (fi::generate-new-buffer-name name number)
 		       program startfile prompt-pattern)
 		 arguments)))
 
-(defun generate-new-buffer-name (name number)
+(defun fi::generate-new-buffer-name (name number)
   (let* ((separator "-")
 	 (name-of-buffer (if number
 			     (concat name separator number)
@@ -595,27 +589,28 @@ Returns the name of the created subprocess without the asterisks."
 	   (setq new-name (concat name separator new-number)))
 	 new-name)))))
 
-(defun send-region-split (process start-position end-position
-				  &optional nl-cr)
+(defun fi::send-region-split (process start-position end-position
+				      &optional nl-cr)
   "Send region to process in small pieces."
   (interactive "sSend region in pieces (to process): \nr")
   (let* ((start (if (markerp start-position)
-		  (marker-position start-position)
+		    (marker-position start-position)
 		  start-position))
 	 (end (if (markerp end-position)
-		(marker-position end-position)
+		  (marker-position end-position)
 		end-position))
 	 (string (buffer-substring start end))
 	 (size (- end start)))
-    (send-string-split process string nl-cr)))
+    (fi::send-string-split process string nl-cr)))
 
-(defun send-string-split (process string &optional nl-cr)
+(defun fi::send-string-split (process string &optional nl-cr)
   "Send string to process in small pieces using send-string."
   (interactive "sSend (to process): \nsSend to process in pieces (string): ")
   (let ((size (length string))
-	(filtered-string (if nl-cr
-			   (substitute-chars-in-string '((?\n . ?\r)) string)
-			   string))
+	(filtered-string
+	 (if nl-cr
+	     (fi::substitute-chars-in-string '((?\n . ?\r)) string)
+	   string))
 	(start 0))
     (while (and (> size 0)
 		(condition-case nil
@@ -626,33 +621,33 @@ Returns the name of the created subprocess without the asterisks."
 				  start
 				  (+ start
 				     (min size
-					  subprocess-write-quantum))))
+					  fi:subprocess-write-quantum))))
 		      t)
 		  (error
 		   (message "Error writing to subprocess.")
 		   nil)))
-      (setq size (- size subprocess-write-quantum))
-      (setq start (+ start subprocess-write-quantum)))))
+      (setq size (- size fi:subprocess-write-quantum))
+      (setq start (+ start fi:subprocess-write-quantum)))))
 
-(defun rlogin-filter (process output)
-  "Filter for `rlogin' subprocess buffers.
+(defun fi::rlogin-filter (process output)
+  "Filter for `fi:rlogin' subprocess buffers.
 Watch for the first shell prompt from the remote login, then send the string
 \"stty -echo nl\", and turn ourself off."
-  (let ((old-buffer (subprocess-filter process output t)))
+  (let ((old-buffer (fi::subprocess-filter process output t)))
     (if (save-excursion (beginning-of-line)
 			(looking-at subprocess-prompt-pattern))
 	(progn
-	  (set-process-filter process 'subprocess-filter)
-	  (send-string-split process "stty -echo nl\n" nil)))
+	  (set-process-filter process 'fi::subprocess-filter)
+	  (fi::send-string-split process "stty -echo nl\n" nil)))
     (if old-buffer
 	(set-buffer old-buffer))))
 
 ;;; Sentinel and filter for subprocesses.  The sentinel is currently
 ;;;   not used.
-(defun subprocess-sentinel (process status)
+(defun fi::subprocess-sentinel (process status)
   t)
 
-(defun subprocess-filter (process output &optional stay)
+(defun fi::subprocess-filter (process output &optional stay)
   "Filter output from processes tied to buffers.
 This function implements continuous output to visible buffers."
   (let* ((old-buffer (current-buffer))
@@ -692,7 +687,7 @@ This function implements continuous output to visible buffers."
 			(+ old-point output-length)
 		      old-point))
     (save-excursion
-      ;; Go to point of last output by subprocess and insert new
+      ;; Go to point of last output by fi::subprocess and insert new
       ;;   output there, preserving position of the marker.
       (goto-char marker-point)
       ;; The code below works around what appears to be a display bug
@@ -706,7 +701,7 @@ This function implements continuous output to visible buffers."
       (insert-string output)
       (set-marker marker (point)))
     (if (not in-buffer)
-	(if (and subprocess-continuously-show-output-in-visible-buffer
+	(if (and fi:subprocess-continuously-show-output-in-visible-buffer
 		 point-not-before-marker)
 	    ;; Keep window's notion of `point' in a constant relationship to
 	    ;;   the process output marker.
@@ -714,103 +709,104 @@ This function implements continuous output to visible buffers."
 		(goto-char new-point)
 	      (set-window-point window-of-buffer new-point))
 	  (if no-window
-	      t ;; Still there.
+	      t;; Still there.
 	    (set-window-point window-of-buffer old-point)))
       (goto-char new-point))
     (cond
-     (in-buffer nil)
-     (stay old-buffer)
-     (t (set-buffer old-buffer)))))
+      (in-buffer nil)
+      (stay old-buffer)
+      (t (set-buffer old-buffer)))))
 
-(defun remove-chars-from-string (char-list string)
+(defun fi::remove-chars-from-string (char-list string)
   "Remove characters in CHAR-LIST from string STRING and return the result."
   (mapconcat '(lambda (char)
-		(if (memq char char-list)
-		    nil
-		  (char-to-string char)))
+	       (if (memq char char-list)
+		   nil
+		 (char-to-string char)))
 	     string
 	     nil))
 
-(defun substitute-chars-in-string (char-assoc-list string)
+(defun fi::substitute-chars-in-string (char-assoc-list string)
   "Substitute character pairs of CHAR-ASSOC-LIST in STRING."
   (let (pair)
     (mapconcat '(lambda (char)
-		  (if (setq pair (assq char char-assoc-list))
-		      (char-to-string (cdr pair))
-		    (char-to-string char)))
+		 (if (setq pair (assq char char-assoc-list))
+		     (char-to-string (cdr pair))
+		   (char-to-string char)))
 	       string
 	       nil)))
 
-(defun fi:subprocess-hack-directory ()
+(defun fi::subprocess-hack-directory ()
   ;; Even if we get an error trying to hack the working directory,
   ;; still send the input to the subshell.
   (condition-case ()
       (save-excursion
-	(goto-char last-input-start)
+	(goto-char fi::last-input-start)
 	(cond
-	 ((and (and shell-popd-regexp
-		    (looking-at shell-popd-regexp))
-	       (memq (char-after (match-end 0)) '(?\; ?\n)))
-	  (if shell-directory-stack
-	      (progn
-		(cd (car shell-directory-stack))
-		(setq shell-directory-stack (cdr shell-directory-stack)))))
-	 ((and shell-pushd-regexp
-	       (looking-at shell-pushd-regexp))
-	  (cond
-	   ((memq (char-after (match-end 0)) '(?\; ?\n))
-	    (if shell-directory-stack
-		(let ((old default-directory))
-		  (cd (car shell-directory-stack))
-		  (setq shell-directory-stack
-		    (cons old (cdr shell-directory-stack))))))
-	   ((memq (char-after (match-end 0)) '(?\  ?\t))
-	    (let (dir)
-	      (skip-chars-forward "^ ")
-	      (skip-chars-forward " \t")
-	      (if (file-directory-p
-		   (setq dir
-		     (expand-file-name
-		      (substitute-in-file-name
-		       (buffer-substring
-			(point)
-			(progn
-			  (skip-chars-forward "^\n \t;")
-			  (point)))))))
-		  (progn
-		    (setq shell-directory-stack
-		      (cons default-directory shell-directory-stack))
-		    (cd dir)))))))
-	 ((and shell-cd-regexp
-	       (looking-at shell-cd-regexp))
-	  (cond
-	   ((memq (char-after (match-end 0)) '(?\; ?\n))
-	    (cd (getenv "HOME")))
-	   ((memq (char-after (match-end 0)) '(?\  ?\t))
-	    (let (dir)
-	      (skip-chars-forward "^ ")
-	      (skip-chars-forward " \t")
-	      (if (file-directory-p
-		   (setq dir 
-		     (expand-file-name
-		      (substitute-in-file-name
-		       (buffer-substring
-			(point)
-			(progn
-			  (skip-chars-forward "^\n \t;")
-			  (point)))))))
-		  (cd dir))))))))
-  (error nil)))
+	  ((and (and fi:shell-popd-regexp
+		     (looking-at fi:shell-popd-regexp))
+		(memq (char-after (match-end 0)) '(?\; ?\n)))
+	   (if fi::shell-directory-stack
+	       (progn
+		 (cd (car fi::shell-directory-stack))
+		 (setq fi::shell-directory-stack
+		   (cdr fi::shell-directory-stack)))))
+	  ((and fi:shell-pushd-regexp
+		(looking-at fi:shell-pushd-regexp))
+	   (cond
+	     ((memq (char-after (match-end 0)) '(?\; ?\n))
+	      (if fi::shell-directory-stack
+		  (let ((old default-directory))
+		    (cd (car fi::shell-directory-stack))
+		    (setq fi::shell-directory-stack
+		      (cons old (cdr fi::shell-directory-stack))))))
+	     ((memq (char-after (match-end 0)) '(?\  ?\t))
+	      (let (dir)
+		(skip-chars-forward "^ ")
+		(skip-chars-forward " \t")
+		(if (file-directory-p
+		     (setq dir
+		       (expand-file-name
+			(substitute-in-file-name
+			 (buffer-substring
+			  (point)
+			  (progn
+			    (skip-chars-forward "^\n \t;")
+			    (point)))))))
+		    (progn
+		      (setq fi::shell-directory-stack
+			(cons default-directory fi::shell-directory-stack))
+		      (cd dir)))))))
+	  ((and fi:shell-cd-regexp
+		(looking-at fi:shell-cd-regexp))
+	   (cond
+	     ((memq (char-after (match-end 0)) '(?\; ?\n))
+	      (cd (getenv "HOME")))
+	     ((memq (char-after (match-end 0)) '(?\  ?\t))
+	      (let (dir)
+		(skip-chars-forward "^ ")
+		(skip-chars-forward " \t")
+		(if (file-directory-p
+		     (setq dir 
+		       (expand-file-name
+			(substitute-in-file-name
+			 (buffer-substring
+			  (point)
+			  (progn
+			    (skip-chars-forward "^\n \t;")
+			    (point)))))))
+		    (cd dir))))))))
+    (error nil)))
 
 ;;;;
 ;;; Misc Initializations
 ;;;;
 
 (mapcar 'make-variable-buffer-local
-	'(shell-popd-regexp
-	  shell-pushd-regexp 
-	  shell-cd-regexp
-	  subprocess-map-nl-to-cr
-	  subprocess-continuously-show-output-in-visible-buffer
-	  subprocess-enable-superkeys
-	  subprocess-super-key-map))
+	'(fi:shell-popd-regexp
+	  fi:shell-pushd-regexp 
+	  fi:shell-cd-regexp
+	  fi:subprocess-map-nl-to-cr
+	  fi:subprocess-continuously-show-output-in-visible-buffer
+	  fi:subprocess-enable-superkeys
+	  fi:subprocess-super-key-map))
