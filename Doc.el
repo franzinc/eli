@@ -1,20 +1,8 @@
-;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.33 1991/06/20 10:33:39 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.34 1992/08/04 15:49:12 layer Exp $
 
 (require 'cl)
 
-(defun member-equal (item list)
-  "same as common lisp (member item list :test #'equal)"
-  (let ((ptr list)
-        (done nil)
-        (result '()))
-    (while (not (or done (atom ptr)))
-      (cond ((equal item (car ptr))
-             (setq done t)
-             (setq result ptr)))
-      (setq ptr (cdr ptr)))
-    result))
-
-(setq args (cdr (member-equal "--" command-line-args)))
+(setq args (cdr (fi:member-equal "--" command-line-args)))
 (setq input-file (car args))
 (setq output-file (car (cdr args)))
 ;;(setq input-file "spec.n")
