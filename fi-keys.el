@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.29 1990/09/07 18:19:43 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.30 1990/09/08 01:03:57 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -368,7 +368,7 @@ the minibuffer.  The word around the point is used as the default."
 		  symbol symbol symbol symbol symbol)))
     (if (fi::background-sublisp-process)
 	(process-send-string fi::backdoor-process string)
-      (fi::eval-string-send string nil t))))
+      (fi::eval-string-send string))))
 
 (defun fi:lisp-describe (symbol)
   "Describe a symbol, which is read from the minibuffer.  The word around
@@ -378,7 +378,7 @@ the point is used as the default."
 			(fi::case-frob symbol))))
     (if (fi::background-sublisp-process)
 	(process-send-string fi::backdoor-process string)
-      (fi::eval-string-send string nil t))))
+      (fi::eval-string-send string))))
 
 (defun fi:lisp-function-documentation (symbol)
   "Print the function documentation for a symbol, which is read from the
@@ -389,7 +389,7 @@ minibuffer.  The word around the point is used as the default."
 			(fi::case-frob symbol))))
     (if (fi::background-sublisp-process)
 	(process-send-string fi::backdoor-process string)
-      (fi::eval-string-send string nil t))))
+      (fi::eval-string-send string))))
 
 (defun fi:lisp-macroexpand ()
   "Print the macroexpansion of the form at the point."
@@ -446,7 +446,7 @@ which will do the macroexpansion.")
 	(set-buffer obuf)))
     (if (fi::background-sublisp-process)
 	(process-send-string fi::backdoor-process string)
-      (fi::eval-string-send string nil t))))
+      (fi::eval-string-send string))))
 
 (defun fi:lisp-who-calls (&optional symbol)
   "Print all the callers of a function.  The default symbol name is taken
@@ -459,7 +459,7 @@ from the sexp around the point."
 		 (fi::case-frob symbol))))
     (if (fi::background-sublisp-process)
 	(process-send-string fi::backdoor-process string)
-      (fi::eval-string-send string nil t))))
+      (fi::eval-string-send string))))
 
 (defun fi:lisp-complete-symbol ()
   "Perform completion on the Common Lisp symbol preceding the point.  That
