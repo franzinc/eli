@@ -1,6 +1,39 @@
-;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.21 1988/04/18 21:08:04 layer Exp $
-;;;
-;;; Low-level subprocess mode guts
+;;
+;; copyright (C) 1987, 1988 Franz Inc, Berkeley, Ca.
+;;
+;; The software, data and information contained herein are proprietary
+;; to, and comprise valuable trade secrets of, Franz, Inc.  They are
+;; given in confidence by Franz, Inc. pursuant to a written license
+;; agreement, and stored only in accordance with the terms of such license.
+;;
+;; Restricted Rights Legend
+;; ------------------------
+;; Use, duplication, and disclosure by the Government are subject to
+;; restrictions of Restricted Rights for Commercial Software developed
+;; at private expense as specified in DOD FAR 52.227-7013 (c) (1) (ii).
+;;
+;; This file may be distributed without further permission from
+;; Franz Inc. as long as
+;;
+;;	* it is not part of a product for sale,
+;;	* no charge is made for the distribution, and
+;;	* all copyright notices and this notice are preserved.
+;;
+;; If you have any comments or questions on this package, please feel
+;; free to contact Franz Inc. at
+;;
+;;	Franz Inc.
+;;	Attn: Emacs Group Manager
+;;	1995 University Ave
+;;	Suite 275
+;;	Berkeley, CA 94704
+;; or
+;;	emacs-info%franz.uucp@Berkeley.EDU
+;;	ucbvax!franz!emacs-info
+
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.22 1988/04/25 15:18:22 layer Exp $
+
+;; Low-level subprocess mode guts
 
 ;;;;
 ;;; Variables and Constants
@@ -42,8 +75,8 @@ This variable is buffer-local.  If nil, no automatic directory changes
 will be made.")
 
 (defvar fi:subprocess-map-nl-to-cr nil
-  "If t, map NL (newline) to CR (carriage-return) in input to fi::make-process.
-This is a buffer-local symbol.")
+  "If t, map NL (newline) to CR (carriage-return).  This is a buffer-local
+symbol.")
 
 (defvar fi:subprocess-continuously-show-output-in-visible-buffer t
   "If t, output from a subprocess to a visible buffer is continuously
@@ -54,33 +87,26 @@ process output marker, the window is not updated.  This is a buffer-local
 symbol.")
 
 (defvar fi:subprocess-enable-superkeys nil
-  "If t, certain keys become `superkeys' in subprocess buffers.
-The superkeys are C-a, C-d, C-o, C-u, C-w, C-z, and C-\\, which will behave
-as they would in the current local keymap when typed at the end
-of a subprocess buffer.  If typed elsewhere, these keys have their
-normal global binding.  This is a buffer-local symbol.")
+  "If t, certain keys become `superkeys' in subprocess buffers--this should
+be set before starting any subprocesses.  The superkeys are C-a, C-d, C-o,
+C-u, C-w, C-z, and C-\\, which will behave as they would in the current
+local keymap when typed at the end of a subprocess buffer.  If typed
+elsewhere, these keys have their normal global binding.  This is a
+buffer-local symbol.")
 
-(defvar fi:explicit-lisp-file-name nil
-  "Explicit Lisp image to invoke from (fi:lisp).")
 (defvar fi:explicit-franz-lisp-file-name nil
   "Explicit Franz Lisp image to invoke from (fi:franz-lisp).")
 (defvar fi:explicit-common-lisp-file-name nil
   "Explicit Common Lisp image to invoke from (fi:common-lisp).")
-(defvar fi:explicit-lisp-image-arguments nil
-  "Explicit Lisp image arguments when invoked from (fi:lisp).")
 (defvar fi:explicit-franz-lisp-image-arguments nil
   "Explicit Franz Lisp image arguments when invoked from (fi:franz-lisp).")
 (defvar fi:explicit-common-lisp-image-arguments nil
   "Explicit Common Lisp image arguments when invoked from (fi:common-lisp).")
 
-(defvar fi:default-lisp-file-name "lisp"
-  "Default Lisp image to invoke from (fi:lisp).")
 (defvar fi:default-franz-lisp-file-name "lisp"
   "Default Franz Lisp image to invoke from (fi:franz-lisp).")
 (defvar fi:default-common-lisp-file-name "cl"
   "Default Common Lisp image to invoke from (fi:common-lisp).")
-(defvar fi:default-lisp-image-arguments nil
-  "Default Lisp image arguments when invoked from (fi:lisp).")
 (defvar fi:default-franz-lisp-image-arguments nil
   "Default Franz Lisp image arguments when invoked from (fi:franz-lisp).")
 (defvar fi:default-common-lisp-image-arguments nil
@@ -91,43 +117,25 @@ normal global binding.  This is a buffer-local symbol.")
 
 (defvar fi:common-lisp-prompt-pattern
   "^\\(\\[[0-9]+c?\\] \\|\\[step\\] \\)?<[-A-Za-z]* ?[0-9]*?> "
-  "Regexp for Newline command in inferior-lisp mode to match Common Lisp
-prompts. Anything from beginning of line up to the end of what this pattern
-matches is deemed to be prompt, and is not re-executed.")
-
-(defvar fi:franz-lisp-prompt-pattern
-  "^[-=]> +\\|^c{[0-9]+} +"
-  "Regexp used by Newline command in inferior-lisp mode to match Franz
+  "Regexp for Newline command in inferior-common-lisp mode to match Common
 Lisp prompts. Anything from beginning of line up to the end of what this
 pattern matches is deemed to be prompt, and is not re-executed.")
 
-(defvar fi:lisp-prompt-pattern fi:common-lisp-prompt-pattern
-  "Regexp used by Newline command in inferior-lisp mode to match Lisp
-prompts. Anything from beginning of line up to the end of what this pattern
-matches is deemed to be prompt, and is not re-executed.")
+(defvar fi:franz-lisp-prompt-pattern
+  "^[-=]> +\\|^c{[0-9]+} +"
+  "Regexp used by Newline command in inferior-franz-lisp mode to match
+Franz Lisp prompts. Anything from beginning of line up to the end of what
+this pattern matches is deemed to be prompt, and is not re-executed.")
 
 ;;;;
 ;;; User visible functions
 ;;;;
 
-(defun fi:lisp ()
-  "Run an inferior lisp, with input/output through buffer *lisp*.
-See `fi::make-process'."
-  (interactive)
-  (fi::make-process "lisp" "lisp" 'fi:inferior-lisp-mode))
-
-(defun fi:another-lisp ()
-  "Run a new inferior lisp, with input/output through buffer *lisp-N*.
-This function always creates a new subprocess and buffer.  See
-`fi::make-process'."
-  (interactive)
-  (fi::make-process "lisp" "lisp" 'fi:inferior-lisp-mode nil t))
-
 (defun fi:common-lisp (&optional tcp-lisp)
-  "With no prefix arg run a Common Lisp :subprocess with input/output
-through buffer *common-lisp*, otherwise try and connect to a Lisp Listener
-daemon (via a unix or internet domain socket, see `open-network-stream').
-Returns the name of the started subprocess."
+  "With no prefix argument, start a Common Lisp subprocess in 
+buffer *common-lisp*, otherwise try and connect to a Lisp listener
+daemon via a TCP/IP socket.  Returns the new process.  See
+`fi:unix-domain'."
   (interactive "P")
   (let ((proc (fi::make-process
 	       "common-lisp" "common-lisp"
@@ -139,10 +147,10 @@ Returns the name of the started subprocess."
     proc))
 
 (defun fi:another-common-lisp (&optional tcp-lisp)
-  "Run a new Common Lisp subprocess, with i/o through buffer
-*common-lisp-N*.  Returns the name of the started subprocess.  This
-function always creates a new subprocess and buffer.  See
-`fi::make-process'."
+  "With no prefix argument, start a new Common Lisp subprocess in 
+buffer *common-lisp-N*, otherwise try and connect to a Lisp Listener
+daemon via a TCP/IP socket, using a buffer of the same name.  Returns the
+new process.  See `fi:unix-domain'."
   (interactive "P")
   (let ((proc (fi::make-process
 	       "common-lisp" "common-lisp"
@@ -155,9 +163,8 @@ function always creates a new subprocess and buffer.  See
     proc))
 
 (defun fi:franz-lisp ()
-  "Run a Franz Lisp subprocess, with input/output through buffer
-*franz-lisp*.   Returns the name of the started subprocess.  See
-`fi::make-process'."
+  "Run a Franz Lisp subprocess, with IO through buffer *franz-lisp*.
+Returns the new process."
   (interactive)
   (let ((proc (fi::make-process "franz-lisp" "franz-lisp"
 				'fi:inferior-franz-lisp-mode)))
@@ -165,9 +172,9 @@ function always creates a new subprocess and buffer.  See
     proc))
 
 (defun fi:another-franz-lisp ()
-  "Run a new Franz Lisp subprocess, with i/o through buffer *franz-lisp-N*.
-Returns the name of the started subprocess.  This function always creates a
-new subprocess and buffer.  See `fi::make-process'."
+  "Run a new Franz Lisp subprocess, with IO through buffer *franz-lisp-N*.
+Returns the new process.  This function always creates a
+new subprocess and buffer."
   (interactive)
   (let ((proc (fi::make-process "franz-lisp" "franz-lisp"
 				'fi:inferior-franz-lisp-mode nil t)))
@@ -224,7 +231,7 @@ current subprocess prompt pattern, this function skips over it."
       (re-search-forward subprocess-prompt-pattern nil t)))
 
 (defun fi:subprocess-backward-kill-word (words)
-  "Kill previous word(s) in current subprocess input line.  This function
+  "Kill previous word in current subprocess input line.  This function
 takes care not to delete past most recent subprocess output."
   (interactive "p")
   (save-restriction
@@ -234,9 +241,9 @@ takes care not to delete past most recent subprocess output."
     (backward-kill-word words)))
 
 (defun fi:subprocess-send-input ()
-  "Send input to subshell.  At end of buffer, sends all text after last
-output as input to the subshell, including a newline inserted at the end.
-Not at end, copies current line to the end of the buffer and sends it,
+  "Send input to the subprocess.  At end of buffer, sends all text after
+last output as input to the subshell, including a newline inserted at the
+end. Not at end, copies current line to the end of the buffer and sends it,
 after first attempting to discard any prompt at the beginning of the line
 by matching the regexp that is the value of subprocess-prompt-pattern if
 possible.  This regexp should start with \"^\"."
@@ -266,12 +273,12 @@ possible.  This regexp should start with \"^\"."
     (set-marker (process-mark process) (point))))
 
 (defun fi:subprocess-send-eof ()
-  "Send eof to subshell (or to the program running under it)."
+  "Send eof to the subprocess."
   (interactive)
   (process-send-eof))
 
 (defun fi:subprocess-kill-output ()
-  "Kill all output from shell since last input."
+  "Kill all output from the subprocess since last input."
   (interactive)
   (goto-char (point-max))
   (kill-region fi::last-input-end (point))
@@ -284,13 +291,13 @@ possible.  This regexp should start with \"^\"."
 
 (defun fi:subprocess-show-output ()
   "Display start of this batch of shell output at top of window.
-Also put cursor there."
+Also move the point there."
   (interactive)
   (set-window-start (selected-window) fi::last-input-end)
   (goto-char fi::last-input-end))
 
 (defun fi:subprocess-interrupt ()
-  "Interrupt this shell's current subjob."
+  "Interrupt the subprocess."
   (interactive)
   (interrupt-process nil t))
 
@@ -300,17 +307,17 @@ Also put cursor there."
   (kill-process nil t))
 
 (defun fi:subprocess-quit ()
-  "Send quit signal to this shell's current subjob."
+  "Send a quit signal to the subprocess."
   (interactive)
   (quit-process nil t))
 
 (defun fi:subprocess-suspend ()
-  "Stop this shell's current subjob."
+  "Send a ^Z to the subprocess."
   (interactive)
   (stop-process nil t))
 
 (defun fi:subprocess-kill-input ()
-  "Kill all text since last stuff output by the shell or its subjobs."
+  "Kill all input since last stuff output by the subprocess."
   (interactive)
   (kill-region (process-mark (get-buffer-process (current-buffer)))
 	       (point)))
@@ -470,7 +477,7 @@ Returns the name of the created subprocess without the asterisks."
       (if fi:unix-domain
 	  (setq proc (open-network-stream
 		      (buffer-name buffer) buffer
-		      (expand-file-name fi::unix-domain-socket)
+		      (expand-file-name fi:unix-domain-socket)
 		      0))
 	(setq proc (open-network-stream (buffer-name buffer) buffer
 					fi:local-host-name
