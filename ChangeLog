@@ -7,6 +7,15 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.13
+
+Tue Jul 28 15:18:07 1998  Kevin Layer  <layer@ultra>
+
+	* local.mak: remove readme.htm from release_files, since it gets
+	into the dist another way
+	* doc/eli.htm: fix bad links
+
+*******************************************************************************
 2.0.21.12
 
 Mon Jul 20 19:56:40 1998  Kevin Layer  <layer@ultra>
