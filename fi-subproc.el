@@ -1,4 +1,4 @@
-;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.12 1988/03/04 09:10:25 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.13 1988/03/19 18:48:59 layer Exp $
 ;;;
 ;;; Low-level subprocess mode guts
 
@@ -111,9 +111,9 @@ normal global binding.  This is a buffer-local symbol.")
 Anything from beginning of line up to the end of what this pattern matches
 is deemed to be prompt, and is not re-executed.")
 
-(defvar fi:lisp-prompt-pattern
-  "^[-=]> +\\|^c{[0-9]+} +"
-  "*Regexp used by Newline command in inferior-lisp mode to match Lisp
+(defvar fi:common-lisp-prompt-pattern
+  "^\\(\\[[0-9]+c?\\] \\|\\[step\\] \\)?<[-A-Za-z]* ?[0-9]*> "
+  "*Regexp for Newline command in inferior-lisp mode to match Common Lisp
 prompts. Anything from beginning of line up to the end of what this pattern
 matches is deemed to be prompt, and is not re-executed.")
 
@@ -123,9 +123,8 @@ matches is deemed to be prompt, and is not re-executed.")
 Lisp prompts. Anything from beginning of line up to the end of what this
 pattern matches is deemed to be prompt, and is not re-executed.")
 
-(defvar fi:common-lisp-prompt-pattern
-  "^\\(\\[[0-9]+c?\\] \\|\\[step\\] \\)?<[-A-Za-z]* ?[0-9]*> "
-  "*Regexp for Newline command in inferior-lisp mode to match Common Lisp
+(defvar fi:lisp-prompt-pattern fi:common-lisp-prompt-pattern
+  "*Regexp used by Newline command in inferior-lisp mode to match Lisp
 prompts. Anything from beginning of line up to the end of what this pattern
 matches is deemed to be prompt, and is not re-executed.")
 
@@ -316,7 +315,7 @@ takes care not to delete past most recent subprocess output."
 output as input to the subshell, including a newline inserted at the end.
 Not at end, copies current line to the end of the buffer and sends it,
 after first attempting to discard any prompt at the beginning of the line
-by matching the regexp that is the value of fi:shell-prompt-pattern if
+by matching the regexp that is the value of subprocess-prompt-pattern if
 possible.  This regexp should start with \"^\"."
   (interactive)
   (if fi::shell-completions-window (fi::shell-completion-cleanup))
@@ -329,7 +328,7 @@ possible.  This regexp should start with \"^\"."
 	(move-marker fi::last-input-end (point)))
     (let ((max (point)))
       (beginning-of-line)
-      (re-search-forward fi:shell-prompt-pattern max t))
+      (re-search-forward subprocess-prompt-pattern max t))
     (let ((copy (buffer-substring (point)
 				  (progn (forward-line 1) (point)))))
       (goto-char (point-max))
