@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.28 1988/11/21 21:14:40 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.29 1989/05/19 11:41:48 layer Exp $
 
 ;;;; Mode initializations
 
@@ -51,14 +51,22 @@
   "Major mode map used when editing Common Lisp source.")
 (defvar fi:franz-lisp-mode-map nil
   "Major mode map used when editing Franz Lisp source.")
+(defvar fi:emacs-lisp-mode-map nil
+  "Major mode map used when editing GNU Emacs Lisp source.")
 
-(defvar fi:indent-setup-hook nil
-  "Hook called to setup local indentation in Inferior Lisp and Lisp
-modes.")
+(defvar fi:lisp-mode-syntax-table nil
+  "The value of which is the syntax table for all Lisp modes, except Emacs
+Lisp mode.")
+(defvar fi:emacs-lisp-mode-syntax-table nil
+  "The value of which is the syntax table for Emacs Lisp mode.")
+
 
 (defvar fi:common-lisp-file-types '(".cl" ".lisp" ".lsp")
   "A list of the files which are automatically put in fi:common-lisp-mode.
 This variable should be set before this package is loaded.")
+
+(defvar fi:lisp-do-indentation nil
+  "When non-nil, do indentation FI-style indentation in Lisp modes.")
 
 ;;;;
 ;;; The Modes
@@ -70,8 +78,7 @@ This variable should be set before this package is loaded.")
   (kill-all-local-variables)
   (setq major-mode 'fi:inferior-common-lisp-mode)
   (setq mode-name "Inferior Common Lisp")
-  (set-syntax-table lisp-mode-syntax-table)
-  (setq local-abbrev-table lisp-mode-abbrev-table)
+  (set-syntax-table fi:lisp-mode-syntax-table)
   (fi::lisp-subprocess-mode-variables)
   (if (null fi:inferior-common-lisp-mode-super-key-map)
       (progn
@@ -85,8 +92,9 @@ This variable should be set before this package is loaded.")
 	 (make-sparse-keymap) fi:inferior-common-lisp-mode-super-key-map)))
   (use-local-map fi:inferior-common-lisp-mode-map)
   (setq fi:subprocess-super-key-map fi:inferior-common-lisp-mode-super-key-map)
-  (run-hooks 'fi:indent-setup-hook 'fi:lisp-mode-hook
-	     'fi:subprocess-mode-hook 'fi:inferior-common-lisp-mode-hook))
+  (setq fi:lisp-indent-hook-property 'fi:common-lisp-indent-hook)
+  (run-hooks 'fi:lisp-mode-hook 'fi:subprocess-mode-hook
+	     'fi:inferior-common-lisp-mode-hook))
 
 (defun fi:inferior-franz-lisp-mode ()
   "Major mode for interacting with an inferior Franz Lisp subprocess."
@@ -94,8 +102,7 @@ This variable should be set before this package is loaded.")
   (kill-all-local-variables)
   (setq major-mode 'fi:inferior-franz-lisp-mode)
   (setq mode-name "Inferior Franz Lisp")
-  (set-syntax-table lisp-mode-syntax-table)
-  (setq local-abbrev-table lisp-mode-abbrev-table)
+  (set-syntax-table fi:lisp-mode-syntax-table)
   (fi::lisp-subprocess-mode-variables)
   (if (null fi:inferior-franz-lisp-mode-super-key-map)
       (progn
@@ -109,9 +116,9 @@ This variable should be set before this package is loaded.")
 	 (make-sparse-keymap) fi:inferior-franz-lisp-mode-super-key-map)))
   (use-local-map fi:inferior-franz-lisp-mode-map)
   (setq fi:subprocess-super-key-map fi:inferior-franz-lisp-mode-super-key-map)
-  
-  (run-hooks 'fi:indent-setup-hook 'fi:lisp-mode-hook
-	     'fi:subprocess-mode-hook 'fi:inferior-franz-lisp-mode-hook))
+  (setq fi:lisp-indent-hook-property 'fi:franz-lisp-indent-hook)
+  (run-hooks 'fi:lisp-mode-hook 'fi:subprocess-mode-hook
+	     'fi:inferior-franz-lisp-mode-hook))
 
 (defun fi:tcp-common-lisp-mode ()
   "Major mode for interacting with a Common Lisp over a TCP/IP socket."
@@ -119,8 +126,7 @@ This variable should be set before this package is loaded.")
   (kill-all-local-variables)
   (setq major-mode 'fi:tcp-common-lisp-mode)
   (setq mode-name "TCP Common Lisp")
-  (set-syntax-table lisp-mode-syntax-table)
-  (setq local-abbrev-table lisp-mode-abbrev-table)
+  (set-syntax-table fi:lisp-mode-syntax-table)
   (fi::lisp-subprocess-mode-variables)
   (if (null fi:tcp-common-lisp-mode-super-key-map)
       (progn
@@ -133,9 +139,9 @@ This variable should be set before this package is loaded.")
 	 (make-sparse-keymap) fi:tcp-common-lisp-mode-super-key-map)))
   (use-local-map fi:tcp-common-lisp-mode-map)
   (setq fi:subprocess-super-key-map fi:tcp-common-lisp-mode-super-key-map)
-
-  (run-hooks 'fi:indent-setup-hook 'fi:lisp-mode-hook
-	     'fi:subprocess-mode-hook 'fi:tcp-common-lisp-mode-hook))
+  (setq fi:lisp-indent-hook-property 'fi:common-lisp-indent-hook)
+  (run-hooks 'fi:lisp-mode-hook 'fi:subprocess-mode-hook
+	     'fi:tcp-common-lisp-mode-hook))
 
 (defun fi:common-lisp-mode ()
   "Major mode for editing Lisp code to run in Common Lisp.
@@ -145,6 +151,7 @@ Entry to this mode calls the value of `fi:common-lisp-mode-hook'."
   (kill-all-local-variables)
   (setq major-mode 'fi:common-lisp-mode)
   (setq mode-name "Common Lisp")
+  (set-syntax-table fi:lisp-mode-syntax-table)
   (fi::lisp-edit-mode-setup)
   (fi::check-for-package-info)
   (if (null fi:common-lisp-mode-map)
@@ -154,8 +161,8 @@ Entry to this mode calls the value of `fi:common-lisp-mode-hook'."
   (use-local-map fi:common-lisp-mode-map)
   (make-local-variable 'fi::sublisp-name)
   (setq fi::sublisp-name fi::freshest-common-sublisp-name)
-  (run-hooks 'fi:indent-setup-hook 'fi:lisp-mode-hook
-	     'fi:common-lisp-mode-hook))
+  (setq fi:lisp-indent-hook-property 'fi:common-lisp-indent-hook)
+  (run-hooks 'fi:lisp-mode-hook 'fi:common-lisp-mode-hook))
 
 (defun fi:franz-lisp-mode ()
   "Major mode for editing Lisp code to run in Franz Lisp.
@@ -166,6 +173,7 @@ Entry to this mode calls the value of `fi:lisp-mode-hook' and
   (kill-all-local-variables)
   (setq major-mode 'fi:franz-lisp-mode)
   (setq mode-name "Franz Lisp")
+  (set-syntax-table fi:lisp-mode-syntax-table)
   (fi::lisp-edit-mode-setup)
   (fi::check-for-package-info)
   (if (null fi:franz-lisp-mode-map)
@@ -175,23 +183,63 @@ Entry to this mode calls the value of `fi:lisp-mode-hook' and
   (use-local-map fi:franz-lisp-mode-map)
   (make-local-variable 'fi::sublisp-name)
   (setq fi::sublisp-name fi::freshest-franz-sublisp-name)
-  (run-hooks 'fi:indent-setup-hook 'fi:lisp-mode-hook
-	     'fi:franz-lisp-mode-hook))
+  (setq fi:lisp-indent-hook-property 'fi:franz-lisp-indent-hook)
+  (run-hooks 'fi:lisp-mode-hook 'fi:franz-lisp-mode-hook))
+
+(defun fi:emacs-lisp-mode ()
+  "Major mode for editing Lisp code to run in GNU Emacs.
+The bindings are taken from the variable `fi:emacs-lisp-mode-map'.
+Entry to this mode calls the value of `fi:emacs-lisp-mode-hook' if that
+value is non-nil."
+  (interactive)
+  (kill-all-local-variables)
+  (setq major-mode 'fi:emacs-lisp-mode)
+  (setq mode-name "Emacs Lisp")
+  (set-syntax-table fi:emacs-lisp-mode-syntax-table)
+  (fi::lisp-edit-mode-setup)
+  (if (null fi:emacs-lisp-mode-map)
+      (progn
+	(setq fi:emacs-lisp-mode-map (make-sparse-keymap))
+	(fi::lisp-mode-commands fi:emacs-lisp-mode-map nil nil)))
+  (use-local-map fi:emacs-lisp-mode-map)
+  (setq fi:lisp-indent-hook-property 'fi:emacs-lisp-indent-hook)
+  (run-hooks 'fi:emacs-lisp-mode-hook))
 
 (defun fi::lisp-edit-mode-setup ()
-  (set-syntax-table lisp-mode-syntax-table)
-  (setq local-abbrev-table lisp-mode-abbrev-table)
   (make-local-variable 'fi::emacs-to-lisp-transaction-file)
   (make-local-variable 'fi::emacs-to-lisp-transaction-buf)
   (make-local-variable 'fi::emacs-to-lisp-package)
-  (fi::lisp-subprocess-mode-variables))
+  (fi::lisp-mode-setup-common))
 
 (defun fi::lisp-subprocess-mode-variables ()
+  (fi::lisp-mode-setup-common))
+
+(defun fi::lisp-mode-setup-common ()
+  ;; not needed for Emacs Lisp mode, but ...
   (setq fi::cl-package-regexp fi:common-lisp-package-regexp)
+  
+  (setq local-abbrev-table lisp-mode-abbrev-table)
+  
   (make-local-variable 'paragraph-start)
   (setq paragraph-start (concat "^$\\|" page-delimiter))
   (make-local-variable 'paragraph-separate)
-  (setq paragraph-separate paragraph-start))
+  (setq paragraph-separate paragraph-start)
+  (make-local-variable 'comment-start)
+  (setq comment-start ";")
+  (make-local-variable 'comment-start-skip)
+  (setq comment-start-skip ";+[ \t]*")
+  (make-local-variable 'comment-column)
+  (setq comment-column 40)
+  (if fi:lisp-do-indentation
+      (progn
+	(make-local-variable 'indent-line-function)
+	(setq indent-line-function 'fi:lisp-indent-line)
+	(make-local-variable 'comment-indent-hook)
+	(setq comment-indent-hook 'fi:lisp-comment-indent)
+	(make-local-variable 'parse-sexp-ignore-comments)
+	(setq parse-sexp-ignore-comments 
+	  ;; This variable must be `nil' when comments end in newlines.
+	  nil))))
 
 (defun fi::check-for-package-info ()
   (save-excursion
@@ -335,17 +383,53 @@ for the \"mode:\" local variable.  For that, use  hack-local-variables."
     (fi::def-auto-mode (concat "\\" (car list) "$")
 	'fi:common-lisp-mode)
     (setq list (cdr list))))
+(fi::def-auto-mode "\\.el$" 'fi:emacs-lisp-mode)
+(fi::def-auto-mode "[]>:/]\\..*emacs" 'fi:emacs-lisp-mode)
 
-(setq fi:indent-setup-hook 'fi::indent-setup-hook)
+;;;; the syntax tables for Lisp and Emacs Lisp
 
-(defun fi::indent-setup-hook ()
-  (make-local-variable 'indent-line-function)
-  (setq indent-line-function 'lisp-indent-line)
-  (make-local-variable 'comment-start)
-  (setq comment-start ";")
-  (make-local-variable 'comment-start-skip)
-  (setq comment-start-skip ";+ *")
-  (make-local-variable 'comment-column)
-  (setq comment-column 40)
-  (make-local-variable 'comment-indent-hook)
-  (setq comment-indent-hook 'lisp-comment-indent))
+(if (not fi:emacs-lisp-mode-syntax-table)
+    (let ((i 0))
+      (setq fi:emacs-lisp-mode-syntax-table (make-syntax-table))
+      (while (< i ?0)
+	(modify-syntax-entry i "_   " fi:emacs-lisp-mode-syntax-table)
+	(setq i (1+ i)))
+      (setq i (1+ ?9))
+      (while (< i ?A)
+	(modify-syntax-entry i "_   " fi:emacs-lisp-mode-syntax-table)
+	(setq i (1+ i)))
+      (setq i (1+ ?Z))
+      (while (< i ?a)
+	(modify-syntax-entry i "_   " fi:emacs-lisp-mode-syntax-table)
+	(setq i (1+ i)))
+      (setq i (1+ ?z))
+      (while (< i 128)
+	(modify-syntax-entry i "_   " fi:emacs-lisp-mode-syntax-table)
+	(setq i (1+ i)))
+      (modify-syntax-entry ?  "    " fi:emacs-lisp-mode-syntax-table)
+      (modify-syntax-entry ?\t "    " fi:emacs-lisp-mode-syntax-table)
+      (modify-syntax-entry ?\n ">   " fi:emacs-lisp-mode-syntax-table)
+      (modify-syntax-entry ?\f ">   " fi:emacs-lisp-mode-syntax-table)
+      (modify-syntax-entry ?\; "<   " fi:emacs-lisp-mode-syntax-table)
+      (modify-syntax-entry ?` "'   " fi:emacs-lisp-mode-syntax-table)
+      (modify-syntax-entry ?' "'   " fi:emacs-lisp-mode-syntax-table)
+      (modify-syntax-entry ?, "'   " fi:emacs-lisp-mode-syntax-table)
+      (modify-syntax-entry ?. "'   " fi:emacs-lisp-mode-syntax-table)
+      (modify-syntax-entry ?# "'   " fi:emacs-lisp-mode-syntax-table)
+      (modify-syntax-entry ?\" "\"    " fi:emacs-lisp-mode-syntax-table)
+      (modify-syntax-entry ?\\ "\\   " fi:emacs-lisp-mode-syntax-table)
+      (modify-syntax-entry ?\( "()  " fi:emacs-lisp-mode-syntax-table)
+      (modify-syntax-entry ?\) ")(  " fi:emacs-lisp-mode-syntax-table)
+      (modify-syntax-entry ?\[ "(]  " fi:emacs-lisp-mode-syntax-table)
+      (modify-syntax-entry ?\] ")[  " fi:emacs-lisp-mode-syntax-table)
+      ;;(modify-syntax-entry ?_   "w   " fi:lisp-mode-syntax-table)
+      ;;(modify-syntax-entry ?-   "w   " fi:lisp-mode-syntax-table)
+      ))
+
+(if (not fi:lisp-mode-syntax-table)
+    (progn
+      (setq fi:lisp-mode-syntax-table
+	(copy-syntax-table fi:emacs-lisp-mode-syntax-table))
+      (modify-syntax-entry ?\| "\"   " fi:lisp-mode-syntax-table)
+      (modify-syntax-entry ?\[ "_   " fi:lisp-mode-syntax-table)
+      (modify-syntax-entry ?\] "_   " fi:lisp-mode-syntax-table)))
