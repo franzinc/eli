@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.82 1991/01/31 09:59:54 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.83 1991/02/12 14:55:48 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -152,6 +152,14 @@ symbol.")
   "*A function of one argument, a buffer, which is used to display a
 buffer when a subprocess is created.")
 
+(defconst fi:subprocess-env-vars
+    '(("EMACS" . "t")
+      ("TERM" . "emacs")
+      ("DISPLAY" . (getenv "DISPLAY"))
+      ("TERMCAP" . (format "emacs:co#%d:tc=unknown:" (screen-width))))
+  "*A alist containing the environment variables to pass subprocess created
+with fi::make-subprocess.")
+
 ;;;;;;;;;;;;;;;;;;;;;; internal vars
 
 (defvar fi::cl-package-regexp nil
@@ -192,14 +200,6 @@ machine, which implies that it was started via an `rsh'.  This variable is
 buffer local.")
 
 (make-variable-buffer-local 'fi::lisp-is-remote)
-
-(defconst fi:subprocess-env-vars
-    '(("EMACS" . "t")
-      ("TERM" . "emacs")
-      ("DISPLAY" . (getenv "DISPLAY"))
-      ("TERMCAP" . (format "emacs:co#%d:tc=unknown:" (screen-width))))
-  "*A alist containing the environment variables to pass subprocess created
-with fi::make-subprocess.")
 
 (defconst fi::remote-lisp-sh-prefix
     "sh -ec '%s cd %s; "
@@ -270,7 +270,11 @@ are read from the minibuffer."
   (interactive
    (list 
     current-prefix-arg
-    (or fi:default-explicit-common-lisp-image-name
+    (or (and (stringp fi:default-explicit-common-lisp-image-name)
+	     fi:default-explicit-common-lisp-image-name)
+	(and (consp fi:default-explicit-common-lisp-image-name)
+	     (eq 'lambda (car fi:default-explicit-common-lisp-image-name))
+	     (funcall fi:default-explicit-common-lisp-image-name))
 	(expand-file-name (read-file-name "Image name: " nil nil t)))
     (or fi:default-explicit-common-lisp-image-arguments
 	(fi::listify-string
@@ -359,7 +363,11 @@ arguments are read from the minibuffer."
     current-prefix-arg
     (or fi:default-remote-common-lisp-host
 	(read-from-minibuffer "Remote host name: "))
-    (or fi:default-explicit-common-lisp-image-name
+    (or (and (stringp fi:default-explicit-common-lisp-image-name)
+	     fi:default-explicit-common-lisp-image-name)
+	(and (consp fi:default-explicit-common-lisp-image-name)
+	     (eq 'lambda (car fi:default-explicit-common-lisp-image-name))
+	     (funcall fi:default-explicit-common-lisp-image-name))
 	(read-from-minibuffer "Image name (relative to home directory): "))
     (or fi:default-explicit-common-lisp-image-arguments
 	(fi::listify-string
@@ -634,8 +642,8 @@ are read from the minibuffer."
    (format "(progn
               (princ \";Starting socket daemon\n\")
               (force-output)
-              (require :ipc)
-              (require :emacs)
+              (excl::require :ipc)
+	      (excl::require :emacs (merge-pathnames excl::*library-code-pathname* \"emacs\"))
               (set (find-symbol (symbol-name :*unix-domain*) :ipc) %s)
               (funcall (find-symbol (symbol-name :start-lisp-listener-daemon) :ipc) #+:allegro-v4.1 :use-lep #+:allegro-v4.1 t )
               (values))\n"
@@ -780,7 +788,7 @@ This function implements continuous output to visible buffers."
 	     (xx nil)
 	     (host nil))
 	(setq fi::remote-port
-	  (car (setq xx (read-from-string command (cdr xx)))))
+	  (car (setq xx (read-from-string command nil))))
 	(setq fi::remote-password
 	  (car (setq xx (read-from-string command (cdr xx)))))
 	(setq fi::lisp-case-mode
