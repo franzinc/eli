@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-shell.el,v 1.17 1992/08/19 07:16:05 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-shell.el,v 1.18 1992/08/19 07:20:32 layer Exp $
 
 (defvar fi:shell-mode-map nil
   "The shell major-mode keymap.")
@@ -69,6 +69,7 @@ any other mode setup."
   (run-hooks 'fi:subprocess-mode-hook 'fi:shell-mode-hook))
 
 (defun fi:shell-mode-bang (&optional arg)
+  "Expand !$ in shell mode."
   (interactive "*p")
   (message "!-")
   (let ((c (read-char)))
