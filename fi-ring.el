@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-ring.el,v 1.4 1988/04/25 15:15:53 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-ring.el,v 1.5 1988/05/12 22:54:55 layer Exp $
 
 ;; This code is very similar to the kill-ring implementation
 ;; and implements the fi::subprocess input ring.  Each fi::subprocess buffer
@@ -105,7 +105,7 @@ the subprocess input ring."
 	    (nthcdr (% (+ arg (- ring-length yank-ring-length)) ring-length)
 		    fi::input-ring))))))
 
-(defun fi:pop-input (arg)
+(defun fi:pop-input (&optional arg)
   "Yank text from input ring.  Cycle through input ring with each
 successive invocation."
   (interactive "*p")
@@ -125,7 +125,7 @@ successive invocation."
 	     (insert (car fi::input-ring-yank-pointer))
 	     (if before (exchange-point-and-mark))))))
 
-(defun fi:push-input (arg)
+(defun fi:push-input (&optional arg)
   "Yank text from input ring.  Cycle through input ring in reverse
 order with each successive invocation."
   (interactive "*p")
