@@ -24,30 +24,30 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.20 1991/08/22 21:29:21 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.21 1991/09/27 00:58:17 layer Exp $
 ;;
 
-(defconst fi::ss-help
-    "Debugger commands:
+(defvar fi::ss-help
+    "Debugger commands:\\<fi:scan-stack-mode-map>
 
-  C-cC-c :continue
-  C-cC-p :pop
-  C-cC-r :reset
-  .      make frame under the point the current frame
-  D      disassemble the function
-  R      restart function (give prefix to specify different form)
-  a      toggle visibility of all frames (by default a subset are visible)
-  d      next line
-  e      edit source corresponding to function
-  g      revert stack from Lisp
-  h      Causes this help text to become visible
-  l      display the lexical variables
-  p      pretty print
-  q      switch back to \"%s\" buffer
-  r      return a value
-  u      previous line             
+\\[fi:ss-continue]	:continue
+\\[fi:ss-pop]	:pop
+\\[fi:ss-reset]	:reset
+\\[fi:ss-set-current]	make frame under the point the current frame
+\\[fi:ss-disassemble]	disassemble the function
+\\[fi:ss-restart]	restart function (give prefix to specify different form)
+\\[fi:ss-toggle-all]	toggle visibility of all frames (by default a subset are visible)
+\\[next-line]	next line
+\\[fi:ss-edit]	edit source corresponding to function
+\\[fi:ss-revert-stack]	revert stack from Lisp
+\\[fi:ss-unhide-help-text]	Causes this help text to become visible
+\\[fi:ss-locals]	display the lexical variables
+\\[fi:ss-pprint]	pretty print
+\\[fi:ss-quit]	switch back to \"%s\" buffer
+\\[fi:ss-return]	return a value
+\\[previous-line]	previous line             
 
-Type SPACE to hide this help summary.
+Type \\[fi:ss-hide-help-text] to hide this help summary.
 
 ")
 
@@ -91,17 +91,19 @@ process. With argument ALL, do a \":zoom :all t\"."
 	(pop-to-buffer buffer-name)
 	(if buffer-read-only (toggle-read-only))
 	(erase-buffer)
-	(insert (format fi::ss-help
-			(buffer-name
-			 (or from-buffer
-			     fi::ss-debugger-from-buffer))))
-	(when (null fi:scan-stack-mode-display-help)
-	  (fi:ss-hide-help-text))
 	(insert stack)
 	(beginning-of-buffer)
+	(fi:scan-stack-mode from-buffer process-name)
+	(let ((buffer-read-only nil))
+	  (insert (format (substitute-command-keys fi::ss-help)
+			  (buffer-name
+			   (or from-buffer
+			       fi::ss-debugger-from-buffer))))
+	  (when (null fi:scan-stack-mode-display-help)
+	    (fi:ss-hide-help-text)))
+	(beginning-of-buffer)
 	(re-search-forward fi::ss-current-frame-regexp)
-	(beginning-of-line)
-	(fi:scan-stack-mode from-buffer process-name)))
+	(beginning-of-line)))
      ;; Error continuation
      (() (error)
       (message "Cannot zoom on stack: %s" error)))))
