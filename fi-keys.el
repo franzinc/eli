@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.64 1991/09/10 11:19:26 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.65 1991/09/11 15:22:38 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -981,24 +981,61 @@ positions, and ARG."
 	  (if (looking-at (regexp-quote comment-start))
 	      (replace-match "")))))))
 
-(defvar fi::wc-stack nil)
-
-(defconst fi::wc-stack-max 10)
-
 (defun fi:lisp-delete-pop-up-window ()
   "Make the *CL-temp* buffer disappear and restore the window configuration
 as it was before it was made visible."
   (interactive)
+  (if (boundp 'epoch::version)
+      (fi::epoch-lisp-delete-pop-up-window)
+    (fi::emacs-lisp-delete-pop-up-window)))
+
+(defun fi:lisp-push-window-configuration ()
+  (if (boundp 'epoch::version)
+      (fi::epoch-lisp-push-window-configuration)
+    (fi::emacs-lisp-push-window-configuration)))
+
+(defvar fi::wc-stack nil)
+
+(defconst fi::wc-stack-max 15)
+
+(defun fi::emacs-lisp-push-window-configuration ()
+  (setq fi::wc-stack (cons (current-window-configuration) fi::wc-stack))
+  (if (> (length fi::wc-stack) fi::wc-stack-max)
+      (setcdr (nthcdr (1- fi::wc-stack-max) fi::wc-stack) nil)))
+
+(defun fi::emacs-lisp-delete-pop-up-window ()
   (unless fi::wc-stack
-    (error "The pop-up window ring is empty."))
+    (error "The pop-up window stack is empty."))
   (let ((conf (car fi::wc-stack)))
     (setq fi::wc-stack (cdr fi::wc-stack))
     (set-window-configuration conf)))
 
-(defun fi:lisp-push-window-configuration ()
-  (setq fi::wc-stack (cons (current-window-configuration) fi::wc-stack))
-  (if (> (length fi::wc-stack) fi::wc-stack-max)
-      (setcdr (nthcdr (1- fi::wc-stack-max) fi::wc-stack) nil)))
+(defun fi::epoch-lisp-push-window-configuration ()
+  (let* ((id (epoch::get-screen-id (current-screen)))
+	 (s (assq id fi::wc-stack)))
+    (if s
+	(let ((stack (cdr s)))
+	  ;; the CAR of AS is ID, the CDR the stack of wc's
+	  (rplacd s (cons (current-window-configuration)
+			   stack))
+	  (if (> (length stack) fi::wc-stack-max)
+	      (setcdr (nthcdr (1- fi::wc-stack-max) stack) nil)))
+      (setq fi::wc-stack
+	(cons (list id (current-window-configuration))
+	      fi::wc-stack)))))
+
+(defun fi::epoch-lisp-delete-pop-up-window ()
+  ;; this is the same as the above, except that it keeps the stack for each
+  ;; screen separate.
+  (let* ((id (epoch::get-screen-id (current-screen)))
+	 (s (assq id fi::wc-stack))
+	 (stack (cdr s)))
+    (unless stack
+      (error "The pop-up window stack for this screen is empty."))
+    (let ((conf (car stack)))
+      (rplacd s (cdr stack))
+      (set-window-configuration conf))))
+
 
 (require 'tags)				; make sure not autoloaded
 
