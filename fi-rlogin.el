@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.10 1988/08/11 21:25:34 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.11 1988/11/03 17:10:29 layer Exp $
 
 (defvar fi:rlogin-mode-map nil
   "The rlogin major-mode keymap.")
@@ -47,6 +47,10 @@ name or path.")
   "*Regexp used by Newline command in rlogin mode to match subshell prompts.
 Anything from beginning of line up to the end of what this pattern matches
 is deemed to be prompt, and is not re-executed.")
+
+(defvar fi:rlogin-initial-input "stty -echo nl\n"
+  "*The initial input sent to the rlogin subprocess, after the first prompt
+is seen.")
 
 (defun fi:rlogin-mode ()
   "Major mode for interacting with an inferior rlogin."
@@ -138,13 +142,13 @@ are read from the minibuffer."
 
 (defun fi::rlogin-filter (process output)
   "Filter for `fi:rlogin' subprocess buffers.
-Watch for the first shell prompt from the remote login, then send the string
-\"stty -echo nl\", and turn ourself off."
+Watch for the first shell prompt from the remote login, then send the
+string bound to fi:rlogin-initial-input, and turn ourself off."
   (let ((old-buffer (fi::subprocess-filter process output t)))
     (if (save-excursion (beginning-of-line)
 			(looking-at subprocess-prompt-pattern))
 	(progn
 	  (set-process-filter process 'fi::subprocess-filter)
-	  (fi::send-string-split process "stty -echo nl\n" nil)))
+	  (fi::send-string-split process fi:rlogin-initial-input nil)))
     (if old-buffer
 	(set-buffer old-buffer))))
