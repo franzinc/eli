@@ -1,4 +1,4 @@
-;; $Id: fi-build.el,v 2.2 1996/08/01 22:35:34 layer Exp $
+;; $Id: fi-build.el,v 3.0 2003/12/15 22:52:57 layer Exp $
 ;; This file can be loaded at emacs build time to have the emacs-lisp
 ;; interface preloaded into the image.
 

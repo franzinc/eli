@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lze.el,v 1.38 2003/10/13 23:03:36 layer Exp $
+;; $Id: fi-lze.el,v 3.0 2003/12/15 22:52:57 layer Exp $
 ;;
 ;; Code the implements evaluation in via the backdoor
 

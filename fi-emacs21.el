@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-emacs21.el,v 2.2 2003/10/14 21:02:22 layer Exp $
+;; $Id: fi-emacs21.el,v 3.0 2003/12/15 22:52:57 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; emacs specific stuff

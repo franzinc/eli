@@ -1,4 +1,4 @@
-;; $Id: Package.el,v 1.3 1997/12/11 00:28:32 layer Exp $
+;; $Id: Package.el,v 3.0 2003/12/15 22:52:58 layer Exp $
 
 ;;;; Subprocess mode-line
 

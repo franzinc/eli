@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.45 1998/08/06 23:18:30 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Doc.el,v 3.0 2003/12/15 22:52:57 layer Exp $
 
 ;; This file is used to assemble documentation files
 ;; It is provided (in distributions) purely for informational purposes,

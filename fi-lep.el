@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 1.93 2003/10/14 22:34:33 layer Exp $
+;; $Id: fi-lep.el,v 3.0 2003/12/15 22:52:57 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for

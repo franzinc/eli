@@ -1,4 +1,4 @@
-;; $Id: fi-site-init.el,v 1.121 2003/10/14 22:34:33 layer Exp $
+;; $Id: fi-site-init.el,v 3.0 2003/12/15 22:52:57 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 

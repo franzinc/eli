@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-basic-lep.el,v 1.52 2003/10/14 22:34:33 layer Exp $
+;; $Id: fi-basic-lep.el,v 3.0 2003/12/15 22:52:57 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 

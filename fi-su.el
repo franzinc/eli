@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-su.el,v 1.20 2003/09/29 23:28:23 layer Exp $
+;; $Id: fi-su.el,v 3.0 2003/12/15 22:52:57 layer Exp $
 
 (defvar fi:su-mode-map nil
   "The su major-mode keymap.")

@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-xemacs.el,v 2.13 2003/09/29 23:28:23 layer Exp $
+;; $Id: fi-xemacs.el,v 3.0 2003/12/15 22:52:58 layer Exp $
 
 (defun fi-find-buffer-visiting (filename)
   (get-file-buffer filename))

@@ -1,4 +1,4 @@
-# $Id: local.mak,v 2.13 2003/09/29 23:28:24 layer Exp $
+# $Id: local.mak,v 3.0 2003/12/15 22:52:58 layer Exp $
 
 TGZFILE = eli-$(VERSION).tar.gz
 DISTDIR = eli-$(VERSION)

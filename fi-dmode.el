@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-dmode.el,v 1.34 2003/10/14 22:34:33 layer Exp $
+;; $Id: fi-dmode.el,v 3.0 2003/12/15 22:52:57 layer Exp $
 
 ;; Create a mode in which each line is a definition and . on that
 ;; definition brings up the definition in another window

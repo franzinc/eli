@@ -1,4 +1,4 @@
-;; $Id: fi-xcompile.el,v 1.2 1999/02/25 08:27:48 layer Exp $
+;; $Id: fi-xcompile.el,v 3.0 2003/12/15 22:52:58 layer Exp $
 
 (require 'cl)
 

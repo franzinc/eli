@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-sublisp.el,v 1.69 2003/10/13 21:03:10 layer Exp $
+;; $Id: fi-sublisp.el,v 3.0 2003/12/15 22:52:57 layer Exp $
 
 (defun fi:set-associated-sublisp (buffer-name mode)
   "Use BUFFER-NAME as the name of a buffer which contains a Lisp subprocess

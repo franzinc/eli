@@ -1,4 +1,4 @@
-# $Id: emacsdir.pl,v 2.5 2002/07/09 22:15:31 layer Exp $
+# $Id: emacsdir.pl,v 3.0 2003/12/15 22:52:57 layer Exp $
 #
 # This script requires Active Perl version 502
 #  (\\beast\import\pc\perl-win32\APi502e.exe)

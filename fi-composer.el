@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-composer.el,v 1.23 2002/07/09 22:15:31 layer Exp $
+;; $Id: fi-composer.el,v 3.0 2003/12/15 22:52:57 layer Exp $
 
 (defun composer::make-listener (new-screen-p)
 ;;;; epoch specific:

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 1.78 2003/10/14 22:34:33 layer Exp $
+;; $Id: fi-utils.el,v 3.0 2003/12/15 22:52:58 layer Exp $
 
 ;;; Misc utilities
 

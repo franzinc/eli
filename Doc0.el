@@ -1,4 +1,4 @@
-;; $Id: Doc0.el,v 2.2 2000/03/13 00:43:09 layer Exp $
+;; $Id: Doc0.el,v 3.0 2003/12/15 22:52:57 layer Exp $
 
 (defvar current-local-map-var)
 
