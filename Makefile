@@ -28,4 +28,4 @@ backup:
 	rdist -Rc . binky:emacs.save/fi
 
 install:
-	rdist -c *.el *.elc akbar:/usr/local/lib/emacs/lisp/fi
+	rdist -c spec.out *.el *.elc akbar:/usr/local/lib/emacs/lisp/fi
