@@ -9,26 +9,28 @@
   (interactive "")
   (save-excursion
     (beginning-of-buffer)
-    (let ((type (cond ((re-search-forward "^void ACLID_" 1500 t) 'c)
-		      ((re-search-forward "^(def-runtime-q ACLID_" 1500 t) 'rs))))
+    (let ((type
+	   (cond ((re-search-forward "^void ACLID_" 1500 t) 'c)
+		 ((re-search-forward "^(def-runtime-q ACLID_" 1500 t) 'rs))))
       (when type
 	(condition-case ()
 	    (progn
-	      (goto-char (match-end 0))
-	      (push-mark nil t)
-	      (end-of-line)
-	      (delete-region (point) (mark))
-	      (let ((str (concat (substring buffer-file-name
-					    (+ 1
-					       (or (position ?/ buffer-file-name :from-end t)
-						   -1)))
-				 "_"
-				 (let ((s (current-time-string)))
-				   (concat (substring s 22 24)
-					   (substring s 4 7)
-					   (substring s 8 16)))
-				 "_"
-				 (user-login-name))))
+	      (delete-region (progn (goto-char (match-end 0)) (point))
+			     (progn (end-of-line) (point)))
+	      (let ((str
+		     (concat (substring buffer-file-name
+					(+ 1
+					   (or (position ?/
+							 buffer-file-name
+							 :from-end t)
+					       -1)))
+			     "_"
+			     (let ((s (current-time-string)))
+			       (concat (substring s 22 24)
+				       (substring s 4 7)
+				       (substring s 8 16)))
+			     "_"
+			     (user-login-name))))
 		(setq str (substitute ?_ ?. str))
 		(setq str (substitute ?_ ?/ str))
 		(setq str (substitute ?_ ?: str))

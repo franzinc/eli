@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.69 1996/06/28 00:03:26 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.70 1996/07/30 14:25:44 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -649,7 +649,8 @@ beginning of words in target symbols."
 
 (defun lep::buffer-region (buffer start end)
   (set-buffer buffer)
-  (list (buffer-substring (or start (point-min)) (or end (point-max)))))
+  (list (fi::defontify-string
+	    (buffer-substring (or start (point-min)) (or end (point-max))))))
 
 (defun fi:kill-definition (do-kill)
   "Insert a form to kill, or undefine, the definition that starts at the
