@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.61 1990/09/04 10:54:28 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.62 1990/09/04 15:16:52 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -52,6 +52,11 @@
 ;;;;
 ;;; Variables and Constants
 ;;;;
+
+(defvar fi:start-lisp-interface-function
+    'fi::start-tcp-lisp-interface
+  "*If non-nil, then this function is funcalled to startup the GNU
+Emacs-Lisp interface.")
 
 (defvar fi:common-lisp-image-name "cl"
   "*Default Common Lisp image to invoke from `fi:common-lisp'.  If the
@@ -221,7 +226,7 @@ See fi:explicit-common-lisp."
 	       fi:common-lisp-image-name
 	       fi:common-lisp-image-arguments
 	       nil
-	       'fi::start-tcp-lisp-interface)))
+	       fi:start-lisp-interface-function)))
     (setq fi::freshest-common-sublisp-name (process-name proc))
     (fi::set-buffer-host (process-buffer proc) (system-name))
     proc))
@@ -244,7 +249,7 @@ are read from the minibuffer."
 	       image-name
 	       image-arguments
 	       nil
-	       'fi::start-tcp-lisp-interface)))
+	       fi:start-lisp-interface-function)))
     (setq fi::freshest-common-sublisp-name (process-name proc))
     (fi::set-buffer-host (process-buffer proc) (system-name))
     proc))
@@ -274,7 +279,7 @@ See fi:explicit-remote-common-lisp."
 	       (append (list host fi:common-lisp-image-name)
 		       fi:common-lisp-image-arguments)
 	       nil
-	       'fi::start-tcp-lisp-interface)))
+	       fi:start-lisp-interface-function)))
     (setq fi::freshest-common-sublisp-name (process-name proc))
     (fi::set-buffer-host (process-buffer proc) host)
     proc))
@@ -298,7 +303,7 @@ arguments are read from the minibuffer."
 	       "rsh"
 	       (append (list host image-name) image-arguments)
 	       nil
-	       'fi::start-tcp-lisp-interface)))
+	       fi:start-lisp-interface-function)))
     (setq fi::freshest-common-sublisp-name (process-name proc))
     (fi::set-buffer-host (process-buffer proc) host)
     proc))
