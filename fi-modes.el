@@ -1,4 +1,4 @@
-;;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.9 1988/03/20 01:05:56 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.10 1988/03/20 16:42:51 layer Exp $
 ;;;
 ;;; Mode initializations
 
@@ -63,8 +63,9 @@ values are names of functions.
 
 cd, pushd and popd commands given to the shell are watched by Emacs to keep
 this buffer's default directory the same as the shell's working directory.
-Variables fi:shell-cd-regexp, fi:shell-pushd-regexp and fi:shell-popd-regexp are
-used to match these command names, and are buffer-local variables."
+Variables fi:shell-cd-regexp, fi:shell-pushd-regexp and
+fi:shell-popd-regexp are used to match these command names, and are
+buffer-local variables."
   (interactive)
   (kill-all-local-variables)
   (setq major-mode 'fi:shell-mode)
@@ -219,10 +220,10 @@ commands) behave as they do in fi:shell-mode (see fi:shell-mode)."
 
 (defun fi:common-lisp-mode ()
   "Major mode for editing Lisp code to run in Common Lisp.
-The bindings are
+The bindings are:
 \\{fi:common-lisp-mode-map}
 Entry to this mode calls the value of lisp-mode-hook and
-common-lisp-mode-hook, in this order, if that value is non-nil."
+common-lisp-mode-hook, in this order, if their value is non-nil."
   (interactive)
   (kill-all-local-variables)
   (setq major-mode 'fi:common-lisp-mode)
@@ -240,10 +241,10 @@ common-lisp-mode-hook, in this order, if that value is non-nil."
 
 (defun fi:franz-lisp-mode ()
   "Major mode for editing Lisp code to run in Franz Lisp.
-The bindings are
+The bindings are:
 \\{fi:franz-lisp-mode-map}
 Entry to this mode calls the value of lisp-mode-hook and
-franz-lisp-mode-hook, in this order, if that value is non-nil."
+franz-lisp-mode-hook, in this order, if their value is non-nil."
   (interactive)
   (kill-all-local-variables)
   (setq major-mode 'fi:franz-lisp-mode)
@@ -261,7 +262,7 @@ franz-lisp-mode-hook, in this order, if that value is non-nil."
 
 (defun fi:lisp-mode ()
   "Major mode for editing Lisp code to run in Generic Lisp.
-The bindings are
+The bindings are:
 \\{fi:lisp-mode-map}
 Entry to this mode calls the value of lisp-mode-hook if that value is
 non-nil."
@@ -279,7 +280,7 @@ non-nil."
 
 (defun fi:emacs-lisp-mode ()
   "Major mode for editing Lisp code to run in GNU Emacs.
-The bindings are
+The bindings are:
 \\{fi:emacs-lisp-mode-map}
 Entry to this mode calls the value of lisp-mode-hook if that value is
 non-nil."

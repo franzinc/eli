@@ -1,4 +1,4 @@
-;;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.12 1988/03/19 18:49:13 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.13 1988/03/20 16:42:58 layer Exp $
 ;;;
 ;;; Interaction with a Lisp subprocess
 
@@ -191,6 +191,7 @@ the major-mode of the buffer."
        (message "The source location of `%s' is unknown." symbol)))))
 
 (defun fi:lisp-tags-loop-continue (&optional symbol)
+  "Not implemented yet."
   )
 
 (defun fi:tcp-lisp-send-eof ()
@@ -201,14 +202,16 @@ the major-mode of the buffer."
    (buffer-name (current-buffer))))
 
 (defun fi:tcp-lisp-kill-process ()
+  "Kill a tcp-lisp process via the backdoor lisp listener: a
+mp:process-kill is sent to the lisp."
   (interactive)
   (fi:backdoor-eval 
    "(mp:process-kill (mp::process-name-to-process \"%s\"))\n"
    (buffer-name (current-buffer))))
 
 (defun fi:tcp-lisp-interrupt-process ()
-  "Interrupt the TCP lisp via a process-interrupt in the backdoor!  How's
-that for a hack??"
+  "Interrupt the tcp-lisp process via a mp:process-interrupt spoken to the
+backdoor lisp listener."
   (interactive)
   (fi:backdoor-eval 
    "(mp:process-interrupt
@@ -355,6 +358,8 @@ that for a hack??"
 		      (setq fi::sublisp-returns "")))))))))
 
 (defun fi:backdoor-eval (string &rest args)
+  "Evaluate apply format to STRING and ARGS and evaluate this in Common
+Lisp at the other end of our socket."
   (process-send-string
    (fi::background-sublisp-process)
    (format "(progn (format t \"\1\") %s)\n"
@@ -426,27 +431,22 @@ that for a hack??"
   (if interactive (list symbol) symbol))
 
 (defun fi:inferior-lisp-send-input (arg type)
-  "Send s-expression(s) or list(s) to the Lisp subprocess.
-The second parameter must be either 'sexps or 'lists, specifying
-  whether lists or s-expressions should be parsed (internally,
-  either `(scan-sexps)' or `(scan-lists)' is used).
-If at the end of buffer, everything typed since the last output
-  from the Lisp subprocess is collected and sent to the Lisp
-  subprocess.  With an argument, only the specified number of
-  s-expressions or lists from the end of the buffer are sent.
-If in the middle of the buffer, the current s-expression(s) or
-  list(s) is(are) copied to the end of the buffer and then sent.
-  An argument specifies the number of s-expressions or lists to
-  be sent.
-If s-expressions are being parsed:
-  If the cursor follows a closing parenthesis, the preceding
-  s-expression(s) is(are) processed.  If the cursor is at an
-  opening parenthesis, the following s-expression(s) is(are)
-  processed.  If the cursor is at a closing parenthesis, the
-  preceding s-expression(s) is(are) processed.  Otherwise, the
-  enclosing s-expression(s) is(are) processed.
-If lists are being parsed:
-  The enclosing list is processed."
+  "Send ARG, which is an s-expression, to the Lisp subprocess. TYPE
+must be either 'sexps or 'lists, specifying whether lists or
+s-expressions should be parsed (internally, either `(scan-sexps)' or
+`(scan-lists)' is used). If at the end of buffer, everything typed since
+the last output from the Lisp subprocess is collected and sent to the Lisp
+subprocess.  With an argument, only the specified number of s-expressions
+or lists from the end of the buffer are sent. If in the middle of the
+buffer, the current s-expression(s) or list(s) is(are) copied to the end of
+the buffer and then sent. An argument specifies the number of s-expressions
+or lists to be sent. If s-expressions are being parsed,the cursor
+follows a closing parenthesis, the preceding s-expression(s) is(are)
+processed.  If the cursor is at an opening parenthesis, the following
+s-expression(s) is(are) processed.  If the cursor is at a closing
+parenthesis, the preceding s-expression(s) is(are) processed.  Otherwise,
+the enclosing s-expression(s) is(are) processed.  If lists are being
+parsed, the enclosing list is processed."
   (if (and (eobp) (null arg))
       (progn
 	(move-marker fi::last-input-start
