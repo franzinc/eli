@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.66 1991/09/16 14:54:46 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.67 1991/09/17 12:38:59 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -832,7 +832,8 @@ If they are not, position the point at the first syntax error found."
   (let ((saved-point (point))
 	(lpar (string-to-char "("))
 	(rpar (string-to-char ")"))
-	(comment-start-char (string-to-char comment-start)))
+	(comment-start-char (string-to-char comment-start))
+	(cond-symbol-chars "-+:a-zA-Z.0-9"))
     (goto-char (point-min))
     (while (and (not (eobp))
 		(let ((done nil))
@@ -850,7 +851,7 @@ If they are not, position the point at the first syntax error found."
 			   (setq char (char-after (point)))
 			   (cond ((eq ?| char) (fi::gobble-comment))
 				 ((or (eq ?+ char) (eq ?- char))
-				  (skip-chars-forward "-+:a-zA-Z.0-9"))
+				  (skip-chars-forward cond-symbol-chars))
 				 (t (forward-sexp 1))))
 			  (t (setq done t))))
 		  t))
@@ -862,7 +863,9 @@ If they are not, position the point at the first syntax error found."
 		 (error (error "Missing )"))))
 	      ((eq char rpar)
 	       (error "Extra )"))
-	      (t (error "foo")))))
+	      (t
+	       ;; don't know what it is, but hey, try and forward over it
+	       (forward-sexp 1)))))
     (goto-char saved-point))
   (if (interactive-p) (message "All parentheses appear to be balanced."))
   t)
