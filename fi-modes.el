@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.21 1988/05/09 17:42:53 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.22 1988/05/11 14:48:03 layer Exp $
 
 ;;;; Mode initializations
 
@@ -265,155 +265,6 @@ Entry to this mode calls the value of `fi:lisp-mode-hook' and
       (setq fi:package "user")))
 
 ;;;;
-;;; Key defs
-;;;;
-
-(defun fi::subprocess-mode-super-keys (map mode)
-  "Setup keys in MAP as a subprocess super-key map.  MODE is either
-shell, rlogin, sub-lisp or tcp-lisp."
-  (define-key map "\C-a" 'fi:subprocess-beginning-of-line)
-  (define-key map "\C-k" 'fi:subprocess-kill-output)
-  (define-key map "\C-l" 'fi:list-input-ring)
-  (define-key map "\C-n" 'fi:push-input)
-  (define-key map "\C-o" 'fi:subprocess-send-flush)
-  (define-key map "\C-p" 'fi:pop-input)
-  (define-key map "\C-r" 'fi:re-search-backward-input)
-  (define-key map "\C-s" 'fi:re-search-forward-input)
-  (define-key map "\C-u" 'fi:subprocess-kill-input)
-  (define-key map "\C-v" 'fi:subprocess-show-output)
-  (define-key map "\C-w" 'fi:subprocess-backward-kill-word)
-
-  (cond
-    ((memq mode '(sub-lisp shell))
-     (if (eq mode 'shell)
-	 (define-key map "\C-z"	'fi:subprocess-suspend))
-     (define-key map "\C-c"	'fi:subprocess-interrupt)
-     (define-key map "\C-d"	'fi:subprocess-send-eof)
-     (define-key map "\C-\\"	'fi:subprocess-quit))
-    ((eq mode 'tcp-lisp)
-     (define-key map "\C-c"	'fi:tcp-lisp-interrupt-process)
-     (define-key map "\C-d"	'fi:tcp-lisp-send-eof)
-     (define-key map "\C-\\"	'fi:tcp-lisp-kill-process)))
-  map)
-
-(defun fi::subprocess-mode-commands (map supermap mode)
-  "Define subprocess mode commands on MAP, using SUPERMAP as the supermap.
-MODE is either sub-lisp, tcp-lisp, shell or rlogin."
-  (define-key map "\C-m" 'fi:subprocess-send-input)
-  (if (not (eq 'rlogin mode))
-      (define-key map "\C-i" 'fi:shell-file-name-completion))
-  (if fi:subprocess-enable-superkeys
-      (progn
-	(define-key map "\C-a"  'fi:subprocess-superkey)
-	;; \C-c points to supermap
-	(define-key map "\C-d"  'fi:subprocess-superkey)
-	(define-key map "\C-o"  'fi:subprocess-superkey)
-	(define-key map "\C-u"  'fi:subprocess-superkey)
-	(define-key map "\C-w"  'fi:subprocess-superkey)
-	(define-key map "\C-z"  'fi:subprocess-superkey)
-	(define-key map "\C-\\" 'fi:subprocess-superkey)))
-  (if supermap (define-key map "\C-c" supermap))
-  map)
-
-(defun fi::lisp-mode-commands (map supermap mode)
-  (define-key map "\e" (make-sparse-keymap))
-  (define-key map "\C-x" (make-sparse-keymap))
-
-  (if supermap (define-key map "\C-c" supermap))
-  
-  (define-key map "\e\C-q"	'indent-sexp)
-  (define-key map "\C-?"	'backward-delete-char-untabify)
-  
-  (cond
-    ((memq mode '(sub-lisp tcp-lisp))
-     (define-key map "\r"	'fi:inferior-lisp-newline))
-    (t 
-     (define-key map "\r"	'fi:lisp-reindent-newline-indent)))
-  
-  (cond
-    ((memq major-mode '(fi:common-lisp-mode fi:inferior-common-lisp-mode
-			fi:tcp-lisp-mode))
-     (define-key map "\e."	'fi:lisp-find-tag)
-     (define-key map "\e,"	'fi:lisp-tags-loop-continue)
-     (define-key map "\eA"	'fi:lisp-arglist)
-     (define-key map "\eC"	'fi:lisp-who-calls)
-     (define-key map "\eD"	'fi:lisp-describe)
-     (define-key map "\eF"	'fi:lisp-function-documentation)
-     (define-key map "\eM"	'fi:lisp-macroexpand)
-     (define-key map "\eW"	'fi:lisp-walk)))
-  (cond
-    ((eq major-mode 'fi:emacs-lisp-mode)
-     (define-key map "\e\C-x"	'eval-defun))
-    ((memq major-mode '(fi:common-lisp-mode fi:franz-lisp-mode
-			fi:lisp-mode))
-     (define-key map "\e\C-x"	'fi:lisp-eval-defun)
-     (define-key map "\C-c\C-b"	'fi:lisp-eval-current-buffer)
-     (define-key map "\C-c\C-s" 'fi:lisp-eval-last-sexp)
-     (define-key map "\C-c\C-r"	'fi:lisp-eval-region)))
-  map)
-
-(defun fi::tcp-lisp-mode-commands (map supermap)
-  (fi::lisp-mode-commands (fi::subprocess-mode-commands map supermap 'tcp-lisp)
-			  supermap
-			  'tcp-lisp))
-
-(defun fi::inferior-lisp-mode-commands (map supermap)
-  (fi::lisp-mode-commands (fi::subprocess-mode-commands map supermap 'sub-lisp)
-			  supermap
-			  'sub-lisp))
-
-(defun fi:lisp-reindent-newline-indent ()
-  "Indent the current line, insert a newline and indent to the proper
-column."
-  (interactive)
-  (save-excursion (funcall indent-line-function))
-  (newline)
-  (funcall indent-line-function))
-
-(setq fi:indent-setup-hook 'fi::indent-setup-hook)
-
-(defun fi::indent-setup-hook ()
-  (make-local-variable 'indent-line-function)
-  (setq indent-line-function 'lisp-indent-line)
-  (make-local-variable 'comment-start)
-  (setq comment-start ";")
-  (make-local-variable 'comment-start-skip)
-  (setq comment-start-skip ";+ *")
-  (make-local-variable 'comment-column)
-  (setq comment-column 40)
-  (make-local-variable 'comment-indent-hook)
-  (setq comment-indent-hook 'lisp-comment-indent))
-
-(defun fi::lisp-indent-do (path state indent-point sexp-column normal-indent)
-  "A better do indenter than the standard GNU has."
-  (if (>= (car path) 3)
-      (let ((lisp-tag-body-indentation lisp-body-indent))
-        (funcall (function lisp-indent-tagbody)
-		 path state indent-point sexp-column normal-indent))
-    (funcall (function lisp-indent-259)
-	     '((&whole nil &rest)
-	       (&whole nil &rest 1))
-	     path state indent-point sexp-column normal-indent)))
-
-(defun fi::lisp-indent-if* (path state indent-point sexp-column normal-indent)
-  "An excl:if* indentation hook."
-  (let ((lisp-if-then-else-indent 3)
-	(lisp-if-elseif-indent 1))
-    (if (not (null (cdr path)))
-	normal-indent
-      (save-excursion
-	(goto-char indent-point)
-	(beginning-of-line)
-	(skip-chars-forward " \t")
-	(list (cond ((looking-at "elseif")
-		     (+ sexp-column lisp-if-elseif-indent))
-		    ((looking-at "then\\|else")
-		     (+ sexp-column lisp-if-then-else-indent))
-		    (t (+ sexp-column
-			  (+ lisp-if-then-else-indent 5))))
-	      (elt state 1))))))
-
-;;;;
 ;;; Initializations
 ;;;;
 
@@ -431,3 +282,17 @@ column."
 (fi::def-auto-mode "\\.cl$" 'fi:common-lisp-mode)
 (fi::def-auto-mode "\\.lisp$" 'fi:common-lisp-mode)
 (fi::def-auto-mode "\\.l$" 'fi:franz-lisp-mode)
+
+(setq fi:indent-setup-hook 'fi::indent-setup-hook)
+
+(defun fi::indent-setup-hook ()
+  (make-local-variable 'indent-line-function)
+  (setq indent-line-function 'lisp-indent-line)
+  (make-local-variable 'comment-start)
+  (setq comment-start ";")
+  (make-local-variable 'comment-start-skip)
+  (setq comment-start-skip ";+ *")
+  (make-local-variable 'comment-column)
+  (setq comment-column 40)
+  (make-local-variable 'comment-indent-hook)
+  (setq comment-indent-hook 'lisp-comment-indent))
