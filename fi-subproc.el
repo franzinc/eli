@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 3.6 2004/05/05 18:24:34 layer Exp $
+;; $Id: fi-subproc.el,v 3.7 2004/05/07 22:01:01 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -592,11 +592,30 @@ be a string. Use the 6th argument for image file."))
 	  (error "Connection aborted.")))
        (t
 	(when (> i fi:common-lisp-subprocess-timeout)
-	  (error "1 Couldn't make connection to existing Lisp."))))
+	  (error "Couldn't make connection to existing Lisp [timeout]."))))
       (sleep-for 1)
       (setq i (+ i 1)))
-    (unless process
-      (error "2 Couldn't make connection to existing Lisp."))
+    
+    (when (not (fi::lep-open-connection-p))
+      (fi::start-backdoor-interface process)
+      (setq fi::process-name (process-name process))
+      (setq fi::common-lisp-backdoor-main-process-name (process-name process))
+      (fi::ensure-lep-connection)
+      (condition-case ()
+	  (setq fi::lisp-case-mode
+	    (case (car
+		   (read-from-string
+		    (fi:eval-in-lisp "excl:*current-case-mode*")))
+	      ((case-insensitive-lower case-sensitive-lower) ':lower)
+	      ((CASE-INSENSITIVE-UPPER CASE-SENSITIVE-UPPER) ':upper)))
+	(error nil))
+      (cond ((consp fi:start-lisp-interface-hook)
+	     (mapcar 'funcall fi:start-lisp-interface-hook))
+	    (fi:start-lisp-interface-hook
+	     (funcall fi:start-lisp-interface-hook))))
+    
+    (when (null process)
+      (error "Couldn't make connection to existing Lisp [no process]."))
     (setq default-directory directory)
     process))
 
