@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-emacs18.el,v 2.1 1995/01/07 00:49:02 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-emacs18.el,v 2.2 1995/01/18 05:04:08 smh Exp $
 
 (defun fi::ensure-buffer-visible (buffer)
   nil)
@@ -20,3 +20,6 @@
 
 (defun fi::defontify-string (str)
   str)
+
+(defun set-menubar-dirty-flag ()
+  nil)
