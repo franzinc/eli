@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.17 1988/11/21 17:18:30 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.18 1988/11/21 21:15:52 layer Exp $
 
 ;;;;
 ;;; Key defs
@@ -446,8 +446,14 @@ function defintions are considered.  Otherwise all symbols are considered."
 	 (pattern (buffer-substring beg end))
 	 (functions-only (if (eq (char-after (1- real-beg)) ?\() t nil))
 	 (completions
-	  (fi:eval-in-lisp "(excl::list-all-completions \"%s\" %s %s)"
-			   pattern package functions-only))
+	  (progn
+	    ;; first, go into that package
+	    (if (null (fi:eval-in-lisp "(packagep (in-package :%s))"
+				       (or fi:package "user")))
+		(error "subprocess is in unknown package: %s" fi:package))
+	    ;; then evaluate our expr
+	    (fi:eval-in-lisp "(excl::list-all-completions \"%s\" %s %s)"
+			     pattern package functions-only)))
 	 (alist
 	  (if (consp completions)
 	      (apply 'list
@@ -591,7 +597,7 @@ possible.  This regexp should start with \"^\"."
       (move-marker fi::last-input-start (point))
       (insert copy)
       (move-marker fi::last-input-end (point))))
-  (fi::subprocess-hack-directory)
+  (fi::subprocess-watch-for-special-commands)
   (let ((process (get-buffer-process (current-buffer))))
     (fi::send-region-split process fi::last-input-start fi::last-input-end
 			   fi:subprocess-map-nl-to-cr)
