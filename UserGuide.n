@@ -1,8 +1,8 @@
 		    GNU Emacs-Allegro CL Interface
 			      User Guide
-			   Release 2.0alpha
+			   Release 2.0beta
 
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.12 1991/05/28 16:23:57 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.13 1991/06/19 22:50:21 layer Exp $
 
 			     Introduction
 
@@ -145,6 +145,17 @@ Trouble shooting
 
    * Are you running the version of GNU Emacs supplied by Franz Inc.?
    If not, then you must in order for this interface to work properly.
+   You may evaluate the following
+
+	M-x fi:verify-emacs-support
+
+   in your GNU Emacs to determine if the minimum level of support
+   exists for the Emacs-Lisp interface.  This function prints
+
+	everything looks fine!
+
+   in the minibuffer if it finds there is the required support.
+   Otherwise an error is signalled specifying missing feature.
 
    * Is the Emacs Lisp library accessible.  Check the value of the
    Emacs variable LOAD-PATH.  The initial value should point to a
@@ -230,7 +241,7 @@ Key bindings in Common Lisp subprocess mode (fi:inferior-common-lisp-mode)
 		C-c C-\		fi:subprocess-quit
 		C-c C-d		fi:subprocess-send-eof
 		C-c C-c		fi:subprocess-interrupt
-		C-c .		fi:lisp-sync-current-working-directory
+		C-c =		fi:lisp-sync-current-working-directory
 		C-c C-w		fi:subprocess-backward-kill-word
 		C-c C-v		fi:subprocess-show-output
 		C-c C-u		fi:subprocess-kill-input
@@ -271,6 +282,10 @@ Key bindings in Common Lisp subprocess mode (fi:inferior-common-lisp-mode)
 		---		-------
 		C-c ?		fi:lisp-apropos
 		C-c s		fi:scan-stack
+		C-c .		fi:lisp-find-definition
+		C-c 4 .		fi:lisp-find-definition-other-window
+		C-c ,		fi:lisp-find-next-definition
+		C-c SPC		fi:lisp-delete-pop-up-window
 		ESC W		fi:lisp-macroexpand-recursively
 		ESC T		fi:toggle-trace-definition
 		ESC M		fi:lisp-macroexpand
@@ -279,14 +294,12 @@ Key bindings in Common Lisp subprocess mode (fi:inferior-common-lisp-mode)
 		ESC C		fi:list-who-calls
 		ESC A		fi:lisp-arglist
 		ESC TAB		fi:lisp-complete-symbol
-		ESC ,		fi:lisp-tags-loop-continue
-		ESC .		fi:lisp-find-tag
-		C-x 4 .		fi:lisp-find-tag-other-window
 
 	    The functions in the category that read symbols also do
 	    dynamic completion of symbols present in the ACL
 	    environment--there is no static database, so a symbol is
-	    available for completion just after it is created. 
+	    available for completion just after it is created.  See
+	    the description of fi:lisp-complete-symbol below.
 
 Superkeys
 
@@ -437,7 +450,6 @@ Functions and Variables for Interacting with a Common Lisp subprocess
 %% fi:inferior-lisp-input-list		fi:inferior-common-lisp-mode-map
 %% fi:inferior-lisp-input-sexp		fi:inferior-common-lisp-mode-map
 %% fi:inferior-lisp-newline		fi:inferior-common-lisp-mode-map
-%% fi:lisp-find-tag-other-window	fi:inferior-common-lisp-mode-map
 %% fi:lisp-sync-current-working-directory fi:inferior-common-lisp-mode-map
 %% fi:list-input-ring			fi:inferior-common-lisp-mode-map
 %% fi:pop-input				fi:inferior-common-lisp-mode-map
@@ -683,9 +695,17 @@ Information sharing between Common Lisp and Emacs
 		  possible completions, dynamically, and does not use
 		  a static table.
 
-      ESC .		fi:lisp-find-tag
-      C-x 4 .		fi:lisp-find-tag-other-window
-      ESC ,		fi:lisp-tags-loop-continue
+		  Abbreviations are also expanded.  For example, in
+		  the initial `user' package, which inherits symbols
+		  from the `common-lisp' package, ``m-p-d-'' will
+		  expand to ``most-positive-double-float''.  The
+		  hyphen (-) is a separator that causes the substring
+		  before the hyphen to be matched at the beginning of
+		  words in target symbols. 
+
+      C-c .		fi:lisp-find-definition
+      C-c 4 .		fi:lisp-find-definition-other-window
+      C-c ,		fi:lisp-find-next-definition
 		  The above group of functions are used for finding
 		  definitions of objects defined in the Common Lisp
 		  environment.   See the User Guide chapter on Source
@@ -710,16 +730,18 @@ Functions and Variables for editing Common Lisp programs:
 %% fi:lisp-eval-defun			fi:common-lisp-mode-map
 %% fi:lisp-eval-last-sexp		fi:common-lisp-mode-map
 %% fi:lisp-eval-region			fi:common-lisp-mode-map
-%% fi:lisp-find-tag			fi:common-lisp-mode-map
+%% fi:lisp-find-definition		fi:common-lisp-mode-map
+%% fi:lisp-find-definition-other-window	fi:common-lisp-mode-map
+%% fi:lisp-find-next-definition		fi:common-lisp-mode-map
 %% fi:lisp-function-documentation	fi:common-lisp-mode-map
 %% fi:lisp-indent-line			fi:common-lisp-mode-map
 %% fi:lisp-macroexpand			fi:common-lisp-mode-map
 %% fi:lisp-macroexpand-recursively	fi:common-lisp-mode-map
 %% fi:lisp-mode-newline			fi:common-lisp-mode-map
-%% fi:lisp-tags-loop-continue		fi:common-lisp-mode-map
 %% fi:log-functional-change		fi:common-lisp-mode-map
 %% fi:super-paren			fi:common-lisp-mode-map
 %% fi:toggle-trace-definition		fi:common-lisp-mode-map
+%% fi:lisp-delete-pop-up-window		fi:common-lisp-mode-map
 
 %% fi:list-who-calls			fi:common-lisp-mode-map
 %% fi:list-who-is-called-by
@@ -776,7 +798,6 @@ Functions and Variables for editing Common Lisp programs:
 %% fi:parse-mode-line-and-package
 %% fi:pop-to-sublisp-buffer-after-lisp-eval
 %% fi:set-associated-sublisp
-%% fi:source-info-not-found-hook
 
 ===============================================================================
 	      Writing and Debugging Common Lisp Programs
@@ -853,9 +874,9 @@ Retrieving information from the Common Lisp environment
 	ESC M		macroexpand the form at the point
 	ESC W		recursively macroexpand the form at the point
 	ESC TAB		present completions of a partially named symbol
-	ESC .		find the source for a function
-	C-x 4 .		find the source for a function, in the other window
-	ESC ,		find the next definition, when there is more than one
+	C-c .		find the source for a function
+	C-c 4 .		find the source for a function, in the other window
+	C-c ,		find the next definition, when there is more than one
 
    in addition to the above functions bound to key sequences, the
    following functions are available as extended commands (M-x):
@@ -883,7 +904,13 @@ Retrieving information from the Common Lisp environment
    allows for finding the source associated with a definition.  See
    the description of fi:definition-mode.  `Edit' means to find the
    source associated with a definition, making the additional
-   definitions available via ``ESC ,''.
+   definitions available via ``C-c ,''.
+
+   Many of the above commands create a buffer named ``*CL-temp*'' to
+   display the information they retrieve from the Lisp environment.
+   After viewing the contents of this buffer, you may restore the
+   arrangement of windows, as they were before the *CL-temp* buffer was
+   made visible, by typing ``C-c SPC'' (fi:lisp-delete-pop-up-window).
 
 Interaction with Allegro Composer
 
@@ -966,7 +993,7 @@ Modifying the state of the Common Lisp environment
 	fi:compile-changed-definitions
 		Evaluate each of the definitions that have been added or
 		modified in the current buffer or in all buffers
-		visiting Common Lisp source code.  ``ESC ,'' finds
+		visiting Common Lisp source code.  ``C-c ,'' finds
 		subsequent definitions, if there is more than one.
 		This synchronizes the definitions of the currently
 		in-core versions of files being edited by Emacs with
