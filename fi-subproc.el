@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.177 1996/11/20 22:50:50 layer Exp $
+;; $Id: fi-subproc.el,v 1.178 1996/12/10 19:26:54 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -428,7 +428,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 			(progn
 			  (setq process
 			    (fi::make-tcp-connection
-			     "common-lisp" 1
+			     buffer-name 1
 			     'fi:lisp-listener-mode
 			     fi:common-lisp-prompt-pattern
 			     fi::lisp-host fi::lisp-port fi::lisp-password
@@ -956,8 +956,12 @@ the first \"free\" buffer name and start a subprocess in that buffer."
   (if (and (not (on-ms-windows))
 	   (not fi::common-lisp-backdoor-main-process-name))
       (error "A Common Lisp subprocess has not yet been started."))
-  (let* ((buffer-name (fi::buffer-number-to-buffer (concat "*" buffer-name "*")
-						   buffer-number))
+  (let* ((buffer-name
+	  (fi::buffer-number-to-buffer
+	   (if (string-match "\\*" buffer-name)
+	       buffer-name
+	     (concat "*" buffer-name "*"))
+	   buffer-number))
 	 (buffer (or (get-buffer buffer-name)
 		     (get-buffer-create buffer-name)))
 	 (default-dir default-directory)

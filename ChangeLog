@@ -11,6 +11,16 @@ Tests for new features:	<`no new features', `no tests for new features', or
 	* <changes go here...>
 
 *******************************************************************************
+2.0.20.beta.1
+
+Documentation changes:	none
+Tests for new features:	no new features
+
+Tue Dec 10 11:23:05 1996    <layer@HOBART>
+
+	* fi-subproc.el: allow buffer-name to be changed on Windows
+
+*******************************************************************************
 Documentation changes:	none
 Tests for new features:	no new features
 
