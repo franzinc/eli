@@ -5,6 +5,11 @@
 *******************************************************************************
 post 7.0.beta release
 
+2004-06-16  Kevin Layer  <layer@gemini>
+
+	* fi-subproc.el (fi:common-lisp): bug14546: fix for windows
+	  versions without rsh.exe
+
 2004-05-19  Kevin Layer  <layer@gemini>
 
 	* fi-subproc.el: bug14399: fix ELI startup directory
@@ -4949,4 +4954,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.9.2.1 $
+$Revision: 3.9.2.2 $
