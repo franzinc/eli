@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.103 1991/04/22 13:40:20 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.104 1991/04/22 14:13:39 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -109,7 +109,7 @@ into the correct Lisp package.")
 ;;; Common Lisp Variables and Constants
 ;;;;
 
-(defvar fi:source-info-not-found-hook 'find-tag-somewhere
+(defvar fi:source-info-not-found-hook 'fi:find-tag-somewhere
   "*The value of this variable is funcalled when source information is not
 present in Lisp for a symbol.  The function is given two argument, the name
 for which source is desired (a string) and a flag indicating to use the
@@ -117,7 +117,8 @@ other window.  The null string means use the word at the point as the
 search word.  This allows the GNU Emacs tags facility to be used when the
 information is not present in Lisp.")
 
-(defun find-tag-somewhere (string &optional other-window-p)
+(defun fi:find-tag-somewhere (string &optional other-window-p)
+  "Used by fi:source-info-not-found-hook to find source via Emacs TAGS."
   (if other-window-p
       (find-tag-other-window string nil)
     (find-tag string nil)))
