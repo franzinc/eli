@@ -1,4 +1,4 @@
-;;					-[Mon Sep  3 00:03:41 1990 by layer]-
+;;					-[Mon Sep  3 00:20:27 1990 by layer]-
 ;;
 ;; Allegro CL IPC interface
 ;;
@@ -33,7 +33,7 @@
 #+has-rcsnote
 (si::rcsnote
  "ipc"
- "$Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.30 1990/09/03 00:04:39 layer Exp $")
+ "$Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.31 1990/09/03 00:20:35 layer Exp $")
 
 (provide :ipc)
 
@@ -163,7 +163,8 @@ CL.")
 			 )
 	     (error "foreign load failed"))
 	   (princ "done")
-	   (terpri))))
+	   (terpri)
+	   (force-output))))
 
     (setq .lisp-listener-daemon-ff-loaded. t)
     (defforeign-list '((getuid) (socket) (bind) (accept)
@@ -205,9 +206,9 @@ CL.")
 	  (setf (symbol-function 'lisp_ntohl) #'(lambda (x) x))))
 
 (defun start-lisp-listener-daemon ()
-  "This function starts a process which listens to a socket for attempts to
+  "Starts a daemon process which listens to a socket for attempts to
 connect, and starts a lisp listener for each connection.  If the Lisp
-listener ever completes, it makes sure files are closed."
+listener ever completes, the daemon makes sure its connection is closed."
   (unless .lisp-listener-daemon.
     (setq .lisp-listener-daemon.
       (process-run-function "TCP Listener Socket Daemon"
@@ -351,14 +352,20 @@ listener ever completes, it makes sure files are closed."
 
 (defun refuse-connection (fd &aux s)
   (setq s (make-ipc-terminal-stream fd))
+  #-allegro-v4.0
   (setf (excl::sm_read-char s) #'mp::stm-bterm-read-string-char-wait)
   (format s "connection refused.~%")
   (force-output s)
-  (setf (excl::sm_bterm-out-pos s) 0)
+  #-allegro-v4.0 (setf (excl::sm_bterm-out-pos s) 0)
+  #+allegro-v4.0 (excl::clear-output-1 s)
   (close s))
 
 (defun lisp-listener-with-stream-as-terminal-io (s)
   (unwind-protect
+      #+allegro-v4.0
+      (tpl:start-interactive-top-level
+       s 'tpl:top-level-read-eval-print-loop nil)
+      #-allegro-v4.0
       (progn
 	(setf (excl::sm_read-char s) #'mp::stm-bterm-read-string-char-wait)
 	(tpl:start-interactive-top-level
@@ -368,7 +375,8 @@ listener ever completes, it makes sure files are closed."
     ;; stream, which there will be if the remote client closed the connection.
     ;; This should be changed to a clear-output once that works on a buffered
     ;; terminal stream.
-    (setf (excl::sm_bterm-out-pos s) 0)
+    #-allegro-v4.0 (setf (excl::sm_bterm-out-pos s) 0)
+    #+allegro-v4.0 (excl::clear-output-1 s)
     (close s)))
 
 (defun open-network-stream (&key host port socket-file)
@@ -458,8 +466,7 @@ For Unix domain:
 	  (ldb (byte 8 16) addr)
 	  (ldb (byte 8  8) addr)
 	  (ldb (byte 8  0) addr)))
-
-#|
+
 ;;; Allegro Common Lisp as the client side of telnet.
 ;;;
 ;;; This is a functional but stupid demo of how lisp can establish
@@ -468,6 +475,11 @@ For Unix domain:
 ;;; nothing to suppress local echo.  After you login to the remote
 ;;; machine (and have already had your passwd echoed!) you can execute
 ;;; "stty -echo nl" on the remote machine.
+
+;; When connecting to a telnet server on *some* hosts there are undocumented
+;; (binary?) protocol exchanges that wedge things.
+;; This client code should correctly connect to vanilla servers like the
+;; lisp listener socket daemon defined above.
 
 (defun telnet (host &optional (port "telnet"))
   (let (stm receiver)
@@ -490,7 +502,7 @@ For Unix domain:
 	    (unless (streamp stm)
 	      (ipc::perror "lisp telnet")
 	      (error "Unable to connect to telnet on host ~a~%" host))
-	    (format t "Connected:  Type #\null to end session~%")
+	    (format t "Connected:  Type #\null or <eof> to end session~%")
 	    (setq receiver (mp:process-run-function
 			    (format nil "Telnet Receiver from ~a" host)
 			    #'receive))
@@ -500,4 +512,3 @@ For Unix domain:
 	  (mp:process-kill receiver))
 	(when (streamp stm)
 	  (close stm))))))
-|#
