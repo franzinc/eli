@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.85 1993/07/23 07:28:01 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.86 1993/07/27 20:39:44 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -75,7 +75,11 @@ TAGS:	${elcs}
 
 ###############################################################################
 
-all_clman:	clman clman.data small_manual/clman.data
+all_clman:	clman clman.data small_manual small_manual/clman.data
+
+small_manual:
+	-mkdir small_manual
+	-mkdir small_manual/manual
 
 makeman.o: makeman.c clman.h
 	$(CC) $(CFLAGS) -c makeman.c
@@ -102,9 +106,7 @@ small_manual/clman.data:	small_manual/clman.oblist makeman
 	makeman small_manual/clman.data < small_manual/clman.oblist
 
 clean_clman:
-	rm -f *.o clman makeman clman.oblist clman.data \
-		small_manual/clman.data small_manual/clman.oblist \
-		small_manual/manual/OBLIST.el
+	rm -fr *.o clman makeman clman.oblist clman.data small_manual
 
 clmanaux.o: clmanaux.c clman.h
 	$(CC) $(CFLAGS) -c clmanaux.c
@@ -117,7 +119,7 @@ clman:	clman.o clmanaux.o
 
 ###############################################################################
 
-release_root = /net/vapor/scm/emacs-lib/eli/Dists
+release_root = /net/vapor/scm/emacs-lib/Dists
 
 fi_release_directory = $(release_root)/fi-$(version)
 fi_release_files = ChangeLog fi-*.el fi-*.elc Makefile *.doc examples/*.el
@@ -153,7 +155,10 @@ clman_release_gztar_clim2 = $(release_root)/clman-$(clman_version)-clim2.tar.gz
 clman_release_stats	  = $(release_root)/clman-$(clman_version).stats
 
 # we make two clman dists, one with clim2 an one without
-clman-dist:	clean_clman all_clman
+
+clman-dist-clean:	clean_clman clman-dist
+
+clman-dist:	all_clman
 	rm -f $(clman_release_gztar) $(clman_release_gztar_clim2)
 	tar cf - $(clman_release_files) | gzip -9 > $(clman_release_gztar)
 	tar cf - $(clman_release_files_clim2) | \
@@ -183,8 +188,8 @@ rdist: all
 	${rdist} -qc Makefile ChangeLog *.doc fi-*.el fi-*.elc \
 		clman.c clman.h clmanaux.c \
 		"`hostname`:`pwd`/DIST"
-	(cd DIST; ln -s $(clman_data_release) .)
-	(cd DIST; ln -s /net/vapor/scm/emacs-lib/clman manual)
+	(cd DIST;ln -s /net/vapor/scm/emacs-lib/src/eli/clman.data clman.data)
+	(cd DIST;ln -s /net/vapor/scm/emacs-lib/src/clman manual)
 	(cd DIST; ${rdist} -Rc . "{`echo ${hosts} | sed 's/ /,/g'`}:$(to)")
 	for h in ${hosts}; do \
 		echo making clman on $$h; \
