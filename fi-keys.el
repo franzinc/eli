@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.80 1993/03/23 10:14:04 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.81 1993/06/18 20:02:32 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -867,41 +867,48 @@ positions, and ARG."
 			      (looking-at "[ \t]*$"))
 			  (skip-chars-backward " \t\n")) ;skip blank lines
 		      (end-of-line)
-		      (point))))
+		      (point)))
+	  (comment-prefix
+	   (let ((count 0)
+		 (len (length comment-start)))
+             (while (and (< count len)
+                         (eql (elt comment-start count) ?\;)) 
+               (setq count (+ count 1)))
+	     (make-string count ?;))))
       (goto-char end)
       (if (null arg)
 	  ;;Comment Region
 	  (if (string-equal comment-end "")
-	      ;;When no comment-end exists, put a comment-start
+	      ;;When no comment-end exists, put a comment-prefix
 	      ;;at the start of each line.
 	      (while (and (>= (point) start)
 			  (progn (beginning-of-line)
-				 (insert-string comment-start)
+				 (insert-string comment-prefix)
 				 (= (forward-line -1) 0))))
 	    ;;When comment-end exists, put comment marks only at the
-	    ;;beginning and end of the region, and put a comment-start after
+	    ;;beginning and end of the region, and put a comment-prefix after
 	    ;;each comment-end in the region.
 	    (insert-string comment-end)
 	    (goto-char end)
 	    (while (search-backward comment-end start 'move)
-	      (replace-match (concat comment-end comment-start))
+	      (replace-match (concat comment-end comment-prefix))
 	      (goto-char (match-beginning 0)))
-	    (insert-string comment-start))
+	    (insert-string comment-prefix))
 	;;Uncomment Region
 	(if (string-equal comment-end "")
 	    (while (and (>= (point) start)
 			(progn (beginning-of-line)
-			       (if (looking-at (regexp-quote comment-start))
+			       (if (looking-at (regexp-quote comment-prefix))
 				   (replace-match ""))
 			       (= (forward-line -1) 0))))
 	  (backward-char (length comment-end))
 	  (if (looking-at (regexp-quote comment-end))
 	      (replace-match ""))
 	  (while (re-search-backward (regexp-quote
-				      (concat comment-end comment-start))
+				      (concat comment-end comment-prefix))
 				     start 'move)
 	    (replace-match comment-end))
-	  (if (looking-at (regexp-quote comment-start))
+	  (if (looking-at (regexp-quote comment-prefix))
 	      (replace-match "")))))))
 
 (defun fi:lisp-delete-pop-up-window ()
