@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 1.103 1996/10/30 17:59:51 layer Exp $
+;; $Id: fi-keys.el,v 1.104 1996/12/12 18:55:07 layer Exp $
 
 (cond ((eq fi::emacs-type 'xemacs19)
        (require 'tags "etags"))
@@ -989,16 +989,20 @@ as it was before it was made visible."
 (defconst fi::wc-stack-max 15)
 
 (defun fi::emacs-lisp-push-window-configuration ()
-  (setq fi::wc-stack (cons (current-window-configuration) fi::wc-stack))
-  (if (> (length fi::wc-stack) fi::wc-stack-max)
-      (setcdr (nthcdr (1- fi::wc-stack-max) fi::wc-stack) nil)))
+  (let ((res (list (current-window-configuration) 'place-holder)))
+    (setq fi::wc-stack (cons res fi::wc-stack))
+    (if (> (length fi::wc-stack) fi::wc-stack-max)
+	(setcdr (nthcdr (1- fi::wc-stack-max) fi::wc-stack) nil))
+    res))
 
 (defun fi::emacs-lisp-delete-pop-up-window ()
   (unless fi::wc-stack
     (error "The pop-up window stack is empty."))
   (let ((conf (car fi::wc-stack)))
     (setq fi::wc-stack (cdr fi::wc-stack))
-    (set-window-configuration conf)))
+    (set-window-configuration (first conf))
+    (when (bufferp (second conf))
+      (bury-buffer (second conf)))))
 
 (defun fi::epoch-lisp-push-window-configuration ()
   (let* ((id (epoch::get-screen-id (current-screen)))
@@ -1012,7 +1016,8 @@ as it was before it was made visible."
 	      (setcdr (nthcdr (1- fi::wc-stack-max) stack) nil)))
       (setq fi::wc-stack
 	(cons (list id (current-window-configuration))
-	      fi::wc-stack)))))
+	      fi::wc-stack))))
+  nil)
 
 (defun fi::epoch-lisp-delete-pop-up-window ()
   ;; this is the same as the above, except that it keeps the stack for each

@@ -11,6 +11,20 @@ Tests for new features:	<`no new features', `no tests for new features', or
 	* <changes go here...>
 
 *******************************************************************************
+2.0.20.beta.2
+
+Documentation changes:	none
+Tests for new features:	no new features
+
+Thu Dec 12 10:53:02 1996  Kevin Layer  <layer@ultra>
+
+	* fi-keys.el: make `C-c ' bury the buffer
+	* fi-stream.el: support for making `C-c ' bury the buffer
+	* fi-subproc.el: fix fi:common-lisp doc string and add check for
+	non-interactive calls to fi:common-lisp don't give a cons for
+	third arg
+
+*******************************************************************************
 2.0.20.beta.1
 
 Documentation changes:	none

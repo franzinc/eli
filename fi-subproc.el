@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.178 1996/12/10 19:26:54 layer Exp $
+;; $Id: fi-subproc.el,v 1.179 1996/12/12 18:55:13 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -316,6 +316,8 @@ process-connection-type (q.v.).")
 BUFFER-NAME, with default-directory of DIRECTORY, using EXECUTABLE-IMAGE-NAME
 and IMAGE-ARGS as the binary image pathname and command line
 arguments, doing the appropriate magic to execute the process on HOST.
+Lastly, for machines that use image files, EXECUTABLE-IMAGE-FILE is the
+Common Lisp image to execute.  This is separate from the executable.
 
 The first time this function is called and when given a prefix argument, all
 the above quantities are read from the minibuffer, with defaults coming
@@ -368,6 +370,9 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	 (executable-image-name
 	  (if (interactive-p)
 	      executable-image-name
+	    (when (consp executable-image-name)
+	      (error "3rd argument to fi:common-lisp must \
+be a string. Use 6th argument for image file."))
 	    (or executable-image-name
 		(if (consp fi:common-lisp-image-name)
 		    (car fi:common-lisp-image-name)

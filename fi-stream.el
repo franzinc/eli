@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-stream.el,v 1.15 1996/08/01 22:36:18 layer Exp $
+;; $Id: fi-stream.el,v 1.16 1996/12/12 18:55:11 layer Exp $
 ;;
 
 (defmacro fi::with-keywords (variables rest-arg &rest body)
@@ -28,9 +28,10 @@
   ;; by background computation.  See bug3267.
   ;; FSF emacs has strange scroll position when a buffer pops up because
   ;; it won't listen to any positioning operations until emacs input quiesces.
-  (fi:lisp-push-window-configuration)
+  
   (fi::with-keywords (parent x y width height splitp name) args
-    (let* ((fi::listener-protocol ':stream)
+    (let* ((conf (fi:lisp-push-window-configuration))
+	   (fi::listener-protocol ':stream)
 	   (proc
 	    (save-window-excursion
 	      (fi:open-lisp-listener
@@ -40,17 +41,18 @@
 		(lambda (proc)
 		  (format "%d\n%d\n"
 			  (fi::session-id session)
-			  (fi::tcp-listener-generation proc))))))))
+			  (fi::tcp-listener-generation proc)))))))
+	   (buffer (process-buffer proc)))
       (cond ((or parent x y width height)
 	     (fi::create-new-mapped-screen-for-stream parent x y width height))
-	    ((get-buffer-window (process-buffer proc))
-	     (select-window (get-buffer-window (process-buffer proc))))
+	    ((get-buffer-window buffer)
+	     (select-window (get-buffer-window buffer)))
 	    (splitp (split-window-vertically)))
-      (let ((buffer (process-buffer proc)))
-	(switch-to-buffer buffer)
-	(fi::ensure-buffer-visible buffer)
-	;;(recenter 0)
-	buffer))))
+      (switch-to-buffer buffer)
+      (fi::ensure-buffer-visible buffer)
+      ;;(recenter 0)
+      (setf (second conf) buffer)
+      buffer)))
 
 (defun fi::create-new-mapped-screen-for-stream (parent x y width height)
   (and (boundp 'epoch::screen-properties)
