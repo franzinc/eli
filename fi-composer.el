@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.5 1991/03/12 18:29:39 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.6 1991/03/13 15:03:25 layer Exp $
 ;;
 ;;;;;;;;;;;;;;;;;; Composer 2 related stuff
 ;;; Perhaps some of this is generally useful
@@ -45,37 +45,12 @@
 ;;; XXXX = class, method, generic-function, method-combination
 ;;; describe-xxx
 ;;; browse-xxx
-
-(defun edit-generic-function-methods (something)
-  (interactive (if current-prefix-arg
-		   '(nil t)
-		 (fi::get-default-symbol "Generic Function Name")))
-  (edit-somethings something 
-		   'lep::generic-function-methods-function-specs
-		   "Generic Function Methods"))
-
-(defun edit-callers (something)
-  (interactive (if current-prefix-arg
-		   '(nil t)
-		 (fi::get-default-symbol "Function name")))
-  (edit-somethings something 
-		   'lep::who-calls
-		   "Who calls"))
-
-(defun edit-callees (something)
-  (interactive (if current-prefix-arg
-		   '(nil t)
-		 (fi::get-default-symbol "Function name")))
-  (edit-somethings something 
-		   'lep::who-is-called-by
-		   "Who is called by"))
-
 ;;; edit-class-methods
 ;;; edit-uses
 
 ;; inspecting stuff
 
-(defun inspect-something (something function descr)
+(defun fi:inspect-something (something function descr)
   (make-request (composer::inspect-something-session
 		 :fspec something :function function)
 		;; Normal continuation
@@ -84,20 +59,20 @@
 		((something) (error)
 		 (message "Cannot inspect/browse %s: %s" something error))))
 
-(defun browse-class (something)
+(defun fi:browse-class (something)
   (interactive (if current-prefix-arg
 		   '(nil t)
 		 (fi::get-default-symbol "Class name")))
   (inspect-something something 'clos::find-class "Class"))
 
-(defun browse-function (something)
+(defun fi:browse-function (something)
   (interactive (if current-prefix-arg
 		   '(nil t)
 		 (fi::get-default-symbol "Function spec")))
   (inspect-something something 'fdefinition "Function"))
 
 
-(defun inspect-value (something)
+(defun fi:inspect-value (something)
   (interactive (if current-prefix-arg
 		   '(nil t)
 		 (fi::get-default-symbol "form ")))
@@ -131,21 +106,26 @@
 ;; describe-method
 ;; describe-method-combination
 
-;;; List callers
-
-(defun list-callers (symbol)
-  (interactive (fi::get-default-symbol "Find references to symbol"))
-  (fi:lisp-who-calls symbol))
-
-;;; list-callees
-;;; list-class-methods
-;;; list-generic-function-methods
-;; .... 
-
-
 ;;; show-callers
 ;;; show-callees
 
+
+(defun fi:show-calls-to (function)
+  (interactive (fi::get-default-symbol "Function"))
+  (fi::show-calls function ':parent "Could not show calls to %s"))
+
+(defun fi:show-calls-from (function)
+  (interactive (fi::get-default-symbol "Function"))
+  (fi::show-calls function  ':kid "Could not show calls from %s"))
+
+(defun fi::show-calls (function direction msg)
+  (make-request (composer::show-calls-session
+		 :direction direction :fspec (fi::frob-case-to-lisp function))
+		(() () ())
+		((msg) (error)
+		 (message msg error))))
+
+;;;
 
 (defun show-subclasses (class)
   (interactive (fi::get-default-symbol "Class"))
