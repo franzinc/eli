@@ -1,7 +1,33 @@
 ;;; subprocess-lisp.el
 ;;;   functions to send lisp source code to the sublisp process
 ;;;
-;;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.4 1988/02/19 12:17:48 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.5 1988/02/19 17:53:56 layer Exp $
+
+(defun inferior-lisp-newline ()
+  (interactive)
+  (if (eobp)
+      (let ((start (marker-position
+		    (process-mark (get-buffer-process (current-buffer)))))
+	    (have-list nil))
+	(save-excursion
+	  (goto-char start)
+	  (if (looking-at "(") (setq have-list t)))
+	(if have-list
+	    (let ((send-sexp t))
+	      (goto-char start)
+	      (condition-case nil
+		  (forward-sexp 1)
+		(error (setq send-sexp nil)))
+	      (end-of-buffer)
+	      (if send-sexp
+		  (subprocess-send-input)
+		;; not a complete sexp, so newline and indent
+		(progn
+		  (newline)
+		  (lisp-indent-line))))
+	  ;; a non-list s-exp, so just send it off...
+	  (subprocess-send-input)))
+    (subprocess-send-input)))
 
 (defun inferior-lisp-send-sexp-input (arg)
   "Send s-expression(s) to the Lisp subprocess."
@@ -269,9 +295,11 @@ Does not yet have provision for signals (e.g. ^C)."
   "Process connected to sublist socket for sublisp-arglist and friends.")
 
 (defvar background-sublisp-form
- "(loop
-   (princ \"\n\")
-   (errorset (eval (read)) t))\n"
+ "(progn
+ (setf (mp:process-name mp:*current-process*) \"Gnu Listener\")
+ (loop
+  (princ \"\n\")
+  (errorset (eval (read)) t)))\n"
  "The program executed by the backdoor lisp listener.")
 
 (defun background-sublisp-process (&optional nomake)
@@ -360,7 +388,7 @@ Does not yet have provision for signals (e.g. ^C)."
    (background-sublisp-process)
    (format
     "(progn
-      (format t \"~{~a~^ ~}\"
+      (format t  \"~:[()~;~:*~{~a~^ ~}~]\"
        (cond
 	((special-form-p '%s) '(\"%s is a special form\"))
 	((macro-function '%s) '(\"%s is a macro\"))
