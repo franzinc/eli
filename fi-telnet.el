@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-telnet.el,v 1.7 1991/03/15 12:42:49 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-telnet.el,v 1.8 1991/06/19 22:16:23 layer Exp $
 
 (defvar fi:telnet-mode-map nil
   "The telnet major-mode keymap.")
@@ -107,7 +107,8 @@ The telnet image file and image arguments are taken from the variables
 	 '(("EMACS" . "t")
 	   ("TERM" . "dumb")
 	   ("DISPLAY" . (getenv "DISPLAY")))))
-    (fi::make-subprocess host
+    (fi::make-subprocess nil
+			 host
 			 buffer-number
 			 default-directory
 			 'fi:telnet-mode

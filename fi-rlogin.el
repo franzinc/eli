@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.21 1991/03/15 12:43:16 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.22 1991/06/19 22:16:16 layer Exp $
 
 (defvar fi:rlogin-mode-map nil
   "The rlogin major-mode keymap.")
@@ -105,7 +105,8 @@ The rlogin image file and image arguments are taken from the variables
 	 '(("EMACS" . "t")
 	   ("TERM" . "dumb")
 	   ("DISPLAY" . (getenv "DISPLAY")))))
-    (fi::make-subprocess host
+    (fi::make-subprocess nil
+			 host
 			 buffer-number
 			 default-directory
 			 'fi:rlogin-mode

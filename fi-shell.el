@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-shell.el,v 1.14 1991/03/15 12:43:02 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-shell.el,v 1.15 1991/06/19 22:16:20 layer Exp $
 
 (defvar fi:shell-mode-map nil
   "The shell major-mode keymap.")
@@ -93,7 +93,8 @@ buffer with no process attached to it.
 The shell image file and image arguments are taken from the variables
 `fi:shell-image-name' and `fi:shell-image-arguments'."
   (interactive "p")
-  (fi::make-subprocess "shell"
+  (fi::make-subprocess nil
+		       "shell"
 		       buffer-number
 		       default-directory
 		       'fi:shell-mode

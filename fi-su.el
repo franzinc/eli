@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-su.el,v 1.8 1991/03/15 12:42:50 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-su.el,v 1.9 1991/06/19 22:16:22 layer Exp $
 
 (defvar fi:su-mode-map nil
   "The su major-mode keymap.")
@@ -125,7 +125,8 @@ to 1.  If BUFFER-NUMBER is 1, then the trailing \"<1>\" is omited.  If
 BUFFER-NUMBER is < 0, then the first available buffer name is chosen (a
 buffer with no process attached to it."
   (interactive "p")
-  (fi::make-subprocess "root"
+  (fi::make-subprocess nil
+		       "root"
 		       buffer-number
 		       default-directory
 		       'fi:su-mode
@@ -148,7 +149,8 @@ The host name is read from the minibuffer."
 	 '(("EMACS" . "t")
 	   ("TERM" . "dumb")
 	   ("DISPLAY" . (getenv "DISPLAY")))))
-    (fi::make-subprocess (format "root-%s" host)
+    (fi::make-subprocess nil
+			 (format "root-%s" host)
 			 buffer-number
 			 default-directory
 			 'fi:remote-su-mode
