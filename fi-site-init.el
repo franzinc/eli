@@ -3,7 +3,6 @@
 ;;
 (load "fi/modes.elc")
 (if fi:lisp-do-indentation		; default is `nil'
-    ;; need the new ``parse-partial-sexp'' to use this:
     (load "fi/indent.elc"))
 (load "fi/keys.elc")
 (load "fi/subproc.elc")
