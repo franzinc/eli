@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.20 1991/09/16 14:55:10 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.21 1991/09/27 00:58:41 layer Exp $
 
 ;;; Misc utilities
 
@@ -300,3 +300,11 @@ rebuild emacs with MAINTAIN_ENVIRONMENT undefined."))
     (beginning-of-buffer)
     (beep)
     (signal 'error (list ""))))
+
+(defun fi:map-lines (function &rest args)
+  "Apply FUNCTION to ARGS once for every line in buffer, with point always
+at the beginning of the line."
+  (beginning-of-buffer)
+  (while (and (= 0 (progn (beginning-of-line) (forward-line 1)))
+	      (not (eobp)))
+    (apply function args)))
