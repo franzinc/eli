@@ -1,6 +1,19 @@
-	      Franz Inc. GNU Emacs/Common Lisp Interface
+		      ##########################
+		      ## DRAFT FOR TEKTRONIX ###
+		      ##########################
 
-$Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.13 1988/05/12 12:44:41 layer Exp $
+			FOR INTERNAL USE ONLY
+
+			     Comments to:
+
+			     Kevin Layer
+			 1995 University Ave.
+			      Suite 275
+			  Berkeley, CA 94704
+			     415 548-3600
+
+	      Franz Inc. GNU Emacs/Common Lisp Interface
+	 $Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.14 1988/05/12 12:52:12 layer Exp $
 
 This document is a specification of the Franz Inc. GNU Emacs interface
 to Common Lisp, which is written entirely in GNU Emacs Lisp (for GNU
@@ -213,7 +226,7 @@ mode or are available as extended commands:
 %% fi:lisp-eval-last-sexp
 %% fi:lisp-eval-current-buffer
 %% fi:lisp-eval-defun
-
+
    The following functions are bound to keys in Common Lisp mode, and
 require the TCP/IP communication channel to Lisp:
 
