@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-emacs21.el,v 2.1 2003/09/29 23:28:23 layer Exp $
+;; $Id: fi-emacs21.el,v 2.2 2003/10/14 21:02:22 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; emacs specific stuff
@@ -1031,3 +1031,34 @@
 
 (add-hook 'fi:common-lisp-mode-hook 'fi::turn-on-font-lock)
 (add-hook 'fi:emacs-lisp-mode-hook 'fi::turn-on-font-lock)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; resize support
+
+;; rfe5597, from smh
+
+;; This still completely punts deciding what to do with multiple
+;; frames.  We could associate the initial *common-lisp* buffer with
+;; the frame that is selected when the buffer is created, and then
+;; only respond to changes in that frame.  Of course, there are still
+;; ways this could fail, such as if the initial frame were
+;; subsequently closed...
+
+(defvar fi::*last-frame-width-given-to-lisp* 0)
+
+(defun fi::window-config-changed ()
+  (let ((width (frame-width)))
+    (unless (equal fi::*last-frame-width-given-to-lisp* width)
+      ;;(message "window-config-changed frame %s width %s height %s"
+      ;;  (selected-frame) width (frame-height))
+      (ignore-errors			; Cautious.
+					; There is probably a better way to
+					; decide whether to try to notify
+					; lisp.
+       (when (fi::lep-open-connection-p)
+	 (fi:eval-in-lisp
+	  "(setq excl::*default-right-margin* %d)"
+	  (setq fi::*last-frame-width-given-to-lisp* (1- width))))))))
+
+(add-hook 'window-configuration-change-hook 'fi::window-config-changed)
+
