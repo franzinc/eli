@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.3 1988/04/25 15:16:20 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.4 1988/05/11 14:47:57 layer Exp $
 
 (defvar fi:rlogin-mode-map nil
   "The rlogin major-mode keymap.")
@@ -39,16 +39,10 @@
 (defvar fi:rlogin-mode-super-key-map nil
   "Used for super-key processing in rlogin mode.")
 
-(defvar fi:explicit-rlogin-file-name nil
-  "Explicit remote-login image to invoke from (fi:rlogin).")
-
-(defvar fi:explicit-rlogin-image-arguments nil
-  "Explicit remote-login image arguments when invoked from (fi:rlogin).")
-
-(defvar fi:default-rlogin-file-name "rlogin"
+(defvar fi:rlogin-image-name "rlogin"
   "Default remote-login image to invoke from (fi:rlogin).")
 
-(defvar fi:default-rlogin-image-arguments nil
+(defvar fi:rlogin-image-arguments nil
   "Default remote-login image arguments when invoked from (fi:rlogin).")
 
 (defvar fi:rlogin-prompt-pattern
@@ -58,21 +52,7 @@ Anything from beginning of line up to the end of what this pattern matches
 is deemed to be prompt, and is not re-executed.")
 
 (defun fi:rlogin-mode ()
-  "Major mode for interacting with an inferior rlogin.
-
-This mode is essentially the same as `fi:shell-mode' except that:
-the working directory is not tracked (in the presence of NFS mounted file
-systems doing this would present problems unless the mount points where the
-same on the local and remote machines) and interrupt, end-of-file, quit and
-stop actions are handled specially.
-
-The local keymap for this mode is bound to `fi:rlogin-mode-map' and
-super-keys are obtained from `fi:rlogin-mode-super-key-map'.  The prompt
-pattern is taken from `fi:rlogin-prompt-pattern'.
-
-Entry to this mode applies the values of `fi:subprocess-mode-hook' and
-`fi:rlogin-mode-hook', in this order and each with no args, if their values
-are the names of functions."
+  "Major mode for interacting with an inferior rlogin."
   (interactive)
   (kill-all-local-variables)
   (setq major-mode 'fi:rlogin-mode)
@@ -99,24 +79,25 @@ are the names of functions."
   (setq fi:shell-cd-regexp nil)
   (run-hooks 'fi:subprocess-mode-hook 'fi:rlogin-mode-hook))
 
-(defun fi:rlogin (host)
-  "Run an inferior remote login, with input/output through buffer *<host>*.
-See `fi::make-process'.  Hook function `rlogin-subprocess-hook' will be
-applied in the buffer if defined."
-  (interactive "sRemote login to host: \n")
-  (fi::make-process "rlogin" host 'fi:rlogin-mode nil nil (list host))
-  (set-process-filter (get-buffer-process (current-buffer))
-		      'fi::rlogin-filter))
+(defun fi:rlogin (&optional buffer-number host)
+  (interactive "p\nsRemote login to host: ")
+  (let ((proc
+	 (fi::make-subprocess
+	  buffer-number host 'fi:rlogin-mode
+	  fi:rlogin-prompt-pattern fi:rlogin-image-name
+	  (append (list host) fi:rlogin-image-arguments))))
+    (set-process-filter proc 'fi::rlogin-filter)))
 
-(defun fi:another-rlogin (host)
-  "Run a new remote login, with input/output through buffer *<host>-N*.
-This function always creates a new subprocess and buffer.  See
-`fi::make-process'. Hook function `rlogin-subprocess-hook' will be applied in
-the newly-created buffer if defined."
-  (interactive "sRemote login to host: \n")
-  (fi::make-process "rlogin" host 'fi:rlogin-mode nil t (list host))
-  (set-process-filter (get-buffer-process (current-buffer))
-		      'fi::rlogin-filter))
+(defun fi:explicit-rlogin (&optional buffer-number host
+				     image-name image-arguments)
+  (interactive
+   "p\nsRemote login to host: \nsImage name: \nxImage arguments (a list): ")
+  (let ((proc
+	 (fi::make-subprocess
+	  buffer-number host 'fi:rlogin-mode
+	  fi:rlogin-prompt-pattern image-name
+	  (append (list host) image-arguments))))
+    (set-process-filter proc 'fi::rlogin-filter)))
 
 (defun fi:rlogin-send-eof ()
   "Send eof to process running through remote login subprocess buffer."
