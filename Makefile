@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.57 1991/03/16 12:34:57 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.58 1991/03/16 13:51:56 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -69,4 +69,6 @@ printer = lw2
 enscript = enscript -P$(printer) -h
 
 print:
-	$(enscript) -B -2r -f Courier6 RefCard.doc
+	$(enscript) -f Courier10        UserGuide.doc
+	$(enscript) -f Courier8         RefMan.doc
+	$(enscript) -f Courier6 -B -2r  RefCard.doc
