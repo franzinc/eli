@@ -31,7 +31,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.47 1990/12/13 17:34:53 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.48 1990/12/28 14:27:38 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -245,6 +245,8 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 	   (setq fi::sublisp-name (save-excursion (fi:common-lisp)))))
 	(t (error "Can't start a subprocess for sublisp-name %s."
 		  fi::sublisp-name)))
+  (if (processp fi::sublisp-name)
+      (setq fi::sublisp-name (process-name fi::sublisp-name)))
   nil)
 
 (make-variable-buffer-local 'fi::emacs-to-lisp-transaction-file)
