@@ -16,7 +16,7 @@
 ;; at private expense as specified in DOD FAR 52.227-7013 (c) (1) (ii).
 ;;
 ;;
-;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.16 1988/04/26 20:25:51 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.17 1988/04/26 22:12:29 layer Exp $
 ;; $Locker: layer $
 ;;
 ;; This code is a preliminary IPC interface for ExCL. The functionality
@@ -29,7 +29,7 @@
 
 (pushnew :ipc *features*)
 
-(export '(start-lisp-listener-daemon))
+(export '(start-lisp-listener-daemon *unix-domain* *inet-port*))
 
 (require :process)
 (require :foreign)
