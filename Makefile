@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.23 1988/11/17 12:22:34 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.24 1988/11/18 20:18:52 layer Exp $
 
 cl = /usr/local/cl3.0
 
@@ -32,6 +32,3 @@ print:; ${pr} Makefile *.el
 
 tags:
 	(cd ../..; etags lisp/fi/*.el lisp/local/*.el lisp/*.el src/*.[ch])
-
-verify:
-	@verify *.el spec.out README examples/*
