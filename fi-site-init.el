@@ -1,8 +1,8 @@
-;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.29 1991/09/11 15:22:33 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.30 1992/04/28 14:02:17 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
-(setq fi:emacs-lisp-interface-version "2.0")
+(setq fi:emacs-lisp-interface-version "2.0.1")
 (defvar fi::required-ipc-version 1)
 
 (require 'cl)
@@ -25,10 +25,9 @@
 (load "fi/filec.elc")
 (load "fi/utils.elc")
 
-(if (boundp 'epoch::version)
-    (progn
-      (load "fi/leep0.elc")
-      (load "fi/leep.elc")))
+(when (boundp 'epoch::version)
+  (load "fi/leep0.elc")
+  (load "fi/leep.elc"))
 
 ;; `shell' and `rlogin' modes:
 (load "fi/shell.elc")
