@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.84 1991/02/12 17:16:56 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.85 1991/02/15 23:17:41 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -597,7 +597,10 @@ are read from the minibuffer."
       ;; of the process.  This is so that the processes are named similarly
       ;; in Emacs and Lisp.
       ;;
-      (when ipc-version (process-send-string fi::backdoor-process (format "%s\n" (prin1-to-string fi::listener-protocol))))
+      (when ipc-version
+	(process-send-string
+	 proc
+	 (format "%s\n" (prin1-to-string fi::listener-protocol))))
       (process-send-string proc (format "\"%s\"\n" (buffer-name buffer)))
       (process-send-string proc (format " %d \n" password))
       
