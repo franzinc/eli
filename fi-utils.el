@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 1.72.6.5 2002/02/07 16:41:34 layer Exp $
+;; $Id: fi-utils.el,v 1.72.6.5.8.1 2003/08/11 23:08:38 layer Exp $
 
 ;;; Misc utilities
 
@@ -655,6 +655,36 @@ at the beginning of the line."
 
 ;;;;
 
+(defvar fi:pop-up-temp-window-behavior '(other . t)
+  "*The value of this variable determines the behavior of the popup
+temporary buffers used to display information which is the result of
+queries of the Lisp environment.
+
+The value is a cons of the form (style .  boolean).
+
+The possible values for the `style' (or `car' of the cons) are the symbols
+MINIBUFFER, SPLIT, OTHER, and REPLACE:
+
+- MINIBUFFER causes the minibuffer to always be used, regardless of the
+number of lines of output.  Recent versions of Emacs have dynamically
+resizing minibuffers, and this is useful in combination with these newer
+versions.
+
+- SPLIT causes the largest window to be split and the new window to be
+minimal in size.
+
+- OTHER causes the other window to be used, spliting the screen if there is
+only one window.
+
+- REPLACE causes the current window to be replaced with the help buffer.
+
+The possible values for the `boolean' (or `cdr' of the cons) are `t' or
+`nil'.  `t' means use the minibuffer, and if the resulting text does not
+fit, use a window.  `nil' means always use a window.  A value of `nil' is
+handy since messages printed in the minibuffer can easily be erased.
+
+If the `style' is `minibuffer', then the `boolean' is ignored.")
+
 (defun fi::display-pop-up-window (buffer &optional hook args)
   (fi:lisp-push-window-configuration)
   (cond ((eq 'split (car fi:pop-up-temp-window-behavior))
@@ -666,7 +696,17 @@ at the beginning of the line."
 	(t (error "bad value for car of fi:pop-up-temp-window-behavior: %s"
 		  (car fi:pop-up-temp-window-behavior))))
   (and (fboundp 'fi::ensure-buffer-visible)
-       (fi::ensure-buffer-visible buffer)))
+       (fi::ensure-buffer-visible buffer))
+  ;; If successive operations pushed identical window configurations,
+  ;; remove the redundancy.
+  (fi::emacs-lisp-pop-redundant-window-configuration))
+
+(defun fi::emacs-lisp-pop-redundant-window-configuration ()
+  (let ((c (caar  fi::wc-stack)))
+    (when (and c
+	       (compare-window-configurations c
+					      (current-window-configuration)))
+      (pop fi::wc-stack))))
 
 (defun fi::display-pop-up-window-replace (buffer hook args)
   (switch-to-buffer buffer)

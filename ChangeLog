@@ -11,7 +11,21 @@ post-6.2 release changes:
 
 2003-08-11  Kevin Layer  <layer@crikey>
 
-	* fi-emacs21.el: rfe5611:
+    for rfe5611:
+	* fi-site-init.el: load fi-utils before fi-keys
+	* fi-basic-lep.el:
+	- move fi:pop-up-temp-window-behavior to fi-utils, since the value
+	  is needed in fi-keys
+>>>	- implement fi:pop-up-temp-window-behavior of '(minibuffer ...)
+	- remove dead code
+	* fi-keys.el:
+>>>	- new variable fi:arglist-on-space
+	- new function fi:arglist-lisp-space
+	* fi-utils.cl:
+	- move fi:pop-up-temp-window-behavior defvar here
+	- (from smh) make fi::display-pop-up-window remove redundant
+	  window configurations
+	* fi-emacs21.el:
 	- no composer menu on windows
 	- improve/modernize font lock support
 

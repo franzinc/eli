@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 1.117.6.4.8.4 2003/08/08 17:00:32 layer Exp $
+;; $Id: fi-keys.el,v 1.117.6.4.8.5 2003/08/11 23:08:38 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -52,6 +52,11 @@ Emacs Lisp Manual.  For compatibility reasons the value of this variable is
 sub-menus in the single menu are put onto the menu-bar.  This variable is
 ignored in all but XEmacs and Emacs 21 and later.")
 
+(defvar fi:arglist-on-space t
+  "*If non-nil, then bind SPC to a function that retrieves arglist
+information and displays it according to the value of the variable
+fi:arglist-space-style.")
+
 
 ;;;;
 ;;; Key defs
@@ -68,6 +73,7 @@ ignored in all but XEmacs and Emacs 21 and later.")
 (defun fi::initialize-mode-map (mode-map-sym &optional mode-super-map-sym type)
   (when (null (symbol-value mode-map-sym))
     (let* ((ext fi:legacy-keybindings)
+	   (arglist fi:arglist-on-space)
 	   (elsrc (eq major-mode 'fi:emacs-lisp-mode))
 	   (clsrc (eq major-mode 'fi:common-lisp-mode))
 	   (flsrc (eq major-mode 'fi:franz-lisp-mode))
@@ -158,6 +164,7 @@ ignored in all but XEmacs and Emacs 21 and later.")
       (fi::defkey map "\C-?" 'backward-delete-char-untabify t)
       (fi::defkey map "\e" emap t)
       (fi::defkey map ";" 'fi:lisp-semicolon indent)
+      (fi::defkey map " " 'fi:arglist-lisp-space arglist)
       (fi::defkey map "!" 'fi:shell-mode-bang
 		  (and fi:shell-mode-use-history shell))
       (when comint
@@ -1220,3 +1227,83 @@ the previous one."
   (interactive)
   (re-search-backward "^("))
 
+(defvar fi:arglist-space-style '(minibuffer)
+  "*The value of this variable is used to bind
+fi:pop-up-temp-window-behavior when (\\[fi:arglist-lisp-space]) is executed.
+A value of '(split . nil) is handy for insuring that the arglist
+information stays around long enough to be used.")
+
+(defun fi:arglist-lisp-space ()
+  "Display the value of the argument list of a symbol followed by
+SPC.  This function is intended to be bound to the SPC key so
+that, after being enabled it will display the arglist or value of a
+specific symbol after the symbol has been typed in followed by SPC."
+  (interactive)
+  (if (fi::lep-open-connection-p)
+      (fi:arglist-lisp-space-1)
+    (self-insert-command (prefix-numeric-value current-prefix-arg))))
+
+;; The implementation of fi:arglist-lisp-space-1 is from Bill Clementson
+;; (Bill_Clementson@jdedwards.com), who says it is an adaptation of ILISP
+;; code.  The idea for fi:arglist-space-style came from Steve Haflich
+;; (smh@franz.com).
+
+(defun fi:arglist-lisp-space-1 ()
+  (let* ((old-point (point))
+	 (last-char
+	  (progn (ignore-errors (backward-char))
+		 (unless (eql (point) old-point)
+		   (buffer-substring-no-properties old-point (point)))))
+	 (string
+	  (buffer-substring-no-properties old-point
+					  (progn
+					    (goto-char old-point)
+					    (ignore-errors
+					     (backward-sexp))
+					    (point))))
+	 (prefix-char 
+	  (let ((save (ignore-errors
+		       (goto-char old-point)
+		       (backward-sexp)
+		       (backward-char)
+		       (point))))
+	    (when save
+	      (buffer-substring-no-properties save (1+ save)))))
+	 (double-quote-pos (and string (string-match "\"" string)))
+	 (paren-pos (and string
+			 (string-match "(" string)))
+	 (symbol-with-package
+	  (unless (eql paren-pos 0)
+	    (if (and double-quote-pos (eql double-quote-pos 0)
+		     string (ignore-errors (elt string 2)))
+		(substring string 1 -1)
+	      string)))
+	 (symbol symbol-with-package))
+    (flet ((no-arglist-output-p ()
+	     (or (and last-char 
+		      (or
+		       ;; don't do silly things after comment character
+		       (equal last-char ";")
+		       ;; do something only if directly after a sexp.
+		       (equal last-char " ")))
+		 ;; could be something like #+foo, #-foo, or #:foo, any of
+		 ;; which is likely to lose.
+		 (and string (string-match "^#" string))
+		 double-quote-pos ;; there is no output  for strings only.
+		 (not (and symbol (stringp symbol) (> (length symbol) 0)))
+		 (string-match "^\. " symbol)
+		 (string-match "^\\\\" symbol))))
+      (goto-char old-point)
+      (unless (no-arglist-output-p)
+	;; only output for functions within brackets; too much lisp-traffic!
+	(when (equal prefix-char "(")
+	  (fi::make-request (lep::arglist-session :fspec string)
+	    ;; Normal continuation
+	    (() (what arglist)
+	     (let ((fi:pop-up-temp-window-behavior fi:arglist-space-style))
+	       (fi:show-some-text nil "%s's arglist: %s"
+				  what arglist)))
+	    ;; Error continuation
+	    ((string) (error)
+	     (fi::show-error-text "")))))))
+  (self-insert-command (prefix-numeric-value current-prefix-arg)))

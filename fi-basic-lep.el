@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-basic-lep.el,v 1.47.6.5.8.2 2003/08/07 15:27:23 layer Exp $
+;; $Id: fi-basic-lep.el,v 1.47.6.5.8.3 2003/08/11 23:08:38 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -19,42 +19,25 @@
 (defun fi::show-error-text (format-string &rest args)
   (if (cdr fi:pop-up-temp-window-behavior)
       (apply 'fi:show-some-text nil format-string args)
-    (let ((fi:pop-up-temp-window-behavior (cons (car fi:pop-up-temp-window-behavior) 't)))
+    (let ((fi:pop-up-temp-window-behavior
+	   (cons (car fi:pop-up-temp-window-behavior) 't)))
       (apply 'fi:show-some-text nil format-string args))))
-
-(defvar fi:pop-up-temp-window-behavior '(other . t)
-  "*The value of this variable determines the behavior of the popup
-temporary buffers used to display information which is the result of
-queries of the Lisp environment.  The value is a cons of the style and a
-boolean of whether or not the minibuffer should be used for displaying the
-result.  The possible values for the CAR of the cons are the symbols
-SPLIT, OTHER, and REPLACE.  SPLIT causes the largest window to be split
-and the new window to be minimal in size.  OTHER causes the other window to
-be used, spliting the screen if there is only one window.  REPLACE causes
-the current window to be replaced with the help buffer.  The reason for
-specifying a CDR of nil is so that a window is always used--messages
-printed in the minibuffer can easily be erased.")
 
 (defun fi:show-some-text (xpackage text &rest args)
   (when args (setq text (apply (function format) text args)))
   (let ((n (string-match "[\n]+\\'" text)))
     (when n (setq text (substring text 0 n))))
-  (if (null (cdr fi:pop-up-temp-window-behavior))
+  (if (and (not (eq 'minibuffer (car fi:pop-up-temp-window-behavior)))
+	   (null (cdr fi:pop-up-temp-window-behavior)))
       (fi::show-some-text-1 text (or xpackage fi:package))
     (let* ((window (minibuffer-window))
-	   ;;(height (1- (window-height window)))
 	   (width (window-width window))
-	   (text-try
-	    ;; cond clause commented 18oct94 smh.
-	    ;; Now that package is indicated in the mode line, the real estate
-	    ;; can be saved.
-	    (cond ;; (fi:package (format "[package: %s] %s" fi:package text))
-	     (t text)))
-	   (lines/len (fi::frob-string text-try)))
-      (if (and (< (car lines/len) 2)
-	       (<= (second lines/len) width))
+	   (lines/len (fi::frob-string text)))
+      (if (or (eq 'minibuffer (car fi:pop-up-temp-window-behavior))
+	      (and (< (car lines/len) 2)
+		   (<= (second lines/len) width)))
 	  (progn
-	    (message "%s" text-try)
+	    (message "%s" text)
 	    (fi::note-background-reply))
 	(fi::show-some-text-1
 	 ;; cond clause commented 18oct94 smh.  See above.

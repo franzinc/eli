@@ -1,4 +1,4 @@
-;; $Id: fi-site-init.el,v 1.116.22.2.18.2 2003/08/07 15:27:23 layer Exp $
+;; $Id: fi-site-init.el,v 1.116.22.2.18.3 2003/08/11 23:08:38 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -242,11 +242,11 @@ On Windows, just remove all .elc files and restart xemacs.")
   (beep)
   (error "You must byte-recompile the .el files for XEmacs 20.x."))
 
+(fi::load "fi-utils")
 (fi::load "fi-keys")			; load before fi-modes
 (fi::load "fi-modes")
 (when fi:lisp-do-indentation
   (fi::load "fi-indent"))
-(fi::load "fi-utils")
 (fi::load "fi-gnu")
 
 (unless fi::load-subprocess-files
