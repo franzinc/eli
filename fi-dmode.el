@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.11 1991/04/22 16:55:30 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.12 1991/04/23 15:47:19 layer Exp $
 ;;
 
 ;; Create a mode in which each line is a definition and . on that
@@ -75,7 +75,7 @@ Entry to this mode runs the fi:definition-mode-hook."
 
   (if (null fi:definition-mode-map)
       (let ((map (make-keymap)))
-	(define-key map "\C-_" 'fi::dmode-undo)
+	(define-key map "\C-_" 'fi:definition-mode-undo)
 	(define-key map "\e."  'fi:lisp-find-tag)
 	(define-key map "."    'fi:definition-mode-goto-definition)
 	(define-key map "n"    'fi:definition-mode-goto-next)
@@ -98,6 +98,27 @@ Entry to this mode runs the fi:definition-mode-hook."
   (run-hooks 'fi:definition-mode-hook))
 
 (defun fi:inverse-definition-mode ()
+  "A major mode for viewing inverse definitions of objects defined in the
+Common Lisp environment.  The definitions are put in a buffer called
+*inverse-definitions*, and each line contains the name and type of the
+definition.  As definition-mode shows definitions and provides bindings to
+go to the source of the definitions, inverse-definition-mode shows
+definitions and provides ways to find the users of the definitions. 
+
+The type is one of:
+
+	:operator	for functions, methods, generic functions
+				and macros,
+	:type		for classes (types),
+	:setf-method	for setf methods, or
+	:variable	for constants and variables.
+
+Inverse definition mode is used by other tools, such as
+fi:list-undefined-functions.
+
+The keymap for this mode is bound to fi:inverse-definition-mode-map:
+\\{fi:inverse-definition-mode-map}
+Entry to this mode runs the fi:inverse-definition-mode-hook."
   (interactive)
   (kill-all-local-variables)
   (setq major-mode 'fi:inverse-definition-mode)
@@ -113,7 +134,7 @@ Entry to this mode runs the fi:definition-mode-hook."
 
   (if (null fi:inverse-definition-mode-map)
       (let ((map (make-keymap)))
-	(define-key map "\C-_" 'fi::dmode-undo)
+	(define-key map "\C-_" 'fi:definition-mode-undo)
 	(define-key map "\e."  'fi:lisp-find-tag)
 	(define-key map "."    'fi:definition-mode-goto-definition)
 	(define-key map "n"    'fi:definition-mode-goto-next)
@@ -135,9 +156,9 @@ Entry to this mode runs the fi:definition-mode-hook."
 
   (run-hooks 'fi:inverse-definition-mode-hook))
 
-(defun fi::dmode-undo ()
-  "Perform the undo in the dmode buffer.  We have to first make the buffer
-writeable."
+(defun fi:definition-mode-undo ()
+  "Perform the undo in the dmode buffer.  This has the effect of pop'ing
+back to the previous contents of the definition-mode buffer."
   (interactive)
   (let ((buffer-read-only nil))
     (undo)))
@@ -198,6 +219,8 @@ was before inverse-definition mode was entered."
 	     (append other (cdr lep::definition-finding-function))))))
 
 (defun fi:inverse-definition-who-calls ()
+  "Find the callers of a function in inverse definition mode, displaying
+the results in definition mode."
   (interactive)
   (let* ((n (count-lines (point-min)
 			 (save-excursion (beginning-of-line) (point))))
@@ -207,6 +230,8 @@ was before inverse-definition mode was entered."
       (fi:list-who-calls def))))
 
 (defun fi:definition-mode-toggle-trace ()
+  "Toggle tracing for the definition under the point.  This is equivalent
+to fi:toggle-trace-definition."
   (interactive)
   (let* ((n (count-lines (point-min)
 			 (save-excursion (beginning-of-line) (point))))
