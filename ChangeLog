@@ -7,6 +7,13 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.14
+
+Tue Aug  4 17:33:39 1998  Kevin Layer  <layer@ultra>
+
+	* doc/eli.htm: fix typos 
+
+*******************************************************************************
 2.0.21.13
 
 Tue Jul 28 15:18:07 1998  Kevin Layer  <layer@ultra>
