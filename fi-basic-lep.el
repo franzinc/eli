@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-basic-lep.el,v 1.47.6.5.8.3 2003/08/11 23:08:38 layer Exp $
+;; $Id: fi-basic-lep.el,v 1.47.6.5.8.4 2003/08/12 21:17:39 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -33,7 +33,8 @@
     (let* ((window (minibuffer-window))
 	   (width (window-width window))
 	   (lines/len (fi::frob-string text)))
-      (if (or (eq 'minibuffer (car fi:pop-up-temp-window-behavior))
+      (if (or (and (eq 'minibuffer (car fi:pop-up-temp-window-behavior))
+		   (fi::will-fit-in-minibuffer-p text))
 	      (and (< (car lines/len) 2)
 		   (<= (second lines/len) width)))
 	  (progn
@@ -44,6 +45,32 @@
 	 (cond ;; (fi:package (format "[package: %s]\n%s" fi:package text))
 	  (t text))
 	 (or xpackage fi:package))))))
+
+;; Why are these necessary????
+(defvar resize-mini-windows)
+(defvar max-mini-window-height)
+
+;; would have been nice to use display-message-or-buffer...
+(defun fi::will-fit-in-minibuffer-p (string)
+  (let ((lines (fi::count-lines-in-string string)))
+    (if (or (<= lines 1)
+	    (<= lines
+		(if (and (boundp 'resize-mini-windows)
+			 resize-mini-windows)
+		    (cond ((floatp max-mini-window-height)
+			   (* (frame-height) max-mini-window-height))
+			  ((integerp max-mini-window-height)
+			   max-mini-window-height)
+			  (t 1))
+		  1)))
+	t
+      nil)))
+
+(defun fi::count-lines-in-string (string)
+  (with-temp-buffer
+      (progn
+	(insert string)
+	(count-lines (point-min) (point-max)))))
 
 (defun fi::frob-string (text)
   (let ((start 0)

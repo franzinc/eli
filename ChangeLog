@@ -9,6 +9,25 @@ For more detailed instructions on filling in the ChangeLog form, see
 ******************************************************************************
 post-6.2 release changes: 
 
+2003-08-12  Kevin Layer  <layer@crikey>
+
+    for rfe5611:
+	* fi-basic-lep.el: make fi:pop-up-temp-window-behavior value of
+	  '(minibuffer) work more as expected.  Evaluations send their
+	  output to the minibuffer, when possible, the *CL-Temp* buffer
+	  when it's too large.
+	* fi-keys.el:
+>>>	- rename fi:arglist-space-style to fi:auto-arglist-pop-up-style
+	- cleanup
+	* fi-lze.el: make fi::eval-region-internal respect '(minibuffer)
+	  value of fi:pop-up-temp-window-behavior
+	* fi-shell.el: remove unused bindings (clean compile in xemacs)
+	* fi-utils.el:
+	- doc string updates
+	- make fi:pop-up-temp-window-behavior respect value of
+	  '(minibuffer) work as expected
+	- fix error in fi:start-interface-via-file
+
 2003-08-11  Kevin Layer  <layer@crikey>
 
     for rfe5611:
@@ -20,7 +39,8 @@ post-6.2 release changes:
 	- remove dead code
 	* fi-keys.el:
 >>>	- new variable fi:arglist-on-space
-	- new function fi:arglist-lisp-space
+>>>	- new variable fi:arglist-space-style
+>>>	- new function fi:arglist-lisp-space
 	* fi-utils.cl:
 	- move fi:pop-up-temp-window-behavior defvar here
 	- (from smh) make fi::display-pop-up-window remove redundant

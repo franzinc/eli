@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lze.el,v 1.35.44.2 2002/02/07 16:41:34 layer Exp $
+;; $Id: fi-lze.el,v 1.35.44.2.8.1 2003/08/12 21:17:39 layer Exp $
 ;;
 ;; Code the implements evaluation in via the backdoor
 
@@ -171,16 +171,21 @@ with this buffer."
 	 :partialp (not (and (eq (max start end) (point-max))
 			     (eq (min start end) (point-min))))
 	 :pathname (buffer-file-name)
-	 :compilep (if compilep t nil))
-      ((buffer compilep) (results)
-	(save-excursion
-	  (set-buffer buffer)
-	  (fi::note-background-reply (list compilep))
-	  (when (and results (null fi:echo-evals-from-buffer-in-listener-p))
-	    (fi:show-some-text nil results)))
-	(when fi:pop-to-sublisp-buffer-after-lisp-eval ; bug2683
-	  (pop-to-buffer fi:common-lisp-buffer-name)
-	  (goto-char (point-max))))
+	 :compilep (if compilep t nil)
+	 :return-string (eq 'minibuffer (car fi:pop-up-temp-window-behavior)))
+      ((buffer compilep) (results stuff)
+       (save-excursion
+	 (set-buffer buffer)
+	 (cond
+	  ((eq 'minibuffer (car fi:pop-up-temp-window-behavior))
+	   (fi:show-some-text nil stuff))
+	  (t
+	   (fi::note-background-reply (list compilep))))
+	 (when (and results (null fi:echo-evals-from-buffer-in-listener-p))
+	   (fi:show-some-text nil results)))
+       (when fi:pop-to-sublisp-buffer-after-lisp-eval ; bug2683
+	 (pop-to-buffer fi:common-lisp-buffer-name)
+	 (goto-char (point-max))))
       ((buffer compilep) (error)
 	(save-excursion
 	  (set-buffer buffer)
@@ -189,3 +194,4 @@ with this buffer."
 		   (if compilep "compile" "eval")
 		   error)))
       ignore-package)))
+

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 1.117.6.4.8.6 2003/08/11 23:12:31 layer Exp $
+;; $Id: fi-keys.el,v 1.117.6.4.8.7 2003/08/12 21:17:39 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -55,7 +55,7 @@ ignored in all but XEmacs and Emacs 21 and later.")
 (defvar fi:arglist-on-space t
   "*If non-nil, then bind SPC to a function that retrieves arglist
 information and displays it according to the value of the variable
-fi:arglist-space-style.")
+fi:auto-arglist-pop-up-style.")
 
 
 ;;;;
@@ -77,7 +77,6 @@ fi:arglist-space-style.")
 	   (elsrc (eq major-mode 'fi:emacs-lisp-mode))
 	   (clsrc (eq major-mode 'fi:common-lisp-mode))
 	   (flsrc (eq major-mode 'fi:franz-lisp-mode))
-	   (lsrc (or clsrc flsrc))
 	   (src (or elsrc clsrc flsrc))
 	   (subproc (not src))
 	   (listener (memq type '(sub-lisp tcp-lisp)))
@@ -100,7 +99,6 @@ fi:arglist-space-style.")
 				     fi:lisp-listener-mode)))
 	   (indent (and (or src lisp) fi:lisp-do-indentation))
 	   (rlogin (memq type '(telnet rlogin)))
-	   (telnet (eq type 'telnet))
 	   (shell (eq type 'shell))
 	   (sub-lisp (eq type 'sub-lisp))
 	   (tcplisp (eq type 'tcp-lisp))
@@ -1227,7 +1225,7 @@ the previous one."
   (interactive)
   (re-search-backward "^("))
 
-(defvar fi:arglist-space-style '(minibuffer)
+(defvar fi:auto-arglist-pop-up-style '(minibuffer)
   "*The value of this variable is used to bind
 fi:pop-up-temp-window-behavior when (\\[fi:arglist-lisp-space]) is executed.
 A value of '(split . nil) is handy for insuring that the arglist
@@ -1245,7 +1243,7 @@ specific symbol after the symbol has been typed in followed by SPC."
 
 ;; The implementation of fi:arglist-lisp-space-1 is from Bill Clementson
 ;; (Bill_Clementson@jdedwards.com), who says it is an adaptation of ILISP
-;; code.  The idea for fi:arglist-space-style came from Steve Haflich
+;; code.  The idea for fi:auto-arglist-pop-up-style came from Steve Haflich
 ;; (smh@franz.com).
 
 (defun fi:arglist-lisp-space-1 ()
@@ -1300,9 +1298,9 @@ specific symbol after the symbol has been typed in followed by SPC."
 	  (fi::make-request (lep::arglist-session :fspec string)
 	    ;; Normal continuation
 	    (() (what arglist)
-	     (let ((fi:pop-up-temp-window-behavior fi:arglist-space-style))
-	       (fi:show-some-text nil "%s's arglist: %s"
-				  what arglist)))
+	     (let ((fi:pop-up-temp-window-behavior
+		    fi:auto-arglist-pop-up-style))
+	       (fi:show-some-text nil "%s's arglist: %s" what arglist)))
 	    ;; Error continuation
 	    ((string) (error)
 	     (fi::show-error-text "")))))))
