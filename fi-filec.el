@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-filec.el,v 1.8 1988/07/23 12:08:50 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-filec.el,v 1.9 1988/08/11 21:24:12 layer Exp $
 
 ;; Command and file name completion
 
@@ -36,7 +36,9 @@ as Common Lisp or rlogin buffers)."
 (defun fi:shell-file-name-completion ()
   "Perform file name completion in subprocess modes."
   (interactive)
-  (let ((shell-expand-string (fi::shell-completion-default-prefix))
+  (let ((shell-expand-string
+	 (substitute-in-file-name
+	  (fi::shell-completion-default-prefix)))
 	(shell-expand-dir nil)
 	(shell-expand-file nil)
 	(shell-expand-completion nil))
@@ -73,6 +75,7 @@ as Common Lisp or rlogin buffers)."
   "Perform file name completion in subprocess modes."
   (interactive (list (fi::shell-completion-default-prefix)))
   (let ((completions nil)
+	(complete-alist nil)
 	(dirs exec-path))
     ;;
     ;; Find all possible completions of `shell-expand-string' in the
@@ -89,21 +92,36 @@ as Common Lisp or rlogin buffers)."
 	    (setq completions (append res completions))))
       (setq dirs (cdr dirs)))
     
-    ;; `completions' is a list of all possible completions
+    ;; `completions' is now a list of all possible completions
 
+    ;; build `complete-alist' for `try-completions'
+    (let ((names completions))
+      (while names
+	(setq complete-alist (cons (cons (car names) (car names))
+				   complete-alist))
+	(setq names (cdr names))))
+    
     (cond
       ((null completions)
        (message "No match"))
       ((= 1 (length completions))
-       (search-backward shell-expand-string)
-       (replace-match (car completions) t t))
+       (cond ((string= shell-expand-string (car completions))
+	      (fi::shell-completion-cleanup)
+	      (message "Sole completion"))
+	     (t (search-backward shell-expand-string)
+		(replace-match (car completions) t t))))
       (t ;; display the completions
-       (if (not fi::shell-completions-window)
-	   (setq fi::shell-completions-window
-	     (current-window-configuration)))
-       (with-output-to-temp-buffer " *Completions*"
-	 (display-completion-list
-	  (sort completions 'string-lessp)))))))
+       (let ((new-command (try-completion shell-expand-string complete-alist)))
+	 (cond
+	   ((and new-command (not (string= new-command shell-expand-string)))
+	    (search-backward shell-expand-string)
+	    (replace-match new-command t t)))
+	 (if (not fi::shell-completions-window)
+	     (setq fi::shell-completions-window
+	       (current-window-configuration)))
+	 (with-output-to-temp-buffer " *Completions*"
+	   (display-completion-list
+	    (sort completions 'string-lessp))))))))
 
 (defun fi::executable-files (files dir)
   (cond
@@ -111,7 +129,8 @@ as Common Lisp or rlogin buffers)."
      (let (res file)
        (while files
 	 (setq file (concat dir "/" (car files)))
-	 (if (not (zerop (logand 73 (file-modes file))))
+	 (if (and (not (file-directory-p file))
+		  (not (zerop (logand 73 (file-modes file)))))
 	     (setq res (cons (car files) res)))
 	 (setq files (cdr files)))
        res))))
