@@ -24,30 +24,31 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.11 1991/06/19 22:18:09 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.12 1991/08/22 21:29:43 layer Exp $
 ;;
 ;; Code the implements evaluation in via the backdoor
 
-(defun fi::eval-region-internal (start end compilep)
+(defun fi::eval-region-internal (start end compilep &optional ignore-package)
   (if compilep
       (message "Compiling...")
     (message "Evaluating..."))
-  (make-request (lep::evaluation-request
-		 :text (buffer-substring start end)
-		 :echo fi:echo-evals-from-buffer-in-listener-p
-		 :partialp (not 
-			    (and (eq (max start end) (point-max))
-				 (eq (min start end) (point-min))))
-		 :pathname (buffer-file-name)
-		 :compilep (if compilep t nil))
-		((compilep) (results)
-		 (if results
-		     (fi:show-some-text nil results)
-		   (if compilep
-		       (message "Compiling...done.")
-		     (message "Evaluating...done."))))
-		(() (error)
-		 (message "Error occurred during evaluation: %s" error))))
+  (fi::make-request
+   (lep::evaluation-request
+    :text (buffer-substring start end)
+    :echo fi:echo-evals-from-buffer-in-listener-p
+    :partialp (not (and (eq (max start end) (point-max))
+			(eq (min start end) (point-min))))
+    :pathname (buffer-file-name)
+    :compilep (if compilep t nil))
+   ((compilep) (results)
+    (if results
+	(fi:show-some-text nil results)
+      (if compilep
+	  (message "Compiling...done.")
+	(message "Evaluating...done."))))
+   (() (error)
+    (message "Error occurred during evaluation: %s" error))
+   ignore-package))
 
 (defun fi:lisp-eval-defun (compilep)
   "Send the current top-level (or nearest previous) form to the Lisp
@@ -90,4 +91,4 @@ compiled."
 buffer.  If a Lisp subprocess has not been started, then one is started.
 With a prefix argument, the source sent to the subprocess is compiled."
   (interactive "P")
-  (fi::eval-region-internal (point-min) (point-max) compilep))
+  (fi::eval-region-internal (point-min) (point-max) compilep t))
