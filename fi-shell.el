@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-shell.el,v 1.18 1992/08/19 07:20:32 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-shell.el,v 1.19 1992/12/14 17:40:43 layer Exp $
 
 (defvar fi:shell-mode-map nil
   "The shell major-mode keymap.")
@@ -31,6 +31,11 @@ name or path.")
   "*Regexp used by Newline command in shell mode to match subshell prompts.
 Anything from beginning of line up to the end of what this pattern matches
 is deemed to be prompt, and is not re-executed.")
+
+(defvar fi:shell-mode-use-history nil
+  "*If non-nil when fi:shell-mode is first entered, setup a binding that
+causes ! to do history processing and substitute the values from the
+history list into the current command line.")
 
 (defun fi:shell-mode (&optional mode-hook)
   "Major mode for interacting with an inferior shell.
@@ -63,7 +68,8 @@ any other mode setup."
 	  (fi::subprocess-mode-commands (make-keymap)
 					fi:shell-mode-super-key-map
 					'shell))
-	(define-key fi:shell-mode-map "!" 'fi:shell-mode-bang)))
+	(when fi:shell-mode-use-history
+	  (define-key fi:shell-mode-map "!" 'fi:shell-mode-bang))))
   (use-local-map fi:shell-mode-map)
   (setq fi:subprocess-super-key-map fi:shell-mode-super-key-map)
   (run-hooks 'fi:subprocess-mode-hook 'fi:shell-mode-hook))
