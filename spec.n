@@ -1,5 +1,5 @@
 	      Franz Inc. GNU Emacs/Common Lisp Interface
-	 $Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.19 1988/05/19 23:48:28 layer Exp $
+	 $Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.20 1988/05/25 10:55:59 layer Exp $
 
 This document is a specification of the Franz Inc. GNU Emacs interface
 to Common Lisp, which is written entirely in GNU Emacs Lisp (for GNU
@@ -469,12 +469,31 @@ that waits for connections from Emacs.
 
 A.1 Sample ~/.emacs and ~/.clinit.cl
 
-   The following code in ~/.emacs will load the package described in
-this document:
+   Consider the following in ~/.emacs:
 
     (load "fi/site-init.el")
     ;; turn on superkeys in subprocess modes
     (setq-default fi:subprocess-enable-superkeys t)
+    (setq fi:common-lisp-image-arguments '("+ipc"))
+
+    (fset 'old-kill-emacs (symbol-function 'kill-emacs))
+    (defun kill-emacs (&optional arg)
+      (interactive "P")
+      (fi:remove-all-temporary-lisp-transaction-files)
+      (old-kill-emacs arg))
+
+and the following in ~/.clinit.cl:
+
+    (or (find-package :ipc) (errorset (load "ipc.fasl")))
+    #+ipc
+    (if (find "+ipc" (system:command-line-arguments) :test #'string=)
+        (ipc:start-lisp-listener-daemon))
+
+When emacs is run, this will first load the package described in this
+document, enable superkeys, set the default Common Lisp image
+arguments to a value that will cause the ~/.clinit.cl file to
+automatically start a Lisp listener daemon, and redefine `kill-emacs'
+so that transaction files in /tmp are deleted when Emacs is exited.
 
 A.2 X11R2
 
