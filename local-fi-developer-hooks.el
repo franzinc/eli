@@ -53,3 +53,8 @@
 	  (function
 	   (lambda ()
 	     (pushnew 'fi::update-acl-id local-write-file-hooks))))
+
+(add-hook 'c++-mode-hook
+	  (function
+	   (lambda ()
+	     (pushnew 'fi::update-acl-id local-write-file-hooks))))

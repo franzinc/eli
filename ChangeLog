@@ -1,3 +1,10 @@
+Thu Aug  1 13:10:38 1996  Kevin Layer  <layer@freezer>
+
+	* fi-compile.el: set byte-compile-compatibility for
+	xemacs/emacs compat
+
+	* local-fi-developer-hooks.el: add-hook on c++-mode-hook, too
+
 Tue Jul 30 07:24:12 1996  Kevin Layer  <layer@freezer>
 
 	* fi-lep.el: defontify in lep::buffer-region

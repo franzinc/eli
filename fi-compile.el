@@ -1,6 +1,8 @@
-;; $Id: fi-compile.el,v 2.1 1996/06/28 00:04:17 layer Exp $
+;; $Id: fi-compile.el,v 2.2 1996/08/01 20:11:31 layer Exp $
 
 (require 'cl)
+
+(setq byte-compile-compatibility t)
 
 (push (expand-file-name ".") load-path)
 
