@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.210 2003/01/15 04:57:16 layer Exp $
+;; $Id: fi-subproc.el,v 1.211 2003/07/03 21:05:02 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -1053,6 +1053,11 @@ the first \"free\" buffer name and start a subprocess in that buffer."
       (error (fi::switch-to-buffer buffer)))
 
     (goto-char (point-max))
+    (set-marker (if (numberp fi::last-input-end)
+		    (make-marker)
+		  fi::last-input-end)
+		(point)
+		buffer)
 
     process))
 

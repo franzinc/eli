@@ -7,6 +7,11 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+join from acl62 to trunk on 7/3/03
+command:
+  join.sh acl62 acl62_to_trunk_merge3 acl62_to_trunk_merge_070303 eli
+
+*******************************************************************************
 join from acl62 to trunk on 1/14/2003
 command:
   ./join.sh acl62 acl62_to_trunk_merge2 acl62_to_trunk_merge3 eli
@@ -21,6 +26,27 @@ join from acl62 to trunk on 7/9/02
 
 ******************************************************************************
 post-6.2 release changes: 
+
+2003-07-03  Kevin Layer  <layer@crikey>
+
+	* fi-dmode.el: make RET and C-c. goto definitions, too
+
+2003-03-26  Kevin Layer  <layer@crikey>
+
+	* fi-basic-lep.el (fi::make-connection-to-lisp): bug13111: hide
+	  *LEP...* buffers
+
+2003-03-24    <layer@HOBART>
+
+	* fi-site-init.el: <unknown spr#>: handle `cywgin32' system-type
+
+2003-01-28  Kevin Layer  <layer@crikey>
+
+	* fi-indent.el: bug13001: damn, just missed bug 13,000!  Anyway,
+	  indent while and until properly
+	* fi-subproc.el: bug13001: damn, just missed bug 13,000!  Anyway,
+	  fix bug whereby first completion in a shell buffer would get "No
+	  marker" error.
 
 2002-12-12  Kevin Layer  <layer@crikey>
 
