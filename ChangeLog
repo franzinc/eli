@@ -1,3 +1,12 @@
+Thu May 16 14:48:48 1996  layer  (layer at HOBART)
+
+	* fi-keys.el: undo hacks for key bindings--they turn out to be
+	only necessary for me because of my moving the escape key (to
+	~/`); also, undo editi hacks
+	* fi-site-init.el: add comments, fix fi::load to do the compile
+	even if the .elc exists but is older than the .el
+	* fi-subproc.el: for windows
+
 Wed May 15 16:34:58 1996  layer  (layer at HOBART)
 
 	* fi-indent.el: fix the indent spec for destructuring-bind

@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.159 1995/04/29 18:34:46 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.160 1996/05/16 21:51:16 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -130,9 +130,12 @@ fit, or otherwise in a popup buffer.")
 (defvar fi:start-lisp-interface-arguments
     (function
      (lambda (use-background-streams)
-       (list "-e"
-	     (format "(excl:start-emacs-lisp-interface %s)"
-		     use-background-streams))))
+       (if (on-ms-windows)
+;;;; this is temporary, while we get the emacs-lisp interface to work on NT
+	   (list "-I" "dcl.img")
+	 (list "-e"
+	       (format "(excl:start-emacs-lisp-interface %s)"
+		       use-background-streams)))))
   "*This value of this variable determines whether or not the emacs-lisp
 interface is started automatically when fi:common-lisp is used to run
 Common Lisp images.   If non-nil, then a the value of this variable should
@@ -329,12 +332,11 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 				       fi:common-lisp-image-name
 				       fi:common-lisp-image-arguments
 				       (or fi:common-lisp-host (system-name))))
-  (unless fi::rsh-command
+  (unless (or fi::rsh-command (on-ms-windows))
     (setq fi::rsh-command
       (cond ((fi::command-exists-p "remsh") "remsh")
 	    ((fi::command-exists-p "rsh") "rsh")
-	    (t
-	     (error "can't find the rsh command in your path")))))
+	    (t (error "can't find the rsh command in your path")))))
 
   (when (and fi::shell-buffer-for-common-lisp-interaction-host-name
 	     (or (y-or-n-p "A make-dist might be in progress.  Continue? ")
@@ -377,8 +379,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		     (or (not (fi::lep-open-connection-p))
 			 (and buffer
 			      (eq buffer (fi::connection-buffer
-					  fi::*connection*)))))
-		   )
+					  fi::*connection*))))))
 	      (append (funcall fi:start-lisp-interface-arguments
 			       fi:use-background-streams)
 		      image-args)
@@ -394,40 +395,44 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	   (format "  on machine `%s'.\n" host)
 	   "\n"))
 	 (process-connection-type fi::common-lisp-connection-type)	;bug3033
-	 (proc (fi::make-subprocess
-		startup-message
-		"common-lisp"
-		buffer-name
-		directory
-		'fi:inferior-common-lisp-mode
-		fi:common-lisp-prompt-pattern
-		(if local image-name fi::rsh-command)
+	 (proc
+	  (progn
+	    (when (and (not local) (on-ms-windows))
+	      (error "Can't do remote lisp on Windows"))
+	    (fi::make-subprocess
+	     startup-message
+	     "common-lisp"
+	     buffer-name
+	     directory
+	     'fi:inferior-common-lisp-mode
+	     fi:common-lisp-prompt-pattern
+	     (if local image-name fi::rsh-command)
+	     (if local
+		 real-args
+	       (fi::remote-lisp-args host image-name real-args
+				     directory))
+	     'fi::common-lisp-subprocess-filter
+	     'fi::start-backdoor-interface
+	     ;;
+	     ;; rest of the arguments are the
+	     ;; mode-hook function and its arguments
+	     (function
+	      (lambda (local host dir)
 		(if local
-		    real-args
-		  (fi::remote-lisp-args host image-name real-args
-					directory))
-		'fi::common-lisp-subprocess-filter
-		'fi::start-backdoor-interface
-		;;
-		;; rest of the arguments are the
-		;; mode-hook function and its arguments
-		(function
-		 (lambda (local host dir)
-		   (if local
-		       (save-excursion
-			 (set-buffer (current-buffer))
-			 ;; can't use "localhost" below because HP can't
-			 ;; write an operating system.
-			 (setq fi::lisp-host host) ; used to use "localhost"
-			 )
-		     (save-excursion
-		       (set-buffer (current-buffer))
-		       (setq fi::lisp-is-remote t)
-		       (setq fi::lisp-host host)
-		       (condition-case ()
-			   (cd dir)
-			 (error nil))))))
-		local host directory)))
+		    (save-excursion
+		      (set-buffer (current-buffer))
+		      ;; can't use "localhost" below because HP can't
+		      ;; write an operating system.
+		      (setq fi::lisp-host host) ; used to use "localhost"
+		      )
+		  (save-excursion
+		    (set-buffer (current-buffer))
+		    (setq fi::lisp-is-remote t)
+		    (setq fi::lisp-host host)
+		    (condition-case ()
+			(cd dir)
+		      (error nil))))))
+	     local host directory))))
     (setq fi::common-lisp-first-time nil
 	  fi:common-lisp-buffer-name buffer-name
 	  fi:common-lisp-directory directory

@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.72 1996/05/15 23:31:35 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.73 1996/05/16 21:51:13 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -13,7 +13,10 @@
 
 (require 'cl)
 
-(when (on-ms-windows) (setq fi::load-subprocess-files nil))
+;; It would be nice to be able to differentiate between NT and 95, but that
+;; doesn't appear possible right now.  The follow variable should default
+;; to nil on Windows 95, when that is possible.
+;;(when (on-ms-windows) (setq fi::load-subprocess-files nil))
 
 (when (and (or (eq fi::emacs-type 'emacs19) (eq fi::emacs-type 'xemacs19))
 	   (not (on-ms-windows)))
@@ -55,18 +58,31 @@ function, it is changed to a list of functions."
 		 (nconc (symbol-value hook) (list function))
 	       (cons function (symbol-value hook)))))))
 
-(defvar fi::compile-at-load-time nil)
+;; This style of loading is more appropriate on a single-user machine, like
+;; a Windows machine.  It is even more appropriate on Windows where `make'
+;; does not exist except for people who pay for it.  It seems to be the
+;; best way to deal with the issue of how to compile the .el files.
+(defvar fi:compile-at-load-time (on-ms-windows)
+  "*If non-nil, then compile and load files in the fi/ directory.
+Otherwise, the .elc will be loaded in preference to the .el file, if it
+exists.")
 
 (defun fi::load (file &rest load-before-compile)
-  (cond (fi::compile-at-load-time
-	 (let ((lib-file (locate-library file)))
-	   (unless lib-file
-	     (error "can't find file %s" file))
+  (cond (fi:compile-at-load-time
+	 (let ((lib-file (locate-library file))
+	       el-lib-file)
+	   (unless lib-file (error "can't find file %s" file))
 	   (dolist (required-file load-before-compile)
 	     (load required-file))
 	   (cond ((string-match "\\.el$" lib-file)
 		  ;; this compiles and loads:
 		  (byte-compile-file lib-file t))
+		 ((and (string-match "\\.elc$" lib-file)
+		       (file-newer-than-file-p
+			(setq el-lib-file
+			  (substring lib-file 0 (- (length lib-file) 1)))
+			lib-file))
+		  (byte-compile-file el-lib-file t))
 		 (t (load lib-file)))))
 	(t (load file))))
 

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.92 1996/05/15 23:31:31 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.93 1996/05/16 21:51:11 layer Exp $
 
 (cond ((eq fi::emacs-type 'xemacs19)
        (require 'tags "etags"))
@@ -142,21 +142,16 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
   (define-key map "\C-c;"	'fi:comment-region)
   (define-key map "\C-c\C-e"	'fi:end-of-defun)
   (define-key map "\C-c]"	'fi:super-paren)
-  (unless (on-ms-windows)
-    (define-key map "\C-cl"	'fi:toggle-to-lisp))
+  (define-key map "\C-cl"	'fi:toggle-to-lisp)
   (if fi:lisp-do-indentation
       (progn
 	(define-key map ";"		'fi:lisp-semicolon)
 	(define-key map "\t"		'fi:lisp-indent-line)
-	(define-key map
-	    (if (eq fi::emacs-type 'xemacs19) [(control meta q)] "\e\C-q")
-	  'fi:indent-sexp))
+	(define-key map "\e\C-q"	'fi:indent-sexp))
     ;;not sure if the following should be added:
     ;;   (lisp-mode-commands map)
     (define-key map "\t"		'lisp-indent-line)
-    (define-key map
-	(if (eq fi::emacs-type 'xemacs19) [(control meta q)] "\e\C-q")
-      'indent-sexp))
+    (define-key map "\e\C-q"		'indent-sexp))
 
   (if (memq mode '(sub-lisp tcp-lisp))
       (progn
@@ -166,10 +161,9 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
     (define-key map "\r"	 'fi:lisp-mode-newline)
     (define-key map "\C-c^"	 'fi:center-defun))
 
-  (when (and (memq major-mode '(fi:common-lisp-mode
-				fi:inferior-common-lisp-mode
-				fi:lisp-listener-mode))
-	     (not (on-ms-windows)))
+  (when (memq major-mode '(fi:common-lisp-mode
+			   fi:inferior-common-lisp-mode
+			   fi:lisp-listener-mode))
     (define-key map "\C-c?"	'fi:lisp-apropos)
     (define-key map "\C-c."	'fi:lisp-find-definition)
     (define-key map "\C-c4"	(make-keymap))
@@ -187,24 +181,14 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
     (define-key map "\C-c "	'fi:lisp-delete-pop-up-window))
 
   (when (eq major-mode 'fi:emacs-lisp-mode)
-    (define-key map
-	(if (eq fi::emacs-type 'xemacs19) [(control meta x)] "\e\C-x")
-      'eval-defun))
+    (define-key map "\e\C-x" 'eval-defun))
 
   (when (memq major-mode '(fi:common-lisp-mode fi:franz-lisp-mode
 			   fi:lisp-mode))
-    (cond
-     ((and (on-ms-windows) (eq fi::emacs-type 'xemacs19))
-      (define-key map [(control meta x)] 'acl-compile-defun)
-      (define-key map "\C-c\C-b"	 'acl-eval-buffer)
-      (define-key map "\C-c\C-r"	 'acl-compile-region-or-defun)
-      ;; this one is specific to only the aclwin interface:
-      (define-key map '(control return)	 'acl-eval-print-region-or-defun))
-     (t
-      (define-key map "\e\C-x"	  'fi:lisp-eval-or-compile-defun)
-      (define-key map "\C-c\C-b"  'fi:lisp-eval-or-compile-current-buffer)
-      (define-key map "\C-c\C-s"  'fi:lisp-eval-or-compile-last-sexp)
-      (define-key map "\C-c\C-r"  'fi:lisp-eval-or-compile-region))))
+    (define-key map "\e\C-x"	  'fi:lisp-eval-or-compile-defun)
+    (define-key map "\C-c\C-b"  'fi:lisp-eval-or-compile-current-buffer)
+    (define-key map "\C-c\C-s"  'fi:lisp-eval-or-compile-last-sexp)
+    (define-key map "\C-c\C-r"  'fi:lisp-eval-or-compile-region))
   
   map)
 
