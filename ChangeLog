@@ -9,6 +9,13 @@ For more detailed instructions on filling in the ChangeLog form, see
 *******************************************************************************
 2.0.21.11
 
+Thu Jul 16 09:48:30 1998  Kevin Layer  <layer@ultra>
+
+	* move eli.htm to doc/
+	* Makefile: always build readme.htm
+	* fi-compile.el: new eli.htm location
+	* local.mak: move readme.htm rule to Makefile
+
 Thu Jul 16 09:47:46 1998    <layer@HOBART>
 
 	* Doc0.el: fix bugs in html generation

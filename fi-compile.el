@@ -1,4 +1,4 @@
-;; $Id: fi-compile.el,v 2.6.20.4 1998/06/24 23:06:53 layer Exp $
+;; $Id: fi-compile.el,v 2.6.20.5 1998/07/16 16:49:23 layer Exp $
 
 (require 'cl)
 
@@ -45,4 +45,4 @@
 
 (load "Doc0.elc")
 
-(generate-eli-documentation "eli.htm" "readme0.htm")
+(generate-eli-documentation "doc/eli.htm" "readme0.htm")
