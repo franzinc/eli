@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.27 1988/11/03 23:50:16 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.28 1988/11/21 21:14:40 layer Exp $
 
 ;;;; Mode initializations
 
@@ -187,6 +187,7 @@ Entry to this mode calls the value of `fi:lisp-mode-hook' and
   (fi::lisp-subprocess-mode-variables))
 
 (defun fi::lisp-subprocess-mode-variables ()
+  (setq fi::cl-package-regexp fi:common-lisp-package-regexp)
   (make-local-variable 'paragraph-start)
   (setq paragraph-start (concat "^$\\|" page-delimiter))
   (make-local-variable 'paragraph-separate)
