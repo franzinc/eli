@@ -35,7 +35,7 @@
       (delete-region (point-min) (point-max))
       (prin1 (1+ version) (current-buffer)))))
 (skip-chars-backward "^\"")
-(message "New emacs-lisp interface version will be %s"
+(message "%s"
 	 (buffer-substring (point)
 			   (progn (skip-chars-forward "^\"") (point))))
 
