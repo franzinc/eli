@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.36 1991/01/29 14:20:58 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.37 1991/01/30 10:38:11 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -104,7 +104,9 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
     ;; editing mode
     (let ((c-map (make-sparse-keymap)))
       (define-key map "\C-c" c-map)
-      (define-key c-map "-" 'fi:log-functional-change)))
+      (define-key c-map "-"	'fi:log-functional-change)
+      (define-key c-map "\C-e"	'fi:end-of-defun)
+      (define-key c-map "]"	'fi:super-paren)))
   
   (if fi:lisp-do-indentation
       (progn
@@ -134,6 +136,7 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
      (define-key map "\eD"	'fi:lisp-describe)
      (define-key map "\eF"	'fi:lisp-function-documentation)
      (define-key map "\eM"	'fi:lisp-macroexpand)
+     (define-key map "\eT"	'lep::toggle-trace-definition)
      (define-key map "\eW"	'fi:lisp-walk)))
   (cond
     ((eq major-mode 'fi:emacs-lisp-mode)
@@ -577,3 +580,43 @@ at the head of the function."
 	  (setq list (cdr list)))
 	res)
     comment-start))
+
+(defun fi:end-of-defun ()
+  (interactive)
+  (when (beginning-of-defun 1)
+    (forward-sexp 1)))
+
+(defun fi:super-paren ()
+  (interactive)
+  (while (save-excursion
+	   (condition-case nil
+	       (progn (forward-sexp -1)
+		      t)
+	     (error (delete-char -1)
+		    nil)))
+    (insert ")")))
+
+(defun fi:find-unbalanced-parenthesis ()
+  "Verifies that parentheses in the current Lisp buffer are balanced."
+  (interactive)
+  (let ((started-here (point)))
+    (goto-char (point-min))
+    (while (re-search-forward "^(" nil t)
+      (backward-char 1)
+      (forward-sexp 1)
+      (if (looking-at ")") (error "Extra `)'")))
+    (goto-char started-here)
+    (message "All parentheses appear to be balanced.")))
+
+(defun fi:fill-paragraph (arg)
+  "Properly fill paragraphs of Lisp comments by inserting the appropriate
+semicolons at the beginning of lines.  Prefix argument means justify
+paragraph as well."
+  (interactive "P")
+  (save-excursion
+    (beginning-of-line 0)
+    (if (re-search-forward "\\(^[ \t]*[;]+ \\)" nil t)
+	(let ((fill-prefix (buffer-substring (match-beginning 1)
+					     (match-end 1))))
+	  (fill-paragraph arg))
+      (fill-paragraph arg))))
