@@ -9,6 +9,10 @@ For more detailed instructions on filling in the ChangeLog form, see
 *******************************************************************************
 post-6.0 release changes:
 
+2002-02-26  Kevin Layer  <layer@crikey>
+
+	* fi-emacs19.el: from mikel: bug11469: more fixes for same bug
+
 2001-11-13  Kevin Layer  <layer@crikey>
 
 	* fi-xemacs.el: fix for fix below
