@@ -2,7 +2,7 @@
 			      User Guide
 			   Release 2.0alpha
 
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.8 1991/04/23 15:47:42 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.9 1991/04/24 10:06:35 layer Exp $
 
 			     Introduction
 
@@ -759,6 +759,14 @@ Functions and Variables for editing Common Lisp programs:
 %% fi:describe-class
 %% fi:describe-function
 
+%% fi:inspect-class
+%% fi:inspect-function
+%% fi:inspect-value
+%% fi:show-calls-to
+%% fi:show-calls-from
+%% fi:show-subclasses
+%% fi:show-superclasses
+
 %% fi:list-buffer-changed-definitions
 %% fi:list-changed-definitions
 %% fi:eval-buffer-changed-definitions
@@ -904,6 +912,32 @@ Retrieving information from the Common Lisp environment
    the description of fi:definition-mode.  `Edit' means to find the
    source associated with a definition, making the additional
    definitions available via ``ESC ,''.
+
+Interaction with Allegro Composer
+
+   The following extended commands allow interaction with the various
+   components of Allegro Composer.  To use them, Allegro Composer must
+   be running.
+
+	fi:inspect-class
+	fi:inspect-function
+	fi:inspect-value
+		Inspect a named class, function or arbitrary value.
+		These functions work in conjunction with Allegro
+		Composer to create an inspector window containing the
+		indicated object.
+
+	fi:show-calls-to
+	fi:show-calls-from
+		Show graphs of calls to/from a specific function.  The
+		Allegro Grapher is used to display a graph with the
+		indicated information.
+
+	fi:show-subclasses
+	fi:show-superclasses
+		Show graphs of the subclasses/superclasses of a class.
+		The Allegro Grapher is used to display a graph with
+		the indicated information.
 
 Modifying the state of the Common Lisp environment
 
