@@ -1,62 +1,31 @@
 
-		      ******* Lisp Modes *******
+;;;; 1. common-lisp-mode
+%mode: fi:common-lisp-mode
 
 common-lisp-mode
 fi:common-lisp-mode
 fi:common-lisp-mode-map
+
+;;;; 2. franz-lisp-mode
+%mode: fi:franz-lisp-mode
+
 fi:franz-lisp-mode
 fi:franz-lisp-mode-map
+
+;;;; 3. lisp-mode
+%mode: fi:lisp-mode
+
 fi:lisp-mode
 fi:lisp-mode-map
+
+;;;; 4. emacs-lisp-mode
+%mode: fi:emacs-lisp-mode
+
 fi:emacs-lisp-mode
 fi:emacs-lisp-mode-map
-
-fi:lisp-mode-syntax-table
-
-fi:lisp-auto-semicolon-mode
-fi:lisp-comment-indent-specification
-fi:find-line-comment
-fi:lisp-comment-indent
-fi:lisp-indent-if*
-fi:lisp-reindent-newline-indent
-fi:lisp-semicolon
-fi:indent-lisp-semicolon
-indent-line-comment-hook
-lisp-indent-do
-lisp-indent-line
-indent-line-comment-hook
-
-fi:eval-current-buffer
-fi:eval-defun
-fi:eval-last-sexp
-fi:eval-region
-fi:set-associated-sublisp
 
-		   ******* Subprocess Modes *******
-
-fi:input-region
-fi:re-search-backward-input
-fi:re-search-forward-input
-fi:list-input-ring
-fi:pop-input
-fi:push-input
-fi:default-input-ring-max
-
-fi:shell-file-name-completion
-fi:shell-token-pattern
-
-fi:subprocess-continuously-show-output-in-visible-buffer
-fi:subprocess-enable-superkeys
-fi:subprocess-map-nl-to-cr
-fi:subprocess-write-quantum
-
-fi:subprocess-backward-kill-word
-fi:kill-shell-input
-fi:subprocess-beginning-of-line
-fi:subprocess-send-input
-fi:subprocess-superkey
-
-		 ******* Inferior Lisp Modes *******
+;;;; 5.  inferior-lisp-mode
+%mode: fi:inferior-lisp-mode
 
 fi:inferior-lisp-mode
 fi:inferior-lisp-mode-map
@@ -89,7 +58,55 @@ fi:inferior-lisp-send-input
 fi:inferior-lisp-send-list-input
 fi:inferior-lisp-send-sexp-input
 
-		   ******* Subprocess Modes *******
+;;;; 6. tcp-lisp-mode
+%mode: fi:tcp-lisp-mode
+
+fi:source-info-not-found-hook
+fi:excl-service-name
+fi:local-host-name
+fi:unix-domain
+fi:backdoor-eval
+fi:lisp-arglist
+fi:lisp-describe
+fi:lisp-find-tag
+fi:lisp-function-documentation
+fi:lisp-tags-loop-continue
+fi:lisp-macroexpand
+fi:tcp-lisp-interrupt-process
+fi:tcp-lisp-kill-process
+fi:tcp-lisp-mode
+fi:tcp-lisp-send-eof
+
+;;;; 7. lisp modes
+%mode: fi:common-lisp-mode
+
+fi:lisp-mode-syntax-table
+%eval: (progn (describe-syntax) (insert-buffer "*Help*") (exchange-point-and-mark))
+
+fi:lisp-auto-semicolon-mode
+fi:lisp-comment-indent-specification
+fi:find-line-comment
+fi:lisp-comment-indent
+fi:lisp-indent-if*
+fi:lisp-reindent-newline-indent
+fi:lisp-semicolon
+fi:indent-lisp-semicolon
+indent-line-comment-hook
+fi:indent-line-comment
+lisp-indent-do
+lisp-indent-line
+
+;;;; 8. Common and Franz Lisp modes
+%mode: fi:common-lisp-mode
+
+fi:eval-current-buffer
+fi:eval-defun
+fi:eval-last-sexp
+fi:eval-region
+fi:set-associated-sublisp
+
+;;;; 9. shell-mode
+%mode: fi:shell-mode
 
 fi:shell-mode
 fi:shell-mode-map
@@ -112,6 +129,10 @@ fi:shell-send-eof
 fi:shell-send-flush
 fi:show-output-from-shell
 fi:stop-shell-subjob
+
+;;;; 10. rlogin-mode
+%mode: fi:shell-mode
+
 fi:rlogin
 fi:another-rlogin
 fi:default-rlogin-file-name
@@ -123,25 +144,33 @@ fi:rlogin-send-interrupt
 fi:rlogin-send-quit
 fi:rlogin-send-stop
 
-		******* tcp-lisp-mode related *******
+;;;; 11. subprocess modes
+%mode: fi:shell-mode
 
-fi:source-info-not-found-hook
-fi:excl-service-name
-fi:local-host-name
-fi:unix-domain
-fi:backdoor-eval
-fi:lisp-arglist
-fi:lisp-describe
-fi:lisp-find-tag
-fi:lisp-function-documentation
-fi:lisp-tags-loop-continue
-fi:lisp-macroexpand
-fi:tcp-lisp-interrupt-process
-fi:tcp-lisp-kill-process
-fi:tcp-lisp-mode
-fi:tcp-lisp-send-eof
+fi:input-region
+fi:re-search-backward-input
+fi:re-search-forward-input
+fi:list-input-ring
+fi:pop-input
+fi:push-input
+fi:default-input-ring-max
+
+fi:shell-file-name-completion
+fi:shell-token-pattern
+
+fi:subprocess-continuously-show-output-in-visible-buffer
+fi:subprocess-enable-superkeys
+fi:subprocess-map-nl-to-cr
+fi:subprocess-write-quantum
+
+fi:subprocess-backward-kill-word
+fi:kill-shell-input
+fi:subprocess-beginning-of-line
+fi:subprocess-send-input
+fi:subprocess-superkey
 
-			 ******* misc *******
+;;;; 12. misc
+%mode: fundamental-mode
 
 kill-emacs
 fi:kill-emacs-hook
