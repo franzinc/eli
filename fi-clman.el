@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.19 1991/06/27 15:26:27 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.20 1991/07/24 14:01:58 layer Exp $
 
 (defun fi::setup-default-clman-package-info ()
   ;;  Returns a list that 
@@ -308,7 +308,8 @@ clman buffer, from anywhere in the buffer."
 		      (string= (substring str 0 1) "."))
 		  nil (read-from-string str)))
     (if (listp (car sym))(setq str nil))
-          
+    (if (fboundp 'epoch::mapraised-screen)
+	(epoch::mapraised-screen (minibuf-screen)))
     (setq ans (completing-read  
 	       (concat "Symbol (" str "): ") fi::clman-oblist))
     (if (string=  ans "")(setq ans str))
@@ -320,6 +321,8 @@ clman buffer, from anywhere in the buffer."
 	(progn 
 	  (setq oblist-name 
 	    (concat "fi::clman-" ans "-oblist"))
+	  (if (fboundp 'epoch::mapraised-screen)
+	      (epoch::mapraised-screen (minibuf-screen)))
 	  (setq answer (completing-read 
 			(concat "Symbol (" ans ":): ") 
 			(eval (car (read-from-string oblist-name)))))

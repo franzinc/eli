@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.18 1991/05/28 16:24:01 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.19 1991/07/24 14:02:04 layer Exp $
 ;;
 
 (defconst fi::ss-help
@@ -415,5 +415,7 @@ buffer."
 		     'lep::list-all-processes-session))))
 	 (completions
 	  (mapcar (function (lambda (x) (list x))) processes)))
+    (if (fboundp 'epoch::mapraised-screen)
+	(epoch::mapraised-screen (minibuf-screen)))
     (completing-read prompt completions nil t
 		     "Initial Lisp Listener")))

@@ -31,7 +31,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.56 1991/03/28 12:55:05 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.57 1991/07/24 14:01:51 layer Exp $
 
 (defun fi:set-associated-sublisp (buffer-name mode)
   "Use BUFFER-NAME as the name of a buffer which contains a Lisp subprocess
@@ -46,8 +46,12 @@ buffers in MODE.  New buffers created in MODE will also use BUFFER-NAME."
 			 major-mode)
 		    (let* ((alist '(("common-lisp" . fi:common-lisp-mode)
 				    ("franz-lisp" . fi:franz-lisp-mode)))
-			   (type (completing-read "Lisp type: "
-						  alist nil t "common-lisp")))
+			   (type
+			    (progn
+			      (if (fboundp 'epoch::mapraised-screen)
+				  (epoch::mapraised-screen (minibuf-screen)))
+			      (completing-read "Lisp type: "
+					       alist nil t "common-lisp"))))
 		      (cdr (assoc type alist))))))
      (list buffer-name mode)))
   (let* ((buffers (buffer-list))

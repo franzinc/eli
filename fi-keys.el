@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.59 1991/07/02 10:08:00 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.60 1991/07/24 14:02:01 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -403,6 +403,8 @@ parsed, the enclosing list is processed."
 	  (fi::get-symbol-at-point up-p))
 	 (read-symbol
 	  (let ((fi::original-package fi:package))
+	    (if (fboundp 'epoch::mapraised-screen)
+		(epoch::mapraised-screen (minibuf-screen)))
 	    (completing-read
 	     (if symbol-at-point
 		 (format "%s: (default %s) " prompt symbol-at-point)

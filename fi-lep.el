@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.32 1991/06/27 15:25:34 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.33 1991/07/24 14:02:07 layer Exp $
 ;;
 
 (defvar fi:always-in-a-window nil)
@@ -558,6 +558,8 @@ beginning of words in target symbols."
 		    prompt (fi::getf-property options ':initial-input))))))
 
 (defun lep::completing-read (prompt require-match initial-input)
+  (if (fboundp 'epoch::mapraised-screen)
+      (epoch::mapraised-screen (minibuf-screen)))
   (list (completing-read 
 	 prompt
 	 'lep::completing-read-complete
