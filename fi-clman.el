@@ -8,7 +8,9 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.25 1991/12/12 14:21:13 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.26 1992/01/12 11:48:20 layer Exp $
+
+(defvar fi::manual-directory nil)
 
 (defun fi::setup-default-clman-package-info ()
   ;;  Returns a list that 
@@ -18,6 +20,9 @@
 		    (string "fi/manual/")
 		    (done nil)
 		    (res nil))
+	       (when fi::manual-directory
+		 (setq res fi::manual-directory)
+		 (setq done t))
 	       (while (and (not done) p)
 		 (if (file-exists-p
 		      (setq res (concat (file-name-as-directory (car p))
@@ -32,13 +37,15 @@
 	    ("cltl1" "cltl1/")
 	    ("comp" "comp/")
 	    ("composer" "composer/")
+	    ("defsys" "defsys/")
 	    ("excl" "excl/")
 	    ("ff" "ff/")
-;;;;	    ("graph" "graph/")
 	    ("inspect" "inspect/")
 	    ("ipc" "ipc/")	      
 	    ("lisp" "lisp/")
 	    ("mp" "mp/")
+	    ("prof" "prof/")
+	    ("stream" "stream/")
 	    ("sys" "sys/")
 	    ("tpl" "tpl/")
 	    ("xcw" "xcw/")
@@ -155,7 +162,7 @@ text-mode-abbrev-table are `used' in this mode.
   (setq local-abbrev-table text-mode-abbrev-table)
   (setq major-mode 'fi:clman-mode)
   (setq mode-name "CLMAN")
-  (run-hooks 'text-mode-hook))
+  (run-hooks 'fi:clman-mode-hook 'text-mode-hook))
 
 (defun fi:clman-search-forward-see-alsos ()
   "Move text cursor directly to the beginnig of the SEE ALSO section of a
@@ -372,6 +379,8 @@ fi:clman-displaying-buffer"
 fi:clman-displaying-function.  This function uses the function 'view-file."
   (view-file name))
 
+(defvar fi::clman-name nil)
+
 (defun fi:clman-find-file (name buf)
   "A built-in function that you may use for the value of
 fi:clman-displaying-function.  This function uses the function 'insert-file
@@ -384,31 +393,14 @@ named by the second argument."
   (if (not (bobp))
       (insert "===============================================================================\n"))
   (narrow-to-region (point) (point))
+  (make-local-variable 'fi::clman-name)
+  (setq fi::clman-name (file-name-nondirectory name))
   (insert-file name)
   ;; Get rid of garbage at the top of the buffer
   (beginning-of-buffer)
   (kill-line 5)
   (buffer-flush-undo (current-buffer))
   (widen))
-
-(defun fi::clman-man-page-lookup (str table doc-dir)
-  "Lookup  a string in the filename/symbol table.  The system used the
-buffer which is named by the third element in clman-current-package-info.
-Return the full pathname of the file the symbol is in. "
-  (interactive)
-  (switch-to-buffer table)
-  (let ((buf (current-buffer))
-	(new-str (concat " " str " "))
-	(success nil))
-    (beginning-of-buffer)
-    (setq success (search-forward new-str (point-max) t))
-    (if (not success) 
-	nil
-      (beginning-of-line)
-      (setq begin (point))
-      (search-forward " ")
-      (backward-char)
-      (concat doc-dir "/" (buffer-substring begin (point))))))
 
 (defun fi::clman-backward-copy-symbol-as-kill ()
   (skip-chars-backward "&a-zA-Z\-_~:+*#0-9")
