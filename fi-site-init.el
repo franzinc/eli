@@ -14,3 +14,5 @@
 ;; `shell' and `rlogin' modes:
 (load "fi/shell.elc")
 (load "fi/rlogin.elc")
+
+(setq fi:package-loaded t)
