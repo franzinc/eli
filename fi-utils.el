@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 1.61 1997/01/16 00:58:35 layer Exp $
+;; $Id: fi-utils.el,v 1.62 1997/01/17 23:30:28 layer Exp $
 
 ;;; Misc utilities
 
@@ -375,7 +375,7 @@ at the beginning of the line."
       (let ((read-symbol
 	     (let ((fi::original-package fi:package))
 	       (fi::ensure-minibuffer-visible)
-	       (completing-read
+	       (fi::completing-read
 		(if symbol-at-point
 		    (format "%s: (default %s) " prompt symbol-at-point)
 		  (format "%s: " prompt))
@@ -383,6 +383,31 @@ at the beginning of the line."
 	(list (if (string= read-symbol "")
 		  symbol-at-point
 		read-symbol))))))
+
+(defun fi::completing-read (prompt table &optional predicate require-match
+						   init hist)
+  ;; Just like completing-read, except that we make sure that the binding
+  ;; for space is 'minibuffer-complete instead of
+  ;; 'minibuffer-complete-and-exit.  The latter binding causes problems
+  ;; because it doesn't allow us to insert a space when typing forms--as
+  ;; opposed to a symbol.
+  (let* ((map minibuffer-local-completion-map)
+	 (old-value (lookup-key map " "))
+	 res)
+    (define-key map " " 'minibuffer-complete)
+    (condition-case c
+	(setq res
+	  (completing-read prompt table predicate require-match init hist))
+      (error
+       ;; undo temporary binding
+       (define-key map " " old-value)
+       (error (cdr c)))
+      (quit
+       ;; undo temporary binding
+       (define-key map " " old-value)
+       (error "Quit")))
+    (define-key map " " old-value)
+    res))
 
 (defun fi::minibuffer-complete (pattern predicate what)
   (if (string-match "^[ \t]*(" pattern)
