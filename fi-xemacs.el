@@ -10,7 +10,13 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-xemacs.el,v 2.3 1996/06/04 20:38:09 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-xemacs.el,v 2.4 1996/06/04 20:48:14 layer Exp $
+
+(defun fi-find-buffer-visiting (filename)
+  (get-file-buffer filename))
+
+(unless (fboundp 'find-buffer-visiting)
+  (fset 'find-buffer-visiting 'fi-find-buffer-visiting))
 
 (defun fi::switch-to-buffer-new-screen (buffer)
   (cond

@@ -1,3 +1,7 @@
+Tue Jun  4 13:47:26 1996  Kevin Layer  <layer@freezer>
+
+	* fi-xemacs.el: define find-buffer-visiting, used by fi-changes.el
+
 Tue Jun  4 13:36:48 1996  Kevin Layer  <layer@freezer>
 
 	* fi-emacs19.el: 
