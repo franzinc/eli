@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.92 1991/03/12 20:57:47 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.93 1991/03/13 15:41:13 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -423,16 +423,19 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	(directory (symbol-value s-directory))
 	(image-name (symbol-value s-image-name))
 	(image-arguments (symbol-value s-image-arguments))
-	(host (symbol-value s-host)))
+	(host (symbol-value s-host))
+	local)
     (if (or first-time current-prefix-arg)
 	(prog1
 	    (list (setq buffer-name (read-buffer "Buffer: " buffer-name))
+		  (prog1 (setq host (read-string "Host: " host))
+		    (setq local (or (string= "localhost" host)
+				    (string= host (system-name)))))
 		  (let ((dir (expand-file-name
 			      (read-file-name "Process directory: "
 					      (or directory default-directory)
 					      (or directory default-directory)
-					      nil ; don't require match
-					      ))))
+					      local))))
 		    (setq directory
 		      (if (= ?/ (aref dir (- (length dir) 1)))
 			  dir
@@ -448,15 +451,12 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		    (setq image-name
 		      (expand-file-name
 		       (read-file-name (format "Image name [%s]: " image)
-				       directory image
-				       nil ; don't require match
-				       ))))
+				       directory image local))))
 		  (setq image-arguments
 		    (fi::listify-string
 		     (read-from-minibuffer
 		      "Image arguments (separate by spaces): "
-		      (mapconcat 'concat image-arguments " "))))
-		  (setq host (read-string "Host: " host)))
+		      (mapconcat 'concat image-arguments " ")))))
 	  (set s-buffer-name buffer-name)
 	  (set s-directory directory)
 	  (set s-image-name image-name)
