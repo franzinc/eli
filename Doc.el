@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.21 1991/03/12 18:30:11 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.22 1991/03/13 21:41:43 layer Exp $
 
 (require 'cl)
 
@@ -75,51 +75,60 @@
 			  "^%% \\([^ \t]+\\)[ \t]*\\([^ \t]+\\)?$"
 			  (save-excursion (end-of-line) (point)))
 			 (replace-match "\\1")))
-	      (func (if mode
-			"[interactive function]"
-		      "[function]"))
+	      (func "[command]")
 	      val doc)
 	 ;;(message "var: %s, mode: %s, xmode-name: %s" var mode xmode-name)
 	 (cond
-	   ((fboundp var)
-	    (insert-char ?. (- 78 (length func) (length var-string)))
-	    (setq current-local-map-var
-	      (cond ((symbol-value mode))
-		    (t nil)))
-	    (let ((key (when current-local-map-var
-			 (substitute-command-keys
-			  (format "\\<current-local-map-var>\\[%s]" var)))))
-	      (insert func)
-	      (insert "\n")
-	      (when key
-		(insert (format "   Invoke with \"%s\"" key))
-		(if (and key (null (string-match "M-x" key)))
-		    (insert (format " in %s" xmode-name)))
-		(insert ".\n"))
-	      (insert (format "   %s")
-		      (or (documentation var)
-			  "NO DOCUMENTATION AVAILABLE"))))
-	   (t ;; assume a bound variable
-	    (let* ((val (symbol-value var))
-		   (type (cond ((syntax-table-p val) "[syntax-table]")
-			       ((keymapp val) "[keymap]")
-			       (t "[variable]")))
-		   (doc (or (documentation-property
-			     var 'variable-documentation)
-			    "NO DOCUMENTATION AVAILABLE")))
-	      (insert-char ?. (- 78 (length type)
-				 (length (symbol-name var))))
-	      (cond ((syntax-table-p val)
-		     (insert (format "%s\n   %s" type doc)))
-		    ((keymapp val)
-		     (insert
-		      (format "%s\n   %s\n%s" type doc
-			      (substitute-command-keys
-			       (format "\\{%s}" var)))))
-		    (t
-		     (insert (format "%s\n   Value: %s\n   %s" type
-				     (frob-newlines (prin1-to-string val))
-				     doc)))))))
+	  ((fboundp var)
+	   (let* ((xx (symbol-function var))
+		  (arglist (and (consp xx) (car (cdr xx))))
+		  (n 78))
+	     (when arglist
+	       (let ((string
+		      (concat " " (mapconcat 'symbol-name arglist " "))))
+		 (setq n (- n (length string)))
+		 (insert string)))
+	     (insert-char ?. (- n (length func) (length var-string)))
+	     )
+	   (setq current-local-map-var
+	     (cond ((symbol-value mode))
+		   (t nil)))
+	   (let ((key (when current-local-map-var
+			(substitute-command-keys
+			 (format "\\<current-local-map-var>\\[%s]" var)))))
+	     (insert func)
+	     (insert "\n")
+	     (if key
+		 (progn
+		   (insert (format "   Invoke with \"%s\"" key))
+		   (if (and key (null (string-match "M-x" key)))
+		       (insert (format " in %s" xmode-name))))
+	       (insert (format "   Invoke with \"M-x %s\"" var)))
+	     (insert ".\n")
+	     (insert (format "   %s")
+		     (or (documentation var)
+			 (error "no documentation available for %s" var)))))
+	  (t ;; assume a bound variable
+	   (let* ((val (symbol-value var))
+		  (type (cond ((syntax-table-p val) "[syntax-table]")
+			      ((keymapp val) "[keymap]")
+			      (t "[variable]")))
+		  (doc (or (documentation-property
+			    var 'variable-documentation)
+			   (error "no documentation available for %s" var))))
+	     (insert-char ?. (- 78 (length type)
+				(length (symbol-name var))))
+	     (cond ((syntax-table-p val)
+		    (insert (format "%s\n   %s" type doc)))
+		   ((keymapp val)
+		    (insert
+		     (format "%s\n   %s\n%s" type doc
+			     (substitute-command-keys
+			      (format "\\{%s}" var)))))
+		   (t
+		    (insert (format "%s\n   Value: %s\n   %s" type
+				    (frob-newlines (prin1-to-string val))
+				    doc)))))))
 	 (insert "\n\n")))
       ((looking-at "^%eval: ")
        (let ((start (point))
