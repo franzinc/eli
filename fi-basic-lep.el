@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-basic-lep.el,v 1.47.6.5.8.4 2003/08/12 21:17:39 layer Exp $
+;; $Id: fi-basic-lep.el,v 1.47.6.5.8.5 2003/08/14 16:43:59 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -93,6 +93,8 @@
 
 (defvar fi::show-some-text-1-first-time t)
 
+(defvar fi::*show-some-text-buffer-name* "*CL-temp*")
+
 (defun fi::show-some-text-1 (text apackage &optional hook &rest args)
   ;;A note from cer:
   ;;  I think there is some buffer local variable called package
@@ -100,7 +102,7 @@
   ;;  Inside it has the value of NIL.
   ;;  Consequently fi:package ends up as NIL in *CL-temp* buffers.
   ;;  I renamed package to apackage and that seemed to fix it.
-  (let ((buffer (get-buffer-create "*CL-temp*")))
+  (let ((buffer (get-buffer-create fi::*show-some-text-buffer-name*)))
     ;; fill the buffer
     (save-excursion
       (set-buffer buffer)
@@ -115,7 +117,9 @@
     (message
      "%s"
      (substitute-command-keys
-      "Type \\[fi:lisp-delete-pop-up-window] to remove *CL-temp* window."))
+      (format
+       "Type \\[fi:lisp-delete-pop-up-window] to remove %s window."
+       fi::*show-some-text-buffer-name*)))
     (setq fi::show-some-text-1-first-time nil)))
 
 ;;;;;;;;;;;;;;;;;;;;;;TODO

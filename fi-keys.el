@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 1.117.6.4.8.7 2003/08/12 21:17:39 layer Exp $
+;; $Id: fi-keys.el,v 1.117.6.4.8.8 2003/08/14 16:43:59 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -169,12 +169,12 @@ fi:auto-arglist-pop-up-style.")
 	(fi::defkey map [menu-bar] (lookup-key comint-mode-map [menu-bar]) t))
 
 ;;;; ESC map
+      (fi::defkey emap "\C-i" 'fi:lisp-complete-symbol clisp)
+      (fi::defkey emap "\C-m" 'fi:inferior-lisp-input-sexp (and ext listener))
       (fi::defkey emap "\C-q" (if indent 'fi:indent-sexp 'indent-sexp)
 		  (or src listener))
       (fi::defkey emap "\C-x" 'fi:lisp-eval-or-compile-defun clsrc)
       (fi::defkey emap "\C-x" 'eval-defun elsrc)
-      (fi::defkey emap "\r" 'fi:inferior-lisp-input-sexp (and ext listener))
-      (fi::defkey emap "\t" 'fi:lisp-complete-symbol clisp)
       (fi::defkey emap "A" 'fi:lisp-arglist (and ext clisp))
       (fi::defkey emap "C" 'fi:list-who-calls (and ext clisp))
       (fi::defkey emap "D" 'fi:describe-symbol (and ext clisp))
@@ -184,7 +184,7 @@ fi:auto-arglist-pop-up-style.")
       (fi::defkey emap "W" 'fi:lisp-macroexpand-recursively (and ext clisp))
       
 ;;;; C-x map
-      (fi::defkey xmap "\r" 'fi:inferior-lisp-input-list
+      (fi::defkey xmap "\C-m" 'fi:inferior-lisp-input-list
 		  (and subproc lisp ext))
 
 ;;;; super map
@@ -216,7 +216,7 @@ fi:auto-arglist-pop-up-style.")
       (fi::defkey cmap "\C-f" 'fi:telnet-start-garbage-filter non-lisp-subproc)
       ;; NOTE: don't use C-g (it's for quit)
       ;; NOTE: don't use C-h (it's for help)
-      (fi::defkey cmap "\C-i" 'fi:describe-symbol clisp)
+      (fi::defkey cmap "\C-i" 'fi:lisp-complete-symbol clisp)
       (fi::defkey cmap "\C-j" 'fi:toggle-to-lisp clisp)
       (fi::defkey cmap "\C-k" 'fi:subprocess-kill-output subproc)
       (fi::defkey cmap "\C-l" 'fi:list-input-ring subproc)
@@ -250,7 +250,7 @@ fi:auto-arglist-pop-up-style.")
       ;; stepped on...
       (fi::defkey cmap " " 'fi:lisp-delete-pop-up-window clisp)
       (fi::defkey cmap "%" 'fi:extract-list (or src lisp))
-      (fi::defkey cmap "&" 'fi:scan-stack (and clistener (not ext)))
+      (fi::defkey cmap "&" 'fi:scan-stack clistener)
       (fi::defkey cmap "*" 'fi:pop-definition-mark clisp)
       (fi::defkey cmap "," 'fi:lisp-find-next-definition clisp)
       (fi::defkey cmap "-" 'fi:log-functional-change src)
@@ -265,7 +265,6 @@ fi:auto-arglist-pop-up-style.")
       (fi::defkey cmap "]" 'fi:super-paren (or src listener))
       (fi::defkey cmap "?" 'fi:lisp-apropos clisp)
       (fi::defkey cmap "^" 'fi:center-defun src)
-      (fi::defkey cmap "\t" 'fi:lisp-complete-symbol clisp)
       (fi::defkey cmap "4" (make-sparse-keymap) clisp)
       (fi::defkey cmap "4." 'fi:lisp-find-definition-other-window clisp)
 
@@ -276,9 +275,13 @@ fi:auto-arglist-pop-up-style.")
       (fi::defkey cmap "C" 'fi:list-who-calls (and clisp ext))
       (fi::defkey cmap "D" 'fi:describe-symbol (and clisp ext))
       (fi::defkey cmap "F" 'fi:lisp-function-documentation (and clisp ext))
+      (fi::defkey cmap "K" 'fi:kill-definition (and clisp ext))
+      (fi::defkey cmap "L" 'fi:toggle-to-lisp (and clisp ext))
       (fi::defkey cmap "M" 'fi:lisp-macroexpand (and clisp ext))
+      (fi::defkey cmap "S" 'fi:scan-stack (and clisp ext))
       (fi::defkey cmap "T" 'fi:toggle-trace-definition (and clisp ext))
       (fi::defkey cmap "W" 'fi:lisp-macroexpand-recursively (and clisp ext))
+
       (fi::defkey cmap "a" 'fi:lisp-arglist (and clisp ext))
       (fi::defkey cmap "c" 'fi:list-who-calls (and clisp ext))
       (fi::defkey cmap "d" 'fi:describe-symbol (and clisp ext))

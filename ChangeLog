@@ -9,6 +9,13 @@ For more detailed instructions on filling in the ChangeLog form, see
 ******************************************************************************
 post-6.2 release changes: 
 
+2003-08-14  Kevin Layer  <layer@crikey>
+
+	* fi-basic-lep.el: parameterize the *CL-temp* buffer name (not
+	  used by anything yet)
+	* fi-keys.el: fix minor problems with bindings, found while
+	  revamping eli.htm to contain newest info.
+
 2003-08-12  Kevin Layer  <layer@crikey>
 
     for rfe5611:
