@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-emacs19.el,v 2.23.6.1.2.1 2001/11/14 18:29:15 layer Exp $
+;; $Id: fi-emacs19.el,v 2.23.6.1.2.2 2002/02/12 23:43:37 layer Exp $
 
 (cond
  ((and (eq fi::emacs-type 'emacs19)
@@ -188,7 +188,7 @@
        ["Current pointer gesture bindings" fi:composer-help-gesture-bindings
 	(fi::composer-connection-open)])
       "----"
-      ["Exit Composer/Common Windows" fi:composer-exit (fi::composer-connection-open)]
+      ["Exit Composer/Common Windows" fi:composer-exit (fi::composer-connection-open-uncache)]
       ))
 
 (defun fi::connection-open ()
@@ -204,6 +204,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defvar fi::connection-open-composer-loaded nil)
+
+(defvar fi::connection-open-composer-loaded-cached nil)
+
 (defvar fi::composer-connection-open nil)
 (defvar fi::composer-running nil)
 
@@ -226,8 +229,15 @@
 	     nil)
 	   (eq fi::connection-open-composer-loaded 'yes))))
 
+(defun fi::connection-open-composer-loaded-cached ()
+  (if fi::connection-open-composer-loaded-cached
+      (eq fi::connection-open-composer-loaded-cached 'yes)
+    (prog1 (fi::connection-open-composer-loaded)
+      (setq fi::connection-open-composer-loaded-cached
+	fi::connection-open-composer-loaded))))
+
 (defun fi::connection-open-composer-loaded-and-stopped ()
-  (and (fi::connection-open-composer-loaded)
+  (and (fi::connection-open-composer-loaded-cached)
        (or (unless fi::composer-running
 	     (if (let ((fi:package nil))
 		   (fi:eval-in-lisp
@@ -241,7 +251,7 @@
 	   (eq fi::composer-running 'no))))
 
 (defun fi::composer-connection-open ()
-  (and (fi::connection-open-composer-loaded)
+  (and (fi::connection-open-composer-loaded-cached)
        (or (unless fi::composer-connection-open
 	     (if (let ((fi:package nil))
 		   (fi:eval-in-lisp
@@ -252,6 +262,22 @@
 	       (setq fi::composer-connection-open 'no))
 	     nil)
 	   (eq fi::composer-connection-open 'yes))))
+
+(defun fi::composer-connection-open-uncache ()
+  (prog1 
+      (and (fi::connection-open-composer-loaded-cached)
+	   (or (unless fi::composer-connection-open
+		 (if (let ((fi:package nil))
+		       (fi:eval-in-lisp
+			"wt::(and ;;(connected-to-epoch-p)
+ 			      (common-windows-initialized-p)
+			      (connected-to-server-p))"))
+		     (setq fi::composer-connection-open 'yes)
+		   (setq fi::composer-connection-open 'no))
+		 (set-menubar-dirty-flag)
+		 nil)
+	       (eq fi::composer-connection-open 'yes)))
+    (setq fi::connection-open-composer-loaded-cached nil)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
