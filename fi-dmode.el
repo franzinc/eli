@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.3 1991/02/12 17:38:16 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.4 1991/03/13 15:03:18 layer Exp $
 ;;
 
 ;; Create a mode in which each line is a definition and . on that
@@ -40,6 +40,7 @@
 (define-key dmode-map "p" 'dmode-goto-previous)
 (define-key dmode-map "n" 'dmode-goto-next)
 (define-key dmode-map "q" 'dmode-quit)
+(define-key dmode-map "\e."	'fi:lisp-find-tag)
 
 (defvar dmode-mouse-map nil)
 
@@ -63,6 +64,7 @@
   (setq mode-name "Definition Mode")
   (make-local-variable 'definitions)
   (make-local-variable 'types)
+  (make-local-variable 'other-args)
   (make-local-variable 'fi:package)
   (make-local-variable 'finding-function)
   (when dmode-mouse-map (use-local-mouse-map dmode-mouse-map)))
@@ -80,9 +82,10 @@
 			 (save-excursion (beginning-of-line) (point))))
 	 (buffer (current-buffer))
 	 (def (nth n definitions))
+	 (other (nth n other-args))
 	 (type (nth n types)))
     (when (and (not (equal type '(nil))) finding-function)
-      (apply (car finding-function) def type buffer (cdr finding-function)))))
+      (apply (car finding-function) def type buffer (append other (cdr finding-function))))))
 
 (defun dmode-goto-next ()
   (interactive)
@@ -103,9 +106,9 @@
 		   :pathname (buffer-file-name buffer))
 		  ;; Normal continuation
 		  ((buffer fi:package) (the-definitions)
-		   (display-buffer-definitions 
+		   (display-some-definitions 
 		    fi:package
-		    buffer the-definitions (list 'find-buffer-definition
+		    the-definitions (list 'find-buffer-definition
 						 buffer)))
 		  ;; Error continuation
 		  ((buffer) (error)
@@ -114,6 +117,7 @@
 
 
 (defun find-buffer-definition (string type list-buffer buffer)
+  (unless (bufferp buffer) (setq buffer (find-file-noselect buffer)))
   (make-request (scm::find-buffer-definition-session
 		 :pathname (buffer-file-name buffer) 
 		 :fspec string
@@ -130,21 +134,30 @@
 		   (error "Cannot find the definition of %s in %s: %s"
 			  string buffer error))))
 
-(defun display-buffer-definitions (package buffer buffer-definitions
+(defun display-some-definitions (package buffer-definitions
 				   fn-and-arguments
 				   &optional buffer-name)
   (switch-to-buffer-other-window (or buffer-name "*definitions*"))
+  (setq buffer-read-only nil)
   (erase-buffer)
   (mapcar '(lambda (x) 
 	    (princ (car x) (current-buffer))
+	    (unless (equal '(nil) (second x))
+	      (insert ", ")
+	      (princ (second x) (current-buffer)))
 	    (insert "\n"))
 	  buffer-definitions)
   (dmode)
+  (not-modified)
+  (setq buffer-read-only t)
   (setq definitions (mapcar 'car buffer-definitions))
   (setq types (mapcar 'second buffer-definitions))
+  (setq other-args (mapcar 'third buffer-definitions))
   (setq finding-function fn-and-arguments)
   (setq fi:package package)
   (let ((height (window-height)))
     (when (> height 5) (shrink-window (- height 5))))
   (beginning-of-buffer)
   (dmode-goto-definition))
+
+
