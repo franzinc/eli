@@ -2,6 +2,12 @@
 2.0.20.alpha.5 release for ACL on Windows
 *******************************************************************************
 
+Thu Oct 03 10:55:11 1996    <layer@HOBART>
+
+	* clman.c: use network byte order
+	* clman.h: use network byte order
+	* makefile.win32: use wsock32.lib for network byte order routines
+
 Thu Oct  3 10:53:53 1996  Kevin Layer  <layer@freezer>
 
 	* makeman.c: more stuff into network byte order

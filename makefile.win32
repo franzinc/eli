@@ -1,4 +1,4 @@
-# $Id: makefile.win32,v 2.2 1996/09/04 00:03:06 layer Exp $
+# $Id: makefile.win32,v 2.3 1996/10/03 17:56:31 layer Exp $
 
 !include <ntwin32.mak>
 
@@ -12,5 +12,4 @@ default:
 
 clman.exe:	clman.obj clmanaux.obj
 	link -nologo -out:$@ -subsystem:console -entry:mainCRTStartup \
-		clman.obj clmanaux.obj
-# wsock32.lib
+		clman.obj clmanaux.obj wsock32.lib

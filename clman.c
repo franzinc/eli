@@ -1,20 +1,8 @@
-/* Copyright (C) 1993, Franz Inc., Berkeley, CA.  All rights reserved. */
+/* Copyright (C) 1993-1996, Franz Inc., Berkeley, CA.  All rights reserved. */
 
-/* $Header: /repo/cvs.copy/eli/Attic/clman.c,v 2.6 1996/08/30 21:32:01 layer Exp $ */
+/* $Id: clman.c,v 2.7 1996/10/03 17:56:27 layer Exp $ */
 
 #include "clman.h"
-#ifdef WIN32
-// #include <winsock.h>
-#define ntohl(x) x
-#define htons(x) x
-#define htonl(x) x
-#else
-#include <netinet/in.h>
-#endif
-
-/*
- * Changes 11jul94 to hack binary data on different byte-order machines. -smh
- */
 
 main(argc, argv)
     char **argv;
