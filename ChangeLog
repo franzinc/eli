@@ -17,7 +17,7 @@ post-6.2 release changes:
 	* (NEW) examples/eval.el: from Bill_Clementson@jdedwards.com
 	* doc/eli.htm: add missing stuff
 
-	* README: internal info
+	* (NEW) README: internal info
 	* fi-keys.el,
 	* fi-lep.el,
 	* fi-site-init.el,
