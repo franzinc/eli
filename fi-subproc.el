@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.65 1990/09/07 18:19:52 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.66 1990/09/08 01:03:47 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -144,7 +144,10 @@ symbol.")
 
 (make-variable-buffer-local 'fi:subprocess-enable-superkeys)
 
-(defvar fi:display-buffer-function 'switch-to-buffer
+(defvar fi:display-buffer-function
+    (function
+     (lambda (buffer)
+       (select-window (display-buffer buffer))))
   "*If non-nil, then it is used as the function which is funcall'd with one
 argument, a buffer, to display a subprocess buffer when it is created (ie,
 from `fi:common-lisp').")
@@ -430,9 +433,8 @@ are read from the minibuffer."
 	  (if (= ?~ (aref image-file 0))
 	      (setq image-file (expand-file-name image-file)))))
     
-    (if fi:display-buffer-function
-	(funcall fi:display-buffer-function buffer)
-      (switch-to-buffer buffer))
+    (funcall fi:display-buffer-function buffer)
+    
     (if runningp
 	(goto-char (point-max))
       (setq default-directory default-dir)
@@ -500,9 +502,9 @@ are read from the minibuffer."
 	 (service (or given-service
 		      (error "not implemented yet")))
 	 proc status)
-    (if fi:display-buffer-function
-	(funcall fi:display-buffer-function buffer)
-      (switch-to-buffer buffer))
+    
+    (funcall fi:display-buffer-function buffer)
+    
     (setq proc (get-buffer-process buffer))
     (setq status (if proc (process-status proc)))
     (if (eq status 'run)
