@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.66 1991/06/27 15:26:04 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.67 1991/07/10 22:26:20 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -12,10 +12,11 @@ cl = /usr/local/cl
 cl_library = 
 
 elcs = modes.elc indent.elc subproc.elc sublisp.elc filec.elc ring.elc\
-	    su.elc telnet.elc rlogin.elc shell.elc keys.elc\
-	    utils.elc clman.elc Doc.elc\
-	    basic-lep.elc lep.elc lze.elc db.elc\
-	    stream.elc dmode.elc composer.elc changes.elc
+	su.elc telnet.elc rlogin.elc shell.elc keys.elc\
+	utils.elc clman.elc Doc.elc\
+	basic-lep.elc lep.elc lze.elc db.elc\
+	stream.elc dmode.elc composer.elc changes.elc\
+	leep0.elc leep.elc
 
 compile_time_env = -l cl -l bytecomp -l `pwd`/utils -l `pwd`/basic-lep
 
@@ -25,6 +26,10 @@ compile_time_env = -l cl -l bytecomp -l `pwd`/utils -l `pwd`/basic-lep
 	$(emacs) -nw -batch -q $(compile_time_env) -f batch-byte-compile $*.el
 
 default:	elcs
+
+leep.elc:
+	$(emacs) -nw -batch -q $(compile_time_env)\
+		-l `pwd`/leep0.elc -f batch-byte-compile $*.el
 
 all:	default docs fasls
 
