@@ -5,9 +5,16 @@
 
 emacs = /usr/local/emacs
 
-depend: modes.elc subprocess.elc subprocess-lisp.elc\
-	subprocess-filec.elc subprocess-ring.elc\
-	lisp-indent.elc aux.elc
+elc-files = modes.elc subprocess.elc subprocess-lisp.elc\
+	    subprocess-filec.elc subprocess-ring.elc\
+	    lisp-indent.elc aux.elc
+
+all:	depend doc.n
+
+depend: ${elc-files}
+
+doc.n:	list.n ${elc-files}
+	$(emacs) -batch -q -l doc.el
 
 pr = enscript -Plw -h -2r
 
@@ -21,6 +28,3 @@ tags:
 
 backup:
 	rdist -Rc . binky:emacs.save/fi
-
-doc.n:	list.n
-	$(emacs) -batch -q -l Makedoc.el
