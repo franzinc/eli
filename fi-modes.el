@@ -1,5 +1,5 @@
 ;;;
-;;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.1 1988/02/20 22:30:05 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.2 1988/02/20 22:55:24 layer Exp $
 
 ;;;;
 ;;; Variables and Constants
@@ -68,7 +68,8 @@ using the commands \\[send-region], \\[send-string] and \\[fi:eval-defun]."
 	(subprocess-mode-commands fi:subprocess-mode-map)))
   (if (null fi:shell-mode-map)
       (progn
-	(setq fi:shell-mode-map (copy-keymap fi:subprocess-mode-map))
+	(setq fi:shell-mode-map (make-sparse-keymap))
+	(define-key fi:shell-mode-map "\C-c" fi:subprocess-mode-map)
 	(shell-mode-commands fi:shell-mode-map)))
   (use-local-map fi:shell-mode-map)
   (make-local-variable 'shell-directory-stack)
@@ -141,8 +142,8 @@ You can send text to the Lisp subprocess from other buffers
 	(subprocess-mode-commands fi:subprocess-mode-map)))
   (if (null fi:inferior-lisp-mode-map)
       (progn
-	(setq fi:inferior-lisp-mode-map
-	  (copy-keymap fi:subprocess-mode-map))
+	(setq fi:inferior-lisp-mode-map (make-sparse-keymap))
+	(define-key fi:inferior-lisp-mode-map "\C-c" fi:subprocess-mode-map)
 	(inferior-lisp-mode-commands fi:inferior-lisp-mode-map)))
   (use-local-map fi:inferior-lisp-mode-map)
   (setq local-abbrev-table lisp-mode-abbrev-table)
@@ -175,7 +176,6 @@ in the MAP given as argument."
   (define-key map "\C-d" 'fi:shell-send-eof)
   (define-key map "\C-k" 'fi:kill-output-from-shell)
   (define-key map "\C-l" 'list-input-ring)
-  (define-key map "\C-m" 'subprocess-send-input)
   (define-key map "\C-n" 'push-input)
   (define-key map "\C-o" 'shell-send-flush)
   (define-key map "\C-p" 'pop-input)
@@ -199,11 +199,11 @@ in the MAP given as argument."
 
 (defun shell-mode-commands (&optional map)
   (define-key map "\C-m" 'subprocess-send-input)
-  (define-key map "\C-c" 'fi:interrupt-shell-subjob)
   (define-key map "\C-i" 'shell-file-name-completion)
   (if subprocess-enable-superkeys
     (progn
       (define-key map "\C-a" 'subprocess-superkey)
+      (define-key map "\C-c" 'subprocess-superkey)
       (define-key map "\C-d" 'subprocess-superkey)
       (define-key map "\C-o" 'subprocess-superkey)
       (define-key map "\C-u" 'subprocess-superkey)
