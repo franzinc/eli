@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 1.113 1998/08/06 23:18:31 layer Exp $
+;; $Id: fi-keys.el,v 1.114 1998/10/08 18:36:45 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -1117,7 +1117,8 @@ window, leaving the point unchanged."
 buffer and the source buffer from which this function was invoked."
   (interactive)
   (if (and fi::toggle-to-lisp-window-config
-	   (eq major-mode 'fi:inferior-common-lisp-mode))
+	   (memq major-mode
+		 '(fi:inferior-common-lisp-mode fi:lisp-listener-mode)))
       (set-window-configuration fi::toggle-to-lisp-window-config)
     (progn (setq fi::toggle-to-lisp-window-config
 	     (current-window-configuration))
