@@ -2,7 +2,7 @@
 			      User Guide
 			   Release 2.0beta
 
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.13 1991/06/19 22:50:21 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.14 1991/06/20 10:29:21 layer Exp $
 
 			     Introduction
 
@@ -786,11 +786,14 @@ Functions and Variables for editing Common Lisp programs:
 %% fi:inverse-definition-who-calls	fi:inverse-definition-mode-map
 
 %% fi:compile-file
+%% fi:load-file
 
+%% fi:check-for-unbalanced-parens-on-write-file
 %% fi:common-lisp-file-types
 %% fi:echo-evals-from-buffer-in-listener-p
 %% fi:fill-paragraph
 %% fi:find-unbalanced-parenthesis
+%% fi:find-tag-lock
 %% fi:indent-code-rigidly
 %% fi:indent-methods-case-sensitive
 %% fi:kill-definition
