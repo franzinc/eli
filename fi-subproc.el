@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.165 1996/08/08 03:36:34 layer Exp $
+;; $Id: fi-subproc.el,v 1.166 1996/08/19 22:46:00 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -834,11 +834,18 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	 (default-dir default-directory)
 	 (buffer-name (buffer-name buffer))
 	 (process-buffer
-	  (and (get-process fi::common-lisp-backdoor-main-process-name)
-	       (process-buffer (get-process fi::common-lisp-backdoor-main-process-name))))
-	 (host (or given-host (fi::get-buffer-host process-buffer)))
-	 (service (or given-service (fi::get-buffer-port process-buffer)))
+	  (unless (on-ms-windows)
+	    (and (get-process fi::common-lisp-backdoor-main-process-name)
+		 (process-buffer
+		  (get-process fi::common-lisp-backdoor-main-process-name)))))
+	 (host (or given-host
+		   (and (on-ms-windows) (error "on windows"))
+		   (fi::get-buffer-host process-buffer)))
+	 (service (or given-service
+		      (and (on-ms-windows) (error "on windows"))
+		      (fi::get-buffer-port process-buffer)))
 	 (password (or given-password
+		       (and (on-ms-windows) (error "on windows"))
 		       (fi::get-buffer-password process-buffer)))
 	 (proc (get-buffer-process buffer)))
 

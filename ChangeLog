@@ -1,3 +1,7 @@
+Mon Aug 19 15:43:57 1996    <layer@HOBART>
+
+	* fi-subproc.el: fixes on the way to this working on Windows
+
 Wed Aug  7 20:36:01 1996  Kevin Layer  <layer@freezer>
 
 	* fi-subproc.el: fix fi::buffer-number-to-buffer, which was
