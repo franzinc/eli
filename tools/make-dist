@@ -1,0 +1,56 @@
+#! /bin/sh -ex
+#
+# $Header: /repo/cvs.copy/eli/tools/make-dist,v 1.1 1993/06/18 20:19:08 layer Exp $
+
+(cd fi; PWD=$PWD/fi; export PWD; make; make docs)
+
+version=`grep interface-version fi/site-init.el |\
+		 sed 's/.*interface-version "\(.*\)".*/\1/'`
+
+#files="`echo fi/manual | files -p -l -x RCS -e -X - fi`"
+files="`echo fi/[a-z]*.el* fi/Makefile fi/ChangeLog\
+	fi/UserGuide.doc fi/RefMan.doc fi/RefCard.doc fi/Doc.el*;\
+	files -p -l -x RCS -e fi/examples`"
+
+root="`pwd`"
+distdir=$root/Dists
+dir=$distdir/dist-$version
+tarfile=$distdir/emacs-lisp-$version.tar
+
+if test ! -d $distdir; then
+	echo "$0: $distdir does not exist"
+	exit 1
+fi
+
+if test -d $dir; then
+	echo "$0: $dir must not exist--remove it and then rerun $0"
+	exit 1
+fi
+
+mkdir $dir
+
+if grep -s "Release ${version}" fi/UserGuide.n; then
+	foo=
+else
+	echo "The version in fi/site-init.el and fi/UserGuide.n do not agree"
+	exit 1
+fi
+
+tar hcf - $files | tee $tarfile | (cd $dir; tar xf -)
+
+compress $tarfile
+
+cd $distdir
+
+rm -fr dist
+mkdir dist dist/fi
+
+cd dist
+
+ln -s ../../../emacs.README.out README
+
+cd fi
+
+ln -s ../../dist-$version/fi/* .
+
+ln -s ../../../../manual-dist manual
