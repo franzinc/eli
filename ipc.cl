@@ -1,6 +1,6 @@
-;; -*- mode: common-lisp; package: ipc -*-
+;;					-[Wed Feb 22 16:14:24 1989 by layer]-
 ;;
-;; Allegro Common Lisp IPC interface
+;; Allegro CL IPC interface
 ;;
 ;; copyright (c) 1987, 1988 Franz Inc, Berkeley, Ca.
 ;;
@@ -16,7 +16,7 @@
 ;; at private expense as specified in DOD FAR 52.227-7013 (c) (1) (ii).
 ;;
 ;;
-;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.19 1988/06/03 09:39:10 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.20 1989/03/02 15:45:13 layer Exp $
 ;; $Locker: layer $
 ;;
 ;; This code is a preliminary IPC interface for ExCL. The functionality
@@ -25,11 +25,12 @@
 ;; listening to a socket.  Any process wanting to talk to the lisp
 ;; can connect to the socket and a new Lisp Listener will be started.
 
+(provide :ipc)
+
 (in-package :ipc :use '(:lisp :excl :ff :mp))
 
-(pushnew :ipc *features*)
-
-(export '(start-lisp-listener-daemon *unix-domain* *inet-port*))
+(export '(start-lisp-listener-daemon open-network-stream
+	  *unix-domain* *inet-port*))
 
 (require :process)
 (require :foreign)
@@ -39,7 +40,7 @@
   "If non-nil then use a UNIX domain socket, otherwise use an internet
 domain port (see *inet-port* variable).")
 
-(defparameter *inet-port* 1123
+(defparameter *inet-port* 6789
   "The internet service port number on which Lisp listens for connections.
 The value is this variable is only used when *unix-domain* is non-nil, in
 which case a UNIX domain socket is used.")
@@ -53,30 +54,41 @@ which case a UNIX domain socket is used.")
 (defconstant *sock-stream* 1
   "The SOCK_STREAM constant from /usr/include/sys/socket.h.")
 
+(defvar *junk-name* (make-array 1))
+(defvar *junk-address* (make-array 1 :element-type '(unsigned-byte 32)))
+
+(defun entry-point-exists-p (string)
+  (setf (aref *junk-name* 0) string)
+  (setf (aref *junk-address* 0) 0)
+  (= 0 (get-entry-points *junk-name* *junk-address*)))
+
 (defvar lisp-listener-daemon-ff-loaded nil)
 (defvar lisp-listener-daemon nil)
+
+(defparameter *needed-funcs*
+  (mapcar #'convert-to-lang
+	  '("socket" "bind" "listen" "accept" "getsockname" "gethostbyname"
+	    "connect" "bcopy" "bcmp" "bzero")))
 
 (eval-when (load eval)
   (unless lisp-listener-daemon-ff-loaded
     (unless (eql (excl::machine-code) '#.comp::machine-code-tek4300)
-      (unless (load ""
-		    :verbose nil
-		    :unreferenced-lib-names
-		    (mapcar #'convert-to-lang
-			    '("socket" "bind" "listen" "accept" "getsockname"
-			      "bcopy" "bcmp" "bzero")))
-	(error "foreign load failed")))
+      (unless (or (eq '#.comp::machine-code-apollo (excl::machine-code))
+		  (dolist (name *needed-funcs* t)
+		    (if (not (entry-point-exists-p name))
+			(return nil))))
+	(princ ";  Loading from C library...")
+	(force-output)
+	(unless (load "" :verbose nil :unreferenced-lib-names *needed-funcs*)
+	  (error "foreign load failed"))
+	(princ "done")
+	(terpri)))
     (setq lisp-listener-daemon-ff-loaded t)
-    (defforeign-list '((getuid)
-		       (socket)
-		       (bind)
-		       (unix-listen :entry-point "_listen")
-		       (accept)
-		       (getsockname)
-		       (select)
-		       (fd-close :entry-point "_close")
-		       (bcopy) (bzero) (bcmp)
-		       (perror))
+    (defforeign-list '((getuid) (socket) (bind) (accept)
+		       (getsockname) (gethostbyname) (select)
+		       (connect) (bcopy) (bzero) (bcmp) (perror)
+		       (unix-listen :entry-point #,(convert-to-lang "listen"))
+		       (unix-close :entry-point #,(convert-to-lang "close")))
 	:print nil)))
 
 (defcstruct sockaddr-in
@@ -96,13 +108,13 @@ which case a UNIX domain socket is used.")
 (defcstruct unsigned-long
   (unsigned-long :unsigned-long))
 
-#+not-used
+;; from /usr/include/netdb.h
 (defcstruct (hostent :malloc)
   (name * :char)
   (aliases * * :char)
   (addrtype :long)
   (length :long)
-  (addr * char))
+  (addr * :char))
 
 (defun start-lisp-listener-daemon ()
   "This function starts a process which listens to a socket for attempts to
@@ -115,14 +127,14 @@ listener ever completes, it makes sure files are closed."
     (setf (getf (process-property-list lisp-listener-daemon) ':no-interrupts)
           t)))
 
+(defvar *socket-pathname* nil)
+
 (defun lisp-listener-socket-daemon ()
   (let (listen-socket-fd
 	(listen-sockaddr
 	 (if *unix-domain*
 	     (make-cstruct 'sockaddr-un)
 	   (make-cstruct 'sockaddr-in)))
-	(socket-pathname
-	 (format nil "~a/~a" (sys:getenv "HOME") ".excl_to_emacs"))
 	(timeval (make-cstruct 'timeval))
 	(mask-obj (make-cstruct 'unsigned-long))
 	(int (make-cstruct 'unsigned-long))
@@ -130,17 +142,22 @@ listener ever completes, it makes sure files are closed."
 	stream
 	proc-name
 	fd)
+    
+    (unless *socket-pathname*
+      (setq *socket-pathname*
+	(format nil "~a/~a" (sys:getenv "HOME") ".excl_to_emacs")))
+
     (setf (timeval-sec timeval) 0
 	  (timeval-usec timeval) 0)
     (unwind-protect
 	(progn
-	  (if *unix-domain* (errorset (delete-file socket-pathname)))
+	  (if *unix-domain* (errorset (delete-file *socket-pathname*)))
 	  (setq listen-socket-fd (socket
 				  (if *unix-domain* *af-unix* *af-inet*)
 				  *sock-stream*
 				  0))
 	  (when (< listen-socket-fd 0)
-	    (perror "call to socket")
+	    (perror "socket")
 	    (setq listen-socket-fd nil)
 	    (return-from lisp-listener-socket-daemon nil))
 	  (mp::mpwatchfor listen-socket-fd)
@@ -151,10 +168,10 @@ listener ever completes, it makes sure files are closed."
 	  (if* *unix-domain*
 	     then (setf (sockaddr-un-family listen-sockaddr) *af-unix*)
 		  ;; Set pathname.
-		  (dotimes (i (length socket-pathname)
+		  (dotimes (i (length *socket-pathname*)
 			    (setf (sockaddr-un-path listen-sockaddr i) 0))
 		    (setf (sockaddr-un-path listen-sockaddr i)
-		      (char-int (elt socket-pathname i))))
+		      (char-int (elt *socket-pathname* i))))
 	     else ;; a crock:
 		  (bzero listen-sockaddr (ff::cstruct-len 'sockaddr-in))
 		  (setf (sockaddr-in-family listen-sockaddr) *af-inet*
@@ -163,7 +180,7 @@ listener ever completes, it makes sure files are closed."
 	  (unless (zerop (bind listen-socket-fd
 			       listen-sockaddr
 			       (if *unix-domain*
-				   (+ (length socket-pathname) 2)
+				   (+ (length *socket-pathname*) 2)
 				 (ff::cstruct-len 'sockaddr-in))))
 	    (perror "bind")
 	    (return-from lisp-listener-socket-daemon nil))
@@ -215,7 +232,7 @@ listener ever completes, it makes sure files are closed."
 			      stream))))))
       (when listen-socket-fd
 	(mp::mpunwatchfor listen-socket-fd)
-	(fd-close listen-socket-fd)
+	(unix-close listen-socket-fd)
 	(setq lisp-listener-daemon nil)))))
 
 (defun refuse-connection (fd &aux s)
@@ -239,3 +256,48 @@ listener ever completes, it makes sure files are closed."
     ;; terminal stream.
     (setf (excl::sm_bterm-out-pos s) 0)
     (close s)))
+
+(defun open-network-stream (&key host port socket-file)
+  "Open a stream to a port, which is a TCP/IP communication channel.  There
+are two types of ports supported, UNIX and INTERNET domain.  The domain is
+chosen based on the keyword arguments actually used: HOST and PORT are for
+internet domain ports and SOCKET-FILE is for unix domain ports."
+  (if (and (or (null host) (null port))
+	   (null socket-file))
+      (error "Must either supply HOST and PORT *or* SOCKET-FILE keywords."))
+  (if* socket-file
+     then ;; UNIX domain
+	  (let ((server (make-cstruct 'sockaddr-un))
+		socket-fd)
+	    (setf (sockaddr-un-family server) *af-unix*)
+	    (dotimes (i (length socket-file)
+		      (setf (sockaddr-un-path server i) 0))
+	      (setf (sockaddr-un-path server i)
+		(char-int (elt socket-file i))))
+	    (setq socket-fd (socket *af-unix* *sock-stream* 0))
+	    (if (< (connect socket-fd server (+ 2 (length socket-file))) 0)
+		(error "connect failed to ~s" socket-file))
+	    (excl::make-buffered-terminal-stream socket-fd socket-fd t t))
+     else ;; INTERNET domain
+	  (let (sock server hostaddress)
+	    ;; Open a socket
+	    (when (< (setf sock (socket *af-inet* *sock-stream* 0)) 0)
+	      (error "couldn't open socket"))
+	    ;; construct a socket address
+	    (setf server (make-cstruct 'sockaddr-in))
+	    (bzero server (ff::cstruct-len 'sockaddr-in))
+	    (when (= (setf hostaddress (gethostbyname host)) 0)
+	      (error "unknown host: ~a" host))
+	    (if (not (= 4 (hostent-length hostaddress)))
+		(error "address length not 4"))
+	    ;; Be sure that this precedes writes to other fields in server.
+	    (setf (sockaddr-in-addr server)
+	      (si:memref-int (hostent-addr hostaddress) 0 0 :unsigned-long))
+	    (setf (sockaddr-in-family server) *af-inet*)
+	    (setf (sockaddr-in-port server) port)
+	    ;; open the connection
+	    (when (< (connect sock server (ff::cstruct-len 'sockaddr-in)) 0)
+	      (unix-close sock)
+	      (error "couldn't connect to socket"))
+	    ;; build and return the stream
+	    (excl::make-buffered-terminal-stream sock sock t t))))
