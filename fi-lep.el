@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.43 1991/11/01 00:12:31 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.44 1991/11/27 17:34:16 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -362,19 +362,19 @@ time."
 
 (defun fi::lisp-macroexpand-common (expander type)
   (fi::make-request
-   (lep::macroexpand-session
-    :expander expander :package
-    (fi::string-to-keyword fi:package)
-    :form (let ((start (condition-case ()
-			   (fi::find-other-end-of-list)
-			 (error nil))))
-	    (if start
-		(buffer-substring start (point))
-	      (read-string (format "form to %s: " type)))))
-		(() (expansion)
-		 (fi:show-some-text fi:package expansion))
-		(() (error)
-		 (message "Cannot macroexpand: %s" error))))
+      (lep::macroexpand-session
+       :expander expander :package
+       (fi::string-to-keyword fi:package)
+       :form (let ((start (condition-case ()
+			      (fi::find-other-end-of-list)
+			    (error nil))))
+	       (if start
+		   (buffer-substring start (point))
+		 (read-string (format "form to %s: " type)))))
+    (() (expansion)
+      (fi:show-some-text fi:package expansion))
+    (() (error)
+      (message "Cannot macroexpand: %s" error))))
 
 
 ;;; Symbol completion
@@ -593,15 +593,15 @@ the package is parsed at file visit time."
 				     (forward-sexp)
 				     (point))
 			:doit do-kill)
-   ((do-kill) (ok form)
-    (if (not do-kill)
-	(progn (end-of-defun) 
-	       (save-excursion
-		 (insert form)
-		 (insert "\n"))))
+   ((do-kill) (form)
+    (unless do-kill
+      (end-of-defun) 
+      (save-excursion
+	(insert form)
+	(insert "\n")))
     (message "Killing definition...done."))
    (() (error)
-    (message "Cannot kill current definition %s" error))))
+    (message "Cannot kill current definition: %s" error))))
 
 
 (defun fi:toggle-trace-definition (string)
