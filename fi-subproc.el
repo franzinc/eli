@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.25 1988/04/26 22:25:12 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.26 1988/05/09 17:23:04 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -359,13 +359,10 @@ created.  The image invoked is taken from value of the Emacs symbol
 `explicit-<NAME>-file-name', where <NAME> is the miniscule process name, if
 this symbol is defined and non-nil.  Otherwise, the value of the symbol
 `explicit-<IMAGE>-file-name' is used, where <IMAGE> is the miniscule image
-name, if this symbol is defined and is non-nil.  Otherwise, the image name
-will be taken from the environment variables \"E<NAME>\", \"<NAME>\",
-\"E<IMAGE>\", or \"<IMAGE>\" with embedded hyphens removed and converted
-to upper case, e.g. \"franz-lisp\" becomes \"EFRANZLISP\".
-If these variables are not found, the value of one of the Emacs symbols
-`default-<NAME>-file-name' or `default-<IMAGE>-file-name' is used.  If the
-image invoked is taken from the Emacs symbol `explicit-<NAME>-file-name' or
+name, if this symbol is defined and is non-nil.  If these variables are not
+found, the value of one of the Emacs symbols `default-<NAME>-file-name' or
+`default-<IMAGE>-file-name' is used.  If the image invoked is taken from
+the Emacs symbol `explicit-<NAME>-file-name' or
 `explicit-<IMAGE>-file-name', arguments to the invoked image are taken from
 the value (a list) of `explicit-<NAME>-image-arguments' or
 `explicit-<IMAGE>-image-arguments' if it has a value.  Similarly, if the
@@ -381,17 +378,10 @@ The subprocess prompt is set to the value of variable
 `<NAME>-prompt-pattern' if found, otherwise `<IMAGE>-prompt-pattern'.
 
 Also see `fi::make-shell' and `fi::make-another-shell'."
-  ;;(interactive "sImage name: \nsProcess name: ")
-  (let* ((majuscule-image (fi::remove-chars-from-string '(?-) (upcase image)))
-	 (majuscule-name (fi::remove-chars-from-string '(?-) (upcase name)))
-	 (image-file (or (fi::shell-variable-bound-value
+  (let* ((image-file (or (fi::shell-variable-bound-value
 			  "fi:explicit-" name "-file-name")
 			 (fi::shell-variable-bound-value
 			  "fi:explicit-" image "-file-name")
-			 (getenv (concat "E" majuscule-name))
-			 (getenv (concat "E" majuscule-image))
-			 (getenv majuscule-name)
-			 (getenv majuscule-image)
 			 (fi::shell-variable-bound-value
 			  "fi:default-" name "-file-name")
 			 (fi::shell-variable-bound-value
