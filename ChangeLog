@@ -1,3 +1,8 @@
+2005-02-09  Kevin Layer  <layer@gemini>
+
+	* fi-ring.el: make sure fi::input-append checks that
+	  fi::input-ring is non-nil before before setting the `car'.
+
 2005-01-28  Kevin Layer  <layer@gemini>
 
 	* fi-subproc.el (fi::get-lisp-interactive-arguments): bug15165:
@@ -5026,4 +5031,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.9.2.10.2.2 $
+$Revision: 3.9.2.10.2.3 $
