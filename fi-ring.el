@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-ring.el,v 1.5 1988/05/12 22:54:55 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-ring.el,v 1.6 1988/05/18 13:36:24 layer Exp $
 
 ;; This code is very similar to the kill-ring implementation
 ;; and implements the fi::subprocess input ring.  Each fi::subprocess buffer
@@ -62,7 +62,7 @@
 	      (concat string (car fi::input-ring))
 	      (concat (car fi::input-ring) string))))
 
-(defun fi:input-region (beg end)
+(defun fi::input-region (beg end)
   "Delete text between point and mark and save in input ring.
 This is the primitive for programs to kill text into the input ring.
 Supply two arguments, character numbers indicating the stretch of text to
@@ -75,15 +75,15 @@ the subprocess input ring."
   (delete-region beg end))
 
 (defun fi::input-ring-save (beg end)
-  "Save the region on the fi::subprocess input ring but don't kill it."
+  "Save the region on the subprocess input ring but don't kill it."
   (interactive "r")
   (setq fi::last-command-was-successful-search nil)
-  (if (eq last-command 'fi:input-region)
+  (if (eq last-command 'fi::input-region)
       (fi::input-append (buffer-substring beg end) (< end beg))
     (setq fi::input-ring (cons (buffer-substring beg end) fi::input-ring))
     (if (> (length fi::input-ring) fi::input-ring-max)
 	(setcdr (nthcdr (1- fi::input-ring-max) fi::input-ring) nil)))
-  (setq this-command 'fi:input-region)
+  (setq this-command 'fi::input-region)
   (setq fi::input-ring-yank-pointer fi::input-ring))
 
 (defun fi::rotate-yank-input-pointer (arg)
