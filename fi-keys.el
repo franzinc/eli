@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.50 1991/04/20 23:24:28 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.51 1991/04/22 13:40:44 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -439,9 +439,10 @@ to a remote process started in this way closes down the pipe.  The fake EOF
 is done by doing a debugger:debug-pop on the \"Initial Lisp Listener\"
 process via the backdoor."
   (interactive)
-  (fi:backdoor-eval 
-   "(db:debug-pop (mp::process-name-to-process \"Initial Lisp Listener\"))\n"
-   (buffer-name (current-buffer))))
+  (fi:eval-in-lisp
+;;;; should send to proper process
+   "(db:debug-pop (mp::process-name-to-process \"Initial Lisp Listener\"))\n")
+  )
 
 (defun fi:tcp-lisp-listener-send-eof ()
   "Simulate sending an EOF on the Lisp Listener pseudo-process.  It is not
@@ -451,9 +452,9 @@ either Emacs or Common Lisp, at this time).  The fake EOF is simulated by
 doing a debugger:debug-pop on the Common Lisp process tied to the Lisp
 Listener buffer via the backdoor."
   (interactive)
-  (fi:backdoor-eval 
-   "(db:debug-pop (mp::process-name-to-process \"%s\"))\n"
-   (buffer-name (current-buffer))))
+  (fi:eval-in-lisp 
+   (format "(db:debug-pop (mp::process-name-to-process \"%s\"))\n"
+	   (buffer-name (current-buffer)))))
 
 (defun fi:tcp-lisp-listener-kill-process ()
   "Simulate sending a SIGQUIT to the Lisp Listener pseudo-process,
@@ -464,9 +465,9 @@ character which is interpreted as `quit'.  The fake `quit' is simulated by
 doing a mp:process-kill on the Common Lisp process tied to the Lisp
 Listener buffer via the backdoor."
   (interactive)
-  (fi:backdoor-eval 
-   "(mp:process-kill (mp::process-name-to-process \"%s\"))\n"
-   (buffer-name (current-buffer))))
+  (fi:eval-in-lisp
+   (format "(mp:process-kill (mp::process-name-to-process \"%s\"))\n"
+	   (buffer-name (current-buffer)))))
 
 (defun fi:tcp-lisp-listener-interrupt-process ()
   "Simulate sending a SIGINT to the Lisp Listener pseudo-process,
@@ -477,11 +478,9 @@ character which is interpreted as `interrupt'.  The fake `interrupt' is
 simulated by doing a mp:process-interrupt on the Common Lisp process tied
 to the Lisp Listener buffer via the backdoor."
   (interactive)
-  (fi:backdoor-eval 
-   "(mp:process-interrupt
-      (mp::process-name-to-process \"%s\")
-      #'break \"interrupt from emacs\")\n"
-   (buffer-name (current-buffer))))
+  (fi:eval-in-lisp
+   (format "(mp:process-interrupt (mp::process-name-to-process \"%s\") #'break \"interrupt from emacs\")\n"
+	   (buffer-name (current-buffer)))))
 
 
 ;;;;;;;;;;;;;;;;;;;;; general subprocess related functions
