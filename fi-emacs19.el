@@ -10,15 +10,15 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-emacs19.el,v 2.17 1996/08/01 22:35:52 layer Exp $
+;; $Id: fi-emacs19.el,v 2.18 1997/10/01 21:48:28 layer Exp $
 
-
-(unless (string-match "^18." emacs-version) ;Allows compilation on 18.
-  (require (if (and (boundp 'emacs-minor-version)
-		    (> emacs-minor-version 22))
-	       ;; change happened between 19.22 and 19.23
-	       'lmenu 'menubar)
-	   "lmenu"))
+(cond
+ ((and (eq fi::emacs-type 'emacs19)
+       (boundp 'emacs-minor-version)
+       (<= emacs-minor-version 22))
+  (require 'menubar "lmenu"))
+ ((eq fi::emacs-type 'emacs18))
+ (t (require 'lmenu "lmenu")))
 
 (defun fi::switch-to-buffer-new-screen (buffer)
   (cond

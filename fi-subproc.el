@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.189 1997/09/29 16:28:38 layer Exp $
+;; $Id: fi-subproc.el,v 1.190 1997/10/01 21:48:28 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -74,7 +74,8 @@ variable will be ignored.")
 
 (defvar fi:display-buffer-function
     (if (or (eq fi::emacs-type 'xemacs19)
-	    (eq fi::emacs-type 'emacs19))
+	    (eq fi::emacs-type 'emacs19)
+	    (eq fi::emacs-type 'emacs20))
 	'fi::switch-to-buffer-new-screen
       'fi::switch-to-buffer)
   "*If non-nil, then the value should be a function taking one argument,

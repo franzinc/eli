@@ -1,10 +1,10 @@
-;; $Id: fi-site-init.el,v 1.106 1997/09/29 16:28:38 layer Exp $
+;; $Id: fi-site-init.el,v 1.107 1997/10/01 21:48:28 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
 (require 'cl)
 
-(setq fi:emacs-lisp-interface-version "2.0.21.pre-beta.1")
+(setq fi:emacs-lisp-interface-version "2.0.21.pre-beta.2")
 (defvar fi::required-ipc-version 1)
 (defvar fi::load-subprocess-files t)
 (defvar fi::install-acl-menubar t)
@@ -29,7 +29,8 @@
 
 (defvar fi::library-directory)
 (cond
- ((not (boundp 'load-file-name))
+ ((or (not (boundp 'load-file-name))
+      (null load-file-name))
   ;; In this case, load-path must be used to find fi/fi-site-init.el and
   ;; the directory where it is found is used as fi::library-directory.
   (let* ((file "fi-site-init.el")
@@ -47,18 +48,20 @@
 
 (defun fi::locate-library (file)
   (let (p)
-    (if (string-match "\\.elc?$" file)
-	(if (file-exists-p (setq p (format "%s%s" fi::library-directory file)))
-	    p
-	  nil)
-      (cond
-       ((and (setq p (format "%s%s.elc" fi::library-directory file))
-	     (file-exists-p p))
-	p)
-       ((and (setq p (format "%s%s.el" fi::library-directory file))
-	     (file-exists-p p))
-	p)
-       (t nil)))))
+    (cond
+     ((string-match "\\.elc?$" file)
+      (if (file-exists-p (setq p (format "%s%s" fi::library-directory file)))
+	  p
+	nil))
+     ((and (setq p (format "%s%s.elc" fi::library-directory file))
+	   (file-exists-p p))
+      p)
+     ((and (setq p (format "%s%s.el" fi::library-directory file))
+	   (file-exists-p p))
+      p)
+     ((and (setq p (format "%s.elc" file)) (file-exists-p p)) p)
+     ((and (setq p (format "%s.el" file)) (file-exists-p p)) p)
+     (t nil))))
 
 (load (or (fi::locate-library "fi-version.el")
 	  (error "Couldn't find fi-version.el.")))
@@ -226,7 +229,8 @@ exists.")
 (when fi::load-subprocess-files
   (cond ((eq fi::emacs-type 'xemacs19)
 	 (fi::load "fi-xemacs"))
-	((eq fi::emacs-type 'emacs19)
+	((or (eq fi::emacs-type 'emacs19)
+	     (eq fi::emacs-type 'emacs20))
 	 (fi::load "fi-emacs19"))
 	(t (fi::load "fi-emacs18"))))
 

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.129 1997/02/27 17:33:04 layer Exp $
+# $Id: Makefile,v 1.130 1997/10/01 21:48:28 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -169,10 +169,10 @@ clman-dist:	all_clman
 
 ###############################################################################
 
-hosts = beast beta tiger freezer sole sparky akbar fridge girls louie hefty \
-	vapor biggie
+hosts = beast beta tiger freezer sole sparky akbar fridge louie hefty \
+	vapor biggie boys high baby
 # make of clman fails on these systems:
-#	fridge, girls, hefty, biggie, clay
+#	fridge, hefty, biggie, high
 
 elib_root = /usr/fi/emacs-lib
 to = $(elib_root)/fi

@@ -9,6 +9,20 @@ Documentation changes:	<`none' or give pointer to them>
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.pre-beta.2
+
+Wed Oct  1 14:47:12 1997  Kevin Layer  <layer@ultra>
+
+	* Makefile: update hosts
+    changes for emacs 20.2:
+	* fi-emacs19.el
+	* fi-keys.el
+	* fi-site-init.el
+	* fi-subproc.el
+	* fi-utils.el
+	* fi-version.el
+
+*******************************************************************************
 2.0.21.pre-beta.1
 
 Mon Sep 29 09:08:02 1997  Kevin Layer  <layer@ultra>
