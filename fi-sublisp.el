@@ -1,4 +1,4 @@
-;;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.11 1988/03/04 09:10:32 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.12 1988/03/19 18:49:13 layer Exp $
 ;;;
 ;;; Interaction with a Lisp subprocess
 
@@ -235,7 +235,7 @@ that for a hack??"
        (format "(progn
                   (errorset
                    (let ((*print-pretty* t)(excl::*print-nickname* t)
-                         (*fi::package* %s))
+                         (*package* %s))
                      (with-open-file (*standard-input* \"%s\")
                         (lisp:prin1 (lisp:macroexpand (lisp:read)))))
                   t)
@@ -243,7 +243,7 @@ that for a hack??"
 	       (if (and (boundp 'fi::package) fi::package)
 		   (format "(or (find-package :%s) (make-package :%s))"
 			   fi::package fi::package)
-		 "*fi::package*")
+		 "*package*")
 	       filename)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -590,6 +590,10 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
       (bury-buffer)))
   (let ((load-string
 	 (if compile-file-p
-	     (format ":cl \"%s\"" fi::emacs-to-lisp-transaction-file)
-	   (format ":ld \"%s\"" fi::emacs-to-lisp-transaction-file))))
+	     (format
+	      "(progn (excl::compile-file-if-needed \"%s\")
+		      (load \"%s\"))"
+	      fi::emacs-to-lisp-transaction-file
+	      fi::emacs-to-lisp-transaction-file)
+	   (format "(load \"%s\")" fi::emacs-to-lisp-transaction-file))))
     (fi::send-string-split process load-string nl-to-cr)))
