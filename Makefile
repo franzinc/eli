@@ -1,4 +1,6 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.21 1988/08/11 21:29:28 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.22 1988/11/03 23:52:40 layer Exp $
+
+cl = /usr/local/cl-3.0
 
 .SUFFIXES:
 .SUFFIXES: .el .elc
@@ -11,8 +13,11 @@ elc-files = modes.elc subproc.elc sublisp.elc filec.elc ring.elc\
 	    tools/doc.elc rlogin.elc shell.elc keys.elc tcplisp.elc utils.elc\
 	    ltags.elc
 
-all:	depend spec.out
+all:	ipc.fasl depend spec.out
 	@rm -f stamp; date > stamp
+
+ipc.fasl : ipc.cl
+	echo '(require :process)(require :foreign)(require :cstructs)(compile-file "ipc")' | $(cl) -qq -batch
 
 depend: ${elc-files}
 
