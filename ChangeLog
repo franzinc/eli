@@ -1,7 +1,8 @@
 Tue Jun 29 16:04:48 1993  Kevin Layer  (layer@sole)
 
 	* Doc.el: *.el -> fi-*.el
-	* Makefile: *.el -> fi-*.el
+	* Makefile: *.el -> fi-*.el, can't use lemacs to compile .el
+	files, because they can't be loaded into an 18.x emacs.
 	* fi-site-init.el: *.el -> fi-*.el
 	* fi-site-load.el: *.el -> fi-*.el
 	* fi-test.el: *.el -> fi-*.el
