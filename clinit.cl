@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/Attic/clinit.cl,v 1.8 1989/02/14 17:17:05 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/clinit.cl,v 1.9 1989/05/22 15:30:08 layer Exp $
 
 #|
 
@@ -59,7 +59,7 @@ setenv EMACSLIBRARY /usr/local/lib/emacs
      (values (find-symbol (symbol-name s) p))))
 
 (defun load-and-start-ipc-package (&key (unix-domain nil udp))
-  (excl::handler-case 
+  (errorset
    (let ((emacs-library
 	  (format nil "~a/lisp/fi/" (si:getenv "EMACSLIBRARY"))))
      (if* emacs-library
@@ -82,5 +82,4 @@ setenv EMACSLIBRARY /usr/local/lib/emacs
 	       (if (boundp s) (set s socket-file))
 	       (funcall (svalue :ipc :start-lisp-listener-daemon)))
 	else (format t "~%EMACSLIBRARY is not in the environment~%")))
-   (error (condition) (format t "error during ipc initialization: ~a"
-			      condition))))
+   t))
