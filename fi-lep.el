@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.27 1991/04/26 13:01:32 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.28 1991/05/28 16:18:20 layer Exp $
 ;;
 
 (defvar fi:always-in-a-window nil)
@@ -204,35 +204,35 @@ at file visit time."
 		       nil)))
   (fi::lisp-find-tag-common tag next t))
 
-(defun delete-metadot-session ()
+(defun fi::delete-metadot-session ()
   (if lep:*meta-dot-session* (lep::kill-session lep:*meta-dot-session*))
   (setq lep:*meta-dot-session* nil))
 
 (defun fi::lisp-find-tag-common (something next other-window-p &optional type)
   (message "Finding definition...")
   (setq  *meta-dot-string* something)
-  (if (lep::lep-open-connection-p)
+  (if (fi::lep-open-connection-p)
       (progn
-	(delete-metadot-session)
+	(fi::delete-metadot-session)
 	(setq lep:*meta-dot-session*
 	  (make-complex-request 
-	   (scm::metadot-session :package (string-to-keyword fi:package)
+	   (scm::metadot-session :package (fi::string-to-keyword fi:package)
 				 :type (or type t)
 				 :fspec something)
 	   ((something other-window-p) (pathname point n-more)
-	    (show-found-definition (if (symbolp something)
+	    (fi::show-found-definition (if (symbolp something)
 				       (symbol-name something)
 				     something)
 				   pathname point n-more other-window-p))
 	   ((something other-window-p) (error)
-	    (delete-metadot-session)
-	    (find-definition-using-find-tag (if (symbolp something)
+	    (fi::delete-metadot-session)
+	    (fi::find-definition-using-find-tag (if (symbolp something)
 						(symbol-name something)
 					      something)
 					    other-window-p error)))))
     (progn
       (setq lep:*meta-dot-session* nil)
-      (find-definition-using-find-tag something other-window-p))))
+      (fi::find-definition-using-find-tag something other-window-p))))
 
 (defun fi:lisp-tags-loop-continue (&optional first-time)
   "Continue last tags search, started by fi:lisp-find-tag.  With
@@ -246,18 +246,18 @@ time."
   (if (or tags-loop-form (not lep:*meta-dot-session*))
       (progn
 	(when lep:*meta-dot-session*
-	  (delete-metadot-session))
+	  (fi::delete-metadot-session))
 	(tags-loop-continue first-time))
-    (make-request-in-existing-session 
+    (fi::make-request-in-existing-session 
      lep:*meta-dot-session*
      (:next)
      (() (pathname point n-more)
-      (show-found-definition  *meta-dot-string* pathname point n-more))
+      (fi::show-found-definition *meta-dot-string* pathname point n-more))
      (() (error)
-      (delete-metadot-session)
-      (find-definition-using-find-tag *meta-dot-string* error)))))
+      (fi::delete-metadot-session)
+      (fi::find-definition-using-find-tag *meta-dot-string* error)))))
 
-(defun show-found-definition (thing pathname point n-more
+(defun fi::show-found-definition (thing pathname point n-more
 			      &optional other-window-p)
   (if pathname
       (if (eq pathname ':top-level)
@@ -297,19 +297,19 @@ time."
 ;;; When we have no success with asking the lisp start using the tags mechanism
 ;;;; We need to strip of the package prefix here
 
-(defun find-definition-using-find-tag (tag other-window-p &optional error)
+(defun fi::find-definition-using-find-tag (tag other-window-p &optional error)
   (if error 
       (if fi:source-info-not-found-hook
 	  (condition-case nil
-	      (find-definition-using-find-tag-1 tag other-window-p)
+	      (fi::find-definition-using-find-tag-1 tag other-window-p)
 	    (error (message "The source location of `%s' is unknown: %s"
 			    tag error)))
 	(message "Cannot find the definition of %s: %s" tag error))
     (if fi:source-info-not-found-hook
-	(find-definition-using-find-tag-1 tag other-window-p)
+	(fi::find-definition-using-find-tag-1 tag other-window-p)
       (message "Cannot find the definition of %s" tag))))
 
-(defun find-definition-using-find-tag-1 (tag other-window-p)
+(defun fi::find-definition-using-find-tag-1 (tag other-window-p)
   (let* ((tag (if (not (stringp tag))
 		  (prin1-to-string tag)
 		tag))
@@ -328,14 +328,14 @@ time."
   (if lep:*meta-dot-session* (lep::kill-session lep:*meta-dot-session*))
   (setq lep:*meta-dot-session* session)
   (setq  *meta-dot-string* something)
-  (modify-session-continuation
+  (fi::modify-session-continuation
    session
    (list (function (lambda (pathname point n-more)
-		     (show-found-definition *meta-dot-string*
+		     (fi::show-found-definition *meta-dot-string*
 					    pathname point n-more))))
    (list (function (lambda (error something)
 		     (setq lep:*meta-dot-session* nil)
-		     (find-definition-using-find-tag
+		     (fi::find-definition-using-find-tag
 		      (if (symbolp something)
 			  (symbol-name something)
 			something)
@@ -428,7 +428,7 @@ time."
   (make-request
    (lep::macroexpand-session
     :expander expander :package
-    (string-to-keyword fi:package)
+    (fi::string-to-keyword fi:package)
     :form (let ((start (condition-case ()
 			   (fi::find-other-end-of-list)
 			 (error nil))))
@@ -447,7 +447,7 @@ time."
   "Perform completion on the Common Lisp symbol preceding the point.  That
 symbol is compared to symbols that exist in the Common Lisp environment.
 If the symbol starts just after an open-parenthesis, then only symbols (in
-the Common Lisp) with function defintions are considered.  Otherwise all
+the Common Lisp) with function definitions are considered.  Otherwise all
 symbols are considered.  fi:package is used to determine from which Common
 Lisp package the operation is done.  In a subprocess buffer, the package is
 tracked automatically.  In source buffer, the package is parsed at file
@@ -496,7 +496,7 @@ visit time."
 	   (car (lep::eval-session-in-lisp 
 		 'lep::list-all-completions-session
 		 ':pattern (fi::frob-case-to-lisp pattern)
-		 ':buffer-package (string-to-keyword fi:package)
+		 ':buffer-package (fi::string-to-keyword fi:package)
 		 ':package (progn
 			     (if (equal ":" package)
 				 (setq package "keyword"))
@@ -536,22 +536,13 @@ visit time."
   (insert string))
 
 
-
-(defun getf-property (plist property &optional default)
-  (while (and plist
-	      (not (eq (car plist) property)))
-    (setq plist (cddr plist)))
-  (if plist 
-      (second plist)
-    default))
-
 (defun lep::prompt-for-values (what prompt options)
   (list (case what
 	  (:symbol
 	   (let* ((string (read-string
-			   prompt (getf-property options ':initial-input)))
+			   prompt (fi::getf-property options ':initial-input)))
 		  (colonp (string-match ":?:" string nil))
-		  (package (or (getf-property options ':package)
+		  (package (or (fi::getf-property options ':package)
 			       fi:package)))
 	     ;; symbol-point
 	     (if colonp
@@ -561,11 +552,11 @@ visit time."
 		 string))))
 	  (:file-name (read-file-name 
 		       prompt
-		       (getf-property options ':directory)
-		       (getf-property options ':default)
-		       (getf-property options ':mustmatch)))
+		       (fi::getf-property options ':directory)
+		       (fi::getf-property options ':default)
+		       (fi::getf-property options ':mustmatch)))
 	  (t (read-string
-		    prompt (getf-property options ':initial-input))))))
+		    prompt (fi::getf-property options ':initial-input))))))
 
 (defun lep::completing-read (prompt require-match initial-input)
   (list (completing-read 
@@ -737,12 +728,12 @@ Use ``\\<fi:common-lisp-mode-map>\\[fi:lisp-tags-loop-continue]'' to find the ne
   (setq lep:*meta-dot-session*
     (make-complex-request
      (scm::edit-sequence-session :generator generator
-				 :package (string-to-keyword fi:package)
+				 :package (fi::string-to-keyword fi:package)
 				 :fspec fspec)
      ((other-window-p fspec) (pathname point n-more)
-      (show-found-definition fspec pathname point n-more other-window-p))
+      (fi::show-found-definition fspec pathname point n-more other-window-p))
      ((fspec) (error)
-      (delete-metadot-session)
+      (fi::delete-metadot-session)
       (error "Cannot edit sequence %s: %s" fspec error)))))
 
 ;;; describing something

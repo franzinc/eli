@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-changes.el,v 1.5 1991/04/20 23:26:42 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-changes.el,v 1.6 1991/05/28 16:18:16 layer Exp $
 
 ;;; Support for changed definitions
 
@@ -35,7 +35,7 @@ SINCE is 2, list changes since the current buffer was last saved, or when
 SINCE is 3, list the changes since the changed definitions in the current
 buffer were last evaluated."
   (interactive "p")
-  (do-buffer-changed-definitions ':list since))
+  (fi::do-buffer-changed-definitions ':list since))
 
 (defun fi:list-changed-definitions (since)
   "List the definitions in all buffers which have been added,
@@ -44,7 +44,7 @@ arg SINCE is 2, list changes since they were last saved, or when
 SINCE is 3, list the changes since the changed definitions in all buffers
 were last evaluated."
   (interactive "p")
-  (do-buffer-changed-definitions ':list since t))
+  (fi::do-buffer-changed-definitions ':list since t))
 
 (defun fi:eval-buffer-changed-definitions (since)
   "Eval the definitions in the current buffer which have been added or
@@ -53,7 +53,7 @@ SINCE is 2, eval changes since the current buffer was last saved, or when
 SINCE is 3, eval the changes since the changed definitions in the current
 buffer were last evaluated."
   (interactive "p")
-  (do-buffer-changed-definitions ':eval since))
+  (fi::do-buffer-changed-definitions ':eval since))
 
 (defun fi:eval-changed-definitions (since)
   "Eval the definitions in all buffers which have been added or
@@ -62,7 +62,7 @@ arg SINCE is 2, eval changes since they were last saved, or when
 SINCE is 3, eval the changes since the changed definitions in all buffers
 were last evaluated."
   (interactive "p")
-  (do-buffer-changed-definitions ':eval since t))
+  (fi::do-buffer-changed-definitions ':eval since t))
 
 (defun fi:compile-buffer-changed-definitions (since)
   "Compile the definitions in the current buffer which have been added or
@@ -71,7 +71,7 @@ SINCE is 2, compile changes since the current buffer was last saved, or when
 SINCE is 3, compile the changes since the changed definitions in the current
 buffer were last evaluated."
   (interactive "p")
-  (do-buffer-changed-definitions ':compile since))
+  (fi::do-buffer-changed-definitions ':compile since))
 
 (defun fi:compile-changed-definitions (since)
   "Compile the definitions in all buffers which have been added or
@@ -80,7 +80,7 @@ arg SINCE is 2, compile changes since they were last saved, or when
 SINCE is 3, compile the changes since the changed definitions in all buffers
 were last evaluated."
   (interactive "p")
-  (do-buffer-changed-definitions ':compile since t))
+  (fi::do-buffer-changed-definitions ':compile since t))
 
 (defun fi:copy-buffer-changed-definitions (since)
   "Copy into the kill ring the definitions in the current buffer which have
@@ -89,7 +89,7 @@ SINCE is 2, copy changes since the current buffer was last saved, or when
 SINCE is 3, copy the changes since the changed definitions in the current
 buffer were last evaluated."
   (interactive "p")
-  (do-buffer-changed-definitions ':copy since))
+  (fi::do-buffer-changed-definitions ':copy since))
 
 (defun fi:copy-changed-definitions (since)
   "Copy into the kill ring the definitions in all buffers which have been
@@ -98,7 +98,7 @@ arg SINCE is 2, copy changes since they were last saved, or when
 SINCE is 3, copy the changes since the changed definitions in all buffers
 were last evaluated."
   (interactive "p")
-  (do-buffer-changed-definitions ':copy since t))
+  (fi::do-buffer-changed-definitions ':copy since t))
 
 (defun fi:compare-source-files (new-file old-file)
   "Compare two files, NEW-FILE and OLD-FILE, listing the definitions in the
@@ -113,16 +113,16 @@ OLD-FILE."
 		   :new-file new-file)
 		   ((package) (changes)
 		    (if changes
-			(show-changes changes nil package)
+			(fi::show-changes changes nil package)
 		      (message "There are no changes.")))
 		   (() (error)
 		    (error "Cannnot list changed definitions: %s" error)))))
 
 ;;; The guts of the problem
 
-(defun do-buffer-changed-definitions (operation since &optional all-buffers)
+(defun fi::do-buffer-changed-definitions (operation since &optional all-buffers)
   (message "Computing changes...")
-  (setq since (convert-since-prefix since))
+  (setq since (fi::convert-since-prefix since))
   (let ((buffer (current-buffer))
 	(copy-file-name (and (eq operation ':copy)
 			     (format "%s/%s.cl"
@@ -134,22 +134,21 @@ OLD-FILE."
 	  (save-excursion
 	    (dolist (buffer (buffer-list))
 	      (set-buffer buffer)
-	      (if (check-buffer-for-changes-p since)
-		  (push (compute-file-changed-values-for-current-buffer) args))))
+	      (if (fi::check-buffer-for-changes-p since)
+		  (push (fi::compute-file-changed-values-for-current-buffer) args))))
 	  (if args
-	      (apply
-	       (function do-buffer-changed-definitions-1)
-	       copy-file-name
-	       (transpose-list args))
+	      (apply (function fi::do-buffer-changed-definitions-1)
+		     copy-file-name
+		     (fi::transpose-list args))
 	    (message "There are no changes.")))
-      (if (check-buffer-for-changes-p since)
+      (if (fi::check-buffer-for-changes-p since)
 	(apply
-	 (function do-buffer-changed-definitions-1)
+	 (function fi::do-buffer-changed-definitions-1)
 	 copy-file-name
-	 (compute-file-changed-values-for-current-buffer))
+	 (fi::compute-file-changed-values-for-current-buffer))
 	(message "There are no changes.")))))
 
-(defun check-buffer-for-changes-p (since)
+(defun fi::check-buffer-for-changes-p (since)
   "Decide whether this buffer is worth checking for changes"
   (and (eq major-mode 'fi:common-lisp-mode)
        (buffer-file-name)
@@ -165,16 +164,7 @@ OLD-FILE."
 	  ;; Its like this buffer needs an every-modified-flag
 	  t))))
 
-(defun transpose-list (list)
-  (let ((l (make-list (length (car list)) nil)))
-    (dolist (k list)
-      (let ((n 0))
-	(dolist (a k)
-	  (push a (nth n l))
-	  (incf n))))
-    l))
-
-(defun compute-file-changed-values-for-current-buffer ()
+(defun fi::compute-file-changed-values-for-current-buffer ()
   (let ((actual-file (buffer-file-name))
 	(old-file 
 	 (case since
@@ -188,7 +178,8 @@ OLD-FILE."
 	(new-file (buffer-file-name)))
     (list actual-file old-file new-file)))
 
-(defun do-buffer-changed-definitions-1 (copy-file-name actual-file old-file new-file)
+(defun fi::do-buffer-changed-definitions-1 (copy-file-name actual-file
+					    old-file new-file)
     (make-request (scm::list-changed-definitions
 		   :operation operation
 		   :copy-file-name copy-file-name
@@ -200,9 +191,9 @@ OLD-FILE."
 		   (if changes
 		       (progn
 			 (if (eq operation ':copy)
-			     (insert-file-contents-into-kill-ring
-				copy-file-name))
-			 (show-changes changes))
+			     (fi::insert-file-contents-into-kill-ring
+			      copy-file-name))
+			 (fi::show-changes changes))
 		     (message "There are no changes.")))
 		((operation) (error)
 		 (error 		 
@@ -213,21 +204,13 @@ OLD-FILE."
 		    (:compile "Cannnot compile changed definitions: %s"))
 		  error))))
 
-(defun insert-file-contents-into-kill-ring (copy-file-name)
-  (let ((buffer (generate-new-buffer "*temp*")))
-    (save-excursion
-      (set-buffer buffer)
-      (insert-file copy-file-name)
-      (copy-region-as-kill (point-min) (point-max)))
-    (kill-buffer buffer)))
-
-(defun show-changes (changes &optional buffer-name package)
+(defun fi::show-changes (changes &optional buffer-name package)
   (lep:display-some-definitions (or package fi:package)
 				changes
 				(list 'lep::find-buffer-definition)
 				(or buffer-name "*changes*")))
 
-(defun convert-since-prefix (since)
+(defun fi::convert-since-prefix (since)
   (ecase since
     (1 ':read)
     (2 ':saved)

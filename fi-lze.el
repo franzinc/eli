@@ -24,11 +24,11 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.9 1991/03/28 12:58:05 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.10 1991/05/28 16:18:23 layer Exp $
 ;;
 ;; Code the implements evaluation in via the backdoor
 
-(defun lep::eval-region-internal (start end compilep)
+(defun fi::eval-region-internal (start end compilep)
   (if compilep
       (message "Compiling...")
     (message "Evaluating..."))
@@ -61,7 +61,7 @@ compiled."
 	 (start (save-excursion
 		  (fi:beginning-of-defun)
 		  (point))))
-    (lep::eval-region-internal start end compilep)))
+    (fi::eval-region-internal start end compilep)))
 
 (defun fi:lisp-eval-region (compilep)
   "Send the text in the region to the Lisp subprocess associated with this
@@ -70,7 +70,7 @@ expression.  If a Lisp subprocess has not been started, then one is
 started.  With a prefix argument, the source sent to the subprocess is
 compiled."
   (interactive "P")
-  (lep::eval-region-internal (min (point) (mark))
+  (fi::eval-region-internal (min (point) (mark))
 			     (max (point) (mark))
 			     compilep))
 
@@ -83,7 +83,7 @@ compiled."
   (let ((start (save-excursion
 		 (forward-sexp -1)
 		 (point))))
-    (lep::eval-region-internal start (point)
+    (fi::eval-region-internal start (point)
 			       compilep)))
 
 (defun fi:lisp-eval-current-buffer (compilep)
@@ -91,4 +91,4 @@ compiled."
 buffer.  If a Lisp subprocess has not been started, then one is started.
 With a prefix argument, the source sent to the subprocess is compiled."
   (interactive "P")
-  (lep::eval-region-internal (point-min) (point-max) compilep))
+  (fi::eval-region-internal (point-min) (point-max) compilep))

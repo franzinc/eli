@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.12 1991/04/23 15:47:19 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.13 1991/05/28 16:18:18 layer Exp $
 ;;
 
 ;; Create a mode in which each line is a definition and . on that
@@ -268,7 +268,7 @@ in definition mode."
 					  (string-to-keyword fi:package)))
 		  ;; Normal continuation
 		  ((string list-buffer) (pathname point n-more)
-		   (show-found-definition string pathname point n-more t)
+		   (fi::show-found-definition string pathname point n-more t)
 		   (recenter 0)
 		   (switch-to-buffer-other-window list-buffer))
 		  ;; Error continuation

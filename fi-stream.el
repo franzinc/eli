@@ -24,14 +24,14 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-stream.el,v 1.3 1991/04/20 23:26:17 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-stream.el,v 1.4 1991/05/28 16:18:25 layer Exp $
 ;;
 
 (defmacro fi::with-keywords (variables rest-arg &rest body)
   (let ((let-bindings nil))
     (dolist (var variables)
       (push (list var
-		  (list 'getf-property 
+		  (list 'fi::getf-property 
 			rest-arg 
 			(list 'quote (intern (concat ":" (symbol-name var))))))
 	    let-bindings))
@@ -47,7 +47,7 @@
 			(split-window-vertically)))
 		 (let ((fi::listener-protocol ':stream))
 		   (send-string (fi:open-lisp-listener -1)
-				(format "%d\n" (session-id session))))))
+				(format "%d\n" (fi::session-id session))))))
 
 (defun fi::create-new-mapped-screen-for-stream (parent x y width height)
   (and (boundp 'epoch::screen-properties)
