@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.36 1988/05/25 10:18:21 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.37 1988/06/03 19:19:14 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -299,6 +299,9 @@ are read from the minibuffer."
     (if (memq status '(run stop))
 	(goto-char (point-max))
       (setq default-directory default-dir)
+      (let ((saved-input-ring fi::input-ring))
+	(funcall mode-function)
+	(setq fi::input-ring saved-input-ring))     
       (if (not (stringp image-file))
 	  (setq image-file (funcall image-file)))
       (if process (delete-process process))
@@ -326,9 +329,6 @@ are read from the minibuffer."
 				fi:subprocess-map-nl-to-cr)))
       (goto-char (point-max))
       (set-marker (process-mark process) (point))
-      (let ((saved-input-ring fi::input-ring))
-	(funcall mode-function)
-	(setq fi::input-ring saved-input-ring))
       (make-local-variable 'subprocess-prompt-pattern)
       (setq subprocess-prompt-pattern image-prompt)
       (fi::make-subprocess-variables))
@@ -373,7 +373,7 @@ are read from the minibuffer."
       (set-marker (process-mark proc) (point))
       (let ((saved-input-ring fi::input-ring))
 	(funcall mode)
-	(setq fi::input-ring saved-input-ring))
+	(setq fi::input-ring saved-input-ring))      
       (make-local-variable 'subprocess-prompt-pattern)
       (setq subprocess-prompt-pattern image-prompt)
       (fi::make-subprocess-variables))
