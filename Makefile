@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.61 1991/04/22 13:40:32 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.62 1991/04/22 14:13:46 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -14,10 +14,10 @@ cl_library =
 elcs = modes.elc indent.elc subproc.elc sublisp.elc filec.elc ring.elc\
 	    su.elc telnet.elc rlogin.elc shell.elc keys.elc tcplisp.elc\
 	    utils.elc clman.elc Doc.elc\
-	    lep/basic-lep.elc lep/lep.elc lep/lze.elc lep/db.elc\
-	    lep/stream.elc lep/dmode.elc lep/composer.elc lep/changes.elc
+	    basic-lep.elc lep.elc lze.elc db.elc\
+	    stream.elc dmode.elc composer.elc changes.elc
 
-compile_time_env = -l cl -l bytecomp -l `pwd`/lep/basic-lep
+compile_time_env = -l cl -l bytecomp -l `pwd`/basic-lep
 
 .SUFFIXES:
 .SUFFIXES: .el .elc
@@ -60,8 +60,6 @@ UserGuide.doc:	UserGuide.n ${elcs}
 
 install:
 	cp -rp *.doc *.cl *.sh *.el *.elc *.data $(DEST)
-	mkdir $(DEST)/lep
-	cp -p lep/*.el* $(DEST)/lep
 
 printer = lw2
 enscript = enscript -P$(printer) -h
