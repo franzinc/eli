@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.9 1991/04/20 23:25:00 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.10 1991/04/24 10:06:20 layer Exp $
 
 (defun composer::make-listener (new-screen-p)
   (when (and new-screen-p (fboundp 'create-screen))
@@ -43,20 +43,22 @@
 
 
 ;;;;Todo:
-;;;; fi:browse-method
-;;;; fi:browse-generic-function
-;;;; fi:browse-method-combination
+;;;; fi:inspect-method
+;;;; fi:inspect-generic-function
+;;;; fi:inspect-method-combination
 
-(defun fi:browse-class (something)
+(defun fi:inspect-class (something)
+  "Inspect, using the grapher, a class object."
   (interactive (fi::get-default-symbol "Class name"))
   (fi::inspect-something something 'clos::find-class "Class"))
 
-(defun fi:browse-function (something)
+(defun fi:inspect-function (something)
+  "Inspect, using the grapher, a function object."
   (interactive (fi::get-default-symbol "Function name"))
   (fi::inspect-something something 'fdefinition "Function"))
 
-
 (defun fi:inspect-value (something)
+  "Inspect, using the grapher, an arbitrary Lisp object."
   (interactive (fi::get-default-symbol "Value to inspect"))
   (fi::inspect-something something 'eval "Inspect"))
 
@@ -67,17 +69,19 @@
 		(() ())
 		;; Error continuation
 		((something) (error)
-		 (message "Cannot inspect/browse %s: %s" something error))))
+		 (message "Cannot inspect %s: %s" something error))))
 
 ;;;Todo?
 ;;; show-callers
 ;;; show-callees
 
 (defun fi:show-calls-to (function)
+  "Show a graph of the calls to FUNCTION."
   (interactive (fi::get-default-symbol "Function"))
   (fi::show-calls function ':parent "Could not show calls to %s"))
 
 (defun fi:show-calls-from (function)
+  "Show a graph of the calls from FUNCTION."
   (interactive (fi::get-default-symbol "Function"))
   (fi::show-calls function  ':kid "Could not show calls from %s"))
 
@@ -91,14 +95,16 @@
 ;;;
 
 (defun fi:show-subclasses (class)
-  (interactive (fi::get-default-symbol "Class"))
-  (show-subsuper-classes class ':kid "Could not show subclasses: %s"))
+  "Show a graph of the subclasses of CLASS."
+  (interactive (fi::get-default-symbol "Subclasses of class"))
+  (fi::show-subsuper-classes class ':kid "Could not show subclasses: %s"))
 
 (defun fi:show-superclasses (class)
-  (interactive (fi::get-default-symbol "Class"))
-  (show-subsuper-classes class ':parent "Could not show superclasses: %s"))
+  "Show a graph of the superclasses of CLASS."
+  (interactive (fi::get-default-symbol "Superclasses of class"))
+  (fi::show-subsuper-classes class ':parent "Could not show superclasses: %s"))
 
-(defun show-subsuper-classes (class direction msg)
+(defun fi::show-subsuper-classes (class direction msg)
   (make-request (composer::show-classes-session 
 		 :direction direction :fspec (fi::frob-case-to-lisp class))
 		(() () ())
