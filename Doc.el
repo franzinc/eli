@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.30 1991/03/18 13:10:15 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.31 1991/04/22 13:40:08 layer Exp $
 
 (require 'cl)
 
@@ -26,7 +26,6 @@
   (cons (file-name-directory (directory-file-name default-directory))
 	load-path))
 
-(setq fi:use-lep t)
 (load "fi/site-init.el")
 
 (defun xxx-doc-xxx ()
