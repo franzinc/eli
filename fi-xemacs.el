@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-xemacs.el,v 2.7 1997/02/27 17:35:05 layer Exp $
+;; $Id: fi-xemacs.el,v 2.8 1997/10/30 00:46:39 layer Exp $
 
 (defun fi-find-buffer-visiting (filename)
   (get-file-buffer filename))
@@ -118,8 +118,6 @@
       ["Describe" fi:describe-symbol (fi::connection-open)]
       ["Apropos" fi:lisp-apropos (fi::connection-open)]
       ["Function Documentation" fi:lisp-function-documentation (fi::connection-open)]
-      "----"
-      ["CL reference manual" fi:clman t]
       ))
 
 (defconst fi:allegro-debug-menu

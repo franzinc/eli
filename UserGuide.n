@@ -2,7 +2,7 @@
 			      User Guide
 			     Release 2.0
 				   
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.55 1997/01/07 01:03:57 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.56 1997/10/30 00:45:29 layer Exp $
 
 			     Introduction
 
@@ -52,9 +52,6 @@ $Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.55 1997/01/07 01:03:57 layer E
    * Debugging Common Lisp Programs, discusses the finer points of
    debugging programs written in Lisp.  In this section, many of the
    features associated with Lisp machines are discussed in detail.
-
-   * CLMan, discusses the interface to the Allegro CL on-line
-   documentation.
 
    * Shell modes, discusses other useful modes for creating shells,
    rlogin, telnets, etc.  It is here for completeness and because many
@@ -442,6 +439,7 @@ Functions and Variables for Interacting with a Common Lisp subprocess
 %% fi:common-lisp-buffer-name
 %% fi:common-lisp-directory
 %% fi:common-lisp-image-name
+%% fi:common-lisp-image-file
 %% fi:common-lisp-image-arguments
 %% fi:common-lisp-host
 %% fi:common-lisp-prompt-pattern
@@ -1294,18 +1292,6 @@ Miscellaneous programming aids
    all the right information:
 
 %% fi:bug-report
-
-===============================================================================
-				CLMan
-
-
-%% fi:clman
-%% fi:clman-mode
-%% fi:clman-search-forward-see-alsos		fi:clman-mode-map
-%% fi:clman-flush-doc				fi:clman-mode-map
-%% fi:clman-apropos				fi:clman-mode-map
-%% fi:clman-next-entry				fi:clman-mode-map
-%% fi:clman-displaying-buffer
 
 ===============================================================================
 			   Emacs-Lisp mode

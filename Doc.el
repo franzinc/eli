@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.43 1997/02/27 17:33:00 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.44 1997/10/30 00:45:28 layer Exp $
 
 ;; This file is used to assemble documentation files
 ;; It is provided (in distributions) purely for informational purposes,
@@ -10,7 +10,6 @@
 
 (setq fi:lisp-do-indentation t)
 (load "fi-site-init.el")
-(load "fi-clman") ;; autoloaded
 
 (defvar args)
 (setq args (cdr (fi:member-equal "--" command-line-args)))
@@ -40,7 +39,6 @@
   (fi:inferior-common-lisp-mode)
   (fi:franz-lisp-mode)
   (fi:lisp-listener-mode)
-  (fi:clman-mode)
   (fi:emacs-lisp-mode)
   (fi:shell-mode)
   (fi:su-mode)

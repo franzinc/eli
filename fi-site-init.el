@@ -1,10 +1,10 @@
-;; $Id: fi-site-init.el,v 1.107 1997/10/01 21:48:28 layer Exp $
+;; $Id: fi-site-init.el,v 1.108 1997/10/30 00:46:38 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
 (require 'cl)
 
-(setq fi:emacs-lisp-interface-version "2.0.21.pre-beta.2")
+(setq fi:emacs-lisp-interface-version "2.0.21.pre-beta.3")
 (defvar fi::required-ipc-version 1)
 (defvar fi::load-subprocess-files t)
 (defvar fi::install-acl-menubar t)
@@ -30,7 +30,9 @@
 (defvar fi::library-directory)
 (cond
  ((or (not (boundp 'load-file-name))
-      (null load-file-name))
+;;;; emacs 20.2 needs the following line uncommented
+      ;;(null load-file-name)
+      )
   ;; In this case, load-path must be used to find fi/fi-site-init.el and
   ;; the directory where it is found is used as fi::library-directory.
   (let* ((file "fi-site-init.el")
@@ -214,8 +216,6 @@ exists.")
   (fi::load "fi-rlogin")
   (fi::load "fi-telnet")
   (fi::load "fi-su"))
-
-(fi::load "fi-clman")
 
 (condition-case nil
     (fi::load "local-fi-developer-hooks")

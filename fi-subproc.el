@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.190 1997/10/01 21:48:28 layer Exp $
+;; $Id: fi-subproc.el,v 1.191 1997/10/30 00:46:38 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -119,11 +119,12 @@ readtable.")
 
 (defvar fi:emacs-to-lisp-transaction-directory
     (if (on-ms-windows)
-	(if (file-exists-p "c:/tmp")
-	    "c:/tmp"
-	  (or (getenv "TEMP")
-	      (getenv "TMP")
-	      (error "c:/tmp doesn't exist, nor are there TEMP or TMP env variables")))
+	(or (and (file-exists-p "c:/tmp") "c:/tmp")
+	    (and (file-exists-p "c:/temp") "c:/temp")
+	    (getenv "TEMP")
+	    (getenv "TMP")
+	    (error
+	     "c:/tmp doesn't exist, nor are there TEMP or TMP env variables"))
       "/tmp")
   "*The directory in which files for Emacs/Lisp communication are stored.
 When using Lisp and Emacs on different machines, this directory must be
@@ -141,8 +142,9 @@ fit, or otherwise in a popup buffer.")
        (let ((args (list "-e" (format "(excl:start-emacs-lisp-interface %s)"
 				      use-background-streams))))
 	 (when lisp-image-name
-	   (setq args (append (list "-I" (expand-file-name lisp-image-name))
-			      args)))
+	   (when (string-match "^~" lisp-image-name)
+	     (setq lisp-image-name (expand-file-name lisp-image-name)))
+	   (setq args (append (list "-I" lisp-image-name) args)))
 	 args)))
   "*This value of this variable determines whether or not the emacs-lisp
 interface is started automatically when fi:common-lisp is used to run
@@ -179,12 +181,14 @@ fi:common-lisp when a new buffer name is used.")
   "*Default directory in which the process started by fi:common-lisp uses.
 A CD is done into this directory before the process is started.")
 
-(defvar fi:common-lisp-image-name
-    (if (on-ms-windows)
-	(cons "c:/acl50/lisp.exe" "c:/acl50/lisp.dxl")
-      "lisp")
-  "*Default Common Lisp image used by fi:common-lisp.  The value is a
-string that names the image fi:common-lisp invokes.")
+(defvar fi:common-lisp-image-name "lisp"
+  "*Default Common Lisp executable image used by fi:common-lisp.  The value
+is a string that names the executable image fi:common-lisp invokes.")
+
+(defvar fi:common-lisp-image-file nil
+  "*Default Common Lisp heap image used by fi:common-lisp.  If this
+variable is nil, and the corresponding argument to fi:common-lisp is not
+given, then a default heap image is loaded.")
 
 (defvar fi:common-lisp-image-arguments nil
   "*Default Common Lisp image arguments when invoked from `fi:common-lisp',
@@ -325,12 +329,12 @@ in seconds, that Emacs will wait for Lisp to startup, when no connection
 can be made in fi:common-lisp.")
 
 (defun fi:common-lisp (&optional buffer-name directory executable-image-name
-				 image-args host executable-image-file)
+				 image-args host image-file)
   "Create a Common Lisp subprocess and put it in buffer named by
 BUFFER-NAME, with default-directory of DIRECTORY, using EXECUTABLE-IMAGE-NAME
 and IMAGE-ARGS as the binary image pathname and command line
 arguments, doing the appropriate magic to execute the process on HOST.
-Lastly, for machines that use image files, EXECUTABLE-IMAGE-FILE is the
+Lastly, for machines that use image files, IMAGE-FILE is the
 Common Lisp image to execute.  This is separate from the executable.
 
 The first time this function is called and when given a prefix argument, all
@@ -341,6 +345,7 @@ from the variables:
 	fi:common-lisp-image-name
 	fi:common-lisp-image-arguments
 	fi:common-lisp-host
+	fi:common-lisp-image-file
 and the values read are saved in these variables for later use as defaults.
 After the first time or when no prefix argument is given, the defaults are
 used and no information is read from the minibuffer.
@@ -358,13 +363,10 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	  (fi::buffer-number-to-buffer name current-prefix-arg)
 	(get-buffer-create name)))
     (or fi:common-lisp-directory default-directory)
-    (if (consp fi:common-lisp-image-name)
-	(car fi:common-lisp-image-name)
-      fi:common-lisp-image-name)
+    fi:common-lisp-image-name
     fi:common-lisp-image-arguments
     (or fi:common-lisp-host (system-name))
-    (when (consp fi:common-lisp-image-name)
-      (cdr fi:common-lisp-image-name))))
+    fi:common-lisp-image-file))
   (unless (or fi::rsh-command (on-ms-windows))
     (setq fi::rsh-command
       (cond ((fi::command-exists-p "remsh") "remsh")
@@ -388,16 +390,11 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	      (error "3rd argument to fi:common-lisp must \
 be a string. Use 6th argument for image file."))
 	    (or executable-image-name
-		(if (consp fi:common-lisp-image-name)
-		    (car fi:common-lisp-image-name)
-		  fi:common-lisp-image-name))))
-	 (executable-image-file
+		fi:common-lisp-image-name)))
+	 (image-file
 	  (if (interactive-p)
-	      executable-image-file
-	    (or executable-image-file
-		(if (consp fi:common-lisp-image-name)
-		    (cdr fi:common-lisp-image-name)
-		  fi:common-lisp-image-name))))
+	      image-file
+	    (or image-file fi:common-lisp-image-file)))
 	 (image-args
 	  (if (interactive-p)
 	      image-args
@@ -426,7 +423,7 @@ be a string. Use 6th argument for image file."))
 					  fi::*connection*))))))
 	      (append (funcall fi:start-lisp-interface-arguments
 			       fi:use-background-streams
-			       executable-image-file)
+			       image-file)
 		      image-args)
 	    image-args))
 	 (real-args (fi::reorder-arguments real-args))
@@ -535,31 +532,24 @@ be a string. Use 6th argument for image file."))
 			  (cd dir)
 			(error nil))))))
 	       local host directory)))))
-    (if (on-ms-windows)
-	(progn
-	  (fi::start-backdoor-interface proc)
-	  (fi::ensure-lep-connection)
-	  (condition-case ()
-	      (setq fi::lisp-case-mode
-		(case (car
-		       (read-from-string
-			(fi:eval-in-lisp "excl:*current-case-mode*")))
-		  ((case-insensitive-lower case-sensitive-lower) ':lower)
-		  ((CASE-INSENSITIVE-UPPER CASE-SENSITIVE-UPPER) ':upper)))
-	    (error nil))
-	  (setq fi:common-lisp-image-name
-	    (cons executable-image-name executable-image-file))
-	  (setq fi::common-lisp-first-time nil
-		fi:common-lisp-buffer-name buffer-name
-		fi:common-lisp-directory directory
-		fi:common-lisp-host host))
-      (setq fi::common-lisp-first-time nil
-	    fi:common-lisp-buffer-name buffer-name
-	    fi:common-lisp-directory directory
-	    fi:common-lisp-image-name (cons executable-image-name
-					    executable-image-file)
-	    fi:common-lisp-image-arguments image-args
-	    fi:common-lisp-host host))
+    (when (on-ms-windows)
+      (fi::start-backdoor-interface proc)
+      (fi::ensure-lep-connection)
+      (condition-case ()
+	  (setq fi::lisp-case-mode
+	    (case (car
+		   (read-from-string
+		    (fi:eval-in-lisp "excl:*current-case-mode*")))
+	      ((case-insensitive-lower case-sensitive-lower) ':lower)
+	      ((CASE-INSENSITIVE-UPPER CASE-SENSITIVE-UPPER) ':upper)))
+	(error nil)))
+    (setq fi::common-lisp-first-time nil
+	  fi:common-lisp-buffer-name buffer-name
+	  fi:common-lisp-directory directory
+	  fi:common-lisp-image-name executable-image-name
+	  fi:common-lisp-image-file image-file
+	  fi:common-lisp-image-arguments image-args
+	  fi:common-lisp-host host)
     proc))
 
 (defun fi::reorder-arguments (arguments)

@@ -1,12 +1,36 @@
 For more detailed instructions on filling in the ChangeLog form, see 
 `/fi/doc/procedures/changelogs.txt'.
 *******************************************************************************
-<version for this commit, if applicable>
+<version for this commit>
 
 Documentation changes:	<`none' or give pointer to them>
 
 <standard changelog date stamp>
 	* <changes go here...>
+
+*******************************************************************************
+2.0.21.pre-beta.3
+
+Documentation changes:	UserGuide.n
+
+Wed Oct 29 16:36:25 1997  Kevin Layer  <layer@ultra>
+
+    high-level changes:
+	* clman removed
+	* new variable introduced: fi:common-lisp-image-file
+    specific changes:
+	* Doc.el: remove clman references
+	* Makefile: remove clman references; clean up a little
+	* fi-compile.el: remove clman references
+	* fi-emacs19.el: remove clman references
+	* fi-keys.el: emacs 20.x
+	* fi-lep.el: remove clman references
+	* fi-site-init.el: emacs 20.x; remove clman references
+	* fi-subproc.el: big change: undo allow hack with
+	fi:common-lisp-image-name being a cons (car is executable, cdr is
+	image to start).  This is just too hacky.  New variable,
+	fi:common-lisp-image-file is the image file.
+	* fi-xemacs.el: remove clman references
 
 *******************************************************************************
 2.0.21.pre-beta.2

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 1.109 1997/10/01 21:48:28 layer Exp $
+;; $Id: fi-keys.el,v 1.110 1997/10/30 00:46:37 layer Exp $
 
 (cond ((eq fi::emacs-type 'xemacs19)
        (require 'tags "etags"))
@@ -123,7 +123,8 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
 	(define-key map "\C-\\" 'fi:subprocess-superkey)))
   (if supermap (define-key map "\C-c" supermap))
 
-  (when (and (eq fi::emacs-type 'emacs19)
+  (when (and (or (eq fi::emacs-type 'emacs19)
+		 (eq fi::emacs-type 'emacs20))
 	     (boundp 'comint-mode-map)
 	     comint-mode-map)
     (define-key map [menu-bar]

@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-emacs19.el,v 2.18 1997/10/01 21:48:28 layer Exp $
+;; $Id: fi-emacs19.el,v 2.19 1997/10/30 00:46:36 layer Exp $
 
 (cond
  ((and (eq fi::emacs-type 'emacs19)
@@ -123,8 +123,6 @@
       ["Describe" fi:describe-symbol (fi::connection-open)]
       ["Apropos" fi:lisp-apropos (fi::connection-open)]
       ["Function Documentation" fi:lisp-function-documentation (fi::connection-open)]
-      "----"
-      ["CL reference manual" fi:clman t]
       ))
 
 (defconst fi:allegro-debug-menu
