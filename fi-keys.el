@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.32 1990/11/29 14:12:47 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.33 1990/12/07 00:32:48 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -340,7 +340,9 @@ the point as the default tag."
   (interactive (if current-prefix-arg
 		   '(nil t)
 		 (fi::get-default-symbol "Lisp locate source")))
-  (fi::lisp-find-tag-common tag next nil))
+  (if (fi::background-sublisp-process)
+      (fi::lisp-find-tag-common tag next nil)
+    (find-tag tag next)))
 
 (defun fi:lisp-find-tag-other-window (tag &optional next)
   "Find the Common Lisp source for a symbol, using the characters around
@@ -348,12 +350,16 @@ the point as the default tag."
   (interactive (if current-prefix-arg
 		   '(nil t)
 		 (fi::get-default-symbol "Lisp locate source other window")))
-  (fi::lisp-find-tag-common tag next t))
+  (if (fi::background-sublisp-process)
+      (fi::lisp-find-tag-common tag next t)
+    (find-tag-other-window tag next)))
 
 (defun fi:lisp-tags-loop-continue ()
   "Find the next occurrence of the tag last used by fi:lisp-find-tag."
   (interactive)
-  (fi:lisp-tags-loop-continue-common))
+  (if (fi::background-sublisp-process)
+      (fi:lisp-tags-loop-continue-common)
+    (tags-loop-continue)))
 
 (defun fi:lisp-arglist (symbol)
   "Print the arglist (using excl:arglist) for a symbol, which is read from
