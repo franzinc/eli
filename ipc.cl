@@ -13,14 +13,14 @@
 ;; Restricted Rights Legend
 ;; ------------------------
 ;; Use, duplication, and disclosure by the Government are subject to
-;; restrictions as setforth in subdivision (b) (3) (ii) of the Rights
-;; in Technical Data and Computer Software Clause at FAR 52.227-7013.
+;; restrictions of Restricted Rights for Commercial Software developed
+;; at private expense as specified in DOD FAR 52.227-7013 (c) (1) (ii).
 ;;
 
 ;; Description:
 ;;  
 
-;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.9 1987/12/07 18:21:31 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.10 1987/12/09 12:03:52 layer Exp $
 ;; $Locker: layer $
 ;;
 
