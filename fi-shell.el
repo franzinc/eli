@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-shell.el,v 1.10 1990/08/31 23:48:29 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-shell.el,v 1.11 1990/10/13 19:37:15 layer Exp $
 
 (defvar fi:shell-mode-map nil
   "The shell major-mode keymap.")
@@ -48,10 +48,11 @@ name or path.")
 Anything from beginning of line up to the end of what this pattern matches
 is deemed to be prompt, and is not re-executed.")
 
-(defun fi:shell-mode ()
+(defun fi:shell-mode (&optional mode-hook)
   "Major mode for interacting with an inferior shell."
   (interactive)
   (kill-all-local-variables)
+  (if mode-hook (funcall mode-hook))
   (setq major-mode 'fi:shell-mode)
   (setq mode-name "Shell")
 
