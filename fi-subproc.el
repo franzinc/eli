@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 3.2 2004/03/11 02:10:09 layer Exp $
+;; $Id: fi-subproc.el,v 3.3 2004/03/26 18:42:59 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -343,6 +343,27 @@ keyboard-quit function will interrupt the waiting, however.")
 
 (defvar minibuffer-confirm-incomplete)
 
+(defvar fi::set-emacs-mule-terminal-io
+    "(let ((*load-verbose* nil))
+        (princ \";; Setting (stream-external-format *terminal-io*) to :emacs-mule.\")
+        (setf (stream-external-format *terminal-io*) :emacs-mule)
+        (values))"
+    "*The initial input sent to a Lisp listener in order to set its 
+*terminal-io* stream-external-format to :emacs-mule.")
+
+(defun fi::set-emacs-mule-process-coding (process)
+  (let* ((cs (process-coding-system process))
+	 (ncs (mapcar
+	       (function
+		(lambda (x)
+		  (let ((eol (string-match "-dos$\\|-unix$\\|-mac$" x)))
+		    (if eol
+			(intern
+			 (concat "emacs-mule" (substring x eol (match-end 0))))
+		      'emacs-mule))))
+	       (list (symbol-name (car cs)) (symbol-name (cdr cs))))))
+    (set-process-coding-system process (car ncs) (cadr ncs))))
+
 (defun fi:common-lisp (&optional buffer-name directory executable-image-name
 				 image-args host image-file)
   "Create a Common Lisp subprocess and put it in the buffer named by
@@ -487,12 +508,23 @@ be a string. Use the 6th argument for image file."))
 	 (process-connection-type fi::common-lisp-connection-type) ;bug3033
 	 (proc
 	  (if (and (on-ms-windows) fi::process-is-local)
+	      ;; The resulting *common-lisp* buffer is not Lisp's initial
+	      ;; *terminal-io*, so the emacs-mule *terminal-io* external-format
+	      ;; setting is done in the same way as fi:open-lisp-listener.
 	      (fi::common-lisp-1-windows host buffer-name directory
 					 executable-image-name image-file
 					 image-args real-args)
-	    (fi::common-lisp-1-unix host buffer-name directory
-				    executable-image-name image-file
-				    image-args real-args))))
+	    (let ((p (fi::common-lisp-1-unix host buffer-name directory
+					     executable-image-name image-file
+					     image-args real-args)))
+	      ;; The resulting *common-lisp* buffer is to Lisp's initial
+	      ;; *terminal-io*, so we set the emacs-mule *terminal-io*
+	      ;; external-format here.
+	      (when (fi::emacs-mule-p)
+		(process-send-string p fi::set-emacs-mule-terminal-io)
+		(process-send-string p "\n")
+		(fi::set-emacs-mule-process-coding p))
+	      p))))
     (setq fi::common-lisp-first-time nil
 	  fi:common-lisp-buffer-name buffer-name
 	  fi:common-lisp-image-name executable-image-name
@@ -725,12 +757,18 @@ the buffer name is the second optional argument."
 				   'fi::setup-tcp-connection)))))
 
 (defun fi::setup-tcp-connection (proc)
+  (when (fi::emacs-mule-p)
+    (fi::set-emacs-mule-process-coding proc))
   (format
-   "(progn
+   (concat
+    "(progn
       (setf (getf (mp:process-property-list mp:*current-process*)
                   ':emacs-listener-number) %d)
-      (setf (excl::interactive-stream-p *terminal-io*) t)
-      (values))\n"
+      (setf (excl::interactive-stream-p *terminal-io*) t)"
+    ;; still inside progn
+    (when (fi::emacs-mule-p)
+      fi::set-emacs-mule-terminal-io)
+    " (values))\n")
    (fi::tcp-listener-generation proc)))
 
 (defun fi:franz-lisp (&optional buffer-name directory executable-image-name

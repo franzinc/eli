@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-basic-lep.el,v 3.1 2004/03/11 02:10:09 layer Exp $
+;; $Id: fi-basic-lep.el,v 3.2 2004/03/26 18:42:59 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -200,6 +200,27 @@ emacs-lisp interface cannot be started.
 			       fi::lisp-port
 			       fi::lisp-password))
 
+;; cac 22mar04: fi::old-emacs-mule-p is equivalent to the old test, and is used
+;; for compatibility in the places where we've always set the process coding
+;; system to emacs-mule before we had the fi:use-emacs-mule-lisp-listeners
+;; flag.
+;;
+(defun fi::old-emacs-mule-p ()
+  (and (fboundp 'set-process-coding-system)
+       ;; spr24414
+       (member 'emacs-mule (coding-system-list))))
+
+(defvar fi:use-emacs-mule-lisp-listeners t
+  "*Flag which determines whether to set a buffer's Lisp listener's
+*terminal-io* stream-external-format to :emacs-mule.  This flag should
+normally be set to true.  Setting this flag to nil restores the
+buffer-coding-systems setting behavior to be as it was in the Allegro CL 6.2
+release.")
+
+(defun fi::emacs-mule-p ()
+  (and fi:use-emacs-mule-lisp-listeners
+       (fi::old-emacs-mule-p)))
+
 (defun fi::make-connection-to-lisp (host port passwd)
   (let* ((proc-name (format " *LEP %s %d %d*" host port passwd))
 	 ;; buffer-name used to be non-nil only when fi::lep-debug
@@ -215,9 +236,7 @@ emacs-lisp interface cannot be started.
       (save-excursion (set-buffer buffer) (erase-buffer))
       (set-process-buffer process buffer))
     ;; cac 20dec00
-    (when (and (fboundp 'set-process-coding-system)
-	       ;; spr24414
-	       (member 'emacs-mule (coding-system-list)))
+    (when (fi::old-emacs-mule-p)
       (set-process-coding-system process 'emacs-mule 'emacs-mule))
     (set-process-filter process 'fi::lep-connection-filter)
     ;; new stuff to indicate that we want the lisp editor protocol
