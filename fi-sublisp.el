@@ -31,7 +31,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.52 1991/02/12 17:16:44 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.53 1991/02/21 22:01:17 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -173,8 +173,7 @@ parsed, the enclosing list is processed."
 	  (if (not (bolp)) (insert "\n"))
 	  (move-marker fi::last-input-end (point))))))
   (let ((process (get-buffer-process (current-buffer))))
-    (fi::send-region-split process fi::last-input-start fi::last-input-end
-			   fi:subprocess-map-nl-to-cr)
+    (send-region process fi::last-input-start fi::last-input-end)
     (fi::input-ring-save fi::last-input-start (1- fi::last-input-end))
     (set-marker (process-mark process) (point))))
 
@@ -184,9 +183,8 @@ correct fi:package, of course."
   (fi::sublisp-select)
   (let* ((stuff (buffer-substring start end))
 	 (sublisp-process (get-process fi::sublisp-name)))
-    (fi::send-string-load
-     sublisp-process stuff fi:subprocess-map-nl-to-cr compile-file-p)
-    (fi::send-string-split sublisp-process "\n" fi:subprocess-map-nl-to-cr)
+    (fi::send-string-load sublisp-process stuff compile-file-p)
+    (send-string sublisp-process "\n")
     (if fi:pop-to-sublisp-buffer-after-lisp-eval
 	(progn
 	  (select-window
@@ -197,9 +195,8 @@ correct fi:package, of course."
   "Send STRING to the sublisp, in the correct package, of course."
   (fi::sublisp-select)
   (let ((sublisp-process (get-process fi::sublisp-name)))
-    (fi::send-string-load
-     sublisp-process string fi:subprocess-map-nl-to-cr compile-file-p)
-    (fi::send-string-split sublisp-process "\n" fi:subprocess-map-nl-to-cr)
+    (fi::send-string-load sublisp-process string compile-file-p)
+    (send-string sublisp-process "\n")
     (if fi:pop-to-sublisp-buffer-after-lisp-eval
 	(progn
 	  (select-window
@@ -256,7 +253,7 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 (setq-default fi::emacs-to-lisp-package nil)
 (setq-default fi::emacs-to-lisp-transaction-buf nil)
 
-(defun fi::send-string-load (process text nl-to-cr compile-file-p)
+(defun fi::send-string-load (process text compile-file-p)
   (let (pkg (source-file (buffer-file-name)))
     (if (or (null fi::emacs-to-lisp-transaction-file)
 	    (null fi::emacs-to-lisp-transaction-buf))
@@ -324,7 +321,7 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 		       (if pkg pkg "")
 		       (buffer-name)
 		       fi::emacs-to-lisp-transaction-file)))))
-      (fi::send-string-split process load-string nl-to-cr))))
+      (send-string process load-string))))
 
 
 

@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-telnet.el,v 1.4 1991/01/31 14:47:38 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-telnet.el,v 1.5 1991/02/21 22:01:00 layer Exp $
 
 (defvar fi:telnet-mode-map nil
   "The telnet major-mode keymap.")
@@ -119,13 +119,13 @@ string bound to fi:telnet-initial-input, and turn ourself off."
     (cond
      ((string-match "assword" output)
       (setq password (fi::read-password))
-      (fi::send-string-split process (concat password "\n") nil))
+      (send-string process (concat password "\n")))
      (t
       (if (save-excursion (beginning-of-line)
 			  (looking-at subprocess-prompt-pattern))
 	  (progn
 	    (set-process-filter process 'fi::subprocess-filter)
-	    (fi::send-string-split process fi:telnet-initial-input nil)))
+	    (send-string process fi:telnet-initial-input)))
       (if old-buffer (set-buffer old-buffer))))))
 
 (defun fi::telnet-garbage-filter (process output)

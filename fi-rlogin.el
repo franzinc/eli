@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.18 1991/02/12 14:55:56 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.19 1991/02/21 22:01:30 layer Exp $
 
 (defvar fi:rlogin-mode-map nil
   "The rlogin major-mode keymap.")
@@ -134,6 +134,6 @@ string bound to fi:rlogin-initial-input, and turn ourself off."
 			(looking-at subprocess-prompt-pattern))
 	(progn
 	  (set-process-filter process 'fi::subprocess-filter)
-	  (fi::send-string-split process fi:rlogin-initial-input nil)))
+	  (send-string process fi:rlogin-initial-input)))
     (if old-buffer
 	(set-buffer old-buffer))))

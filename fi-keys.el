@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.42 1991/02/15 23:37:29 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.43 1991/02/21 22:01:21 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -255,7 +255,7 @@ and send to Lisp."
     (if (not (bolp)) (insert "\n"))
     (setq end (point))
     (move-marker fi::last-input-end (point))
-    (fi::send-region-split process start end fi:subprocess-map-nl-to-cr)
+    (send-region process start end)
     (fi::input-ring-save fi::last-input-start (1- fi::last-input-end))
     (set-marker (process-mark process) (point))))
 
@@ -426,8 +426,7 @@ possible.  This regexp should start with \"^\"."
       (move-marker fi::last-input-end (point))))
   (fi::subprocess-watch-for-special-commands)
   (let ((process (get-buffer-process (current-buffer))))
-    (fi::send-region-split process fi::last-input-start fi::last-input-end
-			   fi:subprocess-map-nl-to-cr)
+    (send-region process fi::last-input-start fi::last-input-end)
     (fi::input-ring-save fi::last-input-start (1- fi::last-input-end))
     (set-marker (process-mark process) (point))))
 

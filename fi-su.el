@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-su.el,v 1.4 1991/01/31 14:47:03 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-su.el,v 1.5 1991/02/21 22:01:14 layer Exp $
 
 (defvar fi:su-mode-map nil
   "The su major-mode keymap.")
@@ -137,12 +137,12 @@ string bound to fi:su-initial-input, and turn ourself off."
     (cond
      ((string-match "assword" output)
       (setq password (fi::read-password))
-      (fi::send-string-split process (concat password "\n") nil))
+      (send-string process (concat password "\n")))
      (t
       (if (save-excursion (beginning-of-line)
 			  (looking-at subprocess-prompt-pattern))
 	  (progn
 	    (set-process-filter process 'fi::subprocess-filter)
 	    (if fi:su-initial-input
-		(fi::send-string-split process fi:su-initial-input nil))))
+		(send-string process fi:su-initial-input))))
       (if old-buffer (set-buffer old-buffer))))))
