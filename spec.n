@@ -1,0 +1,288 @@
+$Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.1 1988/03/30 16:44:38 layer Exp $
+
+		 Franz Inc. GNU Emacs/LISP Interface
+
+This document is a specification of the Franz Inc. GNU Emacs code to
+interface with LISP, which is written entirely in GNU Emacs Lisp
+(v18.50).
+
+1. Introduction
+
+   There are parts of this package are:
+
+	* enhanced editing of Lisp source code,
+	* enhanced subprocess modes, and
+	* integrated communication between LISP and Emacs.
+
+   The enhancements to editing LISP source are automatic indentation
+of comments and handling of `excl:if*' (an Allegro CL extension to
+`if').
+
+   New subprocess modes (shell and inferior-lisp) have many helpful
+features, such as: an input ring for handy retrieval of previously
+typed input, filename completion, special handling of certain
+subprocess specific keys (^C, ^D), and continuously showing the output
+in a visible buffer.
+
+   While editing source code, there are now commands which make it
+easy to send to and receive information from LISP.  For example: a
+function can be `zapped' or sent to LISP from a source buffer, a form
+in a LISP buffer may be macroexpanded, source for functions defined
+via loading files into LISP may be found via "M-x ." in Emacs, etc.
+Actions that the programmer used to perform in rote are now automatic.
+
+2. Editing Modes
+
+   When a LISP source file is edited the major mode is automatically
+selected (from the value of the emacs symbol auto-mode-alist, which is
+an alist of (regexp . mode-name)).  The following table given the
+known extensions:
+
+  Extension	Major mode 		Hooks
+  ---------	----------		-----
+  .cl		fi:common-lisp-mode	fi:lisp-mode-hook
+					fi:common-lisp-mode-hook
+  .lisp		fi:common-lisp-mode	fi:lisp-mode-hook
+					fi:common-lisp-mode-hook
+  .l		fi:franz-lisp-mode	fi:lisp-mode-hook
+					fi:franz-lisp-mode-hook
+  .el		fi:emacs-lisp-mode	fi:emacs-lisp-mode-hook
+
+For fi:common-lisp-mode and fi:franz-lisp-mode, the `package' in which
+the source file resides is sought in the major mode initialization.
+The package comes from either the first line mode indicators (as in
+-*- package: user; ... -*-) or the `in-package' form.  The `package'
+defaults to "user".  The mode hooks are run at the end of mode setup,
+and are given on the table above (the order is given is the order the
+hooks are run).
+
+2.1 Major Editing Modes
+   The following functions are the user defined entry points for
+editing Lisp source:
+
+%mode: fi:common-lisp-mode
+%% common-lisp-mode
+%% fi:common-lisp-mode
+%% fi:common-lisp-mode-map
+
+%mode: fi:franz-lisp-mode
+%% fi:franz-lisp-mode
+%% fi:franz-lisp-mode-map
+
+%mode: fi:lisp-mode
+%% fi:lisp-mode
+%% fi:lisp-mode-map
+
+%mode: fi:emacs-lisp-mode
+%% fi:emacs-lisp-mode
+%% fi:emacs-lisp-mode-map
+
+   Interactively called functions, variables and functions for editing:
+
+%mode: fi:common-lisp-mode
+%% fi:lisp-auto-semicolon-mode
+%% fi:lisp-comment-indent-specification
+%% fi:find-line-comment
+%% fi:lisp-comment-indent
+%% fi:lisp-indent-if*
+%% fi:lisp-reindent-newline-indent
+%% fi:lisp-semicolon
+%% fi:indent-lisp-semicolon
+%% indent-line-comment-hook
+%% fi:indent-line-comment
+%% lisp-indent-do
+%% lisp-indent-line
+
+   Interactively called functions, variables and functions for
+interacting with Lisp:
+
+%% fi:lisp-eval-current-buffer
+%% fi:lisp-eval-defun
+%% fi:lisp-eval-last-sexp
+%% fi:lisp-eval-region
+%% fi:set-associated-sublisp
+
+3. Subprocess modes
+   There are subprocess modes for Common Lisp, Franz Lisp, generic
+Lisp, `TCP' Lisp, the Cshell and rlogin.  The Lisp modes are referred
+to as "inferior lisp" modes and is somewhat historical since all the
+subprocesses we are talking about are inferior to Emacs.
+
+3.1 Super-keys
+   Superkeys are keys which are handled specially at the end of a
+buffer.  If X is a superkey, then at then end of a buffer it has a
+local buffer specific meaning, but anywhere else in the buffer it has
+the normal global meaning (obtained by looking the key up in the
+global keymap).  Superkeys are used in subprocess buffers to emulate
+operating system dependent keys, when at the end of the buffer (where
+input to the shell is entered).  For example, ^C at the end of a
+buffer in fi:shell-mode sends the subprocess an interrupt, whereas
+anywhere else in the buffer it would execute the function on the
+global map for \C-c (^C in Emacs).
+
+   Superkeys are turned off by default.  To turn them on, put the
+following in your .emacs file:
+
+	(setq-default fi:subprocess-enable-superkeys t)
+
+3.2 File Name Completion
+
+%mode: fi:inferior-lisp-mode
+%% fi:shell-file-name-completion
+%% fi:shell-token-pattern
+
+3.3 Input Ring
+
+%% fi:input-region
+%% fi:re-search-backward-input
+%% fi:re-search-forward-input
+%% fi:list-input-ring
+%% fi:pop-input
+%% fi:push-input
+%% fi:default-input-ring-max
+
+3.4 Miscellaneous Subprocess Features
+
+%% fi:subprocess-continuously-show-output-in-visible-buffer
+%% fi:subprocess-enable-superkeys
+%% fi:subprocess-map-nl-to-cr
+%% fi:subprocess-write-quantum
+%% fi:subprocess-backward-kill-word
+
+%% fi:kill-shell-input
+%% fi:subprocess-beginning-of-line
+%% fi:subprocess-send-input
+%% fi:subprocess-superkey
+
+3.5 Inferior Lisp Modes
+   There are two types of inferior Lisp modes: subprocess and TCP.
+The subprocess type is merely run as a child of Emacs--this is the
+normal and common way to have Emacs interact with another program.
+The TCP type 
+
+3.5.1 Subprocess-style Lisp modes
+
+%mode: fi:inferior-lisp-mode
+%% fi:inferior-lisp-mode
+%% fi:inferior-lisp-mode-map
+%% fi:inferior-lisp-mode-super-key-map
+
+%% fi:common-lisp
+%% fi:another-common-lisp
+%% fi:common-lisp-prompt-pattern
+%% fi:default-common-lisp-file-name
+%% fi:default-common-lisp-image-arguments
+%% fi:explicit-common-lisp-file-name
+%% fi:explicit-common-lisp-image-arguments
+
+%% fi:franz-lisp
+%% fi:another-franz-lisp
+%% fi:franz-lisp-prompt-pattern
+%% fi:default-franz-lisp-file-name
+%% fi:default-franz-lisp-image-arguments
+%% fi:explicit-franz-lisp-file-name
+%% fi:explicit-franz-lisp-image-arguments
+
+%% fi:lisp
+%% fi:another-lisp
+%% fi:lisp-prompt-pattern
+%% fi:default-lisp-file-name
+%% fi:default-lisp-image-arguments
+%% fi:explicit-lisp-file-name
+%% fi:explicit-lisp-image-arguments
+
+   Interactively called functions, variables, and functions:
+
+%% fi:inferior-lisp-newline
+%% fi:inferior-lisp-send-input
+%% fi:inferior-lisp-send-list-input
+%% fi:inferior-lisp-send-sexp-input
+
+3.5.2 TCP-style Lisp modes
+
+%mode: fi:tcp-lisp-mode
+%% fi:tcp-lisp-mode-map
+%% fi:tcp-lisp-mode-super-key-map
+
+   Interactively called functions, variables, and functions:
+
+%% fi:source-info-not-found-hook
+%% fi:excl-service-name
+%% fi:local-host-name
+%% fi:unix-domain
+%% fi:backdoor-eval
+%% fi:lisp-arglist
+%% fi:lisp-describe
+%% fi:lisp-find-tag
+%% fi:lisp-function-documentation
+%% fi:lisp-tags-loop-continue
+%% fi:lisp-macroexpand
+%% fi:lisp-walk
+%% fi:tcp-lisp-interrupt-process
+%% fi:tcp-lisp-kill-process
+%% fi:tcp-lisp-mode
+%% fi:tcp-lisp-send-eof
+
+3.6 Shell Mode
+
+%mode: fi:shell-mode
+%% fi:shell
+%% fi:another-shell
+%% fi:shell-mode
+%% fi:shell-mode-map
+%% fi:shell-mode-super-key-map
+
+%% fi:shell-cd-regexp
+%% fi:shell-popd-regexp
+%% fi:shell-pushd-regexp
+%% fi:shell-prompt-pattern
+%% fi:default-shell-file-name
+%% fi:default-shell-image-arguments
+%% fi:explicit-shell-file-name
+%% fi:explicit-shell-image-arguments
+
+%% fi:interrupt-shell-subjob
+%% fi:kill-output-from-shell
+%% fi:kill-shell-subjob
+%% fi:quit-shell-subjob
+%% fi:shell-send-eof
+%% fi:shell-send-flush
+%% fi:show-output-from-shell
+%% fi:stop-shell-subjob
+
+3.7 Rlogin Mode
+
+%mode: fi:shell-mode
+%% fi:rlogin
+%% fi:another-rlogin
+
+%% fi:default-rlogin-file-name
+%% fi:default-rlogin-image-arguments
+%% fi:explicit-rlogin-file-name
+%% fi:explicit-rlogin-image-arguments
+
+%% fi:rlogin-send-eof
+%% fi:rlogin-send-interrupt
+%% fi:rlogin-send-quit
+%% fi:rlogin-send-stop
+
+4. Miscellany
+
+%mode: fundamental-mode
+%% kill-emacs
+%% fi:kill-emacs-hook
+%% fi:symeval-in-buffer
+
+5. Getting Started
+
+5.1 Sample .emacs file
+
+	(load "fi/site-init.el")
+	;; turn on superkeys in subprocess modes
+	(setq-default fi:subprocess-enable-superkeys t)
+
+5.2 Remote Lisps
+   To get a remote lisp:
+
+	(setq explicit-common-lisp-file-name "rsh")
+	(setq explicit-common-lisp-image-arguments '("frozen" "cl"))
