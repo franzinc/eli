@@ -31,7 +31,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.51 1991/02/12 14:55:42 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.52 1991/02/12 17:16:44 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -287,7 +287,7 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 	(erase-buffer)
 	(if (and pkg (not fi:echo-evals-from-buffer-in-listener-p))
 	    (insert pkg))
-	(insert (format "#+(version >= 4 1) (setq excl::*partial-source-file-p* t excl::*source-pathname* #P\"%s\")
+	(insert (format "#+(version>= 4 1) (setq excl::*partial-source-file-p* t excl::*source-pathname* #P\"%s\")
 " source-file))
 	(insert text)
 	(write-region (point-min) (point-max) file nil 'nomessage)
@@ -295,10 +295,10 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
     (let ((load-string
 	   (if compile-file-p
 	       (format
-		"(let (#-(version >= 4 1) (excl::*record-source-files* nil)
+		"(let (#-(version>= 4 1) (excl::*record-source-files* nil)
 		       (*package* *package*))
 		   %s
- 		   (excl::compile-file-if-needed \"%s\")
+ 		   (excl::compile-file \"%s\")
 		   (load (format nil \"%s.~a\" sys::*fasl-default-type*) :verbose nil)
                    (values))"
 		(if pkg pkg "")
@@ -306,7 +306,7 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 		(fi::file-name-sans-type fi::emacs-to-lisp-transaction-file))
 	     (if fi:echo-evals-from-buffer-in-listener-p
 		 (format "(with-open-file (istm \"%s\")
-			 (let (#-(version >= 4 1) (excl::*record-source-files* nil)
+			 (let (#-(version>= 4 1) (excl::*record-source-files* nil)
 			       (*package* *package*)
 			       (stm (make-echo-stream istm *terminal-io*)))
 			   %s
@@ -315,7 +315,7 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 			   (values)))"
 			 fi::emacs-to-lisp-transaction-file
 			 (if pkg pkg ""))
-	       (format "(let (#-(version >= 4 1) (excl::*record-source-files* nil)
+	       (format "(let (#-(version>= 4 1) (excl::*record-source-files* nil)
 			      (*package* *package*))
 			   %s
 			   (princ \";; Loading forms from buffer \\\"%s\\\".\") (fresh-line)
