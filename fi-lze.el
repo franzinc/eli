@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.10 1991/05/28 16:18:23 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.11 1991/06/19 22:18:09 layer Exp $
 ;;
 ;; Code the implements evaluation in via the backdoor
 
@@ -41,7 +41,6 @@
 		 :pathname (buffer-file-name)
 		 :compilep (if compilep t nil))
 		((compilep) (results)
-		 (setq layer results)
 		 (if results
 		     (fi:show-some-text nil results)
 		   (if compilep
