@@ -1,9 +1,8 @@
 ;; -*- mode: common-lisp; package: ipc -*-
-;; Excl Common Lisp
-;; ipc.cl
-;; Interface to Unix IPC.
 ;;
-;; copyright (c) 1987 Franz Inc, Berkeley, Ca.
+;; Allegro Common Lisp IPC interface
+;;
+;; copyright (c) 1987, 1988 Franz Inc, Berkeley, Ca.
 ;;
 ;; The software, data and information contained herein are proprietary
 ;; to, and comprise valuable trade secrets of, Franz, Inc.  They are
@@ -16,41 +15,57 @@
 ;; restrictions of Restricted Rights for Commercial Software developed
 ;; at private expense as specified in DOD FAR 52.227-7013 (c) (1) (ii).
 ;;
-
-;; Description:
-;;  
-
-;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.13 1988/02/26 19:01:56 layer Exp $
+;;
+;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.14 1988/04/06 20:11:58 layer Exp $
 ;; $Locker: layer $
 ;;
-
-;; This code is a preliminary IPC interface for ExCL.
-;; The functionality will be extended apace, but right now it only
-;; implements a Common Lisp Server .
-;; The server can be started by a CL and it establishes a daemon
+;; This code is a preliminary IPC interface for ExCL. The functionality
+;; will be extended apace, but right now it only implements a Common Lisp
+;; Server.  The server can be started by a CL and it establishes a daemon
 ;; listening to a socket.  Any process wanting to talk to the lisp
 ;; can connect to the socket and a new Lisp Listener will be started.
 
-;; The listener listens to a socket at the argument address.
-
 (in-package :ipc :use '(:lisp :excl :ff :mp))
 
+(pushnew :ipc *features*)
+
 (export '(start-lisp-listener-daemon))
+
+(require :process)
+(require :foreign)
+(require :cstructs)
+
+(defvar *unix-domain* t
+  "If non-nil then use a UNIX domain socket, otherwise use an internet
+domain port (see *inet-port* variable).")
+
+(defparameter *inet-port* 1123
+  "The internet service port number on which Lisp listens for connections.
+The value is this variable is only used when *unix-domain* is non-nil, in
+which case a UNIX domain socket is used.")
+
+(defvar AF_UNIX 1
+  "A constant from /usr/include/sys/socket.h.")
+
+(defvar AF_INET 2
+  "A constant from /usr/include/sys/socket.h.")
+
+(defvar SOCK_STREAM 1
+  "A constant from /usr/include/sys/socket.h.")
+
+(defvar TCP 0
+  "A constant from /usr/include/sys/socket.h.")
 
 (defvar lisp-listener-daemon-ff-loaded nil)
 (defvar lisp-listener-daemon nil)
 
-;; Masscomp wait(II) doesn't restart after a signal, so foreign loading is
-;; chancy after the scheduler starts.
-
-#+masscomp
 (eval-when (load eval)
   (unless lisp-listener-daemon-ff-loaded
-    (unless (load ""
+    (unless (load "" :verbose nil
 		  :unreferenced-lib-names
 		  (mapcar #'convert-to-lang
 			  '("socket" "bind" "listen" "accept" "getsockname"
-				     "bcopy" "bcmp" "bzero")))
+			    "bcopy" "bcmp" "bzero")))
       (error "foreign load failed"))
     (setq lisp-listener-daemon-ff-loaded t)
     (defforeign-list '((getuid)
@@ -62,12 +77,8 @@
 		       (select)
 		       (fd-close :entry-point "_close")
 		       (bcopy) (bzero) (bcmp)
-		       #-never (perror)))))
-
-(eval-when (compile load eval)
-  (require :process)
-  (require :foreign)
-  (require :cstructs))
+		       (perror))
+	:print nil)))
 
 (defcstruct sockaddr-in
   (family :unsigned-short)
@@ -86,6 +97,7 @@
 (defcstruct unsigned-long
   (unsigned-long :unsigned-long))
 
+#+not-used
 (defcstruct (hostent :malloc)
   (name * :char)
   (aliases * * :char)
@@ -98,50 +110,12 @@
 It listens to a socket for attempts to connect and starts a lisp listener
 for each connection.  If the lisp listener ever completes, it makes sure
 files are closed."
-  #-masscomp
-  (unless lisp-listener-daemon-ff-loaded
-    (unless (load ""
-		  :unreferenced-lib-names
-		  (mapcar #'convert-to-lang
-			  '("socket" "bind" "listen" "accept" "getsockname"
-			    "bcopy" "bcmp" "bzero")))
-      (error "foreign load failed"))
-    (setq lisp-listener-daemon-ff-loaded t)
-    (defforeign-list '((getuid)
-		       (socket)
-		       (bind)
-		       (unix-listen :entry-point "_listen")
-		       (accept)
-		       (getsockname)
-		       (select)
-		       (fd-close :entry-point "_close")
-		       (bcopy) (bzero) (bcmp)
-		       #-never (perror))))
   (unless lisp-listener-daemon
     (setq lisp-listener-daemon
       (process-run-function "TCP Listener Socket Daemon"
 			    'lisp-listener-socket-daemon))
     (setf (getf (process-property-list lisp-listener-daemon) ':no-interrupts)
-	  t)))
-
-(defvar AF_UNIX 1
-  "Constant from /usr/include/sys/socket.h: domain type.")
-
-(defvar AF_INET 2
-  "Constant from /usr/include/sys/socket.h: domain type.")
-
-(defvar SOCK_STREAM 1
-  "Constant from /usr/include/sys/socket.h: socket type type.")
-
-(defvar TCP 0
-  "Constant from /usr/include/sys/socket.h")
-
-(defvar *unix-domain* t
-  "If non-nil, then use a unix domain socket, otherwise use an internet
-domain port (see *inet-port*).")
-
-(defparameter *inet-port* 1123
-  "The internet service port number for emacs<-->lisp communication.")
+          t)))
 
 (defun lisp-listener-socket-daemon ()
   (let (listen-socket-fd
@@ -229,7 +203,11 @@ domain port (see *inet-port*).")
 				    (sockaddr-in-addr listen-sockaddr) #xff)))
 		     (format t ";;; starting listener-~d (host ~d)~%" fd
 			     hostaddr)
-		     (if* (not (eql 1 hostaddr))
+		     (if* (and nil
+			       ;; the next line checks that the connection
+			       ;; is coming from the current machine
+			       (not (eql 1 hostaddr))
+			       )
 			then (format t ";;; access denied for addr ~s~%"
 				     hostaddr)
 			     (refuse-connection fd)
@@ -245,7 +223,7 @@ domain port (see *inet-port*).")
 (defun refuse-connection (fd &aux s)
   (setq s (excl::make-buffered-terminal-stream fd fd t t))
   (setf (excl::sm_read-char s) #'mp::stm-bterm-read-string-char-wait)
-  (format s "baaad connection, you luse.~%")
+  (format s "connection refused.~%")
   (force-output s)
   (setf (excl::sm_bterm-out-pos s) 0)
   (close s))
@@ -263,16 +241,3 @@ domain port (see *inet-port*).")
     ;; terminal stream.
     (setf (excl::sm_bterm-out-pos s) 0)
     (close s)))
-
-#+ignore
-(defun open-tcp-stream (host service &key (direction :io)
-			     (element-type 'string-char) &allow-other-keys)
-  "HOST may be a host name or a unsigned 32-bit integer internet address
-SERVICE may be a named service or an integer port number
-DIRECTION may be :io, :input, or :output
-ELEMENT-TYPE may be string-char or (unsigned-byte 8)
-
-Returns the new stream if the connection is established successfully."
-  )
-
-(pushnew :ipc *features*)
