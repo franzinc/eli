@@ -1,3 +1,7 @@
+Fri Feb 25 11:34:27 1994  George Jacob  (georgej@louie)
+
+	* fi-emacs19.el: Inserted Kevin Thompson's changes for Emacs19 menubars
+
 Fri Dec 10 15:15:07 1993  George Jacob  (georgej@lava)
 
 	* fi-db.el: Fixed type 'let:scan-stack-mode
