@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.4 1991/02/12 17:17:44 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.5 1991/02/13 10:20:30 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -65,8 +65,9 @@
     (push 'auto-ensure-lep-connection fi::frammis-hook))
 
 (defun auto-ensure-lep-connection ()
-  (message "Trying to start connection ...")
-  (ensure-lep-connection))
+  (message "Trying to start connection...")
+  (ensure-lep-connection)
+  (message "Trying to start connection...done."))
 
 (defun try-and-start-lep-connection ()
   (let ((buffer (process-buffer (progn
@@ -513,14 +514,9 @@ handle it"
       (while (and (> (setq count (1- count)) 0)
 		  (null (car result-cons)))
 	(accept-process-output 
-	 (setq layer (connection-process (ensure-lep-connection)))
+	 (connection-process (ensure-lep-connection))
 	 fi:lisp-evalserver-timeout)))
     (when (not (car result-cons)) (error "Eval in lisp timed out"))
     (if (third result-cons)
 	(error (second result-cons))
       (second result-cons))))
-
-;;(defun test-immediate ()
-;;  (interactive)
-;;  (lep::eval-in-lisp 5 'lep::arglist-session  ':function "print"))
-
