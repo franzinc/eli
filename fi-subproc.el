@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.200.10.1 1998/04/22 18:13:02 layer Exp $
+;; $Id: fi-subproc.el,v 1.200.10.2 1998/04/22 23:46:00 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -812,7 +812,8 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	    (temp (read-file-name "Lisp image (dxl) file: "
 				  directory image-file nil image-file)))
 	
-	(if (or (and (null image-file)
+	(if (or (string= temp "")
+		(and (null image-file)
 		     (string= temp default-directory))
 		(and image-file
 		     (string= temp image-file)))
