@@ -1,3 +1,9 @@
+Tue Oct 29 10:50:01 1996    <layer@HOBART>
+
+	* fi-subproc.el: bug3729: on windows, fi:common-lisp asks for
+	executable and image file, as well as all the other questions
+	asked on unix.
+
 *******************************************************************************
 2.0.20.alpha.7 release for ACL on Windows
 *******************************************************************************

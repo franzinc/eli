@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.174 1996/10/21 18:05:19 layer Exp $
+;; $Id: fi-subproc.el,v 1.175 1996/10/29 18:52:10 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -310,7 +310,7 @@ buffer local.")
 process-connection-type (q.v.).")
 
 (defun fi:common-lisp (&optional buffer-name directory executable-image-name
-				 image-args host)
+				 image-args host executable-image-file)
   "Create a Common Lisp subprocess and put it in buffer named by
 BUFFER-NAME, with default-directory of DIRECTORY, using EXECUTABLE-IMAGE-NAME
 and IMAGE-ARGS as the binary image pathname and command line
@@ -341,9 +341,13 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	  (fi::buffer-number-to-buffer name current-prefix-arg)
 	(get-buffer-create name)))
     (or fi:common-lisp-directory default-directory)
-    fi:common-lisp-image-name
+    (if (consp fi:common-lisp-image-name)
+	(car fi:common-lisp-image-name)
+      fi:common-lisp-image-name)
     fi:common-lisp-image-arguments
-    (or fi:common-lisp-host (system-name))))
+    (or fi:common-lisp-host (system-name))
+    (when (consp fi:common-lisp-image-name)
+      (cdr fi:common-lisp-image-name))))
   (unless (or fi::rsh-command (on-ms-windows))
     (setq fi::rsh-command
       (cond ((fi::command-exists-p "remsh") "remsh")
@@ -362,7 +366,18 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	 (executable-image-name
 	  (if (interactive-p)
 	      executable-image-name
-	    (or executable-image-name fi:common-lisp-image-name)))
+	    (or executable-image-name
+		(if (consp fi:common-lisp-image-name)
+		    (car fi:common-lisp-image-name)
+		  fi:common-lisp-image-name))))
+	 (executable-image-file
+	  (when (on-ms-windows)
+	    (if (interactive-p)
+		executable-image-file
+	      (or executable-image-file
+		  (if (consp fi:common-lisp-image-name)
+		      (cdr fi:common-lisp-image-name)
+		    (error "no image file"))))))
 	 (image-args
 	  (if (interactive-p)
 	      image-args
@@ -391,9 +406,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 					  fi::*connection*))))))
 	      (append (funcall fi:start-lisp-interface-arguments
 			       fi:use-background-streams
-			       (when (and (on-ms-windows)
-					  (consp executable-image-name))
-				 (cdr executable-image-name)))
+			       executable-image-file)
 		      image-args)
 	    image-args))
 	 (real-args
@@ -431,15 +444,10 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		    (let ((p
 			   (fi::socket-start-lisp
 			    "common-lisp"
-			    (if (consp executable-image-name)
-				(car executable-image-name)
-			      executable-image-name)
+			    executable-image-name
 			    real-args)))
 		      (unless (eq 'run (process-status p))
-			(error "Program %s died."
-			       (if (consp executable-image-name)
-				   (car executable-image-name)
-				 executable-image-name)))
+			(error "Program %s died." executable-image-name))
 		      (setq start-lisp-after-failed-connection nil)))
 		  (sleep-for 3)
 		  (setq i (+ i 1)))
@@ -500,6 +508,8 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	(progn
 	  (fi::start-backdoor-interface proc)
 	  (fi::ensure-lep-connection)
+	  (setq fi:common-lisp-image-name
+	    (cons executable-image-name executable-image-file))
 	  (setq fi::common-lisp-first-time nil
 		fi:common-lisp-buffer-name buffer-name
 		fi:common-lisp-directory directory
@@ -711,8 +721,8 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		"'" "")))))
 
 (defun fi::get-lisp-interactive-arguments (first-time buffer-name buffer
-					   directory image-name image-args
-					   host)
+					   directory image-name image-args host
+					   &optional image-file)
   (let ((buffer-name (or (and buffer (buffer-name buffer))
 			 buffer-name))
 	local)
@@ -725,7 +735,8 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 			   buffer-name)))))
 	(list (setq buffer-name (read-buffer "Buffer: " buffer-name))
 	      (progn
-		(unless (on-ms-windows)
+		(if (on-ms-windows)
+		    (setq host "localhost")
 		  (setq host (read-string "Host: " host)))
 		(setq local (or (string= "localhost" host)
 				(string= host (system-name))))
@@ -740,25 +751,26 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		    (if (= ?/ (aref dir (- (length dir) 1)))
 			dir
 		      (concat dir "/")))))
-	      (if (on-ms-windows)
-		  image-name
-		(let ((file-name
-		       (read-file-name "Executable image name: "
-				       image-name image-name nil)))
-		  (setq file-name
-		    (if (string-match "[\$~]" file-name)
-			(expand-file-name file-name)
-		      file-name))
-		  file-name))
-	      (if (on-ms-windows)
-		  image-args
-		(setq image-args
-		  (fi::listify-string
-		   (read-from-minibuffer
-		    "Image arguments (separate by spaces): "
-		    (mapconcat 'concat image-args " ")))))
-	      host)
-      (list buffer-name directory image-name image-args host))))
+	      (let ((file-name
+		     (read-file-name "Executable image name: "
+				     image-name image-name nil)))
+		(when (on-ms-windows)
+		  (setq image-file
+		    (read-file-name "Lisp image: " image-file image-file
+				    nil)))
+		(setq file-name
+		  (if (string-match "[\$~]" file-name)
+		      (expand-file-name file-name)
+		    file-name))
+		file-name)
+	      (setq image-args
+		(fi::listify-string
+		 (read-from-minibuffer
+		  "Image arguments (separate by spaces): "
+		  (mapconcat 'concat image-args " "))))
+	      host
+	      image-file)
+      (list buffer-name directory image-name image-args host image-file))))
 
 (defun fi::common-lisp-subprocess-filter (process output &optional stay
 								   cruft)
