@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.12 1989/05/19 11:44:19 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.13 1989/07/11 18:19:30 layer Rel $
 
 (defvar fi:rlogin-mode-map nil
   "The rlogin major-mode keymap.")
@@ -97,7 +97,7 @@ See fi:explicit-shell."
   (interactive "p\nsRemote login to host: ")
   (fi::make-subprocess buffer-number host 'fi:rlogin-mode
 		       fi:rlogin-prompt-pattern
-		       "env" 
+		       (format "%senv" exec-directory)
 		       (append (list "TERM=dumb" fi:rlogin-image-name host)
 			       fi:rlogin-image-arguments)
 		       'fi::rlogin-filter))
@@ -110,7 +110,7 @@ are read from the minibuffer."
    "p\nsRemote login to host: \nsImage name: \nxImage arguments (a list): ")
   (fi::make-subprocess buffer-number host 'fi:rlogin-mode
 		       fi:rlogin-prompt-pattern
-		       "env" 
+		       (format "%senv" exec-directory)
 		       (append (list "TERM=dumb" image-name host)
 			       image-arguments)
 		       'fi::rlogin-filter))
