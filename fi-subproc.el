@@ -1,9 +1,7 @@
 ;;; subprocess.el
 ;;;   subprocess modes and functions
 ;;;
-;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.10 1988/02/26 18:38:15 layer Exp $
-
-(provide 'subprocess)
+;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.11 1988/02/29 11:35:56 layer Exp $
 
 ;;;;
 ;;; Variables and Constants
@@ -149,24 +147,24 @@ matches is deemed to be prompt, and is not re-executed.")
 ;;; User visible functions
 ;;;;
 
-(defun fi:shell (&optional number)
+(defun fi:shell ()
   "Run an inferior shell, with input/output through buffer *shell*.
 See `subprocess'."
-  (interactive "P")
-  (subprocess "shell" "shell" number))
+  (interactive)
+  (subprocess "shell" "shell"))
 
-(defun another-shell (&optional number)
+(defun another-shell ()
   "Run a new inferior shell, with input/output through buffer *shell-N*.
 This function always creates a new subprocess and buffer.  See `subprocess'."
-  (interactive "P")
-  (subprocess "shell" "shell" number t))
+  (interactive)
+  (subprocess "shell" "shell" nil t))
 
-(defun rlogin (host &optional number)
+(defun rlogin (host)
   "Run an inferior remote login, with input/output through buffer *<host>*.
 See `subprocess'.  Hook function `rlogin-subprocess-hook' will be applied
 in the buffer if defined."
-  (interactive "sRemote login to host: \nP")
-  (subprocess "rlogin" host number nil (list host))
+  (interactive "sRemote login to host: \n")
+  (subprocess "rlogin" host nil nil (list host))
   (setq shell-popd-regexp nil)
   (setq shell-pushd-regexp nil)
   (setq shell-cd-regexp nil)
@@ -175,13 +173,13 @@ in the buffer if defined."
 		      'rlogin-filter)
   (run-hooks 'rlogin-subprocess-hook))
 
-(defun another-rlogin (host &optional number)
+(defun another-rlogin (host)
   "Run a new remote login, with input/output through buffer *<host>-N*.
 This function always creates a new subprocess and buffer.  See `subprocess'.
 Hook function `rlogin-subprocess-hook' will be applied in the newly-created
 buffer if defined."
-  (interactive "sRemote login to host: \nP")
-  (subprocess "rlogin" host number t (list host))
+  (interactive "sRemote login to host: \n")
+  (subprocess "rlogin" host nil t (list host))
   (setq shell-popd-regexp nil)
   (setq shell-pushd-regexp nil)
   (setq shell-cd-regexp nil)
@@ -190,35 +188,76 @@ buffer if defined."
 		      'rlogin-filter)
   (run-hooks 'rlogin-subprocess-hook))
 
-(defun run-franz-lisp (&optional number)
-  "Run a Franz Lisp subprocess, with input/output through buffer *franz-lisp*.
-Returns the name of the started subprocess.  See `subprocess'."
+(defun run-common-lisp (&optional tcp-lisp)
+  "With no prefix arg run a Common Lisp subprocess with input/output
+through buffer *common-lisp*, otherwise try and connect to a Lisp Listener
+daemon (via a unix or internet domain socket, see `open-network-stream').
+Returns the name of the started subprocess."
   (interactive "P")
-  (setq freshest-franz-sublisp-name 
-    (subprocess "franz-lisp" "franz-lisp" number)))
+  (if tcp-lisp
+      (let ((buffer (get-buffer-create "*common-lisp*"))
+	    (host local-host-name)
+	    proc)
+	(save-excursion
+	  (set-buffer buffer)
+	  (if unix-domain
+	      (setq proc (open-network-stream
+			  (buffer-name buffer) buffer unix-domain-socket 0))
+	    (setq proc (open-network-stream (buffer-name buffer) buffer
+					    local-host-name
+					    excl-service-name)))
+	  ;; first, send the name of the process
+	  (process-send-string proc (format "\"%s\"\n" (buffer-name buffer)))
+	  (goto-char (point-max))
+	  (set-marker (process-mark proc) (point)))
+	(switch-to-buffer buffer)
+	(fi:tcp-lisp-mode common-lisp-prompt-pattern)
+	(setq freshest-common-sublisp-name proc))
+    (setq freshest-common-sublisp-name 
+      (subprocess "common-lisp" "common-lisp"))))
 
-(defun run-another-franz-lisp (&optional number)
-  "Run a new Franz Lisp subprocess, with i/o through buffer *franz-lisp-N*.
-Returns the name of the started subprocess.  
-This function always creates a new subprocess and buffer.  See `subprocess'."
-  (interactive "P")
-  (setq freshest-franz-sublisp-name 
-    (subprocess "franz-lisp" "franz-lisp" number t)))
-
-(defun run-common-lisp (&optional number)
-  "Run Common Lisp subprocess, with input/output through buffer *common-lisp*.
-Returns the name of the started subprocess.  See `subprocess'."
-  (interactive "P")
-  (setq freshest-common-sublisp-name 
-    (subprocess "common-lisp" "common-lisp" number)))
-
-(defun run-another-common-lisp (&optional number)
+(defun run-another-common-lisp (&optional tcp-lisp)
   "Run a new Common Lisp subprocess, with i/o through buffer *common-lisp-N*.
 Returns the name of the started subprocess.  
 This function always creates a new subprocess and buffer.  See `subprocess'."
   (interactive "P")
-  (setq freshest-common-sublisp-name 
-    (subprocess "common-lisp" "common-lisp" number t)))
+  (if tcp-lisp
+      (let ((buffer
+	     (get-buffer-create
+	      (concat "*" (generate-new-buffer-name "common-lisp" nil) "*")))
+	    (host local-host-name)
+	    proc)
+	(save-excursion
+	  (set-buffer buffer)
+	  (if unix-domain
+	      (setq proc (open-network-stream
+			  (buffer-name buffer) buffer unix-domain-socket 0))
+	    (setq proc (open-network-stream (buffer-name buffer) buffer
+					    local-host-name
+					    excl-service-name)))
+	  (process-send-string proc (format "\"%s\"\n" (buffer-name buffer)))
+	  (goto-char (point-max))
+	  (set-marker (process-mark proc) (point)))
+	(switch-to-buffer buffer)
+	(fi:tcp-lisp-mode common-lisp-prompt-pattern)
+	(setq freshest-common-sublisp-name proc))
+    (setq freshest-common-sublisp-name 
+      (subprocess "common-lisp" "common-lisp" nil t))))
+
+(defun run-franz-lisp ()
+  "Run a Franz Lisp subprocess, with input/output through buffer *franz-lisp*.
+Returns the name of the started subprocess.  See `subprocess'."
+  (interactive)
+  (setq freshest-franz-sublisp-name 
+    (subprocess "franz-lisp" "franz-lisp")))
+
+(defun run-another-franz-lisp ()
+  "Run a new Franz Lisp subprocess, with i/o through buffer *franz-lisp-N*.
+Returns the name of the started subprocess.  
+This function always creates a new subprocess and buffer.  See `subprocess'."
+  (interactive)
+  (setq freshest-franz-sublisp-name 
+    (subprocess "franz-lisp" "franz-lisp" nil t)))
 
 ;;;;
 ;;; Interactively called functions (from keymaps)
@@ -532,28 +571,29 @@ Returns the name of the created subprocess without the asterisks."
 				&optional number startfile prompt-pattern
 				&rest arguments)
   "Create another subprocess that does input/output through a buffer."
+  (apply 'fi:make-shell
+	 (append (list (generate-new-buffer-name name number)
+		       program startfile prompt-pattern)
+		 arguments)))
+
+(defun generate-new-buffer-name (name number)
   (let* ((separator "-")
-	 (name-of-process (if number
-			    (concat name separator number)
-			    name))
-	 (buffer (get-buffer (concat "*" name-of-process "*"))))
+	 (name-of-buffer (if number
+			     (concat name separator number)
+			   name))
+	 (buffer (get-buffer (concat "*" name-of-buffer "*"))))
     (cond
-     ((null buffer)
-      (apply 'fi:make-shell
-	     (append (list name-of-process program startfile prompt-pattern)
-		     arguments)))
-     (t
-      (let* ((new-number (if number (1+ number) 2))
-	     (new-name (concat name separator new-number))
-	     temp)
-	(while (and (setq temp (get-buffer (concat "*" new-name "*")))
-		    (setq temp (get-buffer-process temp))
-		    (eq 'run (process-status temp)))
-	  (setq new-number (1+ new-number))
-	  (setq new-name (concat name separator new-number)))
-	(apply 'fi:make-shell
-	       (append (list new-name program startfile prompt-pattern)
-		       arguments)))))))
+      ((null buffer) name-of-buffer)
+      (t
+       (let* ((new-number (if number (1+ number) 2))
+	      (new-name (concat name separator new-number))
+	      temp)
+	 (while (and (setq temp (get-buffer (concat "*" new-name "*")))
+		     (setq temp (get-buffer-process temp))
+		     (eq 'run (process-status temp)))
+	   (setq new-number (1+ new-number))
+	   (setq new-name (concat name separator new-number)))
+	 new-name)))))
 
 (defun send-region-split (process start-position end-position
 				  &optional nl-cr)
