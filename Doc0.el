@@ -1,4 +1,4 @@
-;; $Id: Doc0.el,v 1.1.2.2 1998/06/24 23:06:53 layer Exp $
+;; $Id: Doc0.el,v 1.1.2.3 1998/06/24 23:42:34 layer Exp $
 
 (defvar current-local-map-var)
 
@@ -104,7 +104,7 @@
 	      (if key
 		  (format "%s%s" key
 			  (if (and key (null (string-match "M-x" key)))
-			      (insert (format " in %s" xmode-name))))
+			      (format " in %s" xmode-name)))
 		(format "M-x %s" var))
 	      (or (frob-docstring (documentation var))
 		  (error "no documentation available for %s" var))))))

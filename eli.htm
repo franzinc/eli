@@ -10,7 +10,7 @@
 
 <h1 align="center"><small><small>Version __VERSION__</small></small></h1>
 
-<h1 align="center"><small><small>$Revision: 1.1.2.2 $</small></small></h1>
+<h1 align="center"><small><small>$Revision: 1.1.2.3 $</small></small></h1>
 
 <hr>
 
@@ -1259,7 +1259,8 @@ uses the same Lisp.&nbsp; (This is eli/examples/emacs.el.)</p>
 
 <pre>
 %% fi:open-lisp-listener
-%% fi:toggle-to-lisp
+%% fi:toggle-to-lisp			fi:common-lisp-mode-map
+%% fi:define-global-lisp-mode-bindings
 %% fi:common-lisp-buffer-name
 %% fi:common-lisp-directory
 %% fi:common-lisp-image-name
@@ -1267,41 +1268,47 @@ uses the same Lisp.&nbsp; (This is eli/examples/emacs.el.)</p>
 %% fi:common-lisp-image-arguments
 %% fi:common-lisp-host
 %% fi:common-lisp-prompt-pattern
+%% fi:common-lisp-subprocess-timeout
 %% fi:start-lisp-interface-arguments
 %% fi:use-background-streams
 %% fi:start-lisp-interface-hook
+%% fi:reset-lep-connection
 %% fi:in-package-regexp
 %% fi:default-in-package-regexp
+
 %% fi:inferior-common-lisp-mode
-%% fi:inferior-lisp-input-list
-%% fi:inferior-lisp-input-sexp
-%% fi:inferior-lisp-newline
-%% fi:lisp-sync-current-working-directory
-%% fi:list-input-ring
-%% fi:pop-input
-%% fi:push-input
-%% fi:re-search-backward-input
-%% fi:re-search-forward-input
-%% fi:remote-lisp-send-eof
-%% fi:subprocess-backward-kill-word
-%% fi:subprocess-beginning-of-line
-%% fi:subprocess-input-region
-%% fi:subprocess-interrupt
-%% fi:subprocess-kill
-%% fi:subprocess-kill-input
-%% fi:subprocess-kill-output
-%% fi:subprocess-quit
-%% fi:subprocess-send-eof
-%% fi:subprocess-send-flush
-%% fi:subprocess-show-output
-%% fi:subprocess-suspend
+%% fi:inferior-lisp-input-list		fi:inferior-common-lisp-mode-map
+%% fi:inferior-lisp-input-sexp		fi:inferior-common-lisp-mode-map
+%% fi:inferior-lisp-newline		fi:inferior-common-lisp-mode-map
+%% fi:lisp-sync-current-working-directory fi:inferior-common-lisp-mode-map
+%% fi:list-input-ring			fi:inferior-common-lisp-mode-map
+%% fi:pop-input				fi:inferior-common-lisp-mode-map
+%% fi:push-input			fi:inferior-common-lisp-mode-map
+%% fi:re-search-backward-input		fi:inferior-common-lisp-mode-map
+%% fi:re-search-forward-input		fi:inferior-common-lisp-mode-map
+%% fi:remote-lisp-send-eof		fi:inferior-common-lisp-mode-map
+%% fi:subprocess-backward-kill-word	fi:inferior-common-lisp-mode-map
+%% fi:subprocess-beginning-of-line	fi:inferior-common-lisp-mode-map
+%% fi:subprocess-input-region		fi:inferior-common-lisp-mode-map
+%% fi:subprocess-interrupt		fi:inferior-common-lisp-mode-map
+%% fi:subprocess-kill			fi:inferior-common-lisp-mode-map
+%% fi:subprocess-kill-input		fi:inferior-common-lisp-mode-map
+%% fi:subprocess-kill-output		fi:inferior-common-lisp-mode-map
+%% fi:subprocess-quit			fi:inferior-common-lisp-mode-map
+%% fi:subprocess-send-eof		fi:inferior-common-lisp-mode-map
+%% fi:subprocess-send-flush		fi:inferior-common-lisp-mode-map
+%% fi:subprocess-show-output		fi:inferior-common-lisp-mode-map
+%% fi:subprocess-suspend		fi:inferior-common-lisp-mode-map
+
 %% fi:lisp-listener-mode
-%% fi:interrupt-listener
-%% fi:tcp-lisp-listener-kill-process
-%% fi:tcp-lisp-listener-send-eof
+%% fi:interrupt-listener			fi:lisp-listener-mode-map
+%% fi:tcp-lisp-listener-kill-process		fi:lisp-listener-mode-map
+%% fi:tcp-lisp-listener-send-eof		fi:lisp-listener-mode-map
+
 %% fi:emacs-to-lisp-transaction-directory
 %% fi:default-input-ring-max
 %% fi:display-buffer-function
+%% fi:new-screen-for-common-lisp-buffer
 %% fi:eval-in-lisp
 %% fi:eval-in-lisp-asynchronous
 %% fi:filename-frobber-hook
@@ -1311,8 +1318,8 @@ uses the same Lisp.&nbsp; (This is eli/examples/emacs.el.)</p>
 %% fi:shell-pushd-regexp
 %% fi:subprocess-continuously-show-output-in-visible-buffer
 %% fi:subprocess-enable-superkeys
-%% fi:superkey-shadow-universal-argument
 %% fi:subprocess-env-vars
+%% fi:superkey-shadow-universal-argument
 </pre>
 
 <hr>
@@ -1386,6 +1393,10 @@ indent the current line. The value of this variable defaults to nil.</p>
 ;;; leave me where I lie...
   ;; but indent by right...
   )</pre>
+
+<pre>
+%% fi:lisp-comment-indent-specification
+</pre>
 
 <hr>
 
@@ -1597,42 +1608,43 @@ several additional commands:</p>
 functions and variables</a></h3>
 
 <pre>
-%% fi:common-lisp-mode 
-%% fi:center-defun
-%% fi:lisp-comment-indent-specification
-%% fi:comment-region 
+%% fi:common-lisp-mode
+%% fi:center-defun			fi:common-lisp-mode-map
+%% fi:comment-region			fi:common-lisp-mode-map
 %% fi:uncomment-region 
-%% fi:end-of-defun
-%% fi:extract-list 
-%% fi:indent-sexp
-%% fi:lisp-apropos 
-%% fi:lisp-arglist 
-%% fi:lisp-complete-symbol
-%% fi:describe-symbol 
+%% fi:end-of-defun			fi:common-lisp-mode-map
+%% fi:extract-list			fi:common-lisp-mode-map
+%% fi:indent-sexp			fi:common-lisp-mode-map
+%% fi:lisp-apropos			fi:common-lisp-mode-map
+%% fi:lisp-arglist			fi:common-lisp-mode-map
+%% fi:lisp-complete-symbol 		fi:common-lisp-mode-map
+%% fi:describe-symbol			fi:common-lisp-mode-map
 %% fi:lisp-evals-always-compile
-%% fi:lisp-eval-current-buffer
-%% fi:lisp-eval-or-compile-current-buffer 
-%% fi:lisp-eval-defun
-%% fi:lisp-compile-defun
-%% fi:lisp-eval-or-compile-defun
-%% fi:lisp-eval-last-sexp
-%% fi:lisp-compile-last-sexp
-%% fi:lisp-eval-or-compile-last-sexp
-%% fi:lisp-eval-region
-%% fi:lisp-compile-region
-%% fi:lisp-eval-or-compile-region
-%% fi:lisp-find-definition
-%% fi:lisp-find-definition-other-window
-%% fi:lisp-find-next-definition
-%% fi:lisp-function-documentation
-%% fi:lisp-indent-line
-%% fi:lisp-macroexpand
-%% fi:lisp-macroexpand-recursively
+%% fi:lisp-eval-current-buffer 		fi:common-lisp-mode-map
+%% fi:lisp-eval-or-compile-current-buffer fi:common-lisp-mode-map
+%% fi:lisp-eval-defun			fi:common-lisp-mode-map
+%% fi:lisp-compile-current-buffer 	fi:common-lisp-mode-map
+%% fi:lisp-compile-defun		fi:common-lisp-mode-map
+%% fi:lisp-eval-or-compile-defun	fi:common-lisp-mode-map
+%% fi:lisp-eval-last-sexp		fi:common-lisp-mode-map
+%% fi:lisp-compile-last-sexp		fi:common-lisp-mode-map
+%% fi:lisp-eval-or-compile-last-sexp	fi:common-lisp-mode-map
+%% fi:lisp-eval-region			fi:common-lisp-mode-map
+%% fi:lisp-compile-region		fi:common-lisp-mode-map
+%% fi:lisp-eval-or-compile-region	fi:common-lisp-mode-map
+%% fi:lisp-find-definition		fi:common-lisp-mode-map
+%% fi:lisp-find-definition-other-window	fi:common-lisp-mode-map
+%% fi:lisp-find-next-definition		fi:common-lisp-mode-map
+%% fi:lisp-function-documentation	fi:common-lisp-mode-map
+%% fi:lisp-indent-line			fi:common-lisp-mode-map
+%% fi:lisp-macroexpand			fi:common-lisp-mode-map
+%% fi:lisp-macroexpand-recursively	fi:common-lisp-mode-map
 %% fi:lisp-mode-auto-indent
-%% fi:lisp-mode-newline
-%% fi:log-functional-change
-%% fi:super-paren
-%% fi:toggle-trace-definition
+%% fi:lisp-mode-newline			fi:common-lisp-mode-map
+%% fi:log-functional-change		fi:common-lisp-mode-map
+%% fi:super-paren			fi:common-lisp-mode-map
+%% fi:trace-definition
+%% fi:toggle-trace-definition		fi:common-lisp-mode-map
 </pre>
 
 <hr>
@@ -1648,28 +1660,14 @@ and variables</a></h3>
 %% fi:list-buffer-definitions
 %% fi:list-undefined-functions 
 %% fi:list-unused-functions
-%% fi:definition-mode-goto-definition
-%% fi:definition-mode-goto-next
-%% fi:definition-mode-goto-previous
-%% fi:definition-mode-quit
-%% fi:definition-mode-undo
-%% fi:definition-mode-toggle-trace
-%% fi:inverse-definition-mode-quit
-%% fi:inverse-definition-who-calls
-%% fi:compile-file
-%% fi:load-file
-%% fi:check-unbalanced-parentheses-when-saving
-%% fi:common-lisp-file-types
-%% fi:echo-evals-from-buffer-in-listener-p
-%% fi:fill-paragraph 
-%% fi:find-unbalanced-parenthesis
-%% fi:find-tag-lock
-%% fi:indent-code-rigidly
-%% fi:indent-methods-case-sensitive
-%% fi:kill-definition
-%% fi:lisp-electric-semicolon
-%% fi:parse-mode-line-and-package
-%% fi:pop-to-sublisp-buffer-after-lisp-eval
+%% fi:definition-mode-goto-definition	fi:definition-mode-map
+%% fi:definition-mode-goto-next		fi:definition-mode-map
+%% fi:definition-mode-goto-previous	fi:definition-mode-map
+%% fi:definition-mode-quit		fi:definition-mode-map
+%% fi:definition-mode-undo		fi:definition-mode-map
+%% fi:definition-mode-toggle-trace	fi:definition-mode-map
+%% fi:inverse-definition-mode-quit	fi:inverse-definition-mode-map
+%% fi:inverse-definition-who-calls	fi:inverse-definition-mode-map
 </pre>
 
 <hr>
@@ -1705,6 +1703,25 @@ symbols or function specs. For example, a call to lisp:ed returns a value immedi
 
 <p>but causes a buffer to be created and made visible in Emacs displaying the definition
 of frob.</p>
+
+<pre>
+%% fi:auto-fill
+%% fi:check-unbalanced-parentheses-when-saving
+%% fi:common-lisp-file-types
+%% fi:compile-file
+%% fi:echo-evals-from-buffer-in-listener-p
+%% fi:fill-paragraph 
+%% fi:find-tag-lock
+%% fi:find-unbalanced-parenthesis
+%% fi:indent-code-rigidly
+%% fi:indent-methods-case-sensitive
+%% fi:kill-definition
+%% fi:lisp-do-indentation
+%% fi:lisp-electric-semicolon
+%% fi:load-file
+%% fi:parse-mode-line-and-package
+%% fi:pop-to-sublisp-buffer-after-lisp-eval
+</pre>
 
 <hr>
 
@@ -1793,9 +1810,9 @@ will run this function.</p>
 <h4>Emacs functions and variables for retrieving CL environment information</h4>
 
 <pre>
-%% fi:lisp-delete-pop-up-window
+%% fi:lisp-delete-pop-up-window		fi:common-lisp-mode-map
 %% fi:pop-up-temp-window-behavior
-%% fi:list-who-calls
+%% fi:list-who-calls			fi:common-lisp-mode-map
 %% fi:list-who-is-called-by
 %% fi:edit-who-calls
 %% fi:edit-who-is-called-by
@@ -2151,22 +2168,23 @@ typing SPC. The commands in this mode can be grouped according to functionality:
 <pre>
 %% fi:scan-stack
 %% fi:scan-stack-mode
-%% fi:ss-continue
-%% fi:ss-disassemble
-%% fi:ss-edit
-%% fi:ss-hide-help-text
-%% fi:ss-locals
+%% fi:scan-stack-mode-display-help
+%% fi:ss-continue			fi:scan-stack-mode-map
+%% fi:ss-disassemble			fi:scan-stack-mode-map
+%% fi:ss-edit				fi:scan-stack-mode-map
+%% fi:ss-hide-help-text			fi:scan-stack-mode-map
+%% fi:ss-locals				fi:scan-stack-mode-map
 %% fi:ss-next-frame 
-%% fi:ss-pop
-%% fi:ss-pprint
+%% fi:ss-pop				fi:scan-stack-mode-map
+%% fi:ss-pprint				fi:scan-stack-mode-map
 %% fi:ss-previous-frame 
-%% fi:ss-quit
-%% fi:ss-reset
-%% fi:ss-restart 
-%% fi:ss-return
-%% fi:ss-revert-stack
-%% fi:ss-toggle-all
-%% fi:ss-unhide-help-text
+%% fi:ss-quit				fi:scan-stack-mode-map
+%% fi:ss-reset				fi:scan-stack-mode-map
+%% fi:ss-restart			fi:scan-stack-mode-map
+%% fi:ss-return				fi:scan-stack-mode-map
+%% fi:ss-revert-stack			fi:scan-stack-mode-map
+%% fi:ss-toggle-all			fi:scan-stack-mode-map
+%% fi:ss-unhide-help-text		fi:scan-stack-mode-map
 </pre>
 
 <h4>Debugging with gdb</h4>
@@ -2276,27 +2294,28 @@ interface are described below:
 
 <pre>
 %% fi:shell
-%% fi:shell-mode
 %% fi:shell-command-completion
 %% fi:shell-do-completion
 %% fi:shell-file-name-completion
-%% fi:shell-sync-current-working-directory
-%% fi:shell-token-pattern
 %% fi:shell-image-arguments
 %% fi:shell-image-name
-%% fi:shell-prompt-pattern
+%% fi:shell-mode
+%% fi:shell-mode-bang
 %% fi:shell-mode-use-history
+%% fi:shell-prompt-pattern
+%% fi:shell-sync-current-working-directory
+%% fi:shell-token-pattern
 </pre>
 
 <h3>su mode</h3>
 
 <pre>
 %% fi:su
-%% fi:remote-root-login
-%% fi:su-mode
-%% fi:remote-su-mode
 %% fi:su-initial-input
+%% fi:su-mode
 %% fi:su-prompt-pattern
+%% fi:remote-root-login
+%% fi:remote-su-mode
 </pre>
 
 <h3>telnet mode</h3>
@@ -2320,10 +2339,10 @@ interface are described below:
 %% fi:rlogin-image-name
 %% fi:rlogin-initial-input
 %% fi:rlogin-prompt-pattern
-%% fi:rlogin-send-eof
-%% fi:rlogin-send-interrupt
-%% fi:rlogin-send-quit
-%% fi:rlogin-send-stop
+%% fi:rlogin-send-eof			fi:rlogin-mode-map
+%% fi:rlogin-send-interrupt		fi:rlogin-mode-map
+%% fi:rlogin-send-quit			fi:rlogin-mode-map
+%% fi:rlogin-send-stop			fi:rlogin-mode-map
 </pre>
 
 <hr>
@@ -2331,6 +2350,10 @@ interface are described below:
 <h2>7<a name="7. Advanced miscellaneous features">. Advanced miscellaneous features</a></h2>
 
 <p>This section and its subsections discuss advanced features of the Emacs-Lisp interface.</p>
+
+<pre>
+%% fi:define-emacs-lisp-mode
+</pre>
 
 <hr>
 
