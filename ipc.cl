@@ -1,4 +1,4 @@
-;;					-[Mon Aug  7 16:50:44 1989 by layer]-
+;;					-[Wed Aug 16 13:38:21 1989 by layer]-
 ;;
 ;; Allegro CL IPC interface
 ;;
@@ -16,7 +16,7 @@
 ;; at private expense as specified in DOD FAR 52.227-7013 (c) (1) (ii).
 ;;
 
-(eval-when (compile)
+(eval-when (compile eval)
   (if (find-symbol (symbol-name :rcsnote) (find-package :si))
       (push :has-rcsnote *features*))
   )
@@ -24,7 +24,7 @@
 #+has-rcsnote
 (si::rcsnote
  "ipc"
- "$Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.25 1989/08/07 16:50:58 layer Exp $")
+ "$Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.26 1989/08/16 13:52:26 layer Rel $")
 
 ;; $Locker: layer $
 
@@ -66,15 +66,28 @@ which case a UNIX domain socket is used.")
 (defconstant *sock-stream* 1
   "The SOCK_STREAM constant from /usr/include/sys/socket.h.")
 
+;; from <netinet/in.h>
 (defcstruct sockaddr-in
-  (family :unsigned-short)
-  (port :unsigned-short)
-  (addr :unsigned-long)
-  (zero 8 :unsigned-byte))
+  (family :unsigned-short)		; short sin_family
+  (port :unsigned-short)		; u_short sin_port
+  (addr :unsigned-long)			; struct in_addr sin_addr
+  (zero 8 :char)			; char sin_zero[8]
+  )
 
+;; from <>
 (defcstruct sockaddr-un
   (family :unsigned-short)
   (path 109 :char))
+
+;; from <netdb.h>
+(defcstruct (hostent :malloc)
+  (name * :char)			; char *h_name
+  (aliases * * :char)			; char **h_aliases
+  (addrtype :long)			; int h_addrtype
+  (length :long)			; int h_length
+  (addr * :char)			; char *h_addr   --or--
+					; char **h_addr_list (for SunOS 4.0)
+  )
 
 (defcstruct timeval
   (sec :long)
@@ -82,14 +95,6 @@ which case a UNIX domain socket is used.")
 
 (defcstruct unsigned-long
   (unsigned-long :unsigned-long))
-
-;; from /usr/include/netdb.h
-(defcstruct (hostent :malloc)
-  (name * :char)
-  (aliases * * :char)
-  (addrtype :long)
-  (length :long)
-  (addr * :char))
 
 (defvar .lisp-listener-daemon-ff-loaded. nil)
 (defvar .lisp-listener-daemon. nil)
@@ -313,9 +318,16 @@ internet domain ports and SOCKET-FILE is for unix domain ports."
 	      (error "unknown host: ~a" host))
 	    (if (not (= 4 (hostent-length hostaddress)))
 		(error "address length not 4"))
-	    ;; Be sure that this precedes writes to other fields in server.
+
 	    (setf (sockaddr-in-addr server)
-	      (si:memref-int (hostent-addr hostaddress) 0 0 :unsigned-long))
+	      (si:memref-int (hostent-addr hostaddress) 0 0
+			     :unsigned-long))
+	    ;; If on SunOS 4.0, then need to indirect one more time
+	    (if (probe-file "/lib/ld.so")
+		(setf (sockaddr-in-addr server)
+		  (si:memref-int (sockaddr-in-addr server)
+				 0 0 :unsigned-long)))
+	    
 	    (setf (sockaddr-in-family server) *af-inet*)
 	    (setf (sockaddr-in-port server) port)
 	    ;; open the connection
