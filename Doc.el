@@ -13,7 +13,7 @@
   (fi:tcp-common-lisp-mode)
   (fundamental-mode)
 
-  (insert-file "../doc/spec.n")
+  (insert-file "../../doc/spec.n")
 
   (beginning-of-buffer)
 
