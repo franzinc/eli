@@ -1,37 +1,51 @@
 ;;
 ;; copyright (C) 1987, 1988 Franz Inc, Berkeley, Ca.
 ;;
-;; The software, data and information contained herein are proprietary
-;; to, and comprise valuable trade secrets of, Franz, Inc.  They are
-;; given in confidence by Franz, Inc. pursuant to a written license
-;; agreement, and stored only in accordance with the terms of such license.
+;; The software, data and information contained herein are the property 
+;; of Franz, Inc.  
 ;;
-;; Restricted Rights Legend
-;; ------------------------
-;; Use, duplication, and disclosure by the Government are subject to
-;; restrictions of Restricted Rights for Commercial Software developed
-;; at private expense as specified in DOD FAR 52.227-7013 (c) (1) (ii).
-;;
-;; This file may be distributed without further permission from
-;; Franz Inc. as long as
+;; This file (or any derivation of it) may be distributed without 
+;; further permission from Franz Inc. as long as:
 ;;
 ;;	* it is not part of a product for sale,
-;;	* no charge is made for the distribution, and
+;;	* no charge is made for the distribution, other than a tape
+;;	  fee, and
 ;;	* all copyright notices and this notice are preserved.
 ;;
-;; If you have any comments or questions on this package, please feel
+;; If you have any comments or questions on this interface, please feel
 ;; free to contact Franz Inc. at
-;;
 ;;	Franz Inc.
-;;	Attn: Emacs Group Manager
+;;	Attn: Kevin Layer
 ;;	1995 University Ave
 ;;	Suite 275
 ;;	Berkeley, CA 94704
+;;	(415) 548-3600
 ;; or
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.31 1988/05/25 13:48:52 layer Exp $
+;; This file has its (distant) roots in lisp/shell.el, so:
+;;
+;; Copyright (C) 1985, 1986, 1987 Free Software Foundation, Inc.
+;;
+;; This file is derived from part of GNU Emacs.
+;;
+;; GNU Emacs is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY.  No author or distributor
+;; accepts responsibility to anyone for the consequences of using it
+;; or for whether it serves any particular purpose or works at all,
+;; unless he says so in writing.  Refer to the GNU Emacs General Public
+;; License for full details.
+;;
+;; Everyone is granted permission to copy, modify and redistribute
+;; GNU Emacs, but only under the conditions described in the
+;; GNU Emacs General Public License.   A copy of this license is
+;; supposed to have been given to you along with GNU Emacs so you
+;; can know your rights and responsibilities.  It should be in a
+;; file named COPYING.  Among other things, the copyright notice
+;; and this notice must be preserved on all copies.
+
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.32 1988/07/15 18:33:15 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
