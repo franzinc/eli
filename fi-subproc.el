@@ -1,4 +1,4 @@
-;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.18 1988/04/07 13:56:51 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.19 1988/04/08 09:41:00 layer Exp $
 ;;;
 ;;; Low-level subprocess mode guts
 
@@ -129,10 +129,11 @@ through buffer *common-lisp*, otherwise try and connect to a Lisp Listener
 daemon (via a unix or internet domain socket, see `open-network-stream').
 Returns the name of the started subprocess."
   (interactive "P")
-  (setq fi::freshest-common-sublisp-name 
-    (fi::make-process "common-lisp" "common-lisp"
-		      'fi:inferior-common-lisp-mode
-		      nil nil nil tcp-lisp)))
+  (let ((proc (fi::make-process "common-lisp" "common-lisp"
+				'fi:inferior-common-lisp-mode
+				nil nil nil tcp-lisp)))
+    (setq fi::freshest-common-sublisp-name (process-name proc))
+    proc))
 
 (defun fi:another-common-lisp (&optional tcp-lisp)
   "Run a new Common Lisp subprocess, with i/o through buffer
@@ -140,27 +141,31 @@ Returns the name of the started subprocess."
 function always creates a new subprocess and buffer.  See
 `fi::make-process'."
   (interactive "P")
-  (setq fi::freshest-common-sublisp-name 
-    (fi::make-process "common-lisp" "common-lisp"
-		      'fi:inferior-common-lisp-mode nil t
-		      nil tcp-lisp)))
+  (let ((proc (fi::make-process "common-lisp" "common-lisp"
+				'fi:inferior-common-lisp-mode nil t
+				nil tcp-lisp)))
+    (setq fi::freshest-common-sublisp-name (process-name proc))
+    proc))
 
 (defun fi:franz-lisp ()
   "Run a Franz Lisp subprocess, with input/output through buffer
 *franz-lisp*.   Returns the name of the started subprocess.  See
 `fi::make-process'."
   (interactive)
-  (setq fi::freshest-franz-sublisp-name 
-    (fi::make-process "franz-lisp" "franz-lisp" 'fi:inferior-franz-lisp-mode)))
+  (let ((proc (fi::make-process "franz-lisp" "franz-lisp"
+				'fi:inferior-franz-lisp-mode)))
+    (setq fi::freshest-franz-sublisp-name (process-name proc))
+    proc))
 
 (defun fi:another-franz-lisp ()
   "Run a new Franz Lisp subprocess, with i/o through buffer *franz-lisp-N*.
 Returns the name of the started subprocess.  This function always creates a
 new subprocess and buffer.  See `fi::make-process'."
   (interactive)
-  (setq fi::freshest-franz-sublisp-name 
-    (fi::make-process "franz-lisp" "franz-lisp"
-		    'fi:inferior-franz-lisp-mode nil t)))
+  (let ((proc (fi::make-process "franz-lisp" "franz-lisp"
+				'fi:inferior-franz-lisp-mode nil t)))
+    (setq fi::freshest-franz-sublisp-name (process-name proc))
+    proc))
 
 ;;;;
 ;;; Interactively called functions (from keymaps)
