@@ -1,10 +1,10 @@
-;; $Id: fi-site-init.el,v 1.86 1996/10/21 18:05:14 layer Exp $
+;; $Id: fi-site-init.el,v 1.87 1996/11/20 22:50:43 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
 (require 'cl)
 
-(setq fi:emacs-lisp-interface-version "2.0.20.alpha.7")
+(setq fi:emacs-lisp-interface-version "2.0.20.alpha.8")
 (defvar fi::required-ipc-version 1)
 (defvar fi::load-subprocess-files t)
 (defvar fi::install-acl-menubar t)

@@ -1,3 +1,27 @@
+For more detailed instructions on filling in the ChangeLog form, see 
+`/fi/doc/procedures/changelogs.txt'.
+*******************************************************************************
+<version for this commit, if applicable>
+
+Documentation changes:	<`none' or give pointer to them>
+Bootstrapping needed:	<`none' or give pointer to instructions>
+Tests for new features:	<`no new features', `no tests for new features', or
+			 give pointer to test files>
+
+<standard changelog date stamp>
+	* <changes go here...>
+
+*******************************************************************************
+2.0.20.alpha.8
+
+Wed Nov 20 14:46:51 1996  Kevin Layer  <layer@ultra>
+
+	* RelNotes.txt: new file
+	* fi-subproc.el: new fi::set-environment-use-process-environment
+	which doesn't side-effect process-environment (which was a
+	horrible thing, in the first place).
+
+*******************************************************************************
 Wed Oct 30 09:55:13 1996  Kevin Layer  <layer@freezer>
 
 	* Doc.el: fix error during doc creation

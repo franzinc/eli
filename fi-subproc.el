@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.176 1996/10/30 18:00:00 layer Exp $
+;; $Id: fi-subproc.el,v 1.177 1996/11/20 22:50:50 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -358,7 +358,8 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	     (or (y-or-n-p "A make-dist might be in progress.  Continue? ")
 		 (error "fi:common-lisp aborted.")))
     (setq fi::shell-buffer-for-common-lisp-interaction-host-name nil))
-  (let* ((buffer-name (if (interactive-p)
+  (let* ((process-environment process-environment)
+	 (buffer-name (if (interactive-p)
 			  buffer-name
 			(or buffer-name fi:common-lisp-buffer-name)))
 	 (directory (if (interactive-p)
@@ -1398,21 +1399,9 @@ to your `.cshrc' after the `set cdpath=(...)' in the same file."
       (setq valist (cdr valist)))))
 
 (defun fi::set-environment-use-process-environment (valist)
-  (let ((v valist))
-    (while v
-      (let ((pe process-environment)
-	    (found nil))
-	(while (and (not found) pe)
-	  (if (string-match (concat "^" (car (car v)) "=") (car pe))
-	      (progn
-		(rplaca pe (format "%s=%s" (car (car v)) (eval (cdr (car v)))))
-		(setq found t))
-	    (setq pe (cdr pe))))
-	(if (not found)
-	    (setq process-environment
-	      (cons (format "%s=%s" (car (car v)) (eval (cdr (car v))))
-		    process-environment))))
-      (setq v (cdr v)))))
+  (dolist (pair valist)
+    (push (concat (car pair) "=" (eval (cdr pair)))
+	  process-environment)))
 
 (fset 'fi::set-environment
       (if (boundp 'process-environment)
