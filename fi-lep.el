@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.61 1994/08/01 22:48:22 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.62 1994/12/21 22:36:20 smh Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -560,7 +560,8 @@ beginning of words in target symbols."
   (switch-to-buffer (get-buffer-create buffer))
   (erase-buffer)
   (insert string)
-  (goto-char (point-min)))
+  (goto-char (point-min))
+  (fi::ensure-minibuffer-visible (current-buffer)))
 
 (defun lep::write-string-to-hidden-buffer (string buffer)
   "Like lep::display-string-in-buffer, but don't display the buffer."
@@ -571,6 +572,7 @@ beginning of words in target symbols."
     (goto-char (point-min))))
 
 (defun lep::prompt-for-values (what prompt options)
+  (fi::ensure-minibuffer-visible)
   (list (case what
 	  (:symbol
 	   (let* ((string (read-string
@@ -593,8 +595,7 @@ beginning of words in target symbols."
 		    prompt (fi::getf-property options ':initial-input))))))
 
 (defun lep::completing-read (prompt require-match initial-input)
-  (if (fboundp 'epoch::mapraised-screen)
-      (epoch::mapraised-screen (minibuf-screen)))
+  (fi::ensure-minibuffer-visible)
   (list (completing-read
 	 prompt
 	 'lep::completing-read-complete

@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/Attic/fi-lemacs.el,v 2.17 1994/09/21 22:43:23 smh Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-lemacs.el,v 2.18 1994/12/21 22:36:17 smh Exp $
 
 (defun fi::switch-to-buffer-new-screen (buffer)
   (cond
@@ -206,6 +206,7 @@
 		 (setq fi::connection-open-composer-loaded 'yes)
 	       (setq fi::connection-open-composer-loaded 'no))
 	     (setq fi::composer-cached-connection fi::*connection*)
+	     (set-menubar-dirty-flag)	;smh 31oct94
 	     nil)
 	   (eq fi::connection-open-composer-loaded 'yes))))
 
@@ -220,6 +221,7 @@
                        t)"))
 		 (setq fi::composer-running 'yes)
 	       (setq fi::composer-running 'no))
+	     (set-menubar-dirty-flag)	;smh 31oct94
 	     nil)
 	   (eq fi::composer-running 'no))))
 
@@ -233,15 +235,31 @@
 			      (connected-to-server-p))"))
 		 (setq fi::composer-connection-open 'yes)
 	       (setq fi::composer-connection-open 'no))
+	     (set-menubar-dirty-flag)	;smh 31oct94
 	     nil)
 	   (eq fi::composer-connection-open 'yes))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;(defun fi::install-menubar (menu-bar)
+;  (when current-menubar
+;    ;; (set-menubar (delete (assoc (car menu-bar) current-menubar)
+;    ;; (copy-sequence current-menubar)))
+;    (add-menu nil (car menu-bar) (cdr menu-bar) "Help")
+;    ))
+
 (defun fi::install-menubar (menu-bar)
-  (set-menubar (delete (assoc (car menu-bar) current-menubar)
-		       (copy-sequence current-menubar)))
-  (add-menu nil (car menu-bar) (cdr menu-bar) "Help"))
+  (add-menu nil (car menu-bar) (cdr menu-bar) nil))
+
+;(defun fi::install-menubar (menu-bar)
+;  (let ((old (copy-tree current-menubar))
+;	(new nil))
+;    (while (and (consp old) (not (equalp (caar old) "Help")))
+;      (push (pop old) new))
+;    (set-menubar (nconc (nreverse new) (list (copy-tree menu-bar)) old))))
+
+;(defun fi::install-menubar (menu-bar)
+;  (set-menubar (append (copy-list current-menubar) (list menu-bar))))
 
 (push '(progn
 	(fi::install-menubar fi:allegro-file-menu)
@@ -442,6 +460,7 @@
       ["Compile form" fi:lisp-compile-active-region-or-defun (fi::acl-buffer-p)]
       ["Compile region" fi:lisp-compile-region (fi::acl-buffer-p)]
       ["Compile and load file" fi:menu-compile-and-load-file (fi::source-buffer-p)]
+      ["Compile file" fi:menu-compile-file (fi::source-buffer-p)]
       "----"
       ["Find definition" fi:menu-lisp-find-definition (fi::connection-open)]
       ["Find next definition" fi:lisp-find-next-definition (fi::connection-open)]
@@ -470,6 +489,11 @@
   (interactive)
   (when (buffer-file-name)
     (fi:compile-and-load-file (buffer-file-name))))
+
+(defun fi:menu-compile-file ()
+  (interactive)
+  (when (buffer-file-name)
+    (fi:compile-file (buffer-file-name))))
 
 (defun fi:menu-load-file ()
   (interactive)
@@ -563,3 +587,4 @@
 
 (add-hook 'fi:inferior-common-lisp-mode-hook 'fi::install-mode-menus)
 (add-hook 'fi:common-lisp-mode-hook 'fi::install-mode-menus)
+(put 'fi:common-lisp-mode 'font-lock-keywords 'lisp-font-lock-keywords-2)

@@ -1,6 +1,43 @@
+Thu Dec  8 14:16:49 1994  Steve Haflich  (smh@vapor)
+
+	* fi-site-load.el renamed to
+	* fi-build.el
+	so all file names are distinct within the impoverished acuities
+	of the Windows file system.
+
+	* fi-site-init.el
+	Version 2.0.15.
+	Rework the discrimination between emacs18, emacs19, and emacs19 [sic].
+
+	* fi-basic-lep.el
+	No longer need to print the package in a temp buffer, since the
+	package appears in the mode line.
+
+	* fi-emacs19.el
+	Define set-menubar-dirty-flag for compatibility.
+	Added CL buffer popup menu item Compile File.
+
+	* fi-lemacs.el
+	Mostly-unsuccessful attempts to fix initial menu sensitivity on
+	Xemacs 19.11 on some Solaris toolkits:  Add more calls to
+	set-menubar-dirty, and tried some magic	in the manubar manipulation.
+	Added CL buffer popup menu item Compile File.
+
+	* fi-lep.el
+	Call ensure-minibuffer-visible at appropriate times.
+
+	* fi-indent.el
+	Correct accept-values-command-button indent property.
+
+	* fi-modes.el:
+	Use add-hook instead of defvar!
+
+	* fi-stream.el:
+	Document the FSF 19 *background-interaction* difficulty.
+
 Wed Sep 21 15:37:08 1994  Steve Haflich  (smh@vapor)
 
-	* fi-site-init.el: Version 2.0.13.
+	* fi-site-init.el: Version 2.0.13. (actually 2.0.14 - smh 19Dec94)
 
 	* fi-indent.el: Add property for pprint=logical-block.
 

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-stream.el,v 1.12 1994/08/23 01:46:44 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-stream.el,v 1.13 1994/12/21 22:36:26 smh Exp $
 ;;
 
 (defmacro fi::with-keywords (variables rest-arg &rest body)
@@ -24,6 +24,10 @@
 	   body)))
 
 (defun lep::create-listener-stream (&optional args)
+  ;; This function has problems because it may be invoked asynchronously
+  ;; by background computation.  See bug3267.
+  ;; FSF emacs has strange scroll position when a buffer pops up because
+  ;; it won't listen to any positioning operations until emacs input quiesces.
   (fi:lisp-push-window-configuration)
   (fi::with-keywords (parent x y width height splitp name) args
     (let* ((fi::listener-protocol ':stream)

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.59 1993/12/11 00:15:23 georgej Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.60 1994/12/21 22:36:22 smh Exp $
 
 ;;;; Mode initializations
 
@@ -54,18 +54,18 @@ fi:common-lisp-mode.")
 (defvar fi:subprocess-mode nil
   "Non-nil when buffer has a subprocess.")
 
-(defvar fi:common-lisp-mode-hook
-    (function
-     (lambda ()
-       (when (not (fi:member-equal "; pkg:" mode-line-process))
-	 (setq mode-line-process
-	   (append mode-line-process
-		   '((fi:package ("; pkg:" fi:package))))))
-       (when (not (fi:member-equal "; rt:" mode-line-process))
-	 (setq mode-line-process
-	   (append mode-line-process
-		   '((fi:readtable ("; rt:" fi:readtable))))))))
-  "*The initial value of this hook, which is run whenever a Lisp mode is
+(add-hook 'fi:common-lisp-mode-hook
+	  (function
+	   (lambda ()
+	     (when (not (fi:member-equal "; pkg:" mode-line-process))
+	       (setq mode-line-process
+		 (append mode-line-process
+			 '((fi:package ("; pkg:" fi:package))))))
+	     (when (not (fi:member-equal "; rt:" mode-line-process))
+	       (setq mode-line-process
+		 (append mode-line-process
+			 '((fi:readtable ("; rt:" fi:readtable))))))))
+	  "*The initial value of this hook, which is run whenever a Lisp mode is
 entered, causes the `package' and readtable (if any) to be displayed in the
 mode line.  It uses MODE-LINE-PROCESS, which has no use in non-subprocess
 buffers.")

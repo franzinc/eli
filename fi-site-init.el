@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.64 1994/09/21 22:52:40 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.65 1994/12/21 22:36:24 smh Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -95,11 +95,11 @@ function, it is changed to a list of functions."
 ;; the test for GNU Emacs 19 has to be after that for lemacs, because
 ;; the version of lemacs is 19.* too!
 
-(when (eq fi::emacs-type 'lemacs19)
-  (load "fi-lemacs"))
-
-(when (eq fi::emacs-type 'emacs19)
-  (load "fi-emacs19"))
+(cond ((eq fi::emacs-type 'lemacs19)
+       (load "fi-lemacs"))
+      ((eq fi::emacs-type 'emacs19)
+       (load "fi-emacs19"))
+      (t (load "fi-emacs18")))
 
 (defun fi::top-level ()
   (fi::initialize-emacs-lisp-interface)

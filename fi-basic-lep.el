@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.35 1994/08/01 22:48:06 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.36 1994/12/21 22:36:09 smh Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -44,8 +44,11 @@ printed in the minibuffer can easily be erased.")
 	   (height (1- (window-height window)))
 	   (width (window-width window))
 	   (text-try
-	    (cond (fi:package (format "[package: %s] %s" fi:package text))
-		  (t text)))
+	    ;; cond clause commented 18oct94 smh.
+	    ;; Now that package is indicated in the mode line, the real estate
+	    ;; can be saved.
+	    (cond ;; (fi:package (format "[package: %s] %s" fi:package text))
+	     (t text)))
 	   (lines/len (fi::frob-string text-try)))
       (if (and (< (car lines/len) 2)
 	       (<= (second lines/len) width))
@@ -53,8 +56,9 @@ printed in the minibuffer can easily be erased.")
 	    (message "%s" text-try)
 	    (fi::note-background-reply))
 	(fi::show-some-text-1
-	 (cond (fi:package (format "[package: %s]\n%s" fi:package text))
-	       (t text))
+	 ;; cond clause commented 18oct94 smh.  See above.
+	 (cond ;; (fi:package (format "[package: %s]\n%s" fi:package text))
+	  (t text))
 	 (or xpackage fi:package))))))
 
 (defun fi::frob-string (text)
@@ -142,6 +146,7 @@ printed in the minibuffer can easily be erased.")
 (defun fi:reset-lep-connection ()
   "Reset the Lisp-editor protocol connection."
   (interactive)
+  (set-menubar-dirty-flag)		;smh 31oct94
   (setq fi::*connection* nil))
 
 ;;; Start up a connection as soon as we know where to connect to.
@@ -204,8 +209,11 @@ emacs-lisp interface cannot be started.
 	   ;; This might affect something!
 	   ;; For example, gnu 19 has some good features.
 	   (send-string process (format "\"%s\"\n" (emacs-version)))
-	   (setq fi::*connection*
-	     (fi::make-connection (current-buffer) host process))))
+	   (prog1
+	       (setq fi::*connection*
+		 (fi::make-connection (current-buffer) host process))
+	     (set-menubar-dirty-flag)	;smh 31oct94
+	     )))
 	(t
 	 (fi:error
 	  "

@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-emacs19.el,v 2.7 1994/09/21 22:43:14 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-emacs19.el,v 2.8 1994/12/21 22:36:12 smh Exp $
 
 
 (unless (string-match "^18." emacs-version) ;Allows compilation on 18.
@@ -249,9 +249,12 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;(defun fi::install-menubar (menu-bar)
+;  (set-menubar (delete (assoc (car menu-bar) current-menubar)
+;		       (copy-sequence current-menubar)))
+;  (add-menu nil (car menu-bar) (cdr menu-bar) "Help"))
+
 (defun fi::install-menubar (menu-bar)
-  (set-menubar (delete (assoc (car menu-bar) current-menubar)
-		       (copy-sequence current-menubar)))
   (add-menu nil (car menu-bar) (cdr menu-bar) "Help"))
 
 (push '(progn
@@ -451,6 +454,7 @@
       ["Compile form" fi:lisp-compile-active-region-or-defun (fi::acl-buffer-p)]
       ["Compile region" fi:lisp-compile-region (fi::acl-buffer-p)]
       ["Compile and load file" fi:menu-compile-and-load-file (fi::source-buffer-p)]
+      ["Compile file" fi:menu-compile-file (fi::source-buffer-p)]
       "----"
       ["Find definition" fi:menu-lisp-find-definition (fi::connection-open)]
       ["Find next definition" fi:lisp-find-next-definition (fi::connection-open)]
@@ -479,6 +483,11 @@
   (interactive)
   (when (buffer-file-name)
     (fi:compile-and-load-file (buffer-file-name))))
+
+(defun fi:menu-compile-file ()
+  (interactive)
+  (when (buffer-file-name)
+    (fi:compile-file (buffer-file-name))))
 
 (defun fi:menu-load-file ()
   (interactive)
@@ -572,4 +581,13 @@
 
 (add-hook 'fi:inferior-common-lisp-mode-hook 'fi::install-mode-menus)
 (add-hook 'fi:common-lisp-mode-hook 'fi::install-mode-menus)
+(add-hook 'fi:common-lisp-mode-hook
+	  (function
+	   (lambda ()
+	     (when window-system	;Is fontification possible?
+	       (require 'font-lock)
+	       (when (boundp 'lisp-font-lock-keywords-2)
+		 (setq font-lock-keywords lisp-font-lock-keywords-2))))))
 
+(defun set-menubar-dirty-flag ()	;smh 31oct94
+  (setq lucid-menu-bar-dirty-flag t))

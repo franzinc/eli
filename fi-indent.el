@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.51 1994/09/21 22:43:17 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.52 1994/12/21 22:36:15 smh Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If non-nil, semicolons that begin comments are indented as they are
@@ -1720,7 +1720,7 @@ if matched at the beginning of a line, means don't indent that line."
   (put 'horizontally tag 1)
   (put 'catch-abort-gestures tag 1)
   (put 'accepting-values tag 1)
-  (put 'accept-values-command-button tag 1)
+  (put 'accept-values-command-button tag 2)
   (put 'changing-space-requirements tag 1)
   (put 'define-application-frame tag '(like defclass))
   )
