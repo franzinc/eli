@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 3.3 2004/03/26 18:42:59 layer Exp $
+;; $Id: fi-subproc.el,v 3.4 2004/05/04 21:08:48 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -128,12 +128,7 @@ readtable.")
 
 (defvar fi:emacs-to-lisp-transaction-directory
     (if (on-ms-windows)
-	(or (and (file-exists-p "c:/tmp") "c:/tmp")
-	    (and (file-exists-p "c:/temp") "c:/temp")
-	    (getenv "TEMP")
-	    (getenv "TMP")
-	    (error
-	     "c:/tmp doesn't exist, nor are there TEMP or TMP env variables"))
+	(fi::temporary-directory)
       "/tmp")
   "*The directory in which files for Emacs/Lisp communication are stored.
 When using Lisp and Emacs on different machines, this directory must be
@@ -146,15 +141,7 @@ If nil, the results of evalation will be printed in the minibuffer if they
 fit, or otherwise in a popup buffer.")
 
 (defvar fi:start-lisp-interface-arguments
-    (function
-     (lambda (use-background-streams &optional lisp-image-name)
-       (let ((args (list "-e" (format "(excl:start-emacs-lisp-interface %s)"
-				      use-background-streams))))
-	 (when lisp-image-name
-	   (when (string-match "^~" lisp-image-name)
-	     (setq lisp-image-name (expand-file-name lisp-image-name)))
-	   (setq args (append (list "-I" lisp-image-name) args)))
-	 args)))
+    'fi::start-lisp-interface
   "*This value of this variable determines whether or not the emacs-lisp
 interface is started automatically when fi:common-lisp is used to run
 Common Lisp images.   If non-nil, then a the value of this variable should
@@ -364,6 +351,14 @@ keyboard-quit function will interrupt the waiting, however.")
 	       (list (symbol-name (car cs)) (symbol-name (cdr cs))))))
     (set-process-coding-system process (car ncs) (cadr ncs))))
 
+(defvar fi:eli-compatibility-mode t
+  "*If non-nil, then check for a Lisp running on port 9666, which is the
+port used by ACL 6.2 and before.  Set this variable to `nil' if you have
+problems starting Lisp from Emacs and only use the Emacs and Lisp portions
+from the same Lisp distribution.")
+
+(defvar fi::cl-process-name "common-lisp")
+
 (defun fi:common-lisp (&optional buffer-name directory executable-image-name
 				 image-args host image-file)
   "Create a Common Lisp subprocess and put it in the buffer named by
@@ -488,8 +483,9 @@ be a string. Use the 6th argument for image file."))
 		   ;;
 		   ;; What we really just want to prevent is multiple
 		   ;; connections.
-		   (let* ((buffer-name (fi::calc-buffer-name buffer-name
-							     "common-lisp"))
+		   (let* ((buffer-name
+			   (fi::calc-buffer-name buffer-name
+						 fi::cl-process-name))
 			  (buffer (get-buffer buffer-name)))
 		     (or (not (fi::lep-open-connection-p))
 			 (and buffer
@@ -508,12 +504,24 @@ be a string. Use the 6th argument for image file."))
 	 (process-connection-type fi::common-lisp-connection-type) ;bug3033
 	 (proc
 	  (if (and (on-ms-windows) fi::process-is-local)
-	      ;; The resulting *common-lisp* buffer is not Lisp's initial
-	      ;; *terminal-io*, so the emacs-mule *terminal-io* external-format
-	      ;; setting is done in the same way as fi:open-lisp-listener.
-	      (fi::common-lisp-1-windows host buffer-name directory
-					 executable-image-name image-file
-					 image-args real-args)
+	      (let ((proc (fi::socket-start-lisp nil fi::cl-process-name
+						 executable-image-name
+						 real-args)))
+		(sleep-for 1) ;; wait for process to start
+		(if (and fi:eli-compatibility-mode
+			 (fi::eli-compat-mode-p 9666))
+		    ;; A Lisp running an older version of eli was detected,
+		    ;; start using the old code
+		    (fi::common-lisp-1-windows-compat
+		     host buffer-name directory executable-image-name
+		     image-file image-args)
+		  ;; The resulting *common-lisp* buffer is not Lisp's initial
+		  ;; *terminal-io*, so the emacs-mule *terminal-io*
+		  ;; *external-format setting is done in the same way as
+		  ;; *fi:open-lisp-listener.
+		  (fi::common-lisp-1-windows proc host buffer-name directory
+					     executable-image-name image-file
+					     image-args)))
 	    (let ((p (fi::common-lisp-1-unix host buffer-name directory
 					     executable-image-name image-file
 					     image-args real-args)))
@@ -536,39 +544,69 @@ be a string. Use the 6th argument for image file."))
       (setq fi:common-lisp-directory directory))
     proc))
 
-(defun fi::common-lisp-1-windows (host buffer-name directory
-				  executable-image-name image-file image-args
-				  real-args)
-  (let* ((process-name "common-lisp")
-	 (startup-message
-	  (concat
-	   "\n====================================="
-	   "=========================\n"
-	   (format "Starting image `%s'\n" executable-image-name)
-	   (when image-file
-	     (format "  with image (dxl) file `%s'\n" image-file))
-	   (if image-args
-	       (format "  with arguments `%s'\n" image-args)
-	     "  with no arguments\n")
-	   (format "  in directory `%s'\n" directory)
-	   (format "  on machine `%s'.\n" host)
-	   "\n"))
-	 (proc (fi::socket-start-lisp nil process-name
-				      executable-image-name real-args))
-	 (connection-file
-	  (format "%s\\elistartup%d"
-;;;; This calculation needs to be the same as in ACL's
-;;;; sys:temporary-directory, otherwise the rendevzous file won't be
-;;;; found.
-		  (let ((temp (getenv "TEMP"))
-			(tmp (getenv "TMP")))
-		    (or (and temp (fi::probe-file temp))
-			(and tmp (fi::probe-file tmp))
-			(fi::probe-file "/tmp/")
-			(fi::probe-file "c:/tmp/")
-			(fi::probe-file "c:/")))
-		  (process-id proc)))
-	 (i 0))
+(defun fi::eli-compat-mode-p (port)
+  (let (proc)
+    (condition-case ()
+	(setq proc (open-network-stream "*eli-compat*" nil "localhost" port))
+      (error))
+    (cond (proc
+	   ;; something detected on port, kill proc and return `t'
+	   (delete-process proc)
+	   t)
+	  (t nil))))
+
+(defun fi::common-lisp-1-windows-compat (host buffer-name directory
+					 executable-image-name image-file
+					 image-args)
+  (let ((i 0)
+	(process nil))
+    (unless fi::lisp-host (setq-default fi::lisp-host host))
+    (unless fi::lisp-port (setq-default fi::lisp-port 9666))
+    (unless fi::lisp-password (setq-default fi::lisp-password 0))
+    (fi::set-environment fi:subprocess-env-vars)
+    ;; So fi::make-tcp-connection knows we've started a Lisp:
+    (setq fi::common-lisp-backdoor-main-process-name fi::cl-process-name)
+    (while
+	(condition-case condition
+	    (progn
+	      (setq process
+		(let ((fi::muffle-open-network-stream-errors t))
+		  (fi::make-tcp-connection
+		   buffer-name 1
+		   'fi:lisp-listener-mode fi:common-lisp-prompt-pattern
+		   fi::lisp-host fi::lisp-port fi::lisp-password
+		   'fi::setup-tcp-connection)))
+	      nil)
+	  (error
+	   (and fi::last-network-condition
+		(consp fi::last-network-condition)
+		(eq 'file-error (first fi::last-network-condition))
+		(equal "connection failed"
+		       (second fi::last-network-condition)))))
+      (cond
+       (fi:common-lisp-subprocess-wait-forever)
+       ((and (> i 0) (zerop (mod i 10)))
+	;; Every 10 iterations, ask if they still want to wait:
+	(when (not (y-or-n-p
+		    "Continue waiting for ACL to startup? "))
+	  (error "Connection aborted.")))
+       (t
+	(when (> i fi:common-lisp-subprocess-timeout)
+	  (error "1 Couldn't make connection to existing Lisp."))))
+      (sleep-for 1)
+      (setq i (+ i 1)))
+    (unless process
+      (error "2 Couldn't make connection to existing Lisp."))
+    (setq default-directory directory)
+    process))
+
+(defun fi::common-lisp-1-windows (proc host buffer-name directory
+				  executable-image-name image-file
+				  image-args)
+  (let ((connection-file
+	 (format "%s\\elistartup%d" (fi::temporary-directory)
+		 (process-id proc)))
+	(i 0))
 
     (while (not (file-exists-p connection-file))
       (cond
@@ -582,11 +620,8 @@ be a string. Use the 6th argument for image file."))
       (sleep-for 1)
       (setq i (+ i 1)))
 
-    ;; this is temporary, so the fi::make-tcp-connection in
-    ;; fi::start-interface-via-file-1 works.
-    ;; fi::start-interface-via-file-1 will change this to point to the
-    ;; tcp connection, since that one has a buffer.
-    (setq fi::common-lisp-backdoor-main-process-name process-name)
+    ;; So fi::make-tcp-connection knows we've started a Lisp:
+    (setq fi::common-lisp-backdoor-main-process-name fi::cl-process-name)
 
     (let ((proc (fi::start-interface-via-file-1 host buffer-name
 						connection-file)))
@@ -611,7 +646,7 @@ be a string. Use the 6th argument for image file."))
 	  "\n")))
     (fi::make-subprocess
      startup-message
-     "common-lisp"
+     fi::cl-process-name
      buffer-name
      directory
      'fi:inferior-common-lisp-mode
@@ -708,15 +743,20 @@ be a string. Use the 6th argument for image file."))
 ;;;; new style:
 	(win32-start-process-show-window t)
 	(w32-start-process-show-window t)
-	(win32-quote-process-args t)
-	(w32-quote-process-args t)
+	(win32-quote-process-args nil)
+	;; must be nil now, because emacs does weird things with double
+	;; quotes.  See bug14313 for more info.
+	(w32-quote-process-args nil)
 	;; from Greg Klanderman:
 	;; XEmacs 21 NT does this differently...
 	(nt-quote-args-functions-alist '(("." . nt-quote-args-double-quote))))
     (apply (function start-process)
 	   process-name
 	   nil ;; buffer-name
-	   image arguments)))
+	   image
+	   (mapcar 'shell-quote-argument arguments)
+	   ;;arguments
+	   )))
 
 (defun fi:open-lisp-listener (&optional buffer-number buffer-name
 					setup-function)

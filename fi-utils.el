@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 3.0 2003/12/15 22:52:58 layer Exp $
+;; $Id: fi-utils.el,v 3.1 2004/05/04 21:08:48 layer Exp $
 
 ;;; Misc utilities
 
@@ -1163,3 +1163,52 @@ created by fi:common-lisp."
    (t
     ;; look back from the point for the correct package name
     (save-excursion (fi::parse-package-from-buffer t t t)))))
+
+(defun fi::temporary-directory ()
+;;;; This calculation needs to be the same as in ACL's
+;;;; sys:temporary-directory, otherwise the rendevzous file won't be
+;;;; found.
+  (let ((temp (getenv "TEMP"))
+	(tmp (getenv "TMP")))
+    (or (and temp (fi::probe-file temp))
+	(and tmp (fi::probe-file tmp))
+	(fi::probe-file "/tmp/")
+	(fi::probe-file "c:/tmp/")
+	(fi::probe-file "c:/"))))
+
+(defun fi::start-lisp-interface (use-background-streams
+				 &optional lisp-image-name)
+  (let* ((temp-file
+	  (format "%s\\elidaemon%s" (fi::temporary-directory)
+		  (emacs-pid)))
+	 (args (list "-L" temp-file
+		     "-e"
+		     (format "(delete-file \"%s\")"
+			     (substitute ?/ ?\\ temp-file)))))
+
+    (when lisp-image-name
+      (when (string-match "^~" lisp-image-name)
+	(setq lisp-image-name (expand-file-name lisp-image-name)))
+      (setq args (append (list "-I" lisp-image-name) args)))
+    
+    (with-temp-file temp-file
+      (insert
+       (if (on-ms-windows)
+	   (format
+	    "\
+ (if (fboundp (quote excl::new-start-emacs-lisp-interface))\
+     (excl::new-start-emacs-lisp-interface :background-streams %s)\
+   (progn\
+     (format t\
+      \"An error (~s) starting older Lisps from Emacs can be ignored.\"\
+      \"eof encountered on stream\")\
+     (excl:start-emacs-lisp-interface %s)))\n"
+	    use-background-streams use-background-streams)
+	 (format
+	  "\
+ (if (fboundp (quote excl::new-start-emacs-lisp-interface))\
+     (excl::new-start-emacs-lisp-interface :background-streams %s)\
+   (excl:start-emacs-lisp-interface %s))\n"
+	  use-background-streams use-background-streams))))
+    
+    args))
