@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.74 1992/01/13 22:29:40 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.75 1992/01/13 22:31:15 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -189,8 +189,8 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
 ;;;;;;;;;;;;;;;;;;;;; inferior lisp mode related functions
 
 (defvar fi:lisp-mode-auto-indent t
-  "*If non-nil, then the command bound to \\r will indent, newline and
-indent.  It does this by funcalling the value bound to
+  "*If non-nil, then the command bound to \\r, fi:lisp-mode-newline, will
+indent, newline and indent.  It does this by funcalling the value bound to
 indent-line-function.")
 
 (defun fi:lisp-mode-newline ()
