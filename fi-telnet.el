@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-telnet.el,v 1.5 1991/02/21 22:01:00 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-telnet.el,v 1.6 1991/03/12 18:30:33 layer Exp $
 
 (defvar fi:telnet-mode-map nil
   "The telnet major-mode keymap.")
@@ -88,23 +88,29 @@ in the above order."
 
 (defun fi:telnet (&optional buffer-number host)
   "Start an telnet in a buffer whose name is determined from the optional
-prefix argument BUFFER-NUMBER.  Shell buffer names start with `*HOSTNAME'
-and end with `*', with an optional `-N' in between.  If BUFFER-NUMBER is
-not given it defaults to 1.  If BUFFER-NUMBER is >= 0, then the buffer is
-named `*HOSTNAME-<BUFFER-NUMBER>*'.  If BUFFER-NUMBER is < 0, then the first
-available buffer name is chosen.
+prefix argument BUFFER-NUMBER and the HOST.  Telnet buffer names start with
+`*HOST*' and end with an optional \"<N>\".  If BUFFER-NUMBER is not given
+it defaults to 1.  If BUFFER-NUMBER is 1, then the trailing \"<1>\" is
+omited.  If BUFFER-NUMBER is < 0, then the first available buffer name is
+chosen (a buffer with no process attached to it.
 
 The host name is read from the minibuffer.
 
-The image file and image arguments are taken from the variables
+The telnet image file and image arguments are taken from the variables
 `fi:telnet-image-name' and `fi:telnet-image-arguments'."
   (interactive "p\nsTelnet to host: ")
-  (fi::make-subprocess buffer-number host 'fi:telnet-mode
-		       fi:telnet-prompt-pattern
-		       (format "%senv" exec-directory)
-		       (append (list "TERM=dumb" fi:telnet-image-name host)
-			       fi:telnet-image-arguments)
-		       'fi::telnet-filter))
+  (let ((fi:subprocess-env-vars
+	 '(("EMACS" . "t")
+	   ("TERM" . "dumb")
+	   ("DISPLAY" . (getenv "DISPLAY")))))
+    (fi::make-subprocess host
+			 buffer-number
+			 default-directory
+			 'fi:telnet-mode
+			 fi:telnet-prompt-pattern
+			 fi:telnet-image-name
+			 (cons host fi:telnet-image-arguments)
+			 'fi::telnet-filter)))
 
 (defun fi:telnet-start-garbage-filter ()
   (interactive)

@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-shell.el,v 1.12 1991/01/31 14:47:43 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-shell.el,v 1.13 1991/03/12 18:30:30 layer Exp $
 
 (defvar fi:shell-mode-map nil
   "The shell major-mode keymap.")
@@ -79,27 +79,20 @@ in the above order."
   (run-hooks 'fi:subprocess-mode-hook 'fi:shell-mode-hook))
 
 (defun fi:shell (&optional buffer-number)
-  "Start a sub-shell in a buffer whose name is determined from the optional
-prefix argument BUFFER-NUMBER.  Shell buffer names start with `*shell'
-and end with `*', with an optional `-N' in between.  If BUFFER-NUMBER is
-not given it defaults to 1.  If BUFFER-NUMBER is >= 0, then the buffer is
-named `*shell-<BUFFER-NUMBER>*'.  If BUFFER-NUMBER is < 0, then the first
-available buffer name is chosen.
+  "Start a shell in a buffer whose name is determined from the optional
+prefix argument BUFFER-NUMBER.  Shell buffer names start with `*shell*'
+and end with an optional \"<N>\".  If BUFFER-NUMBER is not given it defaults
+to 1.  If BUFFER-NUMBER is 1, then the trailing \"<1>\" is omited.  If
+BUFFER-NUMBER is < 0, then the first available buffer name is chosen (a
+buffer with no process attached to it.
 
-The image file and image arguments are taken from the variables
-`fi:shell-image-name' and `fi:shell-image-arguments'.
-
-See fi:explicit-shell."
+The shell image file and image arguments are taken from the variables
+`fi:shell-image-name' and `fi:shell-image-arguments'."
   (interactive "p")
-  (fi::make-subprocess
-   buffer-number "shell" 'fi:shell-mode
-   fi:shell-prompt-pattern fi:shell-image-name fi:shell-image-arguments))
-
-(defun fi:explicit-shell (&optional buffer-number
-				    image-name image-arguments)
-  "The same as fi:shell, except that the image and image arguments
-are read from the minibuffer."
-  (interactive "p\nsImage name: \nxImage arguments (a list): ")
-  (fi::make-subprocess
-   buffer-number "shell" 'fi:shell-mode fi:shell-prompt-pattern
-   image-name image-arguments))
+  (fi::make-subprocess "shell"
+		       buffer-number
+		       default-directory
+		       'fi:shell-mode
+		       fi:shell-prompt-pattern
+		       fi:shell-image-name
+		       fi:shell-image-arguments))

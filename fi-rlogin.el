@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.19 1991/02/21 22:01:30 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.20 1991/03/12 18:30:25 layer Exp $
 
 (defvar fi:rlogin-mode-map nil
   "The rlogin major-mode keymap.")
@@ -86,43 +86,28 @@ in the above order."
 
 (defun fi:rlogin (&optional buffer-number host)
   "Start an rlogin in a buffer whose name is determined from the optional
-prefix argument BUFFER-NUMBER.  Shell buffer names start with `*HOSTNAME'
-and end with `*', with an optional `-N' in between.  If BUFFER-NUMBER is
-not given it defaults to 1.  If BUFFER-NUMBER is >= 0, then the buffer is
-named `*HOSTNAME-<BUFFER-NUMBER>*'.  If BUFFER-NUMBER is < 0, then the first
-available buffer name is chosen.
+prefix argument BUFFER-NUMBER and the HOST.  Rlogin buffer names start with
+`*HOST*' and end with an optional \"<N>\".  If BUFFER-NUMBER is not given
+it defaults to 1.  If BUFFER-NUMBER is 1, then the trailing \"<1>\" is
+omited.  If BUFFER-NUMBER is < 0, then the first available buffer name is
+chosen (a buffer with no process attached to it.
 
 The host name is read from the minibuffer.
 
-The image file and image arguments are taken from the variables
-`fi:rlogin-image-name' and `fi:rlogin-image-arguments'.
-
-See fi:explicit-shell."
+The rlogin image file and image arguments are taken from the variables
+`fi:rlogin-image-name' and `fi:rlogin-image-arguments'."
   (interactive "p\nsRemote login to host: ")
   (let ((fi:subprocess-env-vars
 	 '(("EMACS" . "t")
 	   ("TERM" . "dumb")
 	   ("DISPLAY" . (getenv "DISPLAY")))))
-    (fi::make-subprocess buffer-number host 'fi:rlogin-mode
+    (fi::make-subprocess host
+			 buffer-number
+			 default-directory
+			 'fi:rlogin-mode
 			 fi:rlogin-prompt-pattern
 			 fi:rlogin-image-name
 			 (cons host fi:rlogin-image-arguments)
-			 'fi::rlogin-filter)))
-
-(defun fi:explicit-rlogin (&optional buffer-number host
-				     image-name image-arguments)
-  "The same as fi:rlogin, except that the image and image arguments
-are read from the minibuffer."
-  (interactive
-   "p\nsRemote login to host: \nsImage name: \nxImage arguments (a list): ")
-  (let ((fi:subprocess-env-vars
-	 '(("EMACS" . "t")
-	   ("TERM" . "dumb")
-	   ("DISPLAY" . (getenv "DISPLAY")))))
-    (fi::make-subprocess buffer-number host 'fi:rlogin-mode
-			 fi:rlogin-prompt-pattern
-			 image-name
-			 (cons host image-arguments)
 			 'fi::rlogin-filter)))
 
 (defun fi::rlogin-filter (process output)
