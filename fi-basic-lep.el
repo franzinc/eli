@@ -8,11 +8,10 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-basic-lep.el,v 1.47.6.3.2.1 2001/11/12 22:09:23 layer Exp $
+;; $Id: fi-basic-lep.el,v 1.47.6.3.2.2 2001/11/29 23:24:34 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
-(defvar fi::lep-debug nil)		; for debugging
 (defvar fi::trace-lep-filter nil)	; for debugging
 
 (defvar session) ;; yuck
@@ -194,7 +193,11 @@ emacs-lisp interface cannot be started.
 (defun fi::make-connection-to-lisp (host port passwd ipc-version)
   (cond ((eq ipc-version fi::required-ipc-version)
 	 (let* ((proc-name (format "*LEP %s %d %d*" host port passwd))
-		(buffer-name (if fi::lep-debug proc-name))
+		;; buffer-name used to be non-nil only when fi::lep-debug
+		;; was non-nil, but changes to lep::make-session-for-lisp
+		;; depend on there being a buffer associated with the
+		;; process.  So, we now do this in all cases.
+		(buffer-name proc-name)
 		(buffer (when buffer-name
 			  (get-buffer-create buffer-name)))
 		(process (fi::open-network-stream proc-name nil host port)))
@@ -519,6 +522,9 @@ versions of the emacs-lisp interface.
   (let ((session (fi::make-session session-id nil))
 	(done nil)
 	(dead (or (eq 'closed (process-status process))
+		  ;; The following test relies on
+		  ;; fi::make-connection-to-lisp associating the process
+		  ;; with a buffer IN ALL CASES, not just for debugging.
 		  (null (process-buffer process)))))
     (fi::add-session connection session)
     (unwind-protect

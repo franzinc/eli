@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 1.72.6.2 2001/06/05 16:01:45 layer Exp $
+;; $Id: fi-utils.el,v 1.72.6.2.2.1 2001/11/29 23:24:34 layer Exp $
 
 ;;; Misc utilities
 
@@ -1084,8 +1084,8 @@ created by fi:common-lisp."
       (fi::set-connection-vars command))
 
     ;; need to change the name of this one:
-    (setq fi:connect-to-windows t)
-    (let ((host fi::lisp-host)
+    (let ((fi:connect-to-windows t)
+	  (host fi::lisp-host)
 	  (port fi::lisp-port)
 	  (pw fi::lisp-password)
 	  (version fi::lisp-ipc-version))
