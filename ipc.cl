@@ -1,4 +1,4 @@
-;;					-[Mon Sep  3 00:20:27 1990 by layer]-
+;;					-[Mon Sep  3 11:00:39 1990 by layer]-
 ;;
 ;; Allegro CL IPC interface
 ;;
@@ -33,7 +33,7 @@
 #+has-rcsnote
 (si::rcsnote
  "ipc"
- "$Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.31 1990/09/03 00:20:35 layer Exp $")
+ "$Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.32 1990/09/03 11:06:14 layer Exp $")
 
 (provide :ipc)
 
@@ -278,7 +278,7 @@ listener ever completes, the daemon makes sure its connection is closed."
 			     (lisp_htons (setq *inet-port-used* port)))
 			   (zerop (bind listen-socket-fd
 					listen-sockaddr
-					(ff::cstruct-len 'sockaddr-in))))
+					(ff::cstruct-length 'sockaddr-in))))
 			 (finish-output)
 			 (format t "~d ~d ~a"
 				 port
