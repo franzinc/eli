@@ -1,4 +1,4 @@
-;; $Id: fi-site-init.el,v 1.111.20.4 1999/02/03 02:59:55 layer Exp $
+;; $Id: fi-site-init.el,v 1.111.20.5 1999/02/09 04:49:46 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -9,7 +9,7 @@
 
 (defvar *on-windows-nt*
     (and (on-ms-windows)
-	 (string-match "Windows_NT" (getenv "OS"))))
+	 (string-match "Windows_NT" (or (getenv "OS") ""))))
 
 (setq fi::emacs-type
   (let ((case-fold-search t))

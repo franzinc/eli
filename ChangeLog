@@ -7,6 +7,14 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.16.11
+
+1999-02-08  Kevin Layer  <layer@ultra>
+
+	* fi-site-init.el: fix NT predicate test (again, last fixed in
+	version 2.0.21.16.9)
+
+*******************************************************************************
 2.0.21.16.10
 
 1999-02-04  Kevin Layer  <layer@ultra>
