@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 1.90 2003/10/08 18:42:42 layer Exp $
+;; $Id: fi-lep.el,v 1.91 2003/10/10 22:34:29 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -175,6 +175,8 @@ at file visit time."
 
 (defun fi::translate-putative-logical-pathname (pathname)
   (fi:eval-in-lisp
+   ;; It's important to use %S instead of %s, so that \'s are properly
+   ;; handled.  See discussion in bug8953.
    "cl:(ignore-errors (namestring (translate-logical-pathname \"%S\")))"
    pathname))
 

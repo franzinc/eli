@@ -7,11 +7,6 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
-join from acl62 to trunk on 9/29/03
-command:
-  join.sh acl62 acl62_to_trunk_merge_070303 acl62_to_trunk_merge_092903 eli
-
-*******************************************************************************
 2.4.2
 
 2003-10-08  Kevin Layer  <layer@crikey>
@@ -23,6 +18,11 @@ command:
 	- (fi::translate-putative-logical-pathname): bug8953
 	- (fi::full-package-name): bug8801
 	- (fi:lisp-complete-symbol): bug7874
+
+*******************************************************************************
+join from acl62 to trunk on 9/29/03
+command:
+  join.sh acl62 acl62_to_trunk_merge_070303 acl62_to_trunk_merge_092903 eli
 
 *******************************************************************************
 2.3.6
