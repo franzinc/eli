@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.95 1991/03/13 16:12:17 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.96 1991/03/14 10:16:19 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -488,7 +488,8 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	  (if (and (fi::fast-search-string 1 output)
 		   (string-match
 		    "\\([^\0]*\\)\\(.*\\)\\([^\0]*\\)"
-		    output))
+		    output)
+		   (setq *frammis* output))
 	      (let* ((res (concat
 			   (substring output (match-beginning 1)
 				      (match-end 1))
