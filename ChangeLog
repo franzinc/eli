@@ -11,6 +11,8 @@ For more detailed instructions on filling in the ChangeLog form, see
 
 2003-10-14    <layer@HOBART>
 
+>>>	* fi-subproc.el (fi:user-env-vars): rfe4337: new variable
+	  fi:user-env-vars
 	* fi-subproc.el (fi::read-file-name): bug9125: fix long standing
 	  annoyance of bogus dxl input in minibuffer
 	* fi-subproc.el (fi::set-environment-use-process-environment):

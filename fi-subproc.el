@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.215 2003/10/14 20:42:39 layer Exp $
+;; $Id: fi-subproc.el,v 1.216 2003/10/14 20:52:46 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -88,6 +88,11 @@ subprocesses.")
   (setq fi:subprocess-env-vars
     (append fi:subprocess-env-vars
 	    '(("SHELL")))))
+
+(defvar fi:user-env-vars nil
+  ;; concept courtesy of John M. Adams
+  "*An alist containing environment variable/value pairs to add to the
+environment of the Lisp started with fi:common-lisp.")
 
 (defvar fi:pop-to-sublisp-buffer-after-lisp-eval nil
   "*If non-nil, then go to the Lisp subprocess buffer after sending
@@ -1001,7 +1006,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 			 fi::process-is-local))
 	    (setq default-directory directory))
 	  (if process (delete-process process))
-	  (fi::set-environment fi:subprocess-env-vars)
+	  (fi::set-environment (fi::compute-subprocess-env-vars))
 	  (let (
 		;;(process-connection-type nil) ;bug3033
 		)
@@ -1530,13 +1535,14 @@ to your `.cshrc' after the `set cdpath=(...)' in the same file."
 
 
 (defun fi::env-vars ()
-  (concat (mapconcat '(lambda (x)
-		       (format "%s=%s" (car x) (eval (eval (cdr x)))))
-		     fi:subprocess-env-vars
-		     " ")
-	  " export "
-	  (mapconcat '(lambda (x) (car x)) fi:subprocess-env-vars " ")
-	  "; "))
+  (let ((env (fi::compute-subprocess-env-vars)))
+    (concat (mapconcat '(lambda (x)
+			 (format "%s=%s" (car x) (eval (eval (cdr x)))))
+		       env
+		       " ")
+	    " export "
+	    (mapconcat '(lambda (x) (car x)) env " ")
+	    "; ")))
 
 (defun fi::set-environment-use-setenv (valist)
   (let (item val)
@@ -1558,6 +1564,9 @@ to your `.cshrc' after the `set cdpath=(...)' in the same file."
 	     (setf process-environment
 	       (remove-if (lambda (x) (string-match match x))
 			  process-environment)))))))
+
+(defun fi::compute-subprocess-env-vars ()
+  (append fi:subprocess-env-vars fi:user-env-vars))
 
 (fset 'fi::set-environment
       (if (boundp 'process-environment)
