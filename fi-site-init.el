@@ -1,4 +1,4 @@
-;; $Id: fi-site-init.el,v 1.81 1996/09/23 18:13:49 layer Exp $
+;; $Id: fi-site-init.el,v 1.82 1996/09/26 19:27:35 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -182,9 +182,7 @@ exists.")
   (fi::load "fi-telnet")
   (fi::load "fi-su"))
 
-(autoload 'fi:clman         "fi-clman" nil t)
-(autoload 'fi:clman-mode    "fi-clman" nil t)
-(autoload 'fi:clman-apropos "fi-clman" nil t)
+(fi::load "fi-clman")
 
 (condition-case nil
     (fi::load "local-fi-developer-hooks")

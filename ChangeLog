@@ -1,3 +1,10 @@
+Thu Sep 26 12:26:01 1996  Kevin Layer  <layer@freezer>
+
+	* fi-clman.el: fix the way various things are found (ie, don't use
+	load-path use the directory in which fi-clman lives in).
+	* fi-site-init.el: don't autoload fi-clman, since that can't use
+	load-path anymore
+
 *******************************************************************************
 2.0.20 alpha.3 release for ACL on Windows
 *******************************************************************************
