@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.42 1988/11/03 17:11:57 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.43 1988/11/18 19:03:20 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -169,7 +169,9 @@ See fi:explicit-common-lisp."
 	       buffer-number "common-lisp" 
 	       'fi:inferior-common-lisp-mode
 	       fi:common-lisp-prompt-pattern
-	       fi:common-lisp-image-name
+	       (if (stringp fi:common-lisp-image-name)
+		   fi:common-lisp-image-name
+		 (funcall fi:common-lisp-image-name))
 	       fi:common-lisp-image-arguments)))
     (setq fi::freshest-common-sublisp-name (process-name proc))
     proc))
@@ -208,7 +210,10 @@ See fi:explicit-remote-common-lisp."
 	       'fi:inferior-common-lisp-mode
 	       fi:common-lisp-prompt-pattern
 	       "rsh"
-	       (append (list host fi:common-lisp-image-name)
+	       (append (list host
+			     (if (stringp fi:common-lisp-image-name)
+				 fi:common-lisp-image-name
+			       (funcall fi:common-lisp-image-name)))
 		       fi:common-lisp-image-arguments))))
     (setq fi::freshest-common-sublisp-name (process-name proc))
     proc))
@@ -276,7 +281,9 @@ See fi:explicit-franz-lisp."
 	       buffer-number "franz-lisp" 
 	       'fi:inferior-franz-lisp-mode
 	       fi:franz-lisp-prompt-pattern
-	       fi:franz-lisp-image-name
+	       (if (stringp fi:franz-lisp-image-name)
+		   fi:franz-lisp-image-name
+		 (funcall fi:franz-lisp-image-name))
 	       fi:franz-lisp-image-arguments)))
     (setq fi::freshest-franz-sublisp-name (process-name proc))
     proc))
@@ -316,8 +323,6 @@ are read from the minibuffer."
       (let ((saved-input-ring fi::input-ring))
 	(funcall mode-function)
 	(setq fi::input-ring saved-input-ring))     
-      (if (not (stringp image-file))
-	  (setq image-file (funcall image-file)))
       (if process (delete-process process))
       (setq process (apply 'start-process
 			   (append (list buffer-name buffer image-file)
