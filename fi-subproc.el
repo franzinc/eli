@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.54 1989/08/17 20:46:44 layer Rel $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.55 1990/08/31 23:47:59 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -222,7 +222,11 @@ See fi:explicit-remote-common-lisp."
 	       'fi:inferior-common-lisp-mode
 	       fi:common-lisp-prompt-pattern
 	       "rsh"
-	       (append (list host fi:common-lisp-image-name)
+	       (append (list host 
+			     (if (consp fi:common-lisp-image-name)
+				 (setq fi:common-lisp-image-name
+				   (funcall fi:common-lisp-image-name))
+			       fi:common-lisp-image-name))
 		       fi:common-lisp-image-arguments))))
     (setq fi::freshest-common-sublisp-name (process-name proc))
     proc))
@@ -511,9 +515,11 @@ are read from the minibuffer."
 (defun fi::subprocess-sentinel (process status)
   t)
 
-(defun fi::subprocess-filter (process output &optional stay)
+(defun fi::subprocess-filter (process output &optional stay cruft)
   "Filter output from processes tied to buffers.
 This function implements continuous output to visible buffers."
+  (if cruft
+      (setq output (fi::substitute-chars-in-string '((?\r)) output)))
   (let* ((old-buffer (current-buffer))
 	 (buffer (process-buffer process))
 	 (in-buffer (eq buffer old-buffer))
