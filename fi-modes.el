@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.44 1991/06/19 22:16:30 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.45 1991/06/20 10:29:31 layer Exp $
 
 ;;;; Mode initializations
 
@@ -491,6 +491,3 @@ package."
       (modify-syntax-entry ?\| "\"   " fi:lisp-mode-syntax-table)
       (modify-syntax-entry ?\[ "_   " fi:lisp-mode-syntax-table)
       (modify-syntax-entry ?\] "_   " fi:lisp-mode-syntax-table)))
-
-(setq write-file-hooks
-  (cons 'fi:find-unbalanced-parenthesis write-file-hooks))
