@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.20 1991/09/16 14:54:23 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.21 1991/09/27 00:58:48 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -628,12 +628,12 @@ versions of the emacs-lisp interface.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defconst fi:lisp-evalserver-timeout 5
+(defvar fi:lisp-evalserver-timeout 5
   "The time which fi:eval-in-lisp will wait before timing out and
 signalling an error.  Without a timeout Emacs would potentially be locked
 out if Lisp did not `return' a result.")
 
-(defconst fi:lisp-evalserver-number-reads 20
+(defvar fi:lisp-evalserver-number-reads 20
   "The number of times the Lisp eval server tries to read from the
 lisp-evalserver process before giving up.  Without this feature Emacs would
 hang if Lisp got into an infinite loop while printing.  If the size of the
