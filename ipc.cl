@@ -20,8 +20,8 @@
 ;; Description:
 ;;  
 
-;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.6 1987/10/23 10:20:26 layer Exp $
-;; $Locker:  $
+;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.7 1987/10/23 18:44:18 layer Exp $
+;; $Locker: layer $
 ;;
 
 ;; This code is a preliminary IPC interface for ExCL.
@@ -124,6 +124,8 @@ files are closed."
     (setf (getf (process-property-list lisp-listener-daemon) ':no-interrupts)
 	  t)))
 
+(defparameter *port* 1123)
+
 (defun lisp-listener-socket-daemon ()
   (let (listen-socket-fd
 	(listen-sockaddr (make-cstruct 'sockaddr-in))
@@ -158,7 +160,7 @@ files are closed."
 
 	  (bzero listen-sockaddr (ff::cstruct-len 'sockaddr-in))
 	  (setf (sockaddr-in-family listen-sockaddr) 2 #|AF_INET|#
-		(sockaddr-in-port listen-sockaddr) 1123)
+		(sockaddr-in-port listen-sockaddr) *port*)
 	  (unless (zerop (bind listen-socket-fd
 			       listen-sockaddr
 			       (ff::cstruct-len 'sockaddr-in)))
@@ -183,13 +185,30 @@ files are closed."
 	     (format t "accept returned error~%")
 	     (perror "accept")
 	     (return-from lisp-listener-socket-daemon nil))
-	   (process-run-function (format nil "Remote Lisp Listener ~d" fd)
-				 'lisp-listener-with-fd-as-terminal-io
-				 fd)))
+	   
+	   (let ((hostaddr (logand (sockaddr-in-addr listen-sockaddr) #xff)))
+	     (format t ";;; starting listener-~d (host ~d)~%" fd
+		     hostaddr)
+	     (if* (not (eql 1 hostaddr))
+		then (format t ";;; access denied for addr ~s~%" hostaddr)
+		     (refuse-connection fd)
+		else (process-run-function
+		       (format nil "listener-~d" fd)
+		       'lisp-listener-with-fd-as-terminal-io
+		       fd)))
+	   ))
       (when listen-socket-fd
 	(mp::mpunwatchfor listen-socket-fd)
 	(fd-close listen-socket-fd)
 	(setq lisp-listener-daemon nil)))))
+
+(defun refuse-connection (fd &aux s)
+  (setq s (excl::make-buffered-terminal-stream fd fd t t))
+  (setf (excl::sm_read-char s) #'mp::stm-bterm-read-string-char-wait)
+  (format s "baaad connection, you luse.~%")
+  (force-output s)
+  (setf (excl::sm_bterm-out-pos s) 0)
+  (close s))
 
 (defun lisp-listener-with-fd-as-terminal-io (fd &aux s)
   (unwind-protect
