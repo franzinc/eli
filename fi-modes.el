@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.26 1988/11/03 17:19:24 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.27 1988/11/03 23:50:16 layer Exp $
 
 ;;;; Mode initializations
 
@@ -57,8 +57,8 @@
 modes.")
 
 (defvar fi:common-lisp-file-types '(".cl" ".lisp" ".lsp")
-  "Extensions of files which go into Common Lisp mode.  This should be set
-before this package is loaded.")
+  "A list of the files which are automatically put in fi:common-lisp-mode.
+This variable should be set before this package is loaded.")
 
 ;;;;
 ;;; The Modes
