@@ -1,15 +1,3 @@
-;; If you have any comments or questions on this interface, please feel
-;; free to contact Franz Inc. at
-;;	Franz Inc.
-;;	Attn: Kevin Layer
-;;	1995 University Ave
-;;	Suite 275
-;;	Berkeley, CA 94704
-;;	(415) 548-3600
-;; or
-;;	emacs-info@franz.com
-;;	uunet!franz!emacs-info
-
 ;; This file has its (distant) roots in lisp/lisp-mode.el, so:
 ;;
 ;; Copyright (C) 1985, 1986, 1987 Free Software Foundation, Inc.
@@ -31,7 +19,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.32 1991/09/10 11:20:20 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.33 1991/09/30 11:38:43 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If non-nil, semicolons that begin comments are indented as they are

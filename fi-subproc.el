@@ -1,5 +1,3 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.127 1991/09/29 17:52:17 layer Exp $
-
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
 ;; Copyright (C) 1985, 1986, 1987 Free Software Foundation, Inc.
@@ -20,6 +18,8 @@
 ;; can know your rights and responsibilities.  It should be in a
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
+
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.128 1991/09/30 11:39:06 layer Exp $
 
 ;; Low-level subprocess mode guts
 

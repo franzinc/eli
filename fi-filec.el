@@ -1,4 +1,14 @@
-;; $Header: /repo/cvs.copy/eli/fi-filec.el,v 1.13 1991/03/15 12:43:03 layer Exp $
+;; Copyright (c) 1987-1991 Franz Inc, Berkeley, Ca.
+;;
+;; Permission is granted to any individual or institution to use, copy,
+;; modify, and distribute this software, provided that this complete
+;; copyright and permission notice is maintained, intact, in all copies and
+;; supporting documentation.
+;;
+;; Franz Incorporated provides this software "as is" without
+;; express or implied warranty.
+
+;; $Header: /repo/cvs.copy/eli/fi-filec.el,v 1.14 1991/09/30 11:39:01 layer Exp $
 
 ;; Command and file name completion
 

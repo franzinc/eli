@@ -1,16 +1,3 @@
-;; If you have any comments or questions on this interface, please feel
-;; free to contact Franz Inc. at
-;;	Franz Inc.
-;;	Attn: Kevin Layer
-;;	1995 University Ave
-;;	Suite 275
-;;	Berkeley, CA 94704
-;;	(415) 548-3600
-;; or
-;;	emacs-info%franz.uucp@Berkeley.EDU
-;;	ucbvax!franz!emacs-info
-;;
-
 ;; Copyright (C) 1985, 1986, 1987 Free Software Foundation, Inc.
 ;;
 ;; This file is derived from part of GNU Emacs.
@@ -30,7 +17,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-ring.el,v 1.12 1991/03/15 12:42:55 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-ring.el,v 1.13 1991/09/30 11:38:54 layer Exp $
 
 ;; This code is very similar to the kill-ring implementation
 ;; and implements the fi::subprocess input ring.  Each fi::subprocess buffer

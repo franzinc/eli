@@ -1,34 +1,18 @@
+;; Copyright (c) 1987-1991 Franz Inc, Berkeley, Ca.
 ;;
-;; copyright (C) 1991 Franz Inc, Berkeley, Ca.
+;; Permission is granted to any individual or institution to use, copy,
+;; modify, and distribute this software, provided that this complete
+;; copyright and permission notice is maintained, intact, in all copies and
+;; supporting documentation.
 ;;
-;; The software, data and information contained herein are the property 
-;; of Franz, Inc.  
-;;
-;; This file (or any derivation of it) may be distributed without 
-;; further permission from Franz Inc. as long as:
-;;
-;;	* it is not part of a product for sale,
-;;	* no charge is made for the distribution, other than a tape
-;;	  fee, and
-;;	* all copyright notices and this notice are preserved.
-;;
-;; If you have any comments or questions on this interface, please feel
-;; free to contact Franz Inc. at
-;;	Franz Inc.
-;;	Attn: Kevin Layer
-;;	1995 University Ave
-;;	Suite 275
-;;	Berkeley, CA 94704
-;;	(415) 548-3600
-;; or
-;;	emacs-info@franz.com
-;;	uunet!franz!emacs-info
-;;
-;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.21 1991/09/27 00:58:48 layer Exp $
+;; Franz Incorporated provides this software "as is" without
+;; express or implied warranty.
+
+;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.22 1991/09/30 11:38:56 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
-(defvar fi::lep-debug nil)			; for debugging
+(defvar fi::lep-debug nil)		; for debugging
 (defvar fi::trace-lep-filter nil)	; for debugging
 
 (defvar fi:pop-up-temp-window-behavior '(other . t)

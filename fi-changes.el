@@ -1,32 +1,16 @@
+;; Copyright (c) 1987-1991 Franz Inc, Berkeley, Ca.
 ;;
-;; copyright (C) 1991 Franz Inc, Berkeley, Ca.
+;; Permission is granted to any individual or institution to use, copy,
+;; modify, and distribute this software, provided that this complete
+;; copyright and permission notice is maintained, intact, in all copies and
+;; supporting documentation.
 ;;
-;; The software, data and information contained herein are the property 
-;; of Franz, Inc.  
-;;
-;; This file (or any derivation of it) may be distributed without 
-;; further permission from Franz Inc. as long as:
-;;
-;;	* it is not part of a product for sale,
-;;	* no charge is made for the distribution, other than a tape
-;;	  fee, and
-;;	* all copyright notices and this notice are preserved.
-;;
-;; If you have any comments or questions on this interface, please feel
-;; free to contact Franz Inc. at
-;;	Franz Inc.
-;;	Attn: Kevin Layer
-;;	1995 University Ave
-;;	Suite 275
-;;	Berkeley, CA 94704
-;;	(415) 548-3600
-;; or
-;;	emacs-info@franz.com
-;;	uunet!franz!emacs-info
-;;
-;; $Header: /repo/cvs.copy/eli/fi-changes.el,v 1.7 1991/08/22 21:29:17 layer Exp $
+;; Franz Incorporated provides this software "as is" without
+;; express or implied warranty.
 
-;;; Support for changed definitions
+;; $Header: /repo/cvs.copy/eli/fi-changes.el,v 1.8 1991/09/30 11:39:16 layer Exp $
+;;
+;; Support for changed definitions
 
 (defun fi:list-buffer-changed-definitions (since)
   "List the definitions in the current buffer which have been added,
