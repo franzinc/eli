@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.56 1991/06/20 10:29:38 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.57 1991/06/20 10:48:34 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -37,10 +37,13 @@ kept.  Buffer local.")
 executed a buffer will be displayed explaining the method for finding
 Lisp definitions.")
 
-(defvar fi:check-for-unbalanced-parens-on-write-file t
+(defvar fi:check-unbalanced-parentheses-when-saving t
   "If non-nil, for the Lisp editing modes (Common Lisp, Emacs Lisp, and
-Franz Lisp) check for unbalanced parentheses before writing the file.  This
-is done by pushing the name of a function on WRITE-FILE-HOOKS.")
+Franz Lisp) check for unbalanced parentheses before writing the file.
+If the value is T, then ask whether or not the file should be written ``as
+is'' if there are too many or few parens--answering no leaves the point at
+the place of error.  If the value is 'warn, then a warning is issued and
+the file is written.")
 
 ;;;;
 ;;; Key defs
@@ -773,20 +776,27 @@ If they are not, position the point at the first syntax error found."
     (if (interactive-p)
 	(message "All parentheses appear to be balanced."))))
 
-(defun fi:check-for-unbalanced-parens-on-write-file ()
-  (if (memq major-mode '(fi:common-lisp-mode fi:emacs-lisp-mode
-			 fi:franz-lisp-mode))
-      (condition-case nil
-	  (fi:find-unbalanced-parenthesis)
-	(error
-	 (message "Warning: parens are not balanced in this buffer.")
-	 (ding)
-	 (sit-for 2))))
-  ;; so the file is written:
-  nil)
+(defun fi:check-unbalanced-parentheses-when-saving ()
+  (if (and fi:check-unbalanced-parentheses-when-saving
+	   (memq major-mode '(fi:common-lisp-mode fi:emacs-lisp-mode
+			      fi:franz-lisp-mode)))
+      (if (eq 'warn fi:check-unbalanced-parentheses-when-saving)
+	  (condition-case nil
+	      (fi:find-unbalanced-parenthesis)
+	    (error
+	     (message "Warning: parens are not balanced in this buffer.")
+	     (ding)
+	     (sit-for 2)
+	     ;; so the file is written:
+	     nil))
+	(condition-case nil
+	    (fi:find-unbalanced-parenthesis)
+	  (error
+	   ;; save file if user types "yes":
+	   (not (y-or-n-p "Parens are not balanced.  Save file anyway? ")))))))
 
 (setq write-file-hooks
-  (cons 'fi:check-for-unbalanced-parens-on-write-file write-file-hooks))
+  (cons 'fi:check-unbalanced-parentheses-when-saving write-file-hooks))
 
 (defun fi:fill-paragraph (arg)
   "Properly fill paragraphs of Lisp comments by inserting the appropriate
