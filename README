@@ -4,7 +4,6 @@
 To use this interface, see the dot.* files.  A guide to the files:
 
 README		this file.
-ChangeLog	a log of all the changes to the source code in this directory.
 spec.out	the spec of this interface (the only documentation available).
 site-init.el	loading this will load and initialize the interface.
 emacs.cl	auxillary functions used by Allegro CL from Emacs.
