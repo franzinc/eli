@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.28 1991/10/29 14:59:37 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.29 1991/11/01 00:12:22 layer Exp $
 
 ;;; Misc utilities
 
@@ -355,41 +355,53 @@ at the beginning of the line."
 	  (lambda (eq completion t)))))))
 
 (defun fi::get-symbol-at-point (&optional up-p)
-  (let ((symbol (condition-case ()
-		    (save-excursion
-		      (if up-p
-			  (let ((opoint (point)))
-			    (cond ((= (following-char) ?\()
-				   (forward-char 1))
-				  ((= (preceding-char) ?\))
-				   (forward-char -1)))
-			    (up-list -1)
-			    (forward-char 1)
-			    (if (looking-at "def")
-				(goto-char opoint)
-			      (if (looking-at "funcall\\|apply")
-				  (progn
-				    (forward-sexp 2)
-				    (backward-sexp 1)
-				    (if (looking-at "#'")
-					(forward-char 2)
-				      (if (looking-at "(function")
-					  (progn
-					    (forward-char 1)
-					    (forward-sexp 2)
-					    (backward-sexp 1)))))))))
-		      (while (looking-at "\\sw\\|\\s_")
-			(forward-char 1))
-		      (if (re-search-backward "\\sw\\|\\s_" nil t)
-			  (progn (forward-char 1)
-				 (buffer-substring
-				  (point)
-				  (progn (forward-sexp -1)
-					 (while (looking-at "\\s'")
-					   (forward-char 1))
-					 (point))))
-			nil))
-		  (error nil))))
+  (let ((symbol
+	 (cond
+	  ((looking-at "\\sw\\|\\s_")
+	   (while (looking-at "\\sw\\|\\s_")
+	     (forward-char 1))
+	   (buffer-substring
+	    (point)
+	    (progn (forward-sexp -1)
+		   (while (looking-at "\\s'")
+		     (forward-char 1))
+		   (point))))
+	  (t
+	   (condition-case ()
+	       (save-excursion
+		 (if up-p
+		     (let ((opoint (point)))
+		       (cond ((= (following-char) ?\()
+			      (forward-char 1))
+			     ((= (preceding-char) ?\))
+			      (forward-char -1)))
+		       (up-list -1)
+		       (forward-char 1)
+		       (if (looking-at "def")
+			   (goto-char opoint)
+			 (if (looking-at "funcall\\|apply")
+			     (progn
+			       (forward-sexp 2)
+			       (backward-sexp 1)
+			       (if (looking-at "#'")
+				   (forward-char 2)
+				 (if (looking-at "(function")
+				     (progn
+				       (forward-char 1)
+				       (forward-sexp 2)
+				       (backward-sexp 1)))))))))
+		 (while (looking-at "\\sw\\|\\s_")
+		   (forward-char 1))
+		 (if (re-search-backward "\\sw\\|\\s_" nil t)
+		     (progn (forward-char 1)
+			    (buffer-substring
+			     (point)
+			     (progn (forward-sexp -1)
+				    (while (looking-at "\\s'")
+				      (forward-char 1))
+				    (point))))
+		   nil))
+	     (error nil))))))
     (or symbol
 	(if (and up-p (null symbol))
 	    (fi::get-symbol-at-point)))))
