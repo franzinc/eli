@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-xemacs.el,v 2.11.6.1 2001/06/05 16:01:46 layer Exp $
+;; $Id: fi-xemacs.el,v 2.11.6.1.2.1 2001/11/02 00:59:52 layer Exp $
 
 (defun fi-find-buffer-visiting (filename)
   (get-file-buffer filename))
@@ -142,8 +142,6 @@
 (defconst fi:composer-menu
     '("Composer"
       ["Start Composer" fi:start-composer (fi::connection-open-composer-loaded-and-stopped)]
-;;;      ["Start Composer with Podium" fi:start-composer-mouse-line
-;;;       (fi::connection-open-composer-loaded-and-stopped)]
       "----"
       ["Inspect" fi:inspect-value (fi::composer-connection-open)]
       ("CLOS"
@@ -180,7 +178,7 @@
        ["Current pointer gesture bindings" fi:composer-help-gesture-bindings
 	(fi::composer-connection-open)])
       "----"
-      ["Exit Composer/Common Windows" fi:composer-exit (fi::composer-connection-open)]
+      ["Exit Composer/Common Windows" fi:composer-exit (fi::composer-connection-open-uncache)]
       ))
 
 (defun fi::connection-open ()
@@ -196,6 +194,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defvar fi::connection-open-composer-loaded nil)
+
+(defvar fi::connection-open-composer-loaded-cached nil)
+
 (defvar fi::composer-connection-open nil)
 (defvar fi::composer-running nil)
 
@@ -215,12 +216,19 @@
 		 (setq fi::connection-open-composer-loaded 'yes)
 	       (setq fi::connection-open-composer-loaded 'no))
 	     (setq fi::composer-cached-connection fi::*connection*)
-	     (set-menubar-dirty-flag)	;smh 31oct94
+	     (set-menubar-dirty-flag)
 	     nil)
 	   (eq fi::connection-open-composer-loaded 'yes))))
 
+(defun fi::connection-open-composer-loaded-cached ()
+  (if fi::connection-open-composer-loaded-cached
+      (eq fi::connection-open-composer-loaded-cached 'yes)
+    (prog1 (fi::connection-open-composer-loaded)
+      (setq fi::connection-open-composer-loaded-cached
+	fi::connection-open-composer-loaded))))
+
 (defun fi::connection-open-composer-loaded-and-stopped ()
-  (and (fi::connection-open-composer-loaded)
+  (and (fi::connection-open-composer-loaded-cached)
        (or (unless fi::composer-running
 	     (if (let ((fi:package nil))
 		   (fi:eval-in-lisp
@@ -230,12 +238,12 @@
                        t)"))
 		 (setq fi::composer-running 'yes)
 	       (setq fi::composer-running 'no))
-	     (set-menubar-dirty-flag)	;smh 31oct94
+	     (set-menubar-dirty-flag)
 	     nil)
 	   (eq fi::composer-running 'no))))
 
 (defun fi::composer-connection-open ()
-  (and (fi::connection-open-composer-loaded)
+  (and (fi::connection-open-composer-loaded-cached)
        (or (unless fi::composer-connection-open
 	     (if (let ((fi:package nil))
 		   (fi:eval-in-lisp
@@ -244,9 +252,24 @@
 			      (connected-to-server-p))"))
 		 (setq fi::composer-connection-open 'yes)
 	       (setq fi::composer-connection-open 'no))
-	     (set-menubar-dirty-flag)	;smh 31oct94
+	     (set-menubar-dirty-flag)
 	     nil)
 	   (eq fi::composer-connection-open 'yes))))
+
+(defun fi::composer-connection-open-uncache ()
+  (and (fi::connection-open-composer-loaded-cached)
+       (or (unless fi::composer-connection-open
+	     (if (let ((fi:package nil))
+		   (fi:eval-in-lisp
+		    "wt::(and ;;(connected-to-epoch-p)
+ 			      (common-windows-initialized-p)
+			      (connected-to-server-p))"))
+		 (setq fi::composer-connection-open 'yes)
+	       (setq fi::composer-connection-open 'no))
+	     (set-menubar-dirty-flag)
+	     nil)
+	   (eq fi::composer-connection-open 'yes)))
+  (setq fi::connection-open-composer-loaded-cached nil))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
