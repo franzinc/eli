@@ -7,6 +7,12 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 ******************************************************************************
+2.3.4
+
+join from acl61 to acl6 branch on 02Mar2002
+command: join.sh acl61 acl61_to_acl6_merge2 acl61_to_acl6_02Mar2002 eli
+
+******************************************************************************
 2.3.3
 
 2002-02-26  Kevin Layer  <layer@crikey>
@@ -53,6 +59,13 @@ command: ../../join.sh acl61 acl61 acl61_to_acl6_merge1 eli
 ******************************************************************************
 post-release patch
 
+2002-02-12  Kevin Layer  <layer@crikey>
+
+	* fi-emacs19.el: from mikel: bug11469: more fixes for same bug
+	* fi-stream.el (lep::create-listener-stream): put in theoretical
+	fix for a problem that Ahmon might have seen.  The change seems
+	safe, in any case.
+
 2001-11-29  Kevin Layer  <layer@crikey>
 
 	* fi-basic-lep.el: fi::lep-debug is history, as it is now needed
@@ -63,8 +76,8 @@ post-release patch
 
 2001-11-14  Kevin Layer  <layer@crikey>
 
-	* fi-site-init.el: for emacs 21
-	* fi-emacs19.el: for emacs 21
+	* fi-site-init.el: bug11469: for emacs 21
+	* fi-emacs19.el: bug11469: for emacs 21
 
 2001-11-13  Kevin Layer  <layer@crikey>
 

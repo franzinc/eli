@@ -7,9 +7,8 @@
 ;;
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
-
-;; $Id: fi-stream.el,v 1.18.6.2 2002/02/07 16:41:34 layer Exp $
 ;;
+;; $Id: fi-stream.el,v 1.18.6.3 2002/03/04 22:02:11 layer Exp $
 
 (defmacro fi::with-keywords (variables rest-arg &rest body)
   (let ((let-bindings nil))
@@ -50,12 +49,13 @@
 	    ((get-buffer-window buffer)
 	     (select-window (get-buffer-window buffer)))
 	    (splitp (split-window-vertically)))
-      (when (null no-select)
-	(switch-to-buffer buffer)
-	(fi::ensure-buffer-visible buffer)
-	;;(recenter 0)
-	)
-      (setf (second conf) buffer)
+      (when (get-buffer (buffer-name buffer))
+	(when (null no-select)
+	  (switch-to-buffer buffer)
+	  (fi::ensure-buffer-visible buffer)
+	  ;;(recenter 0)
+	  )
+	(setf (second conf) buffer))
       buffer)))
 
 (defun fi::create-new-mapped-screen-for-stream (parent x y width height)
