@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.111 1995/01/18 16:13:26 smh Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.112 1995/01/18 17:06:25 smh Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -128,7 +128,10 @@ release_root = /net/vapor/scm/emacs-lib/Dists
 fi_release_files = ChangeLog fi-*.el fi-*.elc Makefile *.doc examples/*.el \
 	gc-mode-line.cl gc-mode-line.c
 
+# gc-mode-line included here, even though these files will not be needed
+# starting with 4.3
 acl_release_files = ChangeLog fi-*.el fi-*.elc Makefile *.doc examples/*.el \
+	gc-mode-line.cl gc-mode-line.c \
 	$(acl_clman_release_files)
 
 echo_acl_release_files:
