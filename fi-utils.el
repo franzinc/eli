@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 1.71 2000/06/22 20:48:54 layer Exp $
+;; $Id: fi-utils.el,v 1.72 2000/06/27 21:52:38 layer Exp $
 
 ;;; Misc utilities
 
@@ -808,13 +808,13 @@ created by fi:common-lisp."
 (defun fi::switch-to-buffer (buffer)
   ;; if buffer is in some window, go to it, otherwise switch-to-buffer
   (let ((start (selected-window))
-	(current (next-window (selected-window) t))
+	(current (next-window (selected-window) 'no-minibuffer 'visible))
 	(found nil))
     (while (and (not (eq current start))
 		(not found))
       (if (eq buffer (window-buffer current))
 	  (setq found current))
-      (setq current (next-window current t)))
+      (setq current (next-window current 'no-minibuffer 'visible)))
     (if (null found)
 	(switch-to-buffer buffer)
       (select-window found))))
