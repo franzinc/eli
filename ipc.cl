@@ -16,7 +16,7 @@
 ;; at private expense as specified in DOD FAR 52.227-7013 (c) (1) (ii).
 ;;
 ;;
-;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.15 1988/04/22 11:45:39 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.16 1988/04/26 20:25:51 layer Exp $
 ;; $Locker: layer $
 ;;
 ;; This code is a preliminary IPC interface for ExCL. The functionality
@@ -103,10 +103,9 @@ which case a UNIX domain socket is used.")
   (addr * char))
 
 (defun start-lisp-listener-daemon ()
-  "This function should be run as a separate process.
-It listens to a socket for attempts to connect and starts a lisp listener
-for each connection.  If the lisp listener ever completes, it makes sure
-files are closed."
+  "This function starts a process which listens to a socket for attempts to
+connect, and starts a lisp listener for each connection.  If the Lisp
+listener ever completes, it makes sure files are closed."
   (unless lisp-listener-daemon
     (setq lisp-listener-daemon
       (process-run-function "TCP Listener Socket Daemon"
