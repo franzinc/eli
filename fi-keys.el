@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 1.117.6.2 2001/06/05 16:01:43 layer Exp $
+;; $Id: fi-keys.el,v 1.117.6.3 2001/12/11 00:35:43 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -368,6 +368,8 @@ When called from a program give START and END buffer positions."
     (if (not (bolp)) (insert "\n"))
     (setq end (point))
     (setq fi::last-input-end (point))
+    ;; bug10814: behave like fi:subprocess-send-input; from rgr, 29-May-01.
+    (fi::subprocess-watch-for-special-commands)
     (process-send-region process start end)
     (fi::input-ring-save fi::last-input-start (1- fi::last-input-end))
     (set-marker (process-mark process) (point))))

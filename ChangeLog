@@ -7,6 +7,13 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 ******************************************************************************
+2.3.0
+
+2001-12-10  Kevin Layer  <layer@crikey>
+
+	* fi-keys.el (fi:subprocess-input-region): bug10814
+
+******************************************************************************
 join from acl61 to acl6 branch
 command: ../../join.sh acl61 acl61 acl61_to_acl6_merge1 eli
 ******************************************************************************
