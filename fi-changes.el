@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-changes.el,v 1.1 1991/03/13 10:45:34 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-changes.el,v 1.2 1991/03/13 21:42:09 layer Exp $
 
 ;;; Support for changed definitions
 
@@ -88,14 +88,14 @@ fold file")
 		   ((buffer package) (changes)
 		    (if changes
 			(show-changes buffer package changes)
-		      (message "There are no changes")))
+		      (message "There are no changes.")))
 		   (() (error)
 		    (error "Cannnot list changed definitions: %s" error)))))
 
 ;;; The guts of the problem
 
 (defun do-buffer-changed-definitions (operation since &optional all-buffers)
-  (message "Computing changes ..")
+  (message "Computing changes...")
   (setq since (convert-since-prefix since))
   (let ((buffer (current-buffer))
 	(copy-file-name (and (eq operation ':copy)
@@ -115,17 +115,17 @@ fold file")
 	       (function do-buffer-changed-definitions-1)
 	       copy-file-name
 	       (transpose-list args))
-	    (message "There are no changes")))
+	    (message "There are no changes.")))
       (if (check-buffer-for-changes-p since)
 	(apply
 	 (function do-buffer-changed-definitions-1)
 	 copy-file-name
 	 (compute-file-changed-values-for-current-buffer))
-	(message "There are no changes")))))
+	(message "There are no changes.")))))
 
 (defun check-buffer-for-changes-p (since)
   "Decide whether this buffer is worth checking for changes"
-  (and (eq (buffer-major-mode) 'fi:common-lisp-mode)
+  (and (eq major-mode 'fi:common-lisp-mode)
        (buffer-file-name)
        (ecase since
 	 (:read
@@ -171,7 +171,7 @@ fold file")
 			     (insert-file-contents-into-kill-ring
 				copy-file-name))
 			 (show-changes changes))
-		     (message "There are no changes")))
+		     (message "There are no changes.")))
 		((operation) (error)
 		 (error 		 
 		  (ecase operation
@@ -190,11 +190,10 @@ fold file")
     (kill-buffer buffer)))
 
 (defun show-changes (changes)
-  (display-some-definitions 
-   fi:package
-   changes
-   (list 'find-buffer-definition)
-   "*changes*"))
+  (lep:display-some-definitions fi:package
+				changes
+				(list 'find-buffer-definition)
+				"*changes*"))
 
 (defun convert-since-prefix (since)
   (ecase since
