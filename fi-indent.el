@@ -19,7 +19,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.43 1993/03/23 10:13:56 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.44 1993/04/12 16:36:06 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If non-nil, semicolons that begin comments are indented as they are
@@ -1675,6 +1675,42 @@ if matched at the beginning of a line, means don't indent that line."
   (put 'with-timeout tag 1)
   (put 'without-interrupts tag 0)
   (put 'without-scheduling tag 0)
+
+  ;; for clim 2.x
+  (put 'dolist-noting-progress tag '(like dolist))
+  (put 'dotimes-noting-progress tag '(like dolist))
+  (put 'indenting-output tag 1)
+  (put 'filling-output tag 1)
+  (put 'dragging-output tag 1)
+  (put 'noting-progress tag 1)
+  (put 'vertically tag 1)
+  (put 'bulletin-board tag 1)
+  (put 'scrolling tag 1)
+  (put 'horizontally tag 1)
+  (put 'bordering tag 1)
+  (put 'spacing tag 1)
+  (put 'outlining tag 1)
+  (put 'tabling tag 1)
+  (put 'labelling tag 1)
+  (put 'updating-output tag 1)
+  (put 'surrounding-output-with-border tag 1)
+  (put 'formatting-item-list tag 1)
+  (put 'formatting-table tag 1)
+  (put 'formatting-row tag 1)
+  (put 'formatting-column tag 1)
+  (put 'formatting-cell tag 1)
+  (put 'tracking-pointer tag 1)
+  (put 'with-bounding-rectangle* tag 2)
+  (put 'with-scaling tag 1)
+  (put 'with-rotation tag 1)
+  (put 'with-presentation-type-decoded tag 1)
+  (put 'letf-globally tag 1)
+  (put 'horizontally tag 1)
+  (put 'catch-abort-gestures tag 1)
+  (put 'accepting-values tag 1)
+  (put 'accept-values-command-button tag 1)
+  (put 'changing-space-requirements tag 1)
+  (put 'define-application-frame tag '(like defclass))
   )
 
 (let ((tag 'fi:franz-lisp-indent-hook))
