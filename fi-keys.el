@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.52 1991/06/19 22:17:07 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.53 1991/06/19 22:40:55 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -55,9 +55,9 @@ shell, rlogin, sub-lisp or tcp-lisp."
   (define-key map "\C-w" 'fi:subprocess-backward-kill-word)
   (define-key map "\C-y" 'fi:pop-input)	; for compatibility with shell-mode
   (cond ((memq mode '(sub-lisp tcp-lisp))
-	 (define-key map "." 'fi:lisp-sync-current-working-directory))
+	 (define-key map "=" 'fi:lisp-sync-current-working-directory))
 	(t
-	 (define-key map "." 'fi:shell-sync-current-working-directory)))
+	 (define-key map "=" 'fi:shell-sync-current-working-directory)))
 
   (cond
    ((eq mode 'rlogin)
