@@ -32,7 +32,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-sublisp.el,v 1.64 1997/02/27 17:34:41 layer Exp $
+;; $Id: fi-sublisp.el,v 1.65 1998/01/12 22:22:47 layer Exp $
 
 (defun fi:set-associated-sublisp (buffer-name mode)
   "Use BUFFER-NAME as the name of a buffer which contains a Lisp subprocess
@@ -169,4 +169,7 @@ This is normally called automatically from fi:start-lisp-interface-hook."
 (add-hook 'fi:inferior-common-lisp-mode-hook 'fi::install-mode-line-run-status)
 (add-hook 'fi:common-lisp-mode-hook          'fi::install-mode-line-run-status)
 (add-hook 'fi:lisp-listener-mode-hook        'fi::install-mode-line-run-status)
-(add-hook 'fi:start-lisp-interface-hook      'fi:show-run-status t)
+
+(when (not (on-ms-windows))
+  ;; can't do this on windows yet, because of bug3740.
+  (add-hook 'fi:start-lisp-interface-hook      'fi:show-run-status t))

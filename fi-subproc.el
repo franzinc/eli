@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.197 1997/12/20 00:25:48 layer Exp $
+;; $Id: fi-subproc.el,v 1.198 1998/01/12 22:22:48 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -542,7 +542,11 @@ be a string. Use the 6th argument for image file."))
 		    (fi:eval-in-lisp "excl:*current-case-mode*")))
 	      ((case-insensitive-lower case-sensitive-lower) ':lower)
 	      ((CASE-INSENSITIVE-UPPER CASE-SENSITIVE-UPPER) ':upper)))
-	(error nil)))
+	(error nil))
+      (cond ((consp fi:start-lisp-interface-hook)
+	     (mapcar 'funcall fi:start-lisp-interface-hook))
+	    (fi:start-lisp-interface-hook
+	     (funcall fi:start-lisp-interface-hook))))
     (setq fi::common-lisp-first-time nil
 	  fi:common-lisp-buffer-name buffer-name
 	  fi:common-lisp-directory directory

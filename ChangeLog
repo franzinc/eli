@@ -7,6 +7,18 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.pre-beta.16
+
+Mon Jan 12 14:20:50 1998    <layer@HOBART>
+
+	* Makefile: etags *.el instead of fi-*.el
+...	* fi-sublisp.el: don't do fi:show-run-status hook on Windows,
+	since there's a bug in 5.0 that causes lisp to (sometimes) die
+	when this hook is installed.
+	* fi-subproc.el: call fi:start-lisp-interface-hook on Windows at
+	the appropriate time
+
+*******************************************************************************
 2.0.21.pre-beta.15
 
 Wed Jan  7 10:21:59 1998  Kevin Layer  <layer@ultra>

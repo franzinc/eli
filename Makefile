@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.134 1997/12/20 00:25:47 layer Exp $
+# $Id: Makefile,v 1.135 1998/01/12 22:22:47 layer Exp $
 # This makefile requires GNU make.
 
 include version.mak
@@ -66,7 +66,7 @@ clean:	FORCE
 	rm -f *.elc *.doc test.out
 
 tags:	FORCE
-	etags fi-*.el
+	etags *.el
 
 FORCE:
 
