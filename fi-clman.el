@@ -24,22 +24,22 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.11 1990/09/05 22:09:59 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.12 1990/09/05 23:04:32 layer Exp $
 
 (defvar fi:clman-package-info nil
-  "A list of (PRODUCT DIRECTORY) which tells where the manual pages are (in
+  "*A list of (PRODUCT DIRECTORY) which tells where the manual pages are (in
 DIRECTORY) for PRODUCT.")
 
 (defvar fi:clman-mode-map nil
-  "Major mode key definitions for viewing a clman page.")
+  "*Major mode key definitions for viewing a clman page.")
 
 (defvar fi:clman-displaying-function 'fi:clman-find-file
-  "This function will be funcalled with two arguments, the .doc file to be
+  "*This function will be funcalled with two arguments, the .doc file to be
 displayed, and the buffer which is the value of fi:clman-displaying-buffer.
 If you wish, you can set this variable to your own displaying function.")
 
 (defvar fi:clman-displaying-buffer "*CLMan*"
-  "Either nil or a string naming the buffer that the system will use for
+  "*Either nil or a string naming the buffer that the system will use for
 displaying documentation pages.  If nil, then the system will not try to
 reuse the same buffer.")
 

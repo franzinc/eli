@@ -45,13 +45,12 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.15 1990/09/05 22:09:38 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.16 1990/09/05 23:04:25 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If `t', semicolons that begin comments are indented as they are typed.")
 
-(defvar fi:comment-indent-hook-values '(0 nil)
-  "What does this do????")
+(make-variable-buffer-local 'fi:lisp-electric-semicolon)
 
 (defvar fi:lisp-comment-indent-specification nil
   "*Specification list for indentations of semicolon comments.
@@ -63,19 +62,25 @@ indentation of the comment, i.e. leave the semicolon where it is), a non-
 negative integer (specifying the absolute column to which the comment is to
 be indented), or a negative integer (specifying a negative offset for the
 comment relative to the current column).")
- 
+
+(make-variable-buffer-local 'fi:lisp-comment-indent-specification)
+
 (defvar fi:lisp-body-indent 2
   "*The indentation of a list continued on another line.")
- 
+
+(make-variable-buffer-local 'fi:lisp-body-indent)
+
 (defvar fi:lisp-indent-offset nil
   "*If non-nil, then indent by a constant amount of the column in which the
 sexp starts.")
 
-(defconst fi:lisp-indent-hook 'fi:lisp-indent-hook "")
+(make-variable-buffer-local 'fi:lisp-indent-offset)
 
 (defvar fi:lisp-indent-hook-property 'fi:lisp-indent-hook
-  "The indicator for the lisp-indentation hook property of a symbol.
+  "*The indicator for the lisp-indentation hook property of a symbol.
 This variable is buffer-local.")
+
+(make-variable-buffer-local 'fi:lisp-indent-hook-property)
 
 (defvar fi:lisp-tag-indentation 1
   "*Indentation of tags relative to containing list.
@@ -83,6 +88,8 @@ This variable is used by the function `fi:lisp-indent-tagbody' to indent tags
 that occur within special forms whose symbols have a 'fi:lisp-indent-hook
 property of 'tag or 'tagbody.  The indentation is relative to the
 indentation of the parenthesis enclosing the special form.")
+
+(make-variable-buffer-local 'fi:lisp-tag-indentation)
  
 (defvar fi:lisp-tag-body-indentation 2
   "*Indentation of non-tagged lines relative to containing list.
@@ -92,7 +99,10 @@ a 'fi:lisp-indent-hook property of 'tag or 'tagbody.  The indentation is
 relative to the indentation of the parenthesis enclosing the special form.
 If the value is T, the body of tags will be indented as a block at the same
 indentation as the first s-expression following the tag.  In this case, the
-s-expressions before the first tag are indented as an undistinguished form.")
+s-expressions before the first tag are indented as an undistinguished
+form.")
+
+(make-variable-buffer-local 'fi:lisp-tag-body-indentation)
  
 (defvar fi:lisp-tag-indentation-hook nil
   "*Name of function to apply to return indentation of tag.
@@ -102,13 +112,18 @@ the last parse state, and the indent point) to return the appropriate
 indentation for tags occurring within special forms whose symbols have
 a 'fi:lisp-indent-hook property of 'tag or 'tagbody.  The indentation
 returned is absolute.")
+
+(make-variable-buffer-local 'fi:lisp-tag-indentation-hook)
  
 (defvar fi:lisp-keyword-indentation 1
   "*Indentation of keywords relative to containing list.
 This variable is used by the function `fi:lisp-indent-keyword-list' to indent
-keywords that occur within special forms whose symbols have a 'fi:lisp-indent-hook
-property of 'keyword or 'keyword-list.  The indentation is relative to the
-indentation of the parenthesis enclosing the special form.")
+keywords that occur within special forms whose symbols have a
+'fi:lisp-indent-hook property of 'keyword or 'keyword-list.  The
+indentation is relative to the indentation of the parenthesis enclosing the
+special form.")
+
+(make-variable-buffer-local 'fi:lisp-keyword-indentation)
 
 (defvar fi:lisp-keyword-argument-indentation t
   "*Indentation of keyword argument lines relative to containing list.
@@ -119,6 +134,8 @@ is relative to the indentation of the parenthesis enclosing the special form.
 If the value is T, the argument(s) of keywords will be indented as a block
 at the same indentation as the first s-expression following the tag.  See
 the documentation for the function `fi:lisp-indent-keyword-list'.")
+
+(make-variable-buffer-local 'fi:lisp-keyword-argument-indentation)
  
 (defvar fi:lisp-keyword-indentation-hook nil
   "*Name of function to apply to return indentation of a keyword.
@@ -128,6 +145,8 @@ the last parse state, and the indent point) to return the appropriate
 indentation for keywords occurring within special forms whose symbols have
 a 'fi:lisp-indent-hook property of 'keyword or 'keyword-list.  The inden-
 tation returned is absolute.")
+
+(make-variable-buffer-local 'fi:lisp-keyword-indentation-hook)
  
 (defvar fi:lisp-maximum-indent-struct-depth 3
   "*Maximum depth to backtrack out from a sublist for structured indentation.
@@ -138,14 +157,19 @@ quoted lists will not be treated specially.  If this variable is T, there
 is no limit placed on backtracking.  A numeric value specifies the maximum
 depth to backtrack.  A reasonable value is 3.")
 
+(make-variable-buffer-local 'fi:lisp-maximum-indent-struct-depth)
+
 (defvar fi:lisp-case-sensitive t
-  "If non-NIL, the code that is being edited is for a case-sensitive dialect
+  "*If non-NIL, the code that is being edited is for a case-sensitive dialect
 of Lisp.  This variable is buffer-local.  If a Lisp is case-insensitive,
 indentation specifications should be placed on the Emacs Lisp symbol that
-corresponds to the lowercase name of the function, macro, or special form.")
+corresponds to the lowercase name of the function, macro, or special
+form.")
+
+(make-variable-buffer-local 'fi:lisp-case-sensitive)
 
 (defvar fi:lisp-package t
-  "This variable may be NIL, T, or a symbol or string.
+  "*This variable may be NIL, T, or a symbol or string.
 If the value is NIL, a package qualifier is ignored when getting the
 indentation specification for a symbol.  If the value is T, the package
 qualifier is not ignored.  If this variable is any other symbol or a string,
@@ -154,23 +178,21 @@ variable is not NIL, the qualified symbol is first checked for an indentation
 specification, then the unqualified symbol is checked.  This variable is
 buffer-local.")
 
-(mapcar 'make-variable-buffer-local
-	'(fi:lisp-electric-semicolon
-	  fi:comment-indent-hook-values
-	  fi:lisp-comment-indent-specification
-	  fi:lisp-body-indent
-	  fi:lisp-indent-offset
-	  fi:lisp-indent-hook
-	  fi:lisp-indent-hook-property
-	  fi:lisp-case-sensitive
-	  fi:lisp-package
-	  fi:lisp-tag-indentation
-	  fi:lisp-tag-body-indentation
-	  fi:lisp-tag-indentation-hook
-	  fi:lisp-keyword-indentation
-	  fi:lisp-keyword-argument-indentation
-	  fi:lisp-keyword-indentation-hook
-	  fi:lisp-maximum-indent-struct-depth))
+(make-variable-buffer-local 'fi:lisp-package)
+
+
+(defconst fi:lisp-indent-hook 'fi:lisp-indent-hook
+  "Function funcalled to calculate the indentation at a specific point.
+Called with two arguments, indent-point and `state'.")
+
+(make-variable-buffer-local 'fi:lisp-indent-hook)
+
+(defvar fi::comment-indent-hook-values '(0 nil))
+
+(make-variable-buffer-local 'fi::comment-indent-hook-values)
+
+
+
 
 (defun fi:lisp-comment-indent (&optional addr)
   (let* ((begin (if addr addr (point)))
@@ -193,7 +215,7 @@ buffer-local.")
 	  (nth (1- spec-length) comment-spec)
 	(nth (1- count) comment-spec)))
     (car
-     (setq fi:comment-indent-hook-values
+     (setq fi::comment-indent-hook-values
        (cond
 	((eq spec nil) (list (current-column) nil))
 	((eq spec t) (let ((tem (fi::calculate-lisp-indent)))
@@ -256,7 +278,7 @@ status of that parse."
 				  (= (preceding-char) ?\t)
 				  (= (preceding-char) ?\n)
 				  (= (preceding-char) ?\f)))
-			 (or (not (car (cdr fi:comment-indent-hook-values)))
+			 (or (not (car (cdr fi::comment-indent-hook-values)))
 			     (>= (current-column) to-column)))
 		    ;; Insert space if not rigid comment or if rigid comment
 		    ;;   and we are at or beyond the comment column.
@@ -276,7 +298,7 @@ status of that parse."
 			(if (and (= (preceding-char) ?\))
 				 (or (not
 				      (car (cdr
-					    fi:comment-indent-hook-values)))
+					    fi::comment-indent-hook-values)))
 				     (>= (current-column) to-column)))
 			    ;; Insert space if not rigid comment or if rigid
 			    ;;   comment and we are at or beyond the comment

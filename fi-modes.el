@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.35 1990/09/05 22:09:45 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.36 1990/09/05 23:04:30 layer Exp $
 
 ;;;; Mode initializations
 
@@ -61,11 +61,11 @@ Lisp mode.")
   "The value of which is the syntax table for Emacs Lisp mode.")
 
 (defvar fi:common-lisp-file-types '(".cl" ".lisp" ".lsp")
-  "A list of the files which are automatically put in fi:common-lisp-mode.
+  "*A list of the files which are automatically put in fi:common-lisp-mode.
 This variable should be set before this package is loaded.")
 
 (defvar fi:lisp-do-indentation t
-  "When non-nil, do FI-style indentation in Lisp modes.")
+  "*When non-nil, do FI-style indentation in Lisp modes.")
 
 (defvar fi:subprocess-mode nil
   "Non-nil when buffer has a subprocess.")
