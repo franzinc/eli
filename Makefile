@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.35 1989/07/19 14:12:50 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.36 1989/07/22 14:15:52 layer Exp $
 
 cl = /usr/local/cl
 emacs = /usr/local/emacs
@@ -18,7 +18,9 @@ precompile = (set-case-mode :case-sensitive-lower)(require :process)(require :fo
 .cl.fasl:
 	echo '$(precompile)(compile-file "$*.cl")' | $(cl) -qq -batch
 
-default:	ipc.fasl emacs.fasl elcs spec.out
+all:	elcs fasls spec.out
+
+fasls: ipc.fasl emacs.fasl 
 
 elcs: ${elc-files}
 
