@@ -8,48 +8,54 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.27 1992/01/16 11:09:52 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.28 1992/01/16 14:28:07 layer Exp $
 
 (defvar fi::manual-directory nil)
 
 (defun fi::setup-default-clman-package-info ()
-  ;;  Returns a list that 
-  (mapcar (function
-	   (lambda (xxx)
-	     (let* ((p load-path)
-		    (string "fi/manual/")
-		    (done nil)
-		    (res nil))
-	       (when fi::manual-directory
-		 (setq res fi::manual-directory)
-		 (setq done t))
-	       (while (and (not done) p)
-		 (if (file-exists-p
-		      (setq res (concat (file-name-as-directory (car p))
-					string)))
-		     (setq done t)
-		   (setq res nil))
-		 (setq p (cdr p)))
-	       (rplaca (cdr xxx) (format "%s%s" res (car (cdr xxx))))
-	       xxx)))
-	  '(("about" "about/")
-	    ("clos" "clos/")
-	    ("cltl1" "cltl1/")
-	    ("comp" "comp/")
-	    ("composer" "composer/")
-	    ("defsys" "defsys/")
-	    ("excl" "excl/")
-	    ("ff" "ff/")
-	    ("inspect" "inspect/")
-	    ("ipc" "ipc/")	      
-	    ("lisp" "lisp/")
-	    ("mp" "mp/")
-	    ("prof" "prof/")
-	    ("stream" "stream/")
-	    ("sys" "sys/")
-	    ("tpl" "tpl/")
-	    ("xcw" "xcw/")
-	    ("xref" "xref/"))))
+  (let* ((p load-path)
+	 (mandir "fi/manual/")
+	 (done nil)
+	 (mandir-path nil)
+	 (clman-package-dir-list nil)
+	 (results nil))
+
+    ;; Find the clman page directory.
+    (when fi::manual-directory
+      (setq mandir-path fi::manual-directory)
+      (setq done t))
+    (while (and (not done) p)
+      (if (file-directory-p
+	   (setq mandir-path (concat (file-name-as-directory (car p)) mandir)))
+	  (setq done t)
+	(setq mandir-path nil))
+      (setq p (cdr p)))
+
+    ;; skip "." and "..".
+    (setq clman-package-dir-list
+      (let ((xx (directory-files mandir-path))
+	    (res nil))
+	(while xx
+	  (unless (or (string= "." (car xx))
+		      (string= ".." (car xx)))
+	    (setq res (cons (car xx) res)))
+	  (setq xx (cdr xx)))
+	(nreverse res)))
+
+    ;; Generate an alist of clman-packages and directories.
+    (while clman-package-dir-list
+      (if (file-directory-p
+	   (concat (file-name-as-directory mandir-path)
+		   (car clman-package-dir-list)))
+	    (setq results 
+	      (cons (list (car clman-package-dir-list)
+			  (concat 
+			   (file-name-as-directory mandir-path)
+			   (file-name-as-directory
+			    (car clman-package-dir-list))))
+		    results)))
+      (setq clman-package-dir-list (cdr clman-package-dir-list)))
+    (reverse results)))
 
 (defvar fi:clman-package-info 
     (fi::setup-default-clman-package-info)
