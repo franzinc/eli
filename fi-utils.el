@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.6 1989/07/19 14:09:40 layer Rel $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.7 1990/08/31 23:48:37 layer Exp $
 
 ;;; Misc utilities
 
@@ -86,7 +86,9 @@ nil if non-exists.  Yes, a value of nil and no local value are the same."
   (let (pair)
     (mapconcat '(lambda (char)
 		 (if (setq pair (assq char char-assoc-list))
-		     (char-to-string (cdr pair))
+		     (if (null (cdr pair))
+			 nil
+		       (char-to-string (cdr pair)))
 		   (char-to-string char)))
 	       string
 	       nil)))
@@ -115,6 +117,15 @@ nil if non-exists.  Yes, a value of nil and no local value are the same."
 	  ((= (following-char) ?\))
 	   (forward-char 1) (scan-sexps (point) (- arg)))
 	  (t (error "not on the beginning or end of a list")))))
+
+(defun fi::read-password ()
+  (let ((echo-keystrokes 0)
+	(result "")
+	(xxx nil))
+    (while (not (or (= (setq xxx (read-char)) ?\^m)
+		    (= xxx ?\n)))
+      (setq result (concat result (char-to-string xxx))))
+    result))
 
 (defun fi::find-path (file)
   "Find FILE in load-path, return the full pathname."
