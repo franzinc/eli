@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.101 1991/04/03 08:54:19 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.102 1991/04/20 23:24:02 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -109,12 +109,18 @@ into the correct Lisp package.")
 ;;; Common Lisp Variables and Constants
 ;;;;
 
-(defvar fi:source-info-not-found-hook 'find-tag
+(defvar fi:source-info-not-found-hook 'find-tag-somewhere
   "*The value of this variable is funcalled when source information is not
-present in Lisp for a symbol.  The function is given one argument, the name
-for which source is desired (a string).  The null string means use the word
-at the point as the search word.  This allows the GNU Emacs tags facility
-to be used when the information is not present in Lisp.")
+present in Lisp for a symbol.  The function is given two argument, the name
+for which source is desired (a string) and a flag indicating to use the
+other window.  The null string means use the word at the point as the
+search word.  This allows the GNU Emacs tags facility to be used when the
+information is not present in Lisp.")
+
+(defun find-tag-somewhere (string &optional other-window-p)
+  (if other-window-p
+      (find-tag-other-window string nil)
+    (find-tag string nil)))
 
 (defvar fi:echo-evals-from-buffer-in-listener-p nil
   "*If non-nil, forms evalutated directly in fi:common-lisp-mode by the
@@ -160,7 +166,7 @@ line argument.")
 subprocess.  \"localhost\" means use the host on which emacs is running.")
 
 (defvar fi:common-lisp-prompt-pattern
-  "^\\(\\[[0-9]+c?\\] \\|\\[step\\] \\)?<[-A-Za-z]* ?[0-9]*?> "
+    "^\\(\\[[0-9]+c?\\] \\|\\[step\\] \\)?\\(<[-A-Za-z]* ?[0-9]*?>\\|[-A-Za-z0-9]+([0-9]+):\\) "
   "*The regular expression which matches the Common Lisp prompt.
 Anything from beginning of line up to the end of what this pattern matches
 is deemed to be a prompt.")
