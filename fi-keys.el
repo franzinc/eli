@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.54 1991/06/19 22:43:29 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.55 1991/06/19 22:46:45 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -879,10 +879,14 @@ Lisp definitions.")
     (erase-buffer)
     (insert (format "You have invoked ``%s''.\n" this-command))
     (insert "
-``M-.'' no longer finds Lisp definitions.  In all Lisp-moded buffers, the
-sequence ``C-c .'' is bound to fi:lisp-find-definition and ``C-c ,'' is
-bound to fi:find-next-definition.  ``M-.'' and ``M-,'' are unchanged (and
-are bound to find-tag and tags-loop-continue).
+The standard keybinding for ``M-.'' invokes the Emacs tags file
+facility.  In all `fi' Lisp buffer modes there is an alternate
+mechanism for visiting the source for a definition based on source-file
+information obtained from the Lisp environment itself: ``C-c .''
+is bound to fi:lisp-find-definition and ``C-c ,'' is bound to
+fi:lisp-find-next-definition.  By default, ``M-.'' and ``M-,'' are
+unchanged from default Emacs and are bound to find-tag and
+tags-loop-continue.
 
 If you want ``M-.'' to find Lisp definitions in Lisp-moded buffers, then
 ``C-c .'' and ``M-.'' can be switched in Lisp-moded buffers.  Put the
