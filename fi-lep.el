@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.20 1991/03/15 21:05:21 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.21 1991/04/20 23:25:57 layer Exp $
 ;;
 
 (defvar fi:always-in-a-window nil)
@@ -318,7 +318,7 @@ time."
 	       (if colonp
 		   (substring tag (match-end 0))
 		 tag))))
-    (funcall fi:source-info-not-found-hook sym)))
+    (funcall fi:source-info-not-found-hook sym other-window-p)))
 
 
 ;; We need to get hold of something
@@ -466,35 +466,8 @@ visit time."
 		(point)))
 	 (pattern (buffer-substring beg end))
 	 (functions-only (if (eq (char-after (1- real-beg)) ?\() t nil))
-	 (completions
-	  (progn
-	    (car (lep::eval-in-lisp 
-			     'lep::list-all-completions-session
-			     ':pattern (fi::frob-case-to-lisp pattern)
-			     ':buffer-package (string-to-keyword fi:package)
-			     ':package (progn
-					 (if (equal ":" package)
-					     (setq package "keyword"))
-					 (intern (fi::frob-case-to-lisp
-						  package)))
-			     ':functions-only-p (intern
-						 (fi::frob-case-to-lisp
-						  functions-only))))))
 	 (alist
-	  (if (consp completions)
-	      (apply 'list
-		     (mapcar
-		      (function
-		       (lambda (x)
-			(let* ((whole-name (symbol-name x))
-			       (name (progn
-				       (string-match "^\\(.*::?\\)?\\(.*\\)$"
-						     whole-name)
-				       (substring whole-name
-						  (match-beginning 2)
-						  (match-end 2)))))
-			  (cons name whole-name))))
-		      completions))))
+	  (fi::lisp-complete-1 pattern package functions-only))
 	 (completion (if alist (try-completion pattern alist))))
     (cond ((eq completion t))
 	  ((null completion)
@@ -515,6 +488,41 @@ visit time."
 	      (all-completions pattern alist)))
 	   (message "Making completion list...done")))))
 
+(defun fi::lisp-complete-1 (pattern package functions-only)
+  (let ((completions
+	 (progn
+	   (car (lep::eval-in-lisp 
+		 'lep::list-all-completions-session
+		 ':pattern (fi::frob-case-to-lisp pattern)
+		 ':buffer-package (string-to-keyword fi:package)
+		 ':package (progn
+			     (if (equal ":" package)
+				 (setq package "keyword"))
+			     (intern (fi::frob-case-to-lisp
+				      package)))
+		 ':functions-only-p (intern
+				     (fi::frob-case-to-lisp
+				      functions-only)))))))
+    (fi::lisp-complete-2 completions)))
+
+(defun fi::lisp-complete-2 (completions &optional dont-strip-package)
+  (if (consp completions)
+      (apply 'list
+	     (mapcar
+	      (function
+	       (lambda (x)
+		 (let* ((whole-name (if (symbolp x) (symbol-name x) x))
+			(name (if dont-strip-package
+				  whole-name
+				(progn
+				  (string-match "^\\(.*::?\\)?\\(.*\\)$"
+						whole-name)
+				  (substring whole-name
+					     (match-beginning 2)
+					     (match-end 2))))))
+		   (cons name whole-name))))
+	      completions))))
+
 (defun lep::my-find-file (filename)
   (find-file filename))
 
@@ -525,13 +533,7 @@ visit time."
   (erase-buffer)
   (insert string))
 
-(defun lep::create-listener-stream ()
-  "Create a tcp listener in response to a request for a listener stream."
-  ;; We create a tcp listener using the stream protocol which arranges for
-  ;; the stream to be passed back to the session
-  (let ((fi::listener-protocol ':stream))
-    (send-string (fi:open-lisp-listener -1)
-		 (format "%d\n" (session-id session)))))
+
 
 (defun getf-property (plist property &optional default)
   (while (and plist
@@ -562,6 +564,30 @@ visit time."
 		       (getf-property options ':mustmatch)))
 	  (:string (read-string
 		    prompt (getf-property options ':initial-input))))))
+
+(defun lep::completing-read (prompt require-match initial-input)
+  (list (completing-read 
+	 prompt
+	 'lep::completing-read-complete
+	 nil
+	 require-match
+	 initial-input)))
+
+(defun lep::completing-read-complete (pattern predicate what)
+  (let* ((inhibit-quit nil)
+	 (alist
+	  (fi::lisp-complete-2
+	   (car
+	    (lep::make-request-in-session-and-wait
+	     session
+	     ':complete
+	     pattern))
+	   t))
+	 (completion (and alist (try-completion pattern alist))))
+    (ecase what
+      ((nil) completion)
+      ((t) (mapcar (function cdr) alist))
+      (lambda (not (not alist))))))
 
 (defun lep::show-clman (string)
   (if string 
@@ -717,8 +743,6 @@ Use ``\\<fi:common-lisp-mode-map>\\[fi:lisp-tags-loop-continue]'' to find the ne
       (delete-metadot-session)
       (error "Cannot edit sequence %s: %s" fspec error)))))
 
-
-
 ;;; describing something
 
 (defun fi:describe-symbol (fspec)
@@ -729,7 +753,7 @@ operation is done.  In a subprocess buffer, the package is tracked
 automatically.  In source buffer, the package is parsed at file visit
 time."
   (interactive (fi::get-default-symbol "Describe symbol"))
-  (lep::describe-something fspec 'describe))
+  (lep::describe-something fspec 'identity))
 
 (defun fi:describe-class (fspec)
   "Dynamically, in the Common Lisp environment, describe the class named by
@@ -787,3 +811,26 @@ time."
 		 (message "Cannot find documentation for %s: %s"
 			  symbol error))))
 
+
+(defun fi:compile-file (file)
+  (interactive "fFile to compile and load:")
+  (fi::compile-or-load-file file ':compile-and-load))
+
+(defun fi::compile-or-load-file (file operation)
+  (make-request (lep::compile-or-load-file-request :pathname file
+						:operation operation)
+		(() ())
+		(() (error)
+		 (message "Could not :%s" error))))
+
+
+(defun fi:list-undefined-functions ()
+  (interactive)
+  (message "Finding undefined functions...")
+  (make-request (lep::list-undefined-functions-session)
+		((fi:package) (undeffuncs)
+		 (message "Finding undefined functions...done.")
+		 (lep:display-some-inverse-definitions fi:package
+						       undeffuncs))
+		(() (error)
+		 (message "error: %s" error))))
