@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.67 1991/09/17 12:38:59 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.68 1991/09/27 01:00:38 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -33,15 +33,16 @@ kept.  Buffer local.")
 (make-variable-buffer-local 'fi:subprocess-super-key-map)
 
 (defvar fi:superkey-shadow-universal-argument t
-  "...")
+  "*If non-nil, then make C-u a superkey in subprocess modes, otherwise
+leave it alone.")
 
 (defvar fi:find-tag-lock t
-  "If non-nil, then the first time find-tag or find-tag-other-window are
+  "*If non-nil, then the first time find-tag or find-tag-other-window are
 executed a buffer will be displayed explaining the method for finding
 Lisp definitions.")
 
 (defvar fi:check-unbalanced-parentheses-when-saving t
-  "If non-nil, for the Lisp editing modes (Common Lisp, Emacs Lisp, and
+  "*If non-nil, for the Lisp editing modes (Common Lisp, Emacs Lisp, and
 Franz Lisp) check for unbalanced parentheses before writing the file.
 If the value is T, then ask whether or not the file should be written ``as
 is'' if there are too many or few parens--answering no leaves the point at
