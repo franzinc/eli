@@ -1,0 +1,14 @@
+# $Header: /repo/cvs.copy/eli/Attic/Makefile.fi,v 2.1 1993/06/29 23:51:15 layer Exp $
+
+hosts = sole
+#hosts = ox,akbar,clay,hyper,sole,fridge # girls biggie fax
+to = /usr/fi/lib/eli/master
+
+# /usr/ucb/rdist on Suns has a very serious bug: the special command does
+# not expand rdist variables in the command string.  This one works, however:
+# rdist = /usr/bin/rdist
+rdist = /usr/ucb/rdist
+
+rdist: all
+	${rdist} -Rc Makefile Makefile.fi ChangeLog \
+		*.n *.doc *.el *.elc '${hosts}:$(to)'
