@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.67 1990/09/10 15:04:07 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.68 1990/09/11 16:50:43 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -691,7 +691,8 @@ This function implements continuous output to visible buffers."
        (t (set-buffer old-buffer))))))
 
 (defun fi::subprocess-control-a-frammis (string)
-  (if (string-match "\\(.*\\)\\(.*\\)\\(.*\\)" string)
+  (if (and (fi::fast-search-string 1 string)
+	   (string-match "\\(.*\\)\\(.*\\)\\(.*\\)" string))
       (let* ((res (concat
 		   (substring string (match-beginning 1) (match-end 1))
 		   (substring string (match-beginning 3) (match-end 3))))
