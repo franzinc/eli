@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.14 1991/03/12 20:57:39 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.15 1991/04/22 13:40:14 layer Exp $
 
 ;;; Misc utilities
 
@@ -207,3 +207,19 @@ that starts with ~."
 		    file)
       (concat "~" (substring file (match-beginning 2) (match-end 2)))
     file))
+
+(defun fi::frob-case-from-lisp (arg)
+  (let ((string (if (symbolp arg)
+		    (symbol-name arg)
+		  arg)))
+    (cond ((eq ':upper fi::lisp-case-mode)
+	   (downcase string))
+	  (t string))))
+
+(defun fi::frob-case-to-lisp (arg)
+  (let ((string (if (symbolp arg)
+		    (symbol-name arg)
+		  arg)))
+    (cond ((eq ':upper fi::lisp-case-mode)
+	   (upcase string))
+	  (t string))))
