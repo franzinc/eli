@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 1.79.20.1 1998/09/23 16:35:00 layer Exp $
+;; $Id: fi-lep.el,v 1.79.20.2 1998/12/03 19:32:54 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -478,7 +478,7 @@ separator that causes the substring before the hyphen to be matched at the
 beginning of words in target symbols."
   (interactive)
   (let* ((end (point))
-	 xpackage real-beg
+	 package-name xpackage real-beg
 	 (beg (save-excursion
 		(backward-sexp 1)
 		(while (= (char-syntax (following-char)) ?\')
@@ -488,21 +488,36 @@ beginning of words in target symbols."
 		  (if (re-search-forward ":?:" end t)
 		      (setq xpackage
 			(concat ":"
-				(buffer-substring opoint
-						  (match-beginning 0))))))
+				(setq package-name
+				  (buffer-substring opoint
+						    (match-beginning 0)))))))
 		(point)))
 	 (pattern (buffer-substring beg end))
 	 (functions-only (if (eq (char-after (1- real-beg)) ?\() t nil))
 	 (downcase (not (fi::all-upper-case-p pattern)))
 	 (xxalist (fi::lisp-complete-1 pattern xpackage functions-only))
 	 (xalist
-	  (if xpackage
+	  (if (and xpackage (cdr xxalist))
 	      (fi::package-frob-completion-alist xxalist)
 	    xxalist))
 	 (alist (if downcase
 		    (mapcar 'fi::downcase-alist-elt xalist)
 		  xalist))
-	 (completion (if alist (try-completion pattern alist))))
+	 (completion
+	  (when alist
+	    (let* ((xfull-package-name
+		    (when xpackage
+		      (fi:eval-in-lisp "(package-name (find-package %s))"
+				       xpackage)))
+		   (full-package-name
+		    (when xfull-package-name
+		      (if downcase
+			  (downcase xfull-package-name)
+			xfull-package-name))))
+	      (when full-package-name
+		(setq pattern
+		  (format "%s::%s" full-package-name pattern)))
+	      (try-completion pattern alist)))))
 
     (cond ((eq completion t)
 	   (message "Completion is unique."))
@@ -579,9 +594,11 @@ beginning of words in target symbols."
 				       (setq xpackage "keyword"))
 				   (intern (fi::frob-case-to-lisp xpackage)))
 		       ':functions-only-p (intern
-					   (fi::frob-case-to-lisp functions-only))
+					   (fi::frob-case-to-lisp
+					    functions-only))
 		       ':ignore-keywords (intern
-					  (fi::frob-case-to-lisp ignore-keywords))))))
+					  (fi::frob-case-to-lisp
+					   ignore-keywords))))))
 	    (fi::lisp-complete-2 completions xpackage))
 	(quit
 	 (fi:eval-in-lisp

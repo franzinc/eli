@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 1.67.20.1 1998/10/12 22:48:25 layer Exp $
+;; $Id: fi-utils.el,v 1.67.20.2 1998/12/03 19:32:54 layer Exp $
 
 ;;; Misc utilities
 
@@ -479,7 +479,7 @@ at the beginning of the line."
    (function
     (lambda (item)
       (cons (fi::make-internal (car item))
-	    (fi::make-internal (cdr item)))))
+	    (cdr item))))
    alist))
 
 (defun fi::make-internal (s)

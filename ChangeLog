@@ -7,6 +7,14 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.16.3
+
+Thu Dec  3 11:31:45 1998  Kevin Layer  <layer@ultra>
+
+	* fi-lep.el: further fixes to completion
+	* fi-utils.el: more for completion
+
+*******************************************************************************
 2.0.21.16.2
 
 Mon Oct 12 15:26:02 1998  Kevin Layer  <layer@ultra>
