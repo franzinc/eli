@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.59 1993/12/11 00:15:23 georgej Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.59.2.1 1994/04/13 16:56:12 georgej Exp $
 
 ;;;; Mode initializations
 
@@ -121,6 +121,8 @@ but before doing any other mode setup."
 	(fi::inferior-lisp-mode-commands
 	 (make-keymap)
 	 fi:inferior-common-lisp-mode-super-key-map)))
+  ;; turn off raw-mode explicitly
+  (fi::set-inferior-raw-lisp-mode nil t)
   (use-local-map fi:inferior-common-lisp-mode-map)
   (setq fi:subprocess-super-key-map fi:inferior-common-lisp-mode-super-key-map)
   (setq fi:lisp-indent-hook-property 'fi:common-lisp-indent-hook)

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.86 1993/08/31 23:25:59 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.86.2.1 1994/04/13 16:56:04 georgej Exp $
 
 (cond ((eq fi::emacs-type 'lemacs19)
        (require 'tags "etags"))
@@ -183,14 +183,54 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
 			  supermap
 			  'tcp-lisp))
 
+;; 21-oct-93 cac added this new function as something called by acl's
+;; excl:set-terminal-characteristics to turn the lisp session into a
+;; raw-mode.
+
+(defun fi::set-inferior-raw-lisp-mode (raw-mode raw-mode-echo)
+  (let ((raw-in-mode-name (and (> (length mode-name) 4)
+			       (equal (substring mode-name 0 4) "Raw "))))
+    (setq mode-name
+      (if raw-mode
+	  (if raw-in-mode-name
+	      mode-name
+	    (concat "Raw " mode-name))
+	(if raw-in-mode-name
+	    (substring mode-name 4)
+	  mode-name))))
+
+  (let ((preserve-chars '(?\	; ESC prefix
+			  ?\C-_	; undo
+			  ?\;   ; comment
+			  )))			  
+    (let ((i (1+ ?\C-z))
+	  (l 128))		; use this instead of (length map)
+      (while (< i l)
+	(unless (memq i preserve-chars)
+	  (define-key fi:inferior-common-lisp-mode-map (char-to-string i)
+	    (if raw-mode
+		'fi:self-insert-command
+	      nil)))
+	(setq i (1+ i)))))
+  (setq fi:raw-mode raw-mode)
+  (setq fi:raw-mode-echo raw-mode-echo))
+
+    
 (defun fi::inferior-lisp-mode-commands (map supermap)
-  (let ((i (1+ ?\C-z))
-	(l 128				; use this instead of (length map)
-	   ))
-    (while (< i l)
-      (define-key map (char-to-string i) 'fi:self-insert-command)
-      (setq i (1+ i))))
-  (define-key map (char-to-string 31) nil) ; fix C-_
+
+  ;; 21-oct-93 cac moved the following to
+  ;; fi::set-inferior-raw-lisp-mode.  The purpose was to allow egg-mode
+  ;; characters (nemacs) to not get redefined to use fi:self-insert-command
+  ;; when we are not in a raw lisp mode.
+
+;  (let ((i (1+ ?\C-z))
+;	(l 128				; use this instead of (length map)
+;	   ))
+;    (while (< i l)
+;      (define-key map (char-to-string i) 'fi:self-insert-command)
+;      (setq i (1+ i))))
+;  (define-key map (char-to-string 31) nil) ; fix C-_
+
   (fi::lisp-mode-commands (fi::subprocess-mode-commands map supermap 'sub-lisp)
 			  supermap
 			  'sub-lisp))
