@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.75 1993/06/29 23:20:57 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.76 1993/06/29 23:23:46 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -34,7 +34,7 @@ fi-leep.elc:
 
 test.out:	$(elcs) fi-test.el
 	$(emacs) -nw -batch -q -l fi-test.el
-	@echo date > test.out
+	@date > test.out
 
 all:	clean default docs # fasls
 
