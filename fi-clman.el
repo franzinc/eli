@@ -24,9 +24,37 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.14 1991/03/15 12:43:05 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.15 1991/03/29 11:32:30 layer Exp $
 
-(defvar fi:clman-package-info nil
+(defun fi::setup-default-clman-package-info ()
+  ;;  Returns a list that 
+  (mapcar (function
+	   (lambda (xxx)
+	     (let* ((p load-path)
+		    (string "fi/manual/")
+		    (done nil)
+		    res)
+	       (while (and (not done) p)
+		 (if (file-exists-p (setq res (concat (car p) "/" string)))
+		     (setq done t)
+		   (setq res nil))
+		 (setq p (cdr p)))
+	       (rplaca (cdr xxx) (format "%s%s" res (car (cdr xxx))))
+	       xxx)))
+	    
+	  '(("xcw" "xcw/")
+	    ("math" "matrix/")
+	    ("lisp" "cl/")
+	    ("mp" "mp/")
+	    ("about" "about/")
+	    ("compiler" "compiler/")
+	    ("excl" "excl/")
+	    ("foreign" "foreign/")
+	    ("sys" "sys/")
+	    ("tpl" "toplevel/"))))
+
+(defvar fi:clman-package-info 
+    (fi::setup-default-clman-package-info)
   "*A list of (PRODUCT DIRECTORY) which tells where the manual pages are (in
 DIRECTORY) for PRODUCT.")
 
@@ -45,6 +73,8 @@ reuse the same buffer.")
 
 (defvar fi::clman-window-configuration nil)
 
+(defvar clman-debug nil)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; Interactive Functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -57,13 +87,14 @@ cursor.  To get completion for a symbol in a package other than the :lisp
 package, use the nickname of that package, followed by a colon (e.g. cw: or
 math:).  The buffer that is displayed will be in CLMAN mode."
   (interactive)
-  (if (null fi:clman-package-info)
-      (fi::setup-info-and-oblist))
+  (if (or (not (boundp 'fi::clman-oblist))
+	  (null fi::clman-oblist)
+	  (null fi:clman-package-info))
+      (fi::setup-clman-oblist))
   (setq fi::clman-window-configuration (current-window-configuration))
-  (let* ((temp-info fi:clman-package-info)(package nil)
-         (doc-page nil)(sym nil)
+  (let* ((doc-page nil)(sym nil)
          (done nil)(found-it nil)(pack nil)(sym-pack-pair nil)
-	 (pack-dir nil))
+	 (pack-dir nil)(info-item nil))
     (setq sym (or (and symbol
 		       (setq symbol 
 			 (fi::clman-check-for-package symbol)))
@@ -73,53 +104,19 @@ math:).  The buffer that is displayed will be in CLMAN mode."
       (setq  sym-pack-pair (fi::clman-strip-leading-package-name sym)))
     (setq pack (car  sym-pack-pair))
     (setq sym (car (cdr  sym-pack-pair)))
-    (setq packdir (car (cdr (assoc pack fi:clman-package-info))))
+    (setq info-item (assoc pack fi:clman-package-info))
     ;; they did not specify a package
-    (if (not packdir)
-	(progn 
-	  (while (not done) 
-	    (setq package (car temp-info))
-	    (if (not package)
-		(progn (setq done t)
-		       (message "Couldn't find the doc page for %s " sym))
-	      (progn
-		(setq named nil)
-		(setq doc-page
-		  (concat (car (cdr package))
-			  (setq named (fi::clman-file-nameify (car package)
-							      (fi::clman-downcase sym)))))
-
-		)
-	      (if (and named (file-exists-p doc-page))
-		  (progn
-		    (setq done t)
-		    (fi::clman-display-file
-		     doc-page fi:clman-displaying-buffer)
-		    (setq found-it t))
-		(setq temp-info (cdr temp-info)))
-	      found-it)))
-      ;; they did specify a package
-      (progn
-	(setq doc-page
-	  (concat packdir
-		  (setq named (fi::clman-file-nameify pack
-						      (fi::clman-downcase sym)))))
-	(if (and named (file-exists-p doc-page))
-	    (progn
-	      (setq done t)
-	      (fi::clman-display-file doc-page fi:clman-displaying-buffer)
-	      (setq found-it t))
-	  (message "No Doc Page for %s in %s" sym  pack))
-	found-it))
-    ))
+    (if (not info-item)
+	(retrieve-doc-page-no-pack-specified) 
+      (retrieve-doc-page-yes-pack-specified info-item))))
 
 (defun fi:clman-apropos ()
   "Prompts for a string on which an apropos search is done.  Displays a
 buffer which lists all documented symbols which match the string.  The
 buffer will be in CLMAN mode."
   (interactive)
-   (if (null fi:clman-package-info)
-      (fi::setup-info-and-oblist))
+  (if (null fi:clman-package-info)
+      (fi::setup-clman-oblist))
   (let* ((string (downcase (read-string "clman apropos: ")))
 	 (apropos-buffer-name "*CLMan-Apropos*"))
     (with-output-to-temp-buffer apropos-buffer-name
@@ -128,7 +125,8 @@ buffer will be in CLMAN mode."
 	(while package-name-list
 	  (setq package (car package-name-list))
 	  (setq lis (eval 
-		     (car (read-from-string (concat "fi::clman-" package "-oblist")))))
+		     (car (read-from-string 
+			   (concat "fi::clman-" package "-oblist")))))
 	  (let ((item nil))
 	    (while lis
 	      (setq item (car (car lis)))
@@ -144,7 +142,8 @@ buffer will be in CLMAN mode."
 
 (defun fi:clman-mode ()
   "Major mode for viewing Allegro manual pages.  text-mode-syntax-table and
-text-mode-abbrev-table are `used' in this mode."
+text-mode-abbrev-table are `used' in this mode.
+\\{fi:clman-mode-map}"
   (interactive)
   (set-syntax-table text-mode-syntax-table)
   (use-local-map fi:clman-mode-map)
@@ -160,8 +159,7 @@ clman buffer, from anywhere in the buffer."
   (if (search-forward "SEE ALSO" nil t)
       (beginning-of-line)
     (if (search-backward "SEE ALSO" nil t)
-	(beginning-of-line)))
-)
+	(beginning-of-line))))
 
 (defun fi:clman-next-entry ()
   (interactive)
@@ -178,9 +176,94 @@ clman buffer, from anywhere in the buffer."
   (kill-buffer (current-buffer))
   (set-window-configuration fi::clman-window-configuration))
 
+(defun fi:clman-package-help ()
+  (interactive)
+  (with-output-to-temp-buffer "*CLMAN-NICKNAMES"
+    (princ  "The following is a list of all the")
+    (princ "\n")
+    (princ  "CLMAN packages for which man pages exist.")
+    (princ "\n")
+    (princ  "You can type one of them to the CLMAN prompt to narrow")
+    (princ "\n")
+    (princ  "the scope of a search to a particular \"package\"")
+    (princ "\n")
+    (let ((lis (fi:clman-package-nicknames)))
+      (while lis
+	(prin1 (car (read-from-string (car lis))))
+	(princ "\n")
+	(setq lis (cdr lis)))
+      (save-excursion 
+	(switch-to-buffer "*CLMAN-NICKNAMES")
+	(fi:clman-mode))
+      )))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; Internal stuff
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun retrieve-doc-page-no-pack-specified ()
+  (let ((temp-info fi:clman-package-info (info-item nil))
+	(info-item nil)(named nil))
+    (while (not done) 
+      (setq info-item (car temp-info))
+      (if (not info-item)
+	  ;; That's it. We checked them all.
+	  (progn (setq done t)
+		 (message "Couldn't find the doc page for %s " sym))
+	(let ((pack (car info-item))
+	      (doc-dir (car (cdr info-item))))
+	  (setq named (fi::clman-file-nameify 
+		       pack
+		       (fi::clman-downcase sym)))
+	  (if (not named) 
+	      nil			;ignore failures
+	    (progn 
+	      (setq doc-page (concat doc-dir named))
+	      (if (file-exists-p doc-page)
+		  (progn
+		    (setq done t)
+		    (fi::clman-display-file
+		     doc-page fi:clman-displaying-buffer)
+		    (setq found-it t)))))
+	  (setq temp-info (cdr temp-info)))
+	found-it))))
+
+(defun retrieve-doc-page-yes-pack-specified (info-item)
+  (let ((pack (car info-item))
+	(doc-dir (car (cdr info-item)))
+	(named nil))
+    ;; If we do not generate and error, we will display
+    ;;  doc page and return t
+    (if (not (file-exists-p doc-dir ))
+	(error "Directory %s not found" doc-dir))
+    (if (not (setq named (fi::clman-file-nameify 
+			  pack
+			  (fi::clman-downcase sym))))
+	(error "Could not file-nameify %s and %s"))	
+    (setq doc-page (concat doc-dir named))
+    (if (file-exists-p doc-page)
+	(progn
+	  (setq done t)
+	  (fi::clman-display-file doc-page fi:clman-displaying-buffer)
+	  (setq found-it t))
+      (error  "No Doc Page for %s in %s" sym  pack))
+    t))
+
+(defun fi::clman-file-nameify (package str)
+  (if (string= package "") (error "Specified package is NIL"))
+  (if (string= package "") (error "Specified string is NIL"))
+  (let* ((oblist-name  (concat "fi::clman-" package "-oblist"))
+	 (oblist-symbol (car (read-from-string oblist-name)))
+	 (oblist nil)
+	 (new-string (fi::clman-string-clean str))
+	 (file-name nil))
+    (if (not (boundp oblist-symbol))
+	nil
+      (progn (setq oblist (eval oblist-symbol))
+	     (setq file-name 
+	       (car (cdr (tg:string-assoc  new-string oblist))))
+	     file-name 
+	     ))))
 
 (defun fi::clman-downcase (str)
   (let ((index (string-match "~" str)))
@@ -192,7 +275,6 @@ clman buffer, from anywhere in the buffer."
 
 
 (defun fi::clman-get-sym-to-lookup ()
-  (interactive)		   
   (let* ((str nil)(sym nil)(ans nil)(pack nil))
     ;; make sure we have a symbol table
     ;; get a symbol to look up, if the user did not provide one
@@ -217,15 +299,15 @@ clman buffer, from anywhere in the buffer."
 	  (setq answer (completing-read 
 			(concat "Symbol (" ans ":): ") 
 			(eval (car (read-from-string oblist-name)))))
-	  (if (string= (substring answer 0 1) ":")(setq answer (concat ":" answer)))
+	  (if (string= (substring answer 0 1) ":")
+	      (setq answer (concat ":" answer)))
+	  ;;  for keywords
 	  (setq ans 
 	    (concat ans ":" answer))
-	  ;;  a little trick to handle keywords : stick an extra colon on them
 	  ans)
       ans)))
 
 (defun fi::clman-strip-leading-package-name (str)
-  (interactive)
   ;; now this returns a list of the package and the symbol
   (let ((pos (string-match "[a-zA-Z]:" str)))
     (if (and pos (not (= pos 0)))
@@ -238,7 +320,6 @@ clman buffer, from anywhere in the buffer."
 		    (substring second-string 1 (length second-string)))))
 	  (list first-string second-string))
       (list "" str))))
-
 
 (defun fi::clman-retrieve-doc-page (str table doc-dir)
   "Retrieve the documentation page for the string argument, which is 
@@ -259,10 +340,13 @@ inserts the .doc file into the buffer named by the value of the variable
 fi:clman-displaying-buffer"
   ;; If buf is non-nil then we want to reuse the displaying buffer,
   ;; so have to erase it first
+  (if clman-debug (with-output-to-temp-buffer "*clman-debug*"
+		    (princ name)))
   (if buf
       (if (get-buffer buf)
 	  (save-excursion 
 	    (switch-to-buffer buf)
+	    
 	    (erase-buffer))))
   (funcall fi:clman-displaying-function name buf)
   (fi:clman-mode))
@@ -280,7 +364,10 @@ named by the second argument."
   (if (not (string=  buf (buffer-name(current-buffer))))
       (switch-to-buffer-other-window buf))
   (buffer-flush-undo (current-buffer))
-  (insert-file name))
+  (insert-file name)
+  ;; Get rid of garbage at the top of the buffer
+  (beginning-of-buffer)(kill-line 5)
+  (buffer-flush-undo (current-buffer)))
 
 (defun fi::clman-man-page-lookup (str table doc-dir)
   "Lookup  a string in the filename/symbol table.  The system used the
@@ -309,9 +396,9 @@ Return the full pathname of the file the symbol is in. "
 					(buffer-substring begin (point)))))
 
 (defun fi::clman-backward-copy-symbol-as-kill ()
-   (skip-chars-backward "[a-zA-Z\-:+*#0-9]")
+  (skip-chars-backward "[&a-zA-Z\-~:+*#0-9]")
   (let* ((begin (point)) end sym)
-    (skip-chars-forward "[a-zA-Z\-:+*#0-9]")
+    (skip-chars-forward "[&a-zA-Z\-:+~*#0-9]")
     (fi::clman-remove-chars-from-string '(?\ ?\n)
 					(buffer-substring begin (point)))))
 
@@ -361,25 +448,14 @@ Return the full pathname of the file the symbol is in. "
 	     string
 	     nil))
 
-(defun fi::clman-file-nameify (package str)
-  (if (or (string= package "")(string= str ""))
-      "NOT-FOUND"
-  (let ((oblist-name  (concat "fi::clman-" package "-oblist"))
-	(oblist nil)(new-string (fi::clman-string-clean str))
-	(file-name nil))
-    (setq oblist (eval (car (read-from-string oblist-name))))
-    (setq file-name 
-      (car (cdr (fi::clman-string-assoc new-string oblist))))
-    file-name 
-    )))
-
-(defun fi::clman-string-assoc (string lis)
+(defun tg:string-assoc (string lis)
   (let ((lis1 lis)(item nil)(done nil)(result nil))
     (while (and lis1 (not done))
       (setq item (car lis1))
       (if (string= (car item) string)
-	  (progn (setq result item)
-		 (setq done t)))
+	  (progn
+	    (setq result item)(setq done t))
+	)
       (setq lis1 (cdr lis1)))
     result))
 
@@ -388,11 +464,10 @@ Return the full pathname of the file the symbol is in. "
 						;; (?\# . ?H)
 						)
 					      string))
-  (setq string (fi::clman-string-sub string "\*(Tl" "~"))
+  (setq string (string-sub string "\*(Tl" "~"))
   string)
 
-(defun fi::clman-string-sub (string old new)
-  (interactive)
+(defun string-sub (string old new)
   (let ((len (length string))
 	(match (string-match old string)))
     (if match
@@ -402,78 +477,80 @@ Return the full pathname of the file the symbol is in. "
 		      (substring string (+ match (length old)) len)))
       string)))
 
-(defun fi:clman-package-help ()
-  (interactive)
-  (with-output-to-temp-buffer "*CLMAN-NICKNAMES"
-    (princ "HERE ARE ALL THE PACKAGES")
-    (princ "\n")
-    (let ((lis (fi:clman-package-nicknames)))
-      (while lis
-	(prin1 (car (read-from-string (car lis))))
-	(princ "\n")
-	(setq lis (cdr lis)))
-      (save-excursion
-	(switch-to-buffer "*CLMAN-NICKNAMES")
-	(fi:clman-mode)))))
+
 
 
 (defun fi:clman-package-nicknames ()
   (mapcar 'car fi:clman-package-info))
 
-(defun fi::setup-info-and-oblist ()
-  (setq fi:clman-package-info (fi::setup-clman-package-info))
-  (fi::setup-oblist))
+(defun fi::setup-clman-oblist ()
+  ;;  Create the list FI:CLMAN-PACKAGE-INFO.
+  ;;  If you defvar this variable in your .emacs file, the following
+  ;;  setq will have no effect.
+
+  ;; now load all the oblists and append them together
+  (load-all-OBLIST-files)
+  ;; Append OBLISTs together to make fi::clman-oblist
+  (setq fi::clman-oblist (fi::append-OBLISTs-together)))
+
+(defun load-all-OBLIST-files ()
+  ;;  This will define a set of lists, pointed to by variables, on the
+  ;;  pattern of fi:clman-<pack>-oblist
+  (let ((doc-dirs (mapcar '(lambda (item)(car (cdr item)))
+			  fi:clman-package-info)))
+    (with-output-to-temp-buffer "OBLIST loading record"
+      (while doc-dirs
+	(let ((oblist-file (concat (car doc-dirs) "OBLIST")))
+	  (if (file-exists-p oblist-file)
+	      (load-file oblist-file)
+	    (progn (princ (concat oblist-file " does not exist"))
+		   (terpri)))
+	  (setq doc-dirs (cdr doc-dirs)))))))
+
+(defun fi::append-OBLISTs-together ()
+  ;;  we take the names of all the oblists, and cons 
+  ;;  up the list fi::clman-oblist, by appending all the 
+  ;;  oblists together
+  (let ((clman-package-nicknames nil)
+	(clman-oblist-names nil))
+    (setq  clman-package-nicknames
+      (mapcar 'car fi:clman-package-info))
+    (setq clman-oblist-names
+      (let ((lis clman-package-nicknames)
+	    (oblist-name)
+	    (result nil))
+	(while lis 
+	  (setq oblist-name 
+	    (car (read-from-string 
+		  (concat "fi::clman-" (car lis) "-oblist"))))
+	  (setq result (cons oblist-name result))
+	  (setq lis (cdr lis)))
+	result))
+
+    (let 
+	((result nil) (lis clman-oblist-names))
+      (while lis
+	(let ((oblist (car lis)))
+	  (if (boundp oblist)
+	      (setq result 
+		(append (eval oblist) result))))
+	(setq lis (cdr lis)))
+      result)))
+       
 
 
-(defun fi::setup-oblist ()
-  (if (not (boundp 'fi::clman-oblist)) 
-      (let ((clman-package-nicknames nil)
-	    (clman-oblist-names nil))
-	(load "fi/clman.data")
-	(setq  clman-package-nicknames
-	  (mapcar 'car fi:clman-package-info))
-	(setq clman-oblist-names
-	  (let ((lis clman-package-nicknames)
-		(oblist-name)
-		(result nil))
-	    (while lis 
-	      (setq oblist-name 
-		(car (read-from-string 
-		      (concat "fi::clman-" (car lis) "-oblist"))))
-	      (setq result (cons oblist-name result))
-	      (setq lis (cdr lis)))
-	    result))
-	(setq fi::clman-oblist
-	  (let ((result nil) (lis clman-oblist-names))
-	    (while lis
-	      (setq result (append (eval (car lis)) result))
-	      (setq lis (cdr lis)))
-	    result)))))
 
-(defun fi::setup-clman-package-info ()
-  (mapcar (function
-	     (lambda (xxx)
-	       (let* ((p load-path)
-		      (string "fi/manual/")
-		      (done nil)
-		      res)
-		 (while (and (not done) p)
-		   (if (file-exists-p (setq res (concat (car p) "/" string)))
-		       (setq done t)
-		     (setq res nil))
-		   (setq p (cdr p)))
-		 (rplaca (cdr xxx) (format "%s%s" res (car (cdr xxx))))
-		 xxx)))
-	    '(("xcw" "xcw/")
-	      ("math" "matrix/")
-	      ("lisp" "cl/")
-	      ("mp" "mp/")
-	      ("about" "about/")
-	      ("compiler" "compiler/")
-	      ("excl" "excl/")
-	      ("foreign" "foreign/")
-	      ("sys" "sys/")
-	      ("tpl" "toplevel/"))))
+(defun fi:clman-help ()
+  (with-output-to-temp-buffer "*CLMAN-NICKNAMES"
+    (princ  "HERE ARE ALL THE PACKAGES")
+    (princ "\n")
+    (let ((lis   (fi:clman-package-nicknames)))
+      (while lis
+	(prin1 (car (read-from-string (car lis))))
+	(princ "\n")
+	(setq lis (cdr lis))))
+    (save-excursion (switch-to-buffer  "*CLMAN-NICKNAMES")
+		    (fi:clman-mode))))
 
 (if fi:clman-mode-map
     nil
@@ -483,4 +560,5 @@ Return the full pathname of the file the symbol is in. "
   (define-key fi:clman-mode-map "m" 'fi:clman)
   (define-key fi:clman-mode-map "p" 'fi:clman-package-help)
   (define-key fi:clman-mode-map "s" 'fi:clman-search-forward-see-alsos)
+  (define-key fi:clman-mode-map " " 'scroll-up)
   (define-key fi:clman-mode-map "n" 'fi:clman-next-entry))
