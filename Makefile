@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.20 1988/05/25 13:51:08 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.21 1988/08/11 21:29:28 layer Exp $
 
 .SUFFIXES:
 .SUFFIXES: .el .elc
@@ -12,6 +12,7 @@ elc-files = modes.elc subproc.elc sublisp.elc filec.elc ring.elc\
 	    ltags.elc
 
 all:	depend spec.out
+	@rm -f stamp; date > stamp
 
 depend: ${elc-files}
 
