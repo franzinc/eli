@@ -1,7 +1,7 @@
 ;;; subprocess.el
 ;;;   subprocess modes and functions
 ;;;
-;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.2 1987/07/21 16:14:52 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.3 1987/09/07 20:47:25 layer Exp $
 
 (provide 'subprocess)
 
@@ -63,11 +63,6 @@ The superkeys are C-a, C-d, C-o, C-u, C-w, C-z, and C-\\, which will behave
 as they would in the `fi:subprocess-mode-map' keymap when typed at the end
 of a subprocess buffer.  If typed elsewhere, these keys have their
 normal global binding.  This is a buffer-local symbol.")
-
-(defvar subprocess-enable-hyperkeys nil
-  "*If t, C-c becomes a `hyperkey', i.e. if at buffer end interrupts process.
-If elsewhere, it is treated as a prefix key for the `fi:subprocess-mode-map'
-keymap.  This is a buffer-local symbol.")
 
 (defvar explicit-shell-file-name nil
   "*Explicit Shell image to invoke from (shell).")
@@ -177,10 +172,7 @@ Here is a complete list of the key bindings in shell-mode:
 \\{fi:shell-mode-map}
 Keys that are shown above bound to `subprocess-superkey' invoke their
 bindings in the inferior key map shown below when at the end of the buffer,
-otherwise they invoke their globally-bound functions.  Keys shown bound to
-`subprocess-hyperkey' above likewise invoke their bindings shown below when
-at the end of the buffer, but otherwise they are prefix keys for the same
-inferior key map shown below.
+otherwise they invoke their globally-bound functions.
 \\{fi:subprocess-mode-map}
 
 Entry to this mode applies the values of subprocess-mode-hook and
@@ -200,6 +192,10 @@ using the commands \\[send-region], \\[send-string] and \\[fi:eval-defun]."
   (setq major-mode 'shell-mode)
   (setq mode-name "Shell")
   (setq mode-line-process '(": %s"))
+  (if (null fi:shell-mode-map)
+      (progn
+	(setq fi:shell-mode-map (make-sparse-keymap))
+	(shell-mode-commands fi:shell-mode-map)))
   (use-local-map fi:shell-mode-map)
   (make-local-variable 'shell-directory-stack)
   (setq shell-directory-stack nil)
@@ -250,10 +246,7 @@ Here is a complete list of the key bindings in inferior-lisp-mode:
 \\{fi:inferior-lisp-mode-map}
 Keys that are shown above bound to `subprocess-superkey' invoke their
 bindings in the inferior key map shown below when at the end of the buffer,
-otherwise they invoke their globally-bound functions.  Keys shown bound to
-`subprocess-hyperkey' above likewise invoke their bindings shown below when
-at the end of the buffer, but otherwise they are prefix keys for the same
-inferior key map shown below.
+otherwise they invoke their globally-bound functions.
 \\{fi:subprocess-mode-map}
 
 Entry to this mode applies the values of subprocess-mode-hook,
@@ -269,6 +262,10 @@ You can send text to the Lisp subprocess from other buffers
   (setq major-mode 'inferior-lisp-mode)
   (setq mode-name "Inferior Lisp")
   (setq mode-line-process '(": %s"))
+  (if (null fi:inferior-lisp-mode-map)
+      (progn
+	(setq fi:inferior-lisp-mode-map (make-sparse-keymap))
+	(inferior-lisp-mode-commands fi:inferior-lisp-mode-map)))
   (use-local-map fi:inferior-lisp-mode-map)
   (setq local-abbrev-table lisp-mode-abbrev-table)
   (make-local-variable 'last-input-start)
@@ -323,21 +320,18 @@ in the MAP given as argument."
 (defun inferior-lisp-mode-commands (map)
   (shell-mode-commands map)
   (fi:lisp-mode-commands map t)
-  (define-key map "\r"		'inferior-lisp-send-list-input)
+  (define-key map "\r"		'subprocess-send-input)
+  (define-key map "\e\r"	'inferior-lisp-send-sexp-input)
+  (define-key map "\C-x\r"	'inferior-lisp-send-list-input)
   (define-key map "\C-i"	'lisp-indent-line)
-  (define-key map "\e\C-m"	'inferior-lisp-send-sexp-input)
-  (define-key map "\e\C-q"	'indent-sexp)
-  (define-key map "\C-x\C-m"	'subprocess-send-input))
+  (define-key map "\e\C-q"	'indent-sexp))
 
 (defun shell-mode-commands (&optional map)
   (define-key map "\C-a" 'subprocess-beginning-of-line)
   (define-key map "\C-m" 'fi:shell-send-input)
-  (if subprocess-enable-hyperkeys
-    (define-key map "\C-c" 'subprocess-hyperkey)
-    (define-key map "\C-c" 'Subprocess-Special-prefix))
+  (define-key map "\C-c" 'fi:interrupt-shell-subjob)
   (if subprocess-enable-superkeys
     (progn
-      ;;(define-key map "\C-a" 'subprocess-superkey)
       (define-key map "\C-d" 'subprocess-superkey)
       (define-key map "\C-o" 'subprocess-superkey)
       (define-key map "\C-u" 'subprocess-superkey)
@@ -434,27 +428,15 @@ is not given, the key takes its binding from the `fi:subprocess-mode-map'
 key map."
   (interactive)
   (if (eobp)
-    (if special-binding
-      (call-interactively special-binding)
-      (subprocess-reprocess-keys fi:subprocess-mode-map))
+      (if special-binding
+	  (call-interactively special-binding)
+	(progn
+	  (if (null fi:subprocess-mode-map)
+	      (progn
+		(setq fi:subprocess-mode-map (make-sparse-keymap))
+		(subprocess-mode-commands fi:subprocess-mode-map)))
+	  (subprocess-reprocess-keys fi:subprocess-mode-map)))
     (subprocess-reprocess-keys global-map)))
-
-(defun subprocess-hyperkey ()
-  "This function implements hyperkeys in subprocess buffers.
-A hyperkey is treated specially: when at the end of a subprocess buffer,
-the key's binding in the `fi:subprocess-mode-map' key map is invoked; when
-elsewhere in the buffer, the key is treated as a prefix key for the
-`fi:subprocess-mode-map' key map.
-Put more generally, this function causes the key to which it is bound to
-behave as if the key were typed in its own inferior key map (the map for
-which it is a prefix key) if the key is typed at the end of the buffer;
-if the key is typed elsewhere, the key behaves normally, i.e. as a prefix
-key.  Of course the key isn't really bound as a prefix key, but to this
-function."
-  (interactive)
-  (if (eobp)
-    (subprocess-reprocess-keys fi:subprocess-mode-map)
-    (subprocess-reprocess-keys fi:subprocess-mode-map (read-char))))
 
 (defun subprocess-reprocess-keys (&optional map key)
   "Reprocess KEY or the last key sequence (which may be incomplete) in MAP.
@@ -514,12 +496,6 @@ Not at end, copies current line to the end of the buffer and sends it,
 		     (process-mark (get-buffer-process (current-buffer))))
 	(insert "\n")
 	(move-marker last-input-end (point)))
-    ;;(let ((mark (process-mark (get-buffer-process (current-buffer)))))
-    ;;  (insert "\n")
-    ;;  (if (/= (point) mark)
-    ;;	(progn
-    ;;	  (move-marker last-input-start mark)
-    ;;	  (move-marker last-input-end (point)))))
     (beginning-of-line)
     (re-search-forward shell-prompt-pattern nil t)
     (let ((copy (buffer-substring (point)
@@ -549,23 +525,23 @@ Not at end, copies current line to the end of the buffer and sends it,
 		(let ((old default-directory))
 		  (cd (car shell-directory-stack))
 		  (setq shell-directory-stack
-			(cons old (cdr shell-directory-stack))))))
+		    (cons old (cdr shell-directory-stack))))))
 	   ((memq (char-after (match-end 0)) '(?\  ?\t))
 	    (let (dir)
 	      (skip-chars-forward "^ ")
 	      (skip-chars-forward " \t")
 	      (if (file-directory-p
 		   (setq dir
-			 (expand-file-name
-			  (substitute-in-file-name
-			   (buffer-substring
-			    (point)
-			    (progn
-			      (skip-chars-forward "^\n \t;")
-			      (point)))))))
+		     (expand-file-name
+		      (substitute-in-file-name
+		       (buffer-substring
+			(point)
+			(progn
+			  (skip-chars-forward "^\n \t;")
+			  (point)))))))
 		  (progn
 		    (setq shell-directory-stack
-			  (cons default-directory shell-directory-stack))
+		      (cons default-directory shell-directory-stack))
 		    (cd dir)))))))
 	 ((and shell-cd-regexp
 	       (looking-at shell-cd-regexp))
@@ -578,13 +554,13 @@ Not at end, copies current line to the end of the buffer and sends it,
 	      (skip-chars-forward " \t")
 	      (if (file-directory-p
 		   (setq dir 
-			 (expand-file-name
-			  (substitute-in-file-name
-			   (buffer-substring
-			    (point)
-			    (progn
-			      (skip-chars-forward "^\n \t;")
-			      (point)))))))
+		     (expand-file-name
+		      (substitute-in-file-name
+		       (buffer-substring
+			(point)
+			(progn
+			  (skip-chars-forward "^\n \t;")
+			  (point)))))))
 		  (cd dir))))))))
     (error nil))
   (let ((process (get-buffer-process (current-buffer))))
@@ -604,17 +580,11 @@ Not at end, copies current line to the end of the buffer and sends it,
   (interactive)
   (end-of-line)
   (if (eobp)
-    (progn
-      (move-marker last-input-start
-		   (process-mark (get-buffer-process (current-buffer))))
-      (insert "\n")
-      (move-marker last-input-end (point)))
-    ;;(let ((mark (process-mark (get-buffer-process (current-buffer)))))
-    ;;  (insert "\n")
-    ;;  (if (/= (point) mark)
-    ;;	(progn
-    ;;	  (move-marker last-input-start mark)
-    ;;	  (move-marker last-input-end (point)))))
+      (progn
+	(move-marker last-input-start
+		     (process-mark (get-buffer-process (current-buffer))))
+	(insert "\n")
+	(move-marker last-input-end (point)))
     (beginning-of-line)
     (re-search-forward subprocess-prompt-pattern nil t)
     (let ((copy (buffer-substring (point)
@@ -716,7 +686,7 @@ Also put cursor there."
 (defun inferior-lisp-send-sexp-input (arg)
   "Send s-expression(s) to the Lisp subprocess."
   (interactive "P")
-  (inferior-lisp-send-input arg 'sexps))
+  (inferior-lisp-send-input arg 'sexp))
 
 (defun inferior-lisp-send-list-input (arg)
   "Send list(s) to the Lisp subprocess."
@@ -746,53 +716,52 @@ If s-expressions are being parsed:
 If lists are being parsed:
   The enclosing list is processed."
   (if (and (eobp) (null arg))
-    (progn
-      (move-marker last-input-start
-		   (process-mark (get-buffer-process (current-buffer))))
-      (insert "\n")
-      (lisp-indent-line)
-      (move-marker last-input-end (point)))
+      (progn
+	(move-marker last-input-start
+		     (process-mark (get-buffer-process (current-buffer))))
+	(insert "\n")
+	(lisp-indent-line)
+	(move-marker last-input-end (point)))
+
+    ;; we are in the middle of the buffer somewhere and need to collect
+    ;; and s-exp to re-send
+
+    ;; we grab everything from the end of the current line back to the end
+    ;; of the last prompt
     
-    ;;(let ((mark (process-mark (get-buffer-process (current-buffer)))))
-    ;;  (insert "\n")
-    ;;  (if (/= (point) mark)
-    ;;	(progn
-    ;;	  (move-marker last-input-start mark)
-    ;;	  (move-marker last-input-end (point)))))
     (let ((exp-to-resend "")
 	  (start-resend (point))
 	  (end-resend (point)))
       (if (null arg) (setq arg 1))
       (if (equal type 'sexp)
+	  (setq exp-to-resend
+	    (buffer-substring
+	     (setq start-resend
+	       (save-excursion
+		 (cond
+		  ((= (preceding-char) ?\))
+		   (scan-sexps (point) (- arg)))
+		  ((= (following-char) ?\() (point))
+		  ((= (following-char) ?\))
+		   (forward-char 1) (scan-sexps (point) (- arg)))
+		  (t (scan-sexps (point) (- arg))))))
+	     (setq end-resend
+	       (save-excursion
+		 (cond
+		  ((= (preceding-char) ?\)) (point))
+		  ((= (following-char) ?\() (scan-sexps (point) arg))
+		  ((= (following-char) ?\)) (forward-char 1) (point))
+		  (t (scan-sexps (point) arg)))))))
 	(setq exp-to-resend
-	      (buffer-substring
-	       (setq start-resend
-		     (save-excursion
-		       (cond
-			((= (preceding-char) ?\))
-			 (scan-sexps (point) (- arg)))
-			((= (following-char) ?\() (point))
-			((= (following-char) ?\))
-			 (forward-char 1) (scan-sexps (point) (- arg)))
-			(t (scan-sexps (point) (- arg))))))
-	       (setq end-resend
-		     (save-excursion
-		       (cond
-			((= (preceding-char) ?\)) (point))
-			((= (following-char) ?\() (scan-sexps (point) arg))
-			((= (following-char) ?\)) (forward-char 1) (point))
-			(t (scan-sexps (point) arg)))))))
-	(setq exp-to-resend
-	      (buffer-substring
-	       (setq start-resend (scan-lists (point) (- arg) 1))
-	       (setq end-resend (scan-lists (point) arg 1)))))
+	  (buffer-substring
+	   (setq start-resend (scan-lists (point) (- arg) 1))
+	   (setq end-resend (scan-lists (point) arg 1)))))
       (if (eobp)
-	(progn
-	  (insert "\n")
-	  (lisp-indent-line)
-	  (move-marker last-input-start start-resend)
-	  (move-marker last-input-end (point-max))
-	  )
+	  (progn
+	    (insert "\n")
+	    (lisp-indent-line)
+	    (move-marker last-input-start start-resend)
+	    (move-marker last-input-end (point-max)))
 	(progn
 	  (goto-char (point-max))
 	  (move-marker last-input-start (point))
@@ -847,40 +816,64 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 	    "Cant start a subprocess for sublisp-name %s."
 	    sublisp-name))))
 
-(defun fi:eval-last-sexp  ()
+(defun fi:package-select ()
+  (save-excursion
+    (if (null (re-search-backward "^(in-package " nil t))
+	nil
+      (let ((start (point))
+	    res)
+	(forward-sexp)
+	(setq res (buffer-substring start (point)))
+	res))))
+
+(defun fi:eval-last-sexp ()
   "Send sexp before point to the Lisp subprocess sublisp-name.
 If sublisp-name is nil, startup an appropriate sublisp, based on
 the major-mode of the buffer."
   (interactive)
-  (let* ((stab (syntax-table))
+  (let* ((pkg (fi:package-select))
+	 (stab (syntax-table))
 	 (start  (unwind-protect
 		     (save-excursion
 		       (set-syntax-table lisp-mode-syntax-table)
 		       (forward-sexp -1)
 		       (point))
 		   (set-syntax-table stab))))
-    (fi:eval-send start (point))))
+    (fi:eval-send start (point) pkg)))
 
 (defun fi:eval-defun ()
   "Send the current `defun' to the Lisp subprocess sublisp-name.
 If sublisp-name is nil, startup an appropriate sublisp, based on
 the major-mode of the buffer."
   (interactive)
-  (let* ((end	(save-excursion
+  (let* ((pkg (fi:package-select))
+	 (end	(save-excursion
 		  (end-of-defun)
 		  (point)))
 	 (start (save-excursion
 		  (beginning-of-defun)
 		  (point))))
-    (fi:eval-send start end)))
+    (fi:eval-send start end pkg)))
 
-(defun fi:eval-send (start end)
+(defun fi:eval-send (start end pkg)
   "Send the text substring from START to END over to the sublisp."
   (fi:sublisp-select)
   (let ((stuff (buffer-substring start end))
 	(source-buffer (current-buffer))
 	(sublisp-buffer (process-buffer (get-process sublisp-name))))
+    (if pkg
+	(send-string-split
+	 sublisp-name
+	 (concat
+	  "(progn (setq si::%emacs-package-save% (package-name *package*))"
+	  pkg "(values))\n")
+	 subprocess-map-nl-to-cr))
     (send-string-split sublisp-name stuff subprocess-map-nl-to-cr)
+    (if pkg
+	(send-string-split
+	 sublisp-name
+	 "(progn (in-package si::%emacs-package-save%)(values))"
+	 subprocess-map-nl-to-cr))
     (send-string-split sublisp-name "\n" subprocess-map-nl-to-cr)
     (switch-to-buffer-other-window sublisp-buffer)
     (input-ring-save-string stuff)
@@ -897,17 +890,16 @@ the major-mode of the buffer."
 	    (end   (max (point) (mark)))
 	    (source-buffer (buffer-name))
 	    (sublisp-process  (get-process sublisp-name)))
-	(save-excursion;; check out if point=mark case
+	(save-excursion			;check out if point=mark case
 	  ;;(set-process-filter sublisp-process 'sublisp-eval-region-filter)
 	  (goto-char start)
 	  (forward-list)
-	  (while
-	      (>= end (point))
-	    (fi:eval-last-sexp);;note:this puts us in sublisp-buffer 
+	  (while (>= end (point))
+	    (fi:eval-last-sexp)		;note:this puts us in sublisp-buffer 
 	    (switch-to-buffer-other-window  source-buffer)
 	    (forward-list)
-	    (if (equal (point) (point-max));;hack for end of file case
-		(setq end 0)) ))
+	    (if (equal (point) (point-max)) ;hack for end of file case
+		(setq end 0))))
 	(switch-to-buffer-other-window (process-buffer sublisp-process)))))
 
 (defun fi:eval-current-buffer ()
@@ -1075,8 +1067,11 @@ Returns the name of the created subprocess without the asterisks."
 		     arguments)))
      (t
       (let* ((new-number (if number (1+ number) 2))
-	     (new-name (concat name separator new-number)))
-	(while (get-buffer (concat "*" new-name "*"))
+	     (new-name (concat name separator new-number))
+	     temp)
+	(while (and (setq temp (get-buffer (concat "*" new-name "*")))
+		    (setq temp (get-buffer-process temp))
+		    (eq 'run (process-status temp)))
 	  (setq new-number (1+ new-number))
 	  (setq new-name (concat name separator new-number)))
 	(apply 'fi:make-shell
@@ -1233,26 +1228,10 @@ This function implements continuous output to visible buffers."
 ;;; Misc Initializations
 ;;;;
 
-(if (not fi:inferior-lisp-mode-map)
-    (progn
-      (setq fi:inferior-lisp-mode-map (make-sparse-keymap))
-      (inferior-lisp-mode-commands fi:inferior-lisp-mode-map)))
-
-(if (null fi:subprocess-mode-map)
-  (progn
-    (setq fi:subprocess-mode-map (make-sparse-keymap))
-    (subprocess-mode-commands fi:subprocess-mode-map)))
-
-(if (not fi:shell-mode-map)
-    (progn
-      (setq fi:shell-mode-map (make-sparse-keymap))
-      (shell-mode-commands fi:shell-mode-map)))
-
 (mapcar 'make-variable-buffer-local
 	'(shell-popd-regexp
 	  shell-pushd-regexp 
 	  shell-cd-regexp
 	  subprocess-map-nl-to-cr
 	  subprocess-continuously-show-output-in-visible-buffer
-	  subprocess-enable-superkeys
-	  subprocess-enable-hyperkeys))
+	  subprocess-enable-superkeys))
