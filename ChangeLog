@@ -1,6 +1,15 @@
 *******************************************************************************
 post 7.0.beta release
 
+2004-08-03    <layer@HOBART>
+
+    for bug14313:
+	* fi-subproc.el (fi::socket-start-lisp): revert previous
+	  w32-quote-process-args hacking, possible because of the next
+	  change:
+	* fi-utils.el (fi::start-lisp-interface-windows): fix
+	  fi::start-lisp-interface-windows to use -f instead of -e
+
 2004-06-16  Kevin Layer  <layer@gemini>
 
 	* fi-subproc.el (fi:common-lisp): bug14546: fix for windows
@@ -4950,4 +4959,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.9.4.2 $
+$Revision: 3.9.4.3 $

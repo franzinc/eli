@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 3.7.4.2 2004/06/28 17:09:38 layer Exp $
+;; $Id: fi-subproc.el,v 3.7.4.3 2004/08/03 21:08:37 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -768,20 +768,15 @@ be a string. Use the 6th argument for image file."))
 ;;;; new style:
 	(win32-start-process-show-window t)
 	(w32-start-process-show-window t)
-	(win32-quote-process-args nil)
-	;; must be nil now, because emacs does weird things with double
-	;; quotes.  See bug14313 for more info.
-	(w32-quote-process-args nil)
+	(win32-quote-process-args t)
+	(w32-quote-process-args t)
 	;; from Greg Klanderman:
 	;; XEmacs 21 NT does this differently...
 	(nt-quote-args-functions-alist '(("." . nt-quote-args-double-quote))))
     (apply (function start-process)
 	   process-name
 	   nil ;; no buffer name
-	   image
-	   (if (on-ms-windows)
-	       (mapcar 'shell-quote-argument arguments)
-	     arguments))))
+	   image arguments)))
 
 (defun fi:open-lisp-listener (&optional buffer-number buffer-name
 					setup-function)
