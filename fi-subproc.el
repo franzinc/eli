@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.199 1998/03/06 19:05:33 layer Exp $
+;; $Id: fi-subproc.el,v 1.200 1998/03/18 20:28:54 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -549,11 +549,13 @@ be a string. Use the 6th argument for image file."))
 	     (funcall fi:start-lisp-interface-hook))))
     (setq fi::common-lisp-first-time nil
 	  fi:common-lisp-buffer-name buffer-name
-	  fi:common-lisp-directory directory
 	  fi:common-lisp-image-name executable-image-name
 	  fi:common-lisp-image-file image-file
 	  fi:common-lisp-image-arguments image-args
 	  fi:common-lisp-host host)
+    (when fi:common-lisp-directory
+      ;; Only setq'd if it already had a value...
+      (setq fi:common-lisp-directory directory))
     proc))
 
 (defun fi::reorder-arguments (arguments)

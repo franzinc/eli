@@ -7,6 +7,15 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.pre-beta.19
+
+Wed Mar 18 10:32:16 1998  Kevin Layer  <layer@ultra>
+
+	* Makefile: use script to find emacs dir on windows
+	* fi-subproc.el: only set fi:common-lisp-directory when it is
+	non-nil
+
+*******************************************************************************
 2.0.21.pre-beta.18
 
 Fri Mar 06 09:42:53 1998    <layer@HOBART>

@@ -1,27 +1,21 @@
-# $Id: Makefile,v 1.135 1998/01/12 22:22:47 layer Exp $
+# $Id: Makefile,v 1.136 1998/03/18 20:28:53 layer Exp $
 # This makefile requires GNU make.
 
 include version.mak
 
-# for some system V machines:
 SHELL = /bin/sh
 
+# $(OS) is from the environment on Windows NT
 ifeq ($(OS),Windows_NT)
-emacs = /d/emacs-19.34/bin/emacs.exe
+emacsdir = $(shell perl emacsdir.pl)
+emacs = $(emacsdir)/bin/emacs.exe
+# ../bin/pwd prints like c:/... instead of //c/... like the cygnus version.
 pwd = $(shell ../bin/pwd)
 else
-has_xemacs = t
-endif
-
-ifndef emacs
+xemacs = xemacs
 emacs = emacs
-endif
-
-ifndef pwd
 pwd = $(shell pwd)
 endif
-
-xemacs = xemacs
 
 default:	fi-vers.el compile
 
@@ -29,7 +23,7 @@ all:	fi-vers.el compile test.out tags docs
 
 compile:	fi-vers.el
 	$(emacs) -nw -batch -q -l $(pwd)/fi-compile.el -kill
-ifeq ($(has_xemacs),t)
+ifdef xemacs
 	$(xemacs) -nw -batch -q -l $(pwd)/fi-xcompile.el -kill
 endif
 
