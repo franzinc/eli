@@ -5,7 +5,8 @@
 Mon Sep 23 11:12:43 1996  Kevin Layer  <layer@freezer>
 
 	* fi-subproc.el: on windows pass environment in
-	fi:subprocess-env-vars to lisp subprocess.
+	fi:subprocess-env-vars to lisp subprocess; don't restrict
+	fi:common-lisp-image-name to be a cons on windows.
 
 *******************************************************************************
 2.0.20 alpha.2 release for ACL on Windows

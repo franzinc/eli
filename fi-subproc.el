@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.172 1996/09/23 18:13:55 layer Exp $
+;; $Id: fi-subproc.el,v 1.173 1996/09/23 18:17:53 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -391,10 +391,9 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 					  fi::*connection*))))))
 	      (append (funcall fi:start-lisp-interface-arguments
 			       fi:use-background-streams
-			       (when (on-ms-windows)
-				 (if (consp executable-image-name)
-				     (cdr executable-image-name)
-				   (error "No lisp image file given."))))
+			       (when (and (on-ms-windows)
+					  (consp executable-image-name))
+				 (cdr executable-image-name)))
 		      image-args)
 	    image-args))
 	 (process-connection-type fi::common-lisp-connection-type) ;bug3033
