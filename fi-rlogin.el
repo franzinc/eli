@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.13 1989/07/11 18:19:30 layer Rel $
+;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.14 1990/08/31 23:46:14 layer Exp $
 
 (defvar fi:rlogin-mode-map nil
   "The rlogin major-mode keymap.")
@@ -35,7 +35,7 @@
 (defvar fi:rlogin-image-name "rlogin"
   "*Default remote-login image to invoke from (fi:rlogin).  If the value
 is a string then it names the image file or image path that
-`fi:common-lisp' invokes.  Otherwise, the value of this variable is given
+`fi:rlogin' invokes.  Otherwise, the value of this variable is given
 to funcall, the result of which should yield a string which is the image
 name or path.")
 
@@ -60,13 +60,8 @@ is seen.")
   (setq mode-name "Rlogin")
 
   (if (null fi:rlogin-mode-super-key-map)
-      (let ((map (make-sparse-keymap)))
-	(setq map (fi::subprocess-mode-super-keys map 'rlogin))
-	(define-key map "\C-z"	'fi:rlogin-send-stop)
-	(define-key map "\C-c"	'fi:rlogin-send-interrupt)
-	(define-key map "\C-d"	'fi:rlogin-send-eof)
-	(define-key map "\C-\\"	'fi:rlogin-send-quit)
-	(setq fi:rlogin-mode-super-key-map map)))
+      (setq fi:rlogin-mode-super-key-map
+	(fi::subprocess-mode-super-keys (make-sparse-keymap) 'rlogin)))
 
   (if (null fi:rlogin-mode-map)
       (setq fi:rlogin-mode-map
@@ -114,26 +109,6 @@ are read from the minibuffer."
 		       (append (list "TERM=dumb" image-name host)
 			       image-arguments)
 		       'fi::rlogin-filter))
-
-(defun fi:rlogin-send-eof ()
-  "Send eof to process running through remote login subprocess buffer."
-  (interactive)
-  (send-string (get-buffer-process (current-buffer)) "\C-d"))
-
-(defun fi:rlogin-send-interrupt ()
-  "Send interrupt to process running through remote login subprocess buffer."
-  (interactive)
-  (send-string (get-buffer-process (current-buffer)) "\C-c"))
-
-(defun fi:rlogin-send-quit ()
-  "Send quit to process running through remote login subprocess buffer."
-  (interactive)
-  (send-string (get-buffer-process (current-buffer)) "\C-\\"))
-
-(defun fi:rlogin-send-stop ()
-  "Send stop to process running through remote login subprocess buffer."
-  (interactive)
-  (send-string (get-buffer-process (current-buffer)) "\C-z"))
 
 (defun fi::rlogin-filter (process output)
   "Filter for `fi:rlogin' subprocess buffers.
