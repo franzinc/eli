@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.27 1990/09/05 22:09:48 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.28 1990/09/05 22:22:17 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -53,6 +53,10 @@ shell, rlogin, sub-lisp or tcp-lisp."
   (define-key map "\C-u" 'fi:subprocess-kill-input)
   (define-key map "\C-v" 'fi:subprocess-show-output)
   (define-key map "\C-w" 'fi:subprocess-backward-kill-word)
+  (cond ((memq mode '(sub-lisp tcp-lisp))
+	 (define-key map "." 'fi:lisp-sync-current-working-directory))
+	(t
+	 (define-key map "." 'fi:shell-sync-current-working-directory)))
 
   (cond
    ((eq mode 'rlogin)
@@ -112,7 +116,6 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
 
   (cond
     ((memq mode '(sub-lisp tcp-lisp))
-     (define-key map "\C-c."	'fi:sync-current-working-directory)
      (define-key map "\r"	'fi:inferior-lisp-newline)
      (define-key map "\e\r"	'fi:inferior-lisp-input-sexp)
      (define-key map "\C-x\r"	'fi:inferior-lisp-input-list))
@@ -698,11 +701,17 @@ Also move the point there."
   (kill-region (process-mark (get-buffer-process (current-buffer)))
 	       (point)))
 
-(defun fi:sync-current-working-directory ()
+(defun fi:lisp-sync-current-working-directory ()
   (interactive)
   (send-string
    (get-buffer-process (current-buffer))
    (format "(chdir \"%s\")\n" default-directory)))
+
+(defun fi:shell-sync-current-working-directory ()
+  (interactive)
+  (send-string
+   (get-buffer-process (current-buffer))
+   (format "cd %s\n" default-directory)))
 
 (defun fi:log-functional-change ()
   "Indicate that a function has changed by putting in a description message
