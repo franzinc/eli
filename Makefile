@@ -1,3 +1,5 @@
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.18 1988/05/25 10:59:02 layer Exp $
+
 .SUFFIXES:
 .SUFFIXES: .el .elc
 .el.elc : 
@@ -23,5 +25,5 @@ print:; ${pr} Makefile *.el
 tags:
 	(cd ../..; etags lisp/fi/*.el lisp/local/*.el lisp/*.el src/*.[ch])
 
-backup:
-	rdist -Rc . binky:emacs.save/fi
+verify:
+	verify *.el spec.n Makefile examples/*
