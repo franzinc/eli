@@ -7,6 +7,13 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.16.14
+
+1999-04-01    <layer@HOBART>
+
+	* fi-site-init: rfe3545: put load-time check for old emacsen 
+
+*******************************************************************************
 2.0.21.16.13
 
 1999-03-19    <layer@OMEGA>

@@ -1,4 +1,4 @@
-;; $Id: fi-site-init.el,v 1.111.20.6 1999/02/22 21:12:36 layer Exp $
+;; $Id: fi-site-init.el,v 1.111.20.7 1999/04/01 23:59:25 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -192,6 +192,27 @@ exists.")
     (load lib-file)))
 
 (fi::load "fi-vers")
+
+(when (and (= 20 (car fi:compiled-with-version))
+	   (= 19 emacs-major-version)
+	   (eq 'emacs19 fi::emacs-type))
+  (delete-other-windows)
+  (switch-to-buffer "*Help*")
+  (erase-buffer)
+  (insert "
+You must byte-recompile the .el files for GNU Emacs 19.x since there are
+incompatibilities between FSF GNU Emacs going from version 20 to 19.
+
+You can do this by running the following commands in your eli/ directory:
+
+  make clean
+  make
+
+in the <acldir>/eli/ directory.")
+  (beginning-of-buffer)
+  (beep)
+  (error "You must byte-recompile the .el files for GNU Emacs 19.x."))
+
 (when (and (= 19 (car fi:compiled-with-version))
 	   (eq 'xemacs20 fi::emacs-type)
 	   (>= emacs-major-version 20))
