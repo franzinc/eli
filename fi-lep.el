@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.24 1991/04/22 23:25:44 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.25 1991/04/23 15:47:27 layer Exp $
 ;;
 
 (defvar fi:always-in-a-window nil)
@@ -815,6 +815,8 @@ time."
 
 
 (defun fi:compile-file (file)
+  "Compile FILE and load the result of this compilation into the Lisp
+environment."
   (interactive "fFile to compile and load:")
   (fi::compile-or-load-file file ':compile-and-load))
 
@@ -827,6 +829,12 @@ time."
 
 
 (defun fi:list-undefined-functions ()
+  "Using the cross referencing database in the Lisp environment and
+inverse-definition mode, find and display all the functions which are
+called but not defined.  See the documentation for
+fi:inverse-definition-mode for more information on finding the callers of
+the undefined functions.  See the Allegro CL variable
+EXCL:*RECORD-XREF-INFO*."
   (interactive)
   (message "Finding undefined functions...")
   (make-request (lep::list-undefined-functions-session)
