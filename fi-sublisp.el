@@ -45,7 +45,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.44 1990/10/13 19:37:26 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.45 1990/11/29 14:12:15 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -244,7 +244,9 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 	(t (error "Cant start a subprocess for Major mode %s." major-mode)))
   ;; start-up the sublisp process if necessary and possible
   (cond ((and fi::sublisp-name
-	      (get-process fi::sublisp-name)))
+	      (let ((p (get-process fi::sublisp-name)))
+		(and p (eq (process-status p) 'run))
+		p)))
 	((eq major-mode 'fi:franz-lisp-mode)
 	 (if (and fi::freshest-franz-sublisp-name 
 		  (get-process fi::freshest-franz-sublisp-name))
