@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.30 1990/09/08 01:03:57 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.31 1990/10/13 19:37:44 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -68,7 +68,9 @@ shell, rlogin, sub-lisp or tcp-lisp."
     (if (eq mode 'shell)
 	(define-key map "\C-z"	'fi:subprocess-suspend))
     (define-key map "\C-c"	'fi:subprocess-interrupt)
-    (define-key map "\C-d"	'fi:subprocess-send-eof)
+    (if fi::lisp-is-remote
+	(define-key map "\C-d"	'fi:remote-lisp-send-eof)
+      (define-key map "\C-d"	'fi:subprocess-send-eof))
     (define-key map "\C-\\"	'fi:subprocess-quit))
    ((eq mode 'tcp-lisp)
     (define-key map "\C-c"	'fi:tcp-lisp-interrupt-process)
@@ -529,6 +531,14 @@ function defintions are considered.  Otherwise all symbols are considered."
 	     (display-completion-list
 	      (all-completions pattern alist)))
 	   (message "Making completion list...done")))))
+
+(defun fi:remote-lisp-send-eof ()
+  "Simulate an EOF on the inferior lisp process via a db:debug-pop spoken
+to the backdoor Common Lisp listener."
+  (interactive)
+  (fi:backdoor-eval 
+   "(db:debug-pop (mp::process-name-to-process \"Initial Lisp Listener\"))\n"
+   (buffer-name (current-buffer))))
 
 (defun fi:tcp-lisp-send-eof ()
   "Simulate an EOF on the tcp-lisp process via a db:debug-pop spoken to the
