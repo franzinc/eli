@@ -20,7 +20,7 @@
 ;; Description:
 ;;  
 
-;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.8 1987/11/04 10:34:43 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.9 1987/12/07 18:21:31 layer Exp $
 ;; $Locker: layer $
 ;;
 
@@ -164,13 +164,11 @@ files are closed."
 	  (unless (zerop (bind listen-socket-fd
 			       listen-sockaddr
 			       (ff::cstruct-len 'sockaddr-in)))
-	    (format t "call to bind failed~%")
-	    (perror "call to bind")
+	    (perror "bind")
 	    (return-from lisp-listener-socket-daemon nil))
 
 	  (unless (zerop (listen listen-socket-fd 5))
-	    (format t "call to listen failed~%")
-	    (perror "call to listen")
+	    (perror "listen")
 	    (return-from lisp-listener-socket-daemon nil))
 	  (loop
 	   (process-wait "waiting for a connection"
@@ -223,8 +221,6 @@ files are closed."
     ;; terminal stream.
     (setf (excl::sm_bterm-out-pos s) 0)
     (close s)))
-
-;;(start-lisp-listener-daemon)
 
 #+ignore
 (defun open-tcp-stream (host service &key (direction :io)
