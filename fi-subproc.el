@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.216 2003/10/14 20:52:46 layer Exp $
+;; $Id: fi-subproc.el,v 1.217 2003/12/12 05:35:42 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -419,7 +419,8 @@ risk.")
 	     (or (y-or-n-p "A make-dist might be in progress.  Continue? ")
 		 (error "fi:common-lisp aborted.")))
     (setq fi::shell-buffer-for-common-lisp-interaction-host-name nil))
-  (setq fi::process-is-local (or (string= "localhost" host)
+  (setq fi::process-is-local (or (null host)
+				 (string= "localhost" host)
 				 ;; so it is case insensitive:
 				 (string-match host (system-name))))
   (let* ((process-environment process-environment)
