@@ -45,7 +45,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.45 1990/11/29 14:12:15 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.46 1990/12/04 23:12:02 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -261,11 +261,19 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 		  fi::sublisp-name)))
   nil)
 
+(make-variable-buffer-local 'fi::emacs-to-lisp-transaction-file)
+(make-variable-buffer-local 'fi::emacs-to-lisp-package)
+(make-variable-buffer-local 'fi::emacs-to-lisp-transaction-buf)
+
+(setq-default fi::emacs-to-lisp-transaction-file nil)
+(setq-default fi::emacs-to-lisp-package nil)
+(setq-default fi::emacs-to-lisp-transaction-buf nil)
+
 (defun fi::send-string-load (process text nl-to-cr compile-file-p)
   (let (pkg)
     (if (or (null fi::emacs-to-lisp-transaction-file)
 	    (null fi::emacs-to-lisp-transaction-buf))
-	(let ()
+	(progn
 	  (or fi::emacs-to-lisp-transaction-file
 	      (setq fi::emacs-to-lisp-transaction-file
 		(format "%s/%s.cl"
@@ -279,7 +287,7 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 	    (get-buffer-create
 	     (format " %s" (file-name-nondirectory
 			    (or buffer-file-name
-				"noname")))))
+				(buffer-name (current-buffer)))))))
 	  (let ((file fi::emacs-to-lisp-transaction-file))
 	    (save-window-excursion
 	      (set-buffer fi::emacs-to-lisp-transaction-buf)
