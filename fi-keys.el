@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.25 1990/09/02 20:07:31 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.26 1990/09/03 21:51:31 layer Exp $
 
 ;;;;
 ;;; Key defs
@@ -104,6 +104,7 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
 
   (cond
     ((memq mode '(sub-lisp tcp-lisp))
+     (define-key map "\C-c."	'fi:sync-current-working-directory)
      (define-key map "\r"	'fi:inferior-lisp-newline)
      (define-key map "\e\r"	'fi:inferior-lisp-input-sexp)
      (define-key map "\C-x\r"	'fi:inferior-lisp-input-list))
@@ -688,6 +689,12 @@ Also move the point there."
   (interactive)
   (kill-region (process-mark (get-buffer-process (current-buffer)))
 	       (point)))
+
+(defun fi:sync-current-working-directory ()
+  (interactive)
+  (send-string
+   (get-buffer-process (current-buffer))
+   (format "(chdir \"%s\")\n" default-directory)))
 
 (defun fi:log-functional-change ()
   "Indicate that a function has changed by putting in a description message
