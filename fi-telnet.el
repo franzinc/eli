@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-telnet.el,v 1.10 1993/07/23 03:49:33 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-telnet.el,v 1.11 1996/06/05 20:31:53 layer Exp $
 
 (defvar fi:telnet-mode-map nil
   "The telnet major-mode keymap.")
@@ -51,7 +51,7 @@ When calling from a program, argument is MODE-HOOK,
 which is funcall'd just after killing all local variables but before doing
 any other mode setup."
   (interactive)
-  (kill-all-local-variables)
+  (fi::kill-all-local-variables)
   (if mode-hook (funcall mode-hook))
   (setq major-mode 'fi:telnet-mode)
   (setq mode-name "Telnet")

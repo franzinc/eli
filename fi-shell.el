@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-shell.el,v 1.21 1996/05/31 18:38:06 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-shell.el,v 1.22 1996/06/05 20:31:49 layer Exp $
 
 (defvar fi:shell-mode-map nil
   "The shell major-mode keymap.")
@@ -58,7 +58,7 @@ When calling from a program, argument is MODE-HOOK,
 which is funcall'd just after killing all local variables but before doing
 any other mode setup."
   (interactive)
-  (kill-all-local-variables)
+  (fi::kill-all-local-variables)
   (if mode-hook (funcall mode-hook))
   (setq major-mode 'fi:shell-mode)
   (setq mode-name "Shell")

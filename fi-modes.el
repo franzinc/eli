@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.64 1996/06/04 20:38:07 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.65 1996/06/05 20:31:45 layer Exp $
 
 ;;;; Mode initializations
 
@@ -92,6 +92,20 @@ If nil, no automatic package tracking will be done.")
 ;;; The Modes
 ;;;;
 
+(defun fi::kill-all-local-variables ()
+  ;; don't kill the input ring, which can be very useful
+  (let ((input-ring fi::input-ring)
+	(input-ring-yank-pointer fi::input-ring-yank-pointer)
+	(last-input-search-string fi::last-input-search-string)
+	(last-command-was-successful-search
+	 fi::last-command-was-successful-search))
+    (kill-all-local-variables)
+    (setq fi::input-ring input-ring)
+    (setq fi::input-ring-yank-pointer input-ring-yank-pointer)
+    (setq fi::last-input-search-string last-input-search-string)
+    (setq fi::last-command-was-successful-search
+      last-command-was-successful-search)))
+
 (defun fi:inferior-common-lisp-mode (&optional mode-hook &rest mode-hook-args)
   "Major mode for interacting with Common Lisp subprocesses.
 The keymap for this mode is bound to fi:inferior-common-lisp-mode-map:
@@ -108,7 +122,7 @@ When calling from a program, arguments are MODE-HOOK and MODE-HOOK-ARGS,
 the former is applied to the latter just after killing all local variables
 but before doing any other mode setup."
   (interactive)
-  (kill-all-local-variables)
+  (fi::kill-all-local-variables)
   (if mode-hook (apply mode-hook mode-hook-args))
   (setq major-mode 'fi:inferior-common-lisp-mode)
   (setq mode-name "Inferior Common Lisp")
@@ -147,7 +161,7 @@ When calling from a program, arguments are MODE-HOOK and MODE-HOOK-ARGS,
 the former is applied to the latter just after killing all local variables
 but before doing any other mode setup."
   (interactive)
-  (kill-all-local-variables)
+  (fi::kill-all-local-variables)
   (if mode-hook (apply mode-hook mode-hook-args))
   (setq major-mode 'fi:inferior-franz-lisp-mode)
   (setq mode-name "Inferior Franz Lisp")
@@ -186,7 +200,7 @@ When calling from a program, argument is MODE-HOOK,
 which is funcall'd just after killing all local variables but before doing
 any other mode setup."
   (interactive)
-  (kill-all-local-variables)
+  (fi::kill-all-local-variables)
   (if mode-hook (funcall mode-hook))
   (setq major-mode 'fi:lisp-listener-mode)
   (setq mode-name "TCP Common Lisp")

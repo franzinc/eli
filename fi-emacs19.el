@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-emacs19.el,v 2.13 1996/06/04 20:38:04 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-emacs19.el,v 2.14 1996/06/05 20:31:42 layer Exp $
 
 
 (unless (string-match "^18." emacs-version) ;Allows compilation on 18.
@@ -263,7 +263,8 @@
     (fi::install-menubar fi:allegro-edit-menu)
     (fi::install-menubar fi:allegro-debug-menu)
     (fi::install-menubar fi:allegro-help-menu)
-    (when fi:composer-menu (fi::install-menubar fi:composer-menu))))
+    (when (and fi:composer-menu (not (on-ms-windows)))
+      (fi::install-menubar fi:composer-menu))))
 
 (defvar fi::menubar-initialization)
 (setq fi::menubar-initialization
