@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.94 1991/03/13 15:51:36 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.95 1991/03/13 16:12:17 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -280,10 +280,15 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 				       'fi:common-lisp-image-name
 				       'fi:common-lisp-image-arguments
 				       'fi:common-lisp-host))
-  (let* ((local (or (string= "localhost" host)
+  (let* ((buffer-name (or buffer-name fi:common-lisp-buffer-name))
+	 (process-directory (or process-directory fi:common-lisp-directory))
+	 (image-name (or image-name fi:common-lisp-image-name))
+	 (image-arguments (or image-arguments fi:common-lisp-image-arguments))
+	 (host (or host fi:common-lisp-host))
+	 (local (or (string= "localhost" host)
 		    (string= host (system-name))))
 	 (proc (fi::make-subprocess
-		"common-lisp" 
+		"common-lisp"
 		buffer-name
 		process-directory
 		'fi:inferior-common-lisp-mode
@@ -370,17 +375,21 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 				       'fi:franz-lisp-image-name
 				       'fi:franz-lisp-image-arguments
 				       'fi:franz-lisp-host))
-  (let* ((local (or (string= "localhost" host)
+  (let* ((buffer-name (or buffer-name fi:franz-lisp-buffer-name))
+	 (process-directory (or process-directory fi:franz-lisp-directory))
+	 (image-name (or image-name fi:franz-lisp-image-name))
+	 (image-arguments (or image-arguments fi:franz-lisp-image-arguments))
+	 (host (or host fi:franz-lisp-host))
+	 
+	 (local (or (string= "localhost" host)
 		    (string= host (system-name))))
 	 (proc (fi::make-subprocess
-		"franz-lisp" 
+		"franz-lisp"
 		buffer-name
 		process-directory
 		'fi:inferior-franz-lisp-mode
 		fi:franz-lisp-prompt-pattern
-		(if local
-		    image-name
-		  "rsh")
+		(if local image-name "rsh")
 		(if local
 		    image-arguments
 		  (fi::remote-lisp-args host image-name image-arguments
@@ -556,7 +565,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
     
     (if runningp
 	(goto-char (point-max))
-      (if (file-exists-p process-directory)
+      (if (and process-directory (file-exists-p process-directory))
 	  (setq default-directory process-directory))
       (if process (delete-process process))
       (fi::set-environment fi:subprocess-env-vars)
@@ -565,6 +574,13 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	       (append (list buffer-name buffer image-file)
 		       image-arguments)))
       (set-process-sentinel process 'fi::subprocess-sentinel)
+
+      ;; do the following after the sentinel is established so we don't get
+      ;; an ugly message in the subprocess buffer
+      ;;
+      (when (not (fi:process-running-p process))
+	(error "Couldn't startup %s" image-file))
+      
       (set-process-filter process (or filter 'fi::subprocess-filter))
       (setq start-up-feed-name
 	(if image-file
