@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.1 1991/01/29 15:24:52 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.2 1991/01/29 17:19:53 layer Exp $
 ;;
 ;;;;;;;;;;;;;;;;;; Composer 2 related stuff
 ;;; Perhaps some of this is generally useful
@@ -76,7 +76,8 @@
 ;; inspecting stuff
 
 (defun inspect-something (something function descr)
-  (make-request (composer::inspect-something-session  :fspec something :function function)
+  (make-request (composer::inspect-something-session
+		 :fspec something :function function)
 		;; Normal continuation
 		(() ())
 		;; Error continuation
@@ -105,7 +106,8 @@
 ;;; describing something
 
 (defun describe-something (something function descr)
-  (make-request (lep::describe-something-session  :fspec something :function function)
+  (make-request (lep::describe-something-session
+		 :fspec something :function function)
 		;; Normal continuation
 		(() (what)
 		 (show-some-short-text what))
@@ -155,8 +157,9 @@
   (show-subsuper-classes class ':parent "Could not show superclasses: %s"))
 
 (defun show-subsuper-classes (class direction msg)
-  (make-request (composer::show-classes--session  :direction direction  :fspec (fi::case-frob class))
-		(() ()())
+  (make-request (composer::show-classes--session 
+		 :direction direction :fspec (fi::frob-case-to-lisp class))
+		(() () ())
 		((msg) (error)
 		 (message msg error))))
   

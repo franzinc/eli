@@ -24,11 +24,9 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.1 1991/01/29 15:24:56 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.2 1991/01/29 17:19:56 layer Exp $
 ;;
 ;;;;;; This LEP file redefines many of the fi:functions in the fi/keys.el file
-;;;; Todo:
-;;;; End Todo:
 
 ;;;; Implementation of arglist
 
@@ -39,7 +37,8 @@
   (make-request (lep::arglist-session :fspec string)
 		;; Normal continuation
 		 (() (what arglist)
-		  (show-some-short-text "The arglist of %s is %s" what arglist))
+		  (show-some-short-text "The arglist of %s is %s"
+					what arglist))
 		 ;; Error continuation
 		 ((string) (error)
 		  (message "Cannot get the arglist of %s: %s" string error))))
@@ -116,14 +115,20 @@
       (progn
 	(delete-metadot-session)
 	(setq lep:*meta-dot-session*
-	  (make-complex-request (scm::metadot-session :package (string-to-keyword fi:package) :fspec something)
-				((something other-window-p) (pathname point n-more)
-				 (show-found-definition (if (symbolp something) (symbol-name something) something)
-							pathname point n-more other-window-p))
-				((something other-window-p) (error)
-				 (delete-metadot-session)
-				 (find-definition-using-find-tag (if (symbolp something) (symbol-name something) something)
-								 other-window-p error)))))
+	  (make-complex-request 
+	   (scm::metadot-session :package (string-to-keyword fi:package)
+				 :fspec something)
+	   ((something other-window-p) (pathname point n-more)
+	    (show-found-definition (if (symbolp something)
+				       (symbol-name something)
+				     something)
+				   pathname point n-more other-window-p))
+	   ((something other-window-p) (error)
+	    (delete-metadot-session)
+	    (find-definition-using-find-tag (if (symbolp something)
+						(symbol-name something)
+					      something)
+					    other-window-p error)))))
     (progn
       (setq lep:*meta-dot-session* nil)
       (find-definition-using-find-tag something other-window-p))))
@@ -141,25 +146,32 @@
 	(find-definition-using-find-tag *meta-dot-string* error)))
     (find-next-definition-using-find-tag)))
 
-(defun show-found-definition (thing pathname point n-more &optional other-window-p)
+(defun show-found-definition (thing pathname point n-more
+			      &optional other-window-p)
   (if pathname
       (if (eq pathname ':top-level)
-	  (message "%s was defined somewhere at the top-level, %d more definitions" thing n-more)
+	  (message
+	   "%s was defined somewhere at the top-level, %d more definitions"
+	   thing n-more)
 	(let ((mess ""))
 	  (if (or other-window-p
-		  ;; Perhaps if the current buffer is a listener we want to find it elsewhere
+		  ;; Perhaps if the current buffer is a listener we want to
+		  ;; find it elsewhere
 		  )
 	      (find-file-other-window pathname)
 	    (find-file pathname))
 	  (if (null point)
 	      (progn
-		(setq mess (format "The definition of %s is somewhere in this file! : " thing))
+		(setq mess
+		  (format "The definition of %s is somewhere in this file! : "
+			  thing))
 		(beginning-of-buffer))
 	    (goto-char (1+ point)))
 	  (cond ((eq n-more 0)
 		 (message (concat mess "No more definitions of %s") thing))
 		(n-more
-		 (message (concat mess "%d more definitions of %s") n-more thing)))))
+		 (message (concat mess "%d more definitions of %s")
+			  n-more thing)))))
     (message "cannot find file for %s" point)))
 
 
@@ -171,7 +183,8 @@
       (if fi:source-info-not-found-hook
 	  (condition-case nil
 	      (find-definition-using-find-tag-1 tag other-window-p)
-	    (error (message "The source location of `%s' is unknown: %s" tag error)))
+	    (error (message "The source location of `%s' is unknown: %s"
+			    tag error)))
 	(message "Cannot find the definition of %s: %s" tag error))
     (if fi:source-info-not-found-hook
 	(find-definition-using-find-tag-1 tag other-window-p)
@@ -179,9 +192,11 @@
 
 (defun find-definition-using-find-tag-1 (tag other-window-p)
   
-  (let* ((tag (if (not (stringp tag))  (prin1-to-string tag) tag))
+  (let* ((tag (if (not (stringp tag))
+		  (prin1-to-string tag)
+		tag))
 	 (colonp (string-match ":?:" tag nil))
-	 (sym (fi::case-frob
+	 (sym (fi::frob-case-to-lisp
 	       (if colonp
 		   (substring tag (match-end 0))
 		 tag))))
@@ -198,18 +213,24 @@
   (if lep:*meta-dot-session* (lep::kill-session lep:*meta-dot-session*))
   (setq lep:*meta-dot-session* session)
   (setq  *meta-dot-string* something)
-  (modify-session-continuation session
-			       (list (function (lambda (pathname point n-more)
-						 (show-found-definition *meta-dot-string*
-								 pathname point n-more))))
-			       (list (function (lambda (error something)
-						 (setq lep:*meta-dot-session* nil)
-						 (find-definition-using-find-tag (if (symbolp something) (symbol-name something) something) error)))
-				     *meta-dot-string*)))
+  (modify-session-continuation
+   session
+   (list (function (lambda (pathname point n-more)
+		     (show-found-definition *meta-dot-string*
+					    pathname point n-more))))
+   (list (function (lambda (error something)
+		     (setq lep:*meta-dot-session* nil)
+		     (find-definition-using-find-tag
+		      (if (symbolp something)
+			  (symbol-name something)
+			something)
+		      error)))
+	 *meta-dot-string*)))
 
 (defun scm::return-buffer-status (pathname write-if-modified)
-  "This returns information about the status of the buffer: whether it exists, if it is modified, last
-tick (when implemented), and optionally return the pathname of  temp file"
+  "This returns information about the status of the buffer: whether it
+exists, if it is modified, last tick (when implemented), and optionally
+return the pathname of temp file."
   (let ((buffer (get-file-buffer pathname)))
     (if buffer
 	(list ':exists 
@@ -221,11 +242,13 @@ tick (when implemented), and optionally return the pathname of  temp file"
 		   (buffer-modified-p buffer)
 		   (save-excursion
 		     (set-buffer buffer)
-		     (let* ((file (concat fi:emacs-to-lisp-transaction-directory
+		     (let* ((file (concat
+				   fi:emacs-to-lisp-transaction-directory
 					  (make-temp-name "/foo")))
 			    (buffer (get-file-buffer file)))
 		       (when buffer (kill-buffer buffer))
-		       (write-region (point-min) (point-max) file nil  'no-message)
+		       (write-region (point-min) (point-max) file nil
+				     'no-message)
 		       file)))
 	      (and (fboundp 'buffer-tick) (buffer-tick)))
       (list ':does-not-exist))))
@@ -238,26 +261,23 @@ tick (when implemented), and optionally return the pathname of  temp file"
   (interactive)
   (make-request (lep::bug-report-session)
 		;; Normal continuation
-		  (() (error-message stack lisp-info)
-		   (mail)
-		   (mail-to)
-		   (insert "bugs@franz.com")
-		   (mail-subject)
-		   (insert "Bug-report")
-		   (end-of-buffer)
-		   (save-excursion
-		     (insert "
-")
-		     (insert error-message)
-		     (insert "------------------------------
-")
-		     (insert stack)
-		     (insert "------------------------------
-")	     
-		     (insert lisp-info)))
-		 ;; Error continuation
-		 (() (error)
-		  (message "Cannot do a backtrace because: %s" error))))
+		(() (error-message stack lisp-info)
+		 (mail)
+		 (mail-to)
+		 (insert "bugs@franz.com")
+		 (mail-subject)
+		 (insert "Bug-report")
+		 (end-of-buffer)
+		 (save-excursion
+		   (insert "\n")
+		   (insert error-message)
+		   (insert "------------------------------\n")
+		   (insert stack)
+		   (insert "------------------------------\n")	     
+		   (insert lisp-info)))
+		;; Error continuation
+		(() (error)
+		 (message "Cannot do a backtrace because: %s" error))))
 
 
 
@@ -270,26 +290,28 @@ tick (when implemented), and optionally return the pathname of  temp file"
 (defun edit-somethings (something generator description)
   (if lep:*meta-dot-session* (lep::kill-session lep:*meta-dot-session*))
   (setq lep:*meta-dot-session*
-    (make-complex-request (scm::edit-sequence-session 
-			   :generator generator
-			    :package (string-to-keyword fi:package) :fspec something)
-			   ((something) (pathname point n-more)
-			    (show-found-definition something pathname point n-more))
-			   ((something) (error)
-			    (delete-metadot-session)
-			    (error "Cannot edit sequence %s: %s" something error)))))
+    (make-complex-request
+     (scm::edit-sequence-session 
+      :generator generator
+      :package (string-to-keyword fi:package) :fspec something)
+     ((something) (pathname point n-more)
+      (show-found-definition something pathname point n-more))
+     ((something) (error)
+      (delete-metadot-session)
+      (error "Cannot edit sequence %s: %s" something error)))))
 
 (defun fi:lisp-describe (symbol)
   "Describe a symbol, which is read from the minibuffer.  The word around
 the point is used as the default."
   (interactive (fi::get-default-symbol "Describe symbol"))
-  (make-request (lep::describe-session :package (string-to-keyword fi:package) :fspec symbol)
+  (make-request (lep::describe-session
+		 :package (string-to-keyword fi:package) :fspec symbol)
 		;; Normal continuation
-		 ((symbol) (description)
-		  (show-some-text description fi:package))
-		 ;; Error continuation
-		 ((symbol) (error)
-		  (message "Cannot describe %s: %s" symbol error))))
+		((symbol) (description)
+		 (show-some-text description fi:package))
+		;; Error continuation
+		((symbol) (error)
+		 (message "Cannot describe %s: %s" symbol error))))
 
 
 
@@ -319,15 +341,16 @@ package of PACKAGE"
   "Describe a symbol, which is read from the minibuffer.  The word around
 the point is used as the default."
   (interactive (fi::get-default-symbol "Describe symbol"))
-  (make-request (lep::function-documentation-session :package fi:package :fspec symbol)
-		;; Normal continuation
-		((symbol) (documentation)
-		 (if documentation
-		     (show-some-text documentation fi:package)
-		   (message "There is no documentation for %s" symbol)))
-		 ;; Error continuation
-		 ((symbol) (error)
-		  (message "Cannot find documentation for %s: %s" symbol error))))
+  (make-request
+   (lep::function-documentation-session :package fi:package :fspec symbol)
+   ;; Normal continuation
+   ((symbol) (documentation)
+    (if documentation
+	(show-some-text documentation fi:package)
+      (message "There is no documentation for %s" symbol)))
+   ;; Error continuation
+   ((symbol) (error)
+    (message "Cannot find documentation for %s: %s" symbol error))))
 
 ;;; Macroexpansion and walking
 
@@ -340,16 +363,20 @@ the point is used as the default."
   "Print the full macroexpansion the form at the point.
 With a prefix argument, macroexpand the code as the compiler would."
   (interactive "P")
-  (fi::lisp-macroexpand-common (if arg 'excl::compiler-walk 'clos::walk-form) "walk"))
+  (fi::lisp-macroexpand-common
+   (if arg 'excl::compiler-walk 'clos::walk-form) "walk"))
 
 (defun fi::lisp-macroexpand-common (expander type)
-  (make-request (lep::macroexpand-session :expander expander :package (string-to-keyword fi:package)
-					  :form (let ((start (condition-case ()
-								     (fi::find-other-end-of-list)
-								   (error nil))))
-						      (if start
-							  (buffer-substring start (point))
-							(read-string (format "form to %s: " type)))))
+  (make-request
+   (lep::macroexpand-session
+    :expander expander :package
+    (string-to-keyword fi:package)
+    :form (let ((start (condition-case ()
+			   (fi::find-other-end-of-list)
+			 (error nil))))
+	    (if start
+		(buffer-substring start (point))
+	      (read-string (format "form to %s: " type)))))
 		(() (expansion)
 		 (show-some-text expansion fi:package))
 		(() (error)
@@ -384,12 +411,16 @@ function defintions are considered.  Otherwise all symbols are considered."
 	  (progn
 	    (car (lep::eval-in-lisp 
 			     'lep::list-all-completions-session
-			     ':pattern (fi::case-frob pattern)
+			     ':pattern (fi::frob-case-to-lisp pattern)
 			     ':buffer-package (string-to-keyword fi:package)
 			     ':package (progn
-					 (if (equal ":" package) (setq package "keyword"))
-					 (intern (fi::case-frob package)))
-			     ':functions-only-p (intern (fi::case-frob functions-only))))))
+					 (if (equal ":" package)
+					     (setq package "keyword"))
+					 (intern (fi::frob-case-to-lisp
+						  package)))
+			     ':functions-only-p (intern
+						 (fi::frob-case-to-lisp
+						  functions-only))))))
 	 (alist
 	  (if (consp completions)
 	      (apply 'list
@@ -425,8 +456,6 @@ function defintions are considered.  Otherwise all symbols are considered."
 	      (all-completions pattern alist)))
 	   (message "Making completion list...done")))))
 
-;;; The ones left are
-;; fi:lisp-who-calls
 
 (defun fi:lisp-who-calls (&optional symbol)
   "Print all the callers of a function.  The default symbol name is taken
@@ -437,7 +466,8 @@ from the sexp around the point."
   (list-fspecs-common symbol 'lep::who-calls "Cannot find the callers: %s"))
 
 (defun list-fspecs-common (symbol function msg)
-  (make-request (lep::list-fspecs-session  :function function  :fspec (fi::case-frob symbol))
+  (make-request (lep::list-fspecs-session
+		 :function function :fspec (fi::frob-case-to-lisp symbol))
 		(() (who text)
 		 ;; It might be good to make this list mouse sensitive so that
 		 ;; we can mouse there
@@ -459,8 +489,8 @@ from the sexp around the point."
 
 (defun lep::create-listener-stream ()
   "Create a tcp listener in response to a request for a listener stream"
-  ;; We create a tcp listener using the stream protocol which arranges for the stream to be passed
-  ;; back to the session
+  ;; We create a tcp listener using the stream protocol which arranges for
+  ;; the stream to be passed back to the session
   (print 1 (get-buffer "*scratch*"))
   (let ((fi::listener-protocol ':stream))
     (send-string (fi:tcp-common-lisp -1)
@@ -478,7 +508,8 @@ from the sexp around the point."
 (defun lep::prompt-for-values (what prompt options)
   (list (ecase what
 	  (:symbol
-	   (let* ((string (read-string prompt (getf-property options ':initial-input)))
+	   (let* ((string (read-string
+			   prompt (getf-property options ':initial-input)))
 		  (colonp (string-match ":?:" string nil))
 		  (package (or (getf-property options ':package)
 			       fi:package)))
@@ -493,7 +524,8 @@ from the sexp around the point."
 		       (getf-property options ':directory)
 		       (getf-property options ':default)
 		       (getf-property options ':mustmatch)))
-	  (:string (read-string prompt (getf-property options ':initial-input))))))
+	  (:string (read-string
+		    prompt (getf-property options ':initial-input))))))
 
 (defun lep::show-clman (string)
   (if string 
@@ -517,10 +549,9 @@ from the sexp around the point."
 		 (if prefix
 		     (progn (end-of-defun) 
 			    (save-excursion (insert form)
-					    (insert "
-")))))
+					    (insert "\n")))))
 		(() (error)
-		 (message "Cannot undefine current definition %s"  error))))
+		 (message "Cannot undefine current definition %s" error))))
 
 
 (defun lep::toggle-trace-definition (interactive)
@@ -540,8 +571,3 @@ from the sexp around the point."
 		  (message "Cannot (un)trace %s: %s" string error))))
 
 ;;(define-key fi:common-lisp-mode-map "\e\T" 'lep::toggle-trace-definition)
-
-(provide ':lep)
-
-
-

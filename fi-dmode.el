@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.1 1991/01/29 15:24:54 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.2 1991/01/29 17:19:54 layer Exp $
 ;;
 
 ;; Create a mode in which each line is a definition and . on that
@@ -75,12 +75,13 @@
 
 (defun dmode-goto-definition ()
   (interactive)
-  (let* ((n (count-lines (point-min) (save-excursion (beginning-of-line) (point))))
+  (let* ((n (count-lines (point-min)
+			 (save-excursion (beginning-of-line) (point))))
 	 (buffer (current-buffer))
 	 (def (nth n definitions))
 	 (type (nth n types)))
-    (when finding-function (apply (car finding-function) 
-				  def type buffer (cdr finding-function)))))
+    (when finding-function
+      (apply (car finding-function) def type buffer (cdr finding-function)))))
 
 (defun dmode-goto-next ()
   (interactive)
@@ -97,23 +98,27 @@
 (defun list-buffer-definitions ()
   (interactive)
   (let ((buffer (current-buffer)))
-    (make-request (scm::file-definitions-session :pathname (buffer-file-name buffer))
+    (make-request (scm::file-definitions-session
+		   :pathname (buffer-file-name buffer))
 		  ;; Normal continuation
 		  ((buffer fi:package) (the-definitions)
 		   (display-buffer-definitions 
 		    fi:package
-		    buffer the-definitions (list 'find-buffer-definition buffer)))
+		    buffer the-definitions (list 'find-buffer-definition
+						 buffer)))
 		  ;; Error continuation
 		  ((buffer) (error)
-		   (message "Cannot find the definitions of buffer %s: %s" buffer error)))))
+		   (message "Cannot find the definitions of buffer %s: %s"
+			    buffer error)))))
 
 
 (defun find-buffer-definition (string type list-buffer buffer)
-  (make-request (scm::find-buffer-definition-session :pathname (buffer-file-name buffer) 
-						     :fspec string
-						     :type type
-					:package (save-excursion (set-buffer buffer) 
-								 (string-to-keyword fi:package)))
+  (make-request (scm::find-buffer-definition-session
+		 :pathname (buffer-file-name buffer) 
+		 :fspec string
+		 :type type
+		 :package (save-excursion (set-buffer buffer) 
+					  (string-to-keyword fi:package)))
 		  ;; Normal continuation
 		  ((string list-buffer) (pathname point n-more)
 		   (show-found-definition string pathname point n-more t)
@@ -121,15 +126,17 @@
 		   (switch-to-buffer-other-window list-buffer))
 		  ;; Error continuation
 		  ((string buffer) (error)
-		   (error "Cannot find the definition of %s in %s: %s" string buffer error))))
+		   (error "Cannot find the definition of %s in %s: %s"
+			  string buffer error))))
 
-(defun display-buffer-definitions (package buffer buffer-definitions fn-and-arguments)
+(defun display-buffer-definitions (package buffer buffer-definitions
+				   fn-and-arguments)
   (switch-to-buffer-other-window "*definitions*")
   (erase-buffer)
   (mapcar '(lambda (x) 
 	    (princ (car x) (current-buffer))
-	    (insert "
-")) buffer-definitions)
+	    (insert "\n"))
+	  buffer-definitions)
   (dmode)
   (setq definitions (mapcar 'car buffer-definitions))
   (setq types (mapcar 'second buffer-definitions))

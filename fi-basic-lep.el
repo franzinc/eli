@@ -24,29 +24,28 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.1 1991/01/29 15:24:49 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.2 1991/01/29 17:19:50 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
 ;;;;;;;;;;;;;;;;;;;;;;TODO
-;;; The filter should not abort because of errors. Some how the errors should be printed.
+;;; The filter should not abort because of errors. Some how the errors
+;;; should be printed.
 
 (defun make-connection (host process)
-  (list 
-   ':connection
-   process 
-   nil ;; sessions
-   0 ;; session id counter
-   host
-   ))
+  (list ':connection
+	process 
+	nil				; sessions
+	0				; session id counter
+	host))
 
 (defun connection-process (c) (second c))
 
 (defun connection-sessions (c) (third c))
-(defun set-connection-sessions (c nv) (set-third c nv))
+(defun set-connection-sessions (c nv) (setf (third c) nv))
 
 (defun connection-session-id (c) (fourth c))
-(defun set-connection-session-id (c nv) (set-fourth c nv))
+(defun set-connection-session-id (c nv) (setf (fourth c) nv))
 
 (defun connection-host (c) (fifth c))
 
@@ -96,22 +95,19 @@
 	   (set-process-buffer process buffer)
 	   (set-process-filter process 'connection-filter)
 	   ;; new stuff to indicate that we want the lisp editor protocol
-	   (send-string process ":lep
-")
-	   (send-string process (format "\"%s\"
-" (buffer-name buffer)))
-	   (send-string process (format "%d 
-" passwd))
+	   (send-string process ":lep\n")
+	   (send-string process (format "\"%s\"\n" (buffer-name buffer)))
+	   (send-string process (format "%d \n" passwd))
 	   ;; Send the class of the editor to the lisp.
 	   ;; This might affect something!
 	   ;; For example, gnu 19 has some good features.
-	   (send-string process (format "\"%s\"
-" (emacs-version)))
+	   (send-string process (format "\"%s\"\n" (emacs-version)))
 	   (setq lep::*connection* (make-connection host process))))
 	(t (error "Cannot start LEP to this lisp - incorrect IPC version"))))
 
 (defun connection-filter (process string)
-  "When a complete sexpression comes back from the lisp, read it and then handle it"
+  "When a complete sexpression comes back from the lisp, read it and then
+handle it"
   (save-excursion
     (set-buffer (process-buffer process))
     (goto-char (point-max))
@@ -140,14 +136,13 @@
 (defun handle-input (process form)
   "A reply is (session-id . rest) or (nil . rest)"
   (let* ((id (car form))
-	 (connection  (find-connection-from-process process))
+	 (connection (find-connection-from-process process))
 	 (session (find-session connection id)))
     (cond (session
 	   (handle-session-reply session (cdr form)))
 	  ((car form)
 	   (error "something for nonexistent session: %s" form))
-	  (t
-	   (handle-sessionless-reply (cdr form))))))
+	  (t (handle-sessionless-reply (cdr form))))))
 
 (defun handle-session-reply (session form)
   "A session reply is (:error Message) or (nil . results)"
@@ -166,7 +161,8 @@
 
 (defun delete-session (session)
   (let ((connection (session-connection session)))
-    (set-connection-sessions connection (delq session (connection-sessions connection)))))
+    (set-connection-sessions connection
+			     (delq session (connection-sessions connection)))))
 
 (defun handle-sessionless-reply (form)
   "A session less reply is either (:error message) or (nil fn . args)"
@@ -181,38 +177,37 @@
 
 
 
-
-
 (defun make-session (id oncep &optional fn args error-fn error-args)
   (list 'session id fn args error-fn error-args oncep))
 
 (defun session-id (s) (second s))
 
 (defun session-function (s) (third s))
-(defun set-session-function (s nv) (set-third s nv))
+(defun set-session-function (s nv) (setf (third s) nv))
 
 
 (defun session-arguments (s) (fourth s))
-(defun set-session-arguments (s nv) (set-fourth s nv))
+(defun set-session-arguments (s nv) (setf (fourth s) nv))
 
 (defun session-error-function (s) (fifth s))
-(defun set-session-error-function (s nv) (set-fifth s nv))
+(defun set-session-error-function (s nv) (setf (fifth s) nv))
 
 (defun session-error-arguments (s) (sixth s))
-(defun set-session-error-arguments (s nv) (set-sixth s nv))
+(defun set-session-error-arguments (s nv) (setf (sixth s) nv))
 
 (defun session-oncep (s) (seventh s))
 
 (defun session-connection (s) lep::*connection*)
 
-(defun modify-session-continuation  (session continuation-and-arguments error-continuation)
+(defun modify-session-continuation  (session continuation-and-arguments
+				     error-continuation)
   (set-session-function session (car continuation-and-arguments))
   (set-session-arguments session (cdr continuation-and-arguments))
   (set-session-error-function session (car error-continuation))
-  (set-session-error-arguments session (cdr error-continuation))
-  )
+  (set-session-error-arguments session (cdr error-continuation)))
 
-(defun make-new-session (connection oncep continuation-and-arguments &optional error-continuation)
+(defun make-new-session (connection oncep continuation-and-arguments
+			 &optional error-continuation)
   (let* ((id (connection-session-id connection))
 	 (session (make-session id 
 				oncep
@@ -225,10 +220,12 @@
     session))
 
 (defun remove-session (connection session)
-  (set-connection-sessions connection (delq session (connection-sessions connection))))
+  (set-connection-sessions connection
+			   (delq session (connection-sessions connection))))
 
 (defun add-session (connection session)
-  (set-connection-sessions connection (cons session (connection-sessions connection))))
+  (set-connection-sessions connection
+			   (cons session (connection-sessions connection))))
 
 
 
@@ -254,11 +251,13 @@
 			  (list* nil
 				 'lep::make-session session-class 
 				 ':session-id (session-id session)
-				 (if (member-plist ':buffer-package session-arguments)
+				 (if (member-plist ':buffer-package
+						   session-arguments)
 				     session-arguments 
-				   (list* ':buffer-package (string-to-keyword fi:package) session-arguments)))))
-    (send-string process "
-")
+				   (list* ':buffer-package
+					  (string-to-keyword fi:package)
+					  session-arguments)))))
+    (send-string process "\n")
     session))
 
 (defun string-to-keyword (package)
@@ -271,34 +270,37 @@
 	   (member-plist prop (cddr plist)))))
 
 
-(defmacro make-request (type-and-options 
-			continuation
-			&optional 
-			error-continuation
-			)
+(defmacro make-request (type-and-options continuation
+			&optional error-continuation)
   (list 'lep::send-request-in-new-session
 	(list 'quote (car type-and-options))
 	t
 	(cons 'list (quote-every-other-one (cdr type-and-options)))
-	(list* 'list (list 'function (list* 'lambda (append (listify (second continuation)) (listify (first continuation)))
-					 (cddr continuation)))
+	(list* 'list
+	       (list 'function
+		     (list* 'lambda
+			    (append (listify (second continuation))
+				    (listify (first continuation)))
+			    (cddr continuation)))
 	       (first continuation))
-	(list* 'list (list 'function (list* 'lambda (append (listify (second error-continuation))
-							 (listify (first error-continuation)))
-					 (cddr error-continuation)))
-	       (first error-continuation))
-
-	))
+	(list* 'list (list 'function
+			   (list* 'lambda (append (listify
+						   (second error-continuation))
+						  (listify
+						   (first error-continuation)))
+				  (cddr error-continuation)))
+	       (first error-continuation))))
 
 (defun listify (x) (and x (if (atom x) (list x) x)))
 
 (defun quote-every-other-one (list)
-  (and list (list* (list 'quote (first list)) (second list) (quote-every-other-one (cddr list)))))
+  (and list
+       (list* (list 'quote (first list)) (second list)
+	      (quote-every-other-one (cddr list)))))
 
 
-
-
-;(defun lep:make-session (session-class session-arguments continuation-and-arguments)
+;(defun lep:make-session (session-class session-arguments
+;			 continuation-and-arguments)
 ;  "Initiate a session"
 ;  ;;; send a make-session message
 ;  )
@@ -306,7 +308,6 @@
 ;(defun lep::send-session (message continuation &rest continuation-arguments)
 ;  "Send a message to a session"
 ;  nil)
-
 
 
 ;(defun lep:send-reply (session &rest values)
@@ -318,61 +319,64 @@
 
 
 
-(defmacro make-complex-request (type-and-options 
-			continuation
-			&optional 
-			error-continuation
-			)
+(defmacro make-complex-request (type-and-options continuation
+				&optional error-continuation)
   (list 'lep::send-request-in-new-session
 	(list 'quote (car type-and-options))
 	nil
 	(cons 'list (quote-every-other-one (cdr type-and-options)))
-	(list* 'list (list 'function (list* 'lambda (append (listify (second continuation)) (listify (first continuation)))
+	(list* 'list (list 'function
+			   (list* 'lambda
+				  (append (listify (second continuation))
+					  (listify (first continuation)))
 					 (cddr continuation)))
 	       (first continuation))
-	(list* 'list (list 'function (list* 'lambda (append (listify (second error-continuation))
-							 (listify (first error-continuation)))
+	(list* 'list (list 'function
+			   (list* 'lambda
+				  (append (listify
+					   (second error-continuation))
+					  (listify (first error-continuation)))
 					 (cddr error-continuation)))
-	       (first error-continuation))
+	       (first error-continuation))))
 
-	))
-
-(defun lep::send-request-in-existing-session (session session-class oncep session-arguments 
+(defun lep::send-request-in-existing-session (session session-class oncep
+					      session-arguments 
 					      continuation-and-arguments
 					      &optional error-continuation-and-arguments)
   (let* ((connection (session-connection session))
 	 (process (connection-process connection)))
-    (send-string process (prin1-to-string (list* (session-id session) session-class session-arguments)))
-    (send-string process "
-")))
+    (send-string process
+		 (prin1-to-string
+		  (list* (session-id session) session-class
+			 session-arguments)))
+    (send-string process "\n")))
 
 (defun lep::kill-session (session)
   (let* ((connection (session-connection session))
 	 (process (connection-process connection)))
     (remove-session connection session)
-    (send-string process (prin1-to-string (list nil 'lep::terminate-session (session-id session))))
-    (send-string process "
-")))
+    (send-string process (prin1-to-string
+			  (list nil 'lep::terminate-session
+				(session-id session))))
+    (send-string process "\n")))
 
-(defun lep::send-request-in-session (session session-class  session-arguments 
-					continuation-and-arguments
+(defun lep::send-request-in-session (session session-class session-arguments 
+				     continuation-and-arguments
 				     &optional error-continuation-and-arguments)
   (let* ((connection (ensure-lep-connection))
 	 (process (connection-process connection )))
-    (modify-session-continuation  session continuation-and-arguments error-continuation-and-arguments)
-    (send-string process (prin1-to-string (list* (session-id session)
-						 ':request
-						 session-class 
-						 session-arguments)))
-    (send-string process "
-")))
+    (modify-session-continuation 
+     session continuation-and-arguments error-continuation-and-arguments)
+    (send-string process
+		 (prin1-to-string (list* (session-id session)
+					 ':request
+					 session-class 
+					 session-arguments)))
+    (send-string process "\n")))
 
-(defmacro make-request-in-existing-session (session
-					    type-and-options 
+(defmacro make-request-in-existing-session (session type-and-options 
 					    continuation
-					    &optional 
-					    error-continuation
-					    )
+					    &optional error-continuation)
   (list 'lep::send-request-in-session
 	session
 	(list 'quote (car type-and-options))
@@ -383,13 +387,13 @@
 					  (listify (first continuation)))
 				  (cddr continuation)))
 	       (first continuation))
-	(list* 'list (list 'function 
-			   (list* 'lambda (append (listify (second error-continuation))
-						  (listify (first error-continuation)))
-				  (cddr error-continuation)))
-	       (first error-continuation))
-
-	))
+	(list* 'list
+	       (list 'function 
+		     (list* 'lambda (append
+				     (listify (second error-continuation))
+				     (listify (first error-continuation)))
+			    (cddr error-continuation)))
+	       (first error-continuation))))
 
 (defun intern-it (s)
   (if (stringp s) (intern s) s))
@@ -413,9 +417,10 @@
 	     (if replyp
 		 (progn
 		   (send-string process 
-				(prin1-to-string (list (session-id session)
-						       ':error
-						       (prin1-to-string error))))
+				(prin1-to-string
+				 (list (session-id session)
+				       ':error
+				       (prin1-to-string error))))
 	 
 		   (send-string process "\n"))
 	       (message (concat "Error occurred: " (prin1-to-string error))))))
@@ -427,47 +432,44 @@
 					    "aborted"))))
       (if oncep (lep::kill-session session)))))
 
-					;(defun lep::make-session-for-lisp (session-id replyp oncep function &rest args)
-;  (let ((session (make-session session-id nil)))
-;    (add-session connection session)
-;    (condition-case error
-;	(let* ((done nil)
-;	       (result (unwind-protect
-;			   (prog1 (apply (intern-it function) args)
-;			     (setq done t))
-;			 ;;
-;			 (if (not done)
-;			     (progn
-;			       (send-string process 
-;					    (prin1-to-string (list (session-id session)
-;								   ':error
-;								   "aborted")))
-;	 
-;			       (send-string process "\n"))))))
-;	  (when  replyp
-;	    (send-string process 
-;			 (prin1-to-string (list* (session-id session)
-;						 ':reply
-;						 result)))
-;	    (send-string process "\n")))
-;      (error 
-;       (if replyp
-;	   (progn
-;	     (send-string process 
-;			  (prin1-to-string (list (session-id session)
-;						 ':error
-;						 (prin1-to-string error))))
-;	 
-;	     (send-string process "\n"))
-;	 (message (concat "Error occurred: " (prin1-to-string error))))))
-;    (if oncep (lep::kill-session session))))
+;;(defun lep::make-session-for-lisp (session-id replyp oncep function &rest args)
+;;  (let ((session (make-session session-id nil)))
+;;    (add-session connection session)
+;;    (condition-case error
+;;	(let* ((done nil)
+;;	       (result (unwind-protect
+;;			   (prog1 (apply (intern-it function) args)
+;;			     (setq done t))
+;;			 ;;
+;;			 (if (not done)
+;;			     (progn
+;;			       (send-string process 
+;;					    (prin1-to-string (list (session-id session)
+;;								   ':error
+;;								   "aborted")))
+;;	 
+;;			       (send-string process "\n"))))))
+;;	  (when  replyp
+;;	    (send-string process 
+;;			 (prin1-to-string (list* (session-id session)
+;;						 ':reply
+;;						 result)))
+;;	    (send-string process "\n")))
+;;      (error 
+;;       (if replyp
+;;	   (progn
+;;	     (send-string process 
+;;			  (prin1-to-string (list (session-id session)
+;;						 ':error
+;;						 (prin1-to-string error))))
+;;	 
+;;	     (send-string process "\n"))
+;;	 (message (concat "Error occurred: " (prin1-to-string error))))))
+;;    (if oncep (lep::kill-session session))))
 
 
-
-
-
-;;;; There are some situations where we want to wait for the result to comeback from the lisp
-;;;; For this we can use accept-process-output
+;;;; There are some situations where we want to wait for the result to
+;;;; comeback from the lisp.  For this we can use ACCEPT-PROCESS-OUTPUT.
 
 (defun lep::eval-in-lisp (function &rest arguments)
   (let* ((result-cons (list nil nil nil))
@@ -476,7 +478,8 @@
 		   t
 		   arguments
 		   (list (function immediate-reply-continuation) result-cons)
-		   (list (function immediate-reply-error-continuation) result-cons))))
+		   (list (function immediate-reply-error-continuation)
+			 result-cons))))
     (wait-for-reply-to-come-back result-cons)))
 
 (defun immediate-reply-continuation (&rest results)
@@ -488,9 +491,9 @@
   (stash-in-cons result-cons error t))
 
 (defun stash-in-cons (c r p)
-  (set-third c p)
-  (set-second c r)
-  (set-first c t))
+  (setf (third c) p)
+  (setf (second c) r)
+  (setf (first c) t))
 
 ;;; This is complicated because we have to wait for output multiple times.
 
@@ -506,7 +509,7 @@
 	(error (second result-cons))
       (second result-cons))))
 
-;(defun test-immediate ()
-;  (interactive)
-;  (lep::eval-in-lisp 5 'lep::arglist-session  ':function "print"))
+;;(defun test-immediate ()
+;;  (interactive)
+;;  (lep::eval-in-lisp 5 'lep::arglist-session  ':function "print"))
 
