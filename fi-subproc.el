@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.29 1988/05/12 10:41:21 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.30 1988/05/12 22:55:58 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -281,6 +281,8 @@ are read from the minibuffer."
 (defun fi::make-subprocess (buffer-number process-name mode-function
 					  image-prompt image-file
 					  image-arguments)
+  (if (not (stringp image-file))
+      (setq image-file (funcall image-file)))
   (let* ((start-up-feed-name
 	  (if image-file
 	      (concat "~/.emacs_" (file-name-nondirectory image-file))))
