@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.10 1991/04/22 16:09:18 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.11 1991/04/22 16:55:30 layer Exp $
 ;;
 
 ;; Create a mode in which each line is a definition and . on that
@@ -71,6 +71,7 @@ Entry to this mode runs the fi:definition-mode-hook."
   (make-local-variable 'lep::definition-types)
   (make-local-variable 'lep::definition-other-args)
   (make-local-variable 'lep::definition-finding-function)
+  (make-local-variable 'lep::inverse-definitions)
 
   (if (null fi:definition-mode-map)
       (let ((map (make-keymap)))
@@ -106,6 +107,9 @@ Entry to this mode runs the fi:definition-mode-hook."
   (make-local-variable 'lep::definition-types)
   (make-local-variable 'lep::definition-other-args)
   (make-local-variable 'lep::definition-finding-function)
+  (make-local-variable 'lep::inverse-definitions)
+
+  (setq lep::inverse-definitions t)
 
   (if (null fi:inverse-definition-mode-map)
       (let ((map (make-keymap)))
@@ -180,6 +184,8 @@ was before inverse-definition mode was entered."
 (defun fi:definition-mode-goto-definition ()
   "Find the definition associated with the entry on the current line."
   (interactive)
+  (message "Finding%s definition..."
+	   (if lep::inverse-definitions " inverse" ""))
   (let* ((n (count-lines (point-min)
 			 (save-excursion (beginning-of-line) (point))))
 	 (buffer (current-buffer))
