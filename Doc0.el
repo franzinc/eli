@@ -1,4 +1,4 @@
-;; $Id: Doc0.el,v 1.1.2.6 1999/11/09 16:56:21 layer Exp $
+;; $Id: Doc0.el,v 1.1.2.7 1999/11/19 00:03:53 layer Exp $
 
 (defvar current-local-map-var)
 
@@ -188,10 +188,10 @@
 	  name type arglist (if invoke-with invoke-with "") description))
 
 (defun value-to-string (value name)
-  (frob-string
-   (cond ((syntax-table-p value) "")
-	 ((keymapp value) (substitute-command-keys (format "\\{%s}" name)))
-	 (t (frob-newlines (fi::prin1-to-string value))))))
+  (cond ((syntax-table-p value) "")
+	((keymapp value) (substitute-command-keys (format "\\{%s}" name)))
+	(t (frob-string
+	    (frob-newlines (fi::prin1-to-string value))))))
 
 (defun frob-docstring (string)
   ;; remove leading *, and other stuff
@@ -208,7 +208,14 @@
     (buffer-string)))
 
 (defun fix-html-chars ()
-  (goto-char (point-min))
-  (replace-string "<" "&lt;")
-  (goto-char (point-min))
-  (replace-string ">" "&gt;"))
+  (let (c)
+    (goto-char (point-min))
+    (while (re-search-forward "[<>]" nil t)
+      (setq c (char-after (point)))
+      (forward-char -1)
+      (cond ((or (looking-at "<font") (looking-at "</font"))
+	     (search-forward ">"))
+	    (t (delete-char 1)
+	       (if (= ?< c)
+		   (insert "&lt;")
+		 (insert "&gt;")))))))

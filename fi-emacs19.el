@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-emacs19.el,v 2.20.12.1 1998/07/08 08:43:23 layer Exp $
+;; $Id: fi-emacs19.el,v 2.20.12.2 1999/11/19 00:03:53 layer Exp $
 
 (cond
  ((and (eq fi::emacs-type 'emacs19)
@@ -596,10 +596,14 @@
       'fi:common-lisp-mode-popup-menu))
    ((eq major-mode 'fi:inferior-common-lisp-mode)
     (define-key fi:inferior-common-lisp-mode-map [down-mouse-3]
+      'fi:inferior-common-lisp-mode-popup-menu))
+   ((eq major-mode 'fi:lisp-listener-mode)
+    (define-key fi:lisp-listener-mode-map [down-mouse-3]
       'fi:inferior-common-lisp-mode-popup-menu))))
 
 (add-hook 'fi:inferior-common-lisp-mode-hook 'fi::install-mode-menus)
 (add-hook 'fi:common-lisp-mode-hook 'fi::install-mode-menus)
+(add-hook 'fi:lisp-listener-mode-hook 'fi::install-mode-menus)
 
 (require 'font-lock)
 

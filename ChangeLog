@@ -9,6 +9,11 @@ For more detailed instructions on filling in the ChangeLog form, see
 *******************************************************************************
 post release patches:
 
+1999-11-18    <layer@HOBART>
+
+	* Doc0.el: more fixes for html generation
+	* fi-emacs19.el: handle fi:lisp-listener-mode
+
 1999-11-09  Kevin Layer  <layer@ultra>
 
 	* Doc0.el: fixes for html generation
