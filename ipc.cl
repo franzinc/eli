@@ -20,8 +20,8 @@
 ;; Description:
 ;;  
 
-;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.12 1988/02/22 06:31:58 layer Exp $
-;; $Locker:  $
+;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.13 1988/02/26 19:01:56 layer Exp $
+;; $Locker: layer $
 ;;
 
 ;; This code is a preliminary IPC interface for ExCL.
@@ -155,6 +155,8 @@ domain port (see *inet-port*).")
 	(mask-obj (make-cstruct 'unsigned-long))
 	(int (make-cstruct 'unsigned-long))
 	mask
+	stream
+	proc-name
 	fd)
     (setf (timeval-sec timeval) 0
 	  (timeval-usec timeval) 0)
@@ -212,11 +214,17 @@ domain port (see *inet-port*).")
 	     (perror "accept")
 	     (return-from lisp-listener-socket-daemon nil))
 	   
+	   (setq stream
+	     (excl::make-buffered-terminal-stream fd fd t t))
+	   
+	   ;; the first thing that comes over the stream is the name of the
+	   ;; emacs buffer which was created--we name the process the same.
+	   (setq proc-name (read stream))
+	   
 	   (if* *unix-domain*
 	      then (process-run-function
-		    (format nil "TCP Listener ~d" fd)
-		    'lisp-listener-with-fd-as-terminal-io
-		    fd)
+		    proc-name
+		    'lisp-listener-with-stream-as-terminal-io stream)
 	      else (let ((hostaddr (logand
 				    (sockaddr-in-addr listen-sockaddr) #xff)))
 		     (format t ";;; starting listener-~d (host ~d)~%" fd
@@ -226,9 +234,9 @@ domain port (see *inet-port*).")
 				     hostaddr)
 			     (refuse-connection fd)
 			else (process-run-function
-			      (format nil "TCP Listener ~d" fd)
-			      'lisp-listener-with-fd-as-terminal-io
-			      fd))))))
+			      proc-name
+			      'lisp-listener-with-stream-as-terminal-io
+			      stream))))))
       (when listen-socket-fd
 	(mp::mpunwatchfor listen-socket-fd)
 	(fd-close listen-socket-fd)
@@ -242,10 +250,9 @@ domain port (see *inet-port*).")
   (setf (excl::sm_bterm-out-pos s) 0)
   (close s))
 
-(defun lisp-listener-with-fd-as-terminal-io (fd &aux s)
+(defun lisp-listener-with-stream-as-terminal-io (s)
   (unwind-protect
       (progn
-	(setq s (excl::make-buffered-terminal-stream fd fd t t))
 	(setf (excl::sm_read-char s) #'mp::stm-bterm-read-string-char-wait)
 	(tpl:start-interactive-top-level
 	 s 'tpl:top-level-read-eval-print-loop nil))
