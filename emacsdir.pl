@@ -1,4 +1,4 @@
-# $Id: emacsdir.pl,v 2.2 1998/10/08 18:36:45 layer Exp $
+# $Id: emacsdir.pl,v 2.3 1999/05/04 01:21:31 layer Exp $
 #
 # This script requires Active Perl version 502
 #  (\\beast\import\pc\perl-win32\APi502e.exe)
@@ -15,6 +15,10 @@ Win32::Registry::RegCloseKey($EmacsKey);
 
 $emacsdir =~ y/A-Z/a-z/;
 $emacsdir =~ s/\\/\//;
-$emacsdir =~ s/([a-zA-Z]):(.*)/\/\/\1\2/;
+
+($drive, $dir) = $emacsdir =~ /([a-zA-Z]):(.*)/;
+# Upcase drive letter for Interix:
+$drive = uc $drive;
+$emacsdir = "//$drive$dir";
 
 print "$emacsdir";
