@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.48 1992/07/17 15:28:50 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.49 1993/04/29 18:53:50 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -659,7 +659,24 @@ time."
 	     what))
    ;; Error continuation
    ((string) (error)
-    (message "Cannot (un)trace %s: %s" string error))))
+	     (message "Cannot (un)trace %s: %s" string error))))
+
+(defun fi:trace-definition (break)
+  "Traces the definition that begins at point. This is especially useful
+for tracing methods."
+  (interactive "P")
+  (message "Tracing definition...")
+  (fi::make-request
+   (lep::trace-definition-reply :buffer (buffer-name) 
+				:start-point (point)
+				:break break
+				:end-point (save-excursion
+					     (forward-sexp)
+					     (point)))
+   (() (form)
+    (message "Tracing definition...done."))
+   (() (error)
+    (message "Cannot trace current definition: %s" error))))
 
 
 ;;;; list and edit somethings
@@ -907,3 +924,21 @@ the Allegro CL variable EXCL:*RECORD-XREF-INFO*."
 
 (defun lep::eval-from-lisp (string)
   (list (eval (car (read-from-string string)))))
+
+(defun fi:gdb ()
+  "Run GDB on the Lisp image in the *common-lisp* buffer."
+  (interactive)
+  ;; Ask the lisp for its pathname and pid
+  (fi::make-request (lep::gdb-session)
+    ;; Normal continuation
+    (() (filename pid symbol-file)
+     (message "%s %d" filename pid)
+     (gdb filename)
+     (send-string (get-buffer-process (current-buffer))
+		  (format "attach %d\n" pid))
+     (unless (string= "" symbol-file)
+       (send-string (get-buffer-process (current-buffer))
+		    (format "symbol-file %s\n" symbol-file))))
+    ;; Error continuation
+    (() (error)
+     (message "Cannot get pathname and pid: %s" error))))
