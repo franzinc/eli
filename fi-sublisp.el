@@ -45,7 +45,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.33 1989/02/14 17:15:40 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.34 1989/02/17 19:03:09 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -54,7 +54,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defvar fi:emacs-to-lisp-transaction-directory "/tmp"
-  "The directory in which files for Emacs/Lisp communication are stored.")
+  "*The directory in which files for Emacs/Lisp communication are stored.
+When using Lisp and Emacs on different machines, this directory should be
+accessible on both machine with the same pathname (via the wonders of NFS).")
 
 (defvar fi:pop-to-sublisp-buffer-after-lisp-eval t
   "*If non-nil, then after sending expressions to a Lisp process do pop to
@@ -66,6 +68,10 @@ which names a package in the Lisp world (ie, in a Lisp subprocess running
 as an inferior of Emacs in some buffer).  It is used when expressions are
 sent from an Emacs buffer to a Lisp process so that the symbols are read
 into the correct Lisp package.")
+
+(defvar fi:echo-evals-from-buffer-in-listener-p t
+  "*If non-NIL, forms evalutated directly from a lisp buffer by the
+fi:lisp-eval-* functions will be echoed by the lisp listener.")
 
 (defun fi:set-associated-sublisp (buffer-name)
   "When evaluated in a Lisp source buffer causes further `eval'
@@ -255,49 +261,61 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 		  fi::sublisp-name))))
 
 (defun fi::send-string-load (process text nl-to-cr compile-file-p)
-  (if (null fi::emacs-to-lisp-transaction-file)
-      (let ()
-	(setq fi::emacs-to-lisp-transaction-file
-	  (let* ((filename (buffer-file-name (current-buffer))))
-	    (format "%s/%s,%s" fi:emacs-to-lisp-transaction-directory
-		    (user-login-name)
-		    (if filename (file-name-nondirectory filename)
-		      "noname"))))
-	(setq fi::emacs-to-lisp-package
-	  (if fi:package
-	      (format "(in-package :%s)\n" fi:package)
-	    nil))
-	(setq fi::emacs-to-lisp-transaction-buf
-	  (let ((name (file-name-nondirectory
-		       fi::emacs-to-lisp-transaction-file)))
-	    (or (get-buffer name)
-		(create-file-buffer name))))
-	(let ((file fi::emacs-to-lisp-transaction-file))
-	  (save-window-excursion
-	    (pop-to-buffer fi::emacs-to-lisp-transaction-buf)
-	    (set 'fi::remove-file-on-kill-emacs file)
-	    (set 'fi::remove-file-on-kill-emacs file)))))
-  (save-window-excursion
-    (let ((file fi::emacs-to-lisp-transaction-file)
-	  (pkg fi::emacs-to-lisp-package))
-      (pop-to-buffer fi::emacs-to-lisp-transaction-buf)
-      (erase-buffer)
-      (if pkg (insert pkg))
-      (insert text)
-      (newline)
-      (write-region (point-min) (point-max) file)
-      (bury-buffer)))
-  (let ((load-string
-	 (if compile-file-p
-	     (format
-	      "(let ((*record-source-files* nil))
+  (let (pkg)
+    (if (null fi::emacs-to-lisp-transaction-file)
+	(let ()
+	  (setq fi::emacs-to-lisp-transaction-file
+	    (let* ((filename (buffer-file-name (current-buffer))))
+	      (format "%s/%s,%s" fi:emacs-to-lisp-transaction-directory
+		      (user-login-name)
+		      (if filename (file-name-nondirectory filename)
+			"noname"))))
+	  (setq fi::emacs-to-lisp-package
+	    (if fi:package
+		(format "(in-package :%s)\n" fi:package)
+	      nil))
+	  (setq fi::emacs-to-lisp-transaction-buf
+	    (let ((name (file-name-nondirectory
+			 fi::emacs-to-lisp-transaction-file)))
+	      (or (get-buffer name)
+		  (create-file-buffer name))))
+	  (let ((file fi::emacs-to-lisp-transaction-file))
+	    (save-window-excursion
+	      (pop-to-buffer fi::emacs-to-lisp-transaction-buf)
+	      (set 'fi::remove-file-on-kill-emacs file)
+	      (set 'fi::remove-file-on-kill-emacs file)))))
+    (setq pkg fi::emacs-to-lisp-package)
+    (save-window-excursion
+      (let ((file fi::emacs-to-lisp-transaction-file))
+	(pop-to-buffer fi::emacs-to-lisp-transaction-buf)
+	(erase-buffer)
+	(if (and pkg (not fi:echo-evals-from-buffer-in-listener-p))
+	    (insert pkg))
+	(insert text)
+	;; (newline) Unneeded? -smh
+	(write-region (point-min) (point-max) file)
+	(bury-buffer)))
+    (let ((load-string
+	   (if compile-file-p
+	       (format
+		"(let ((*record-source-files* nil))
  		 (excl::compile-file-if-needed \"%s\")
 		 (load \"%s.fasl\"))"
-	      fi::emacs-to-lisp-transaction-file
-	      (fi::file-name-sans-type fi::emacs-to-lisp-transaction-file))
-	   (format "(let ((*record-source-files* nil)) (load \"%s\"))"
-		   fi::emacs-to-lisp-transaction-file))))
-    (fi::send-string-split process load-string nl-to-cr)))
+		fi::emacs-to-lisp-transaction-file
+		(fi::file-name-sans-type fi::emacs-to-lisp-transaction-file))
+	     (if fi:echo-evals-from-buffer-in-listener-p
+		 (format "(with-open-file (istm \"%s\")
+			 (let ((*record-source-files* nil)
+			       (*package* *package*)
+			       (stm (make-echo-stream istm *terminal-io*)))
+			   %s
+			   (princ \" ;; eval from emacs: \") (fresh-line)
+			   (load stm :verbose nil)))"
+			 fi::emacs-to-lisp-transaction-file
+			 (if pkg pkg ""))
+	       (format "(let ((*record-source-files* nil)) (load \"%s\"))"
+		       fi::emacs-to-lisp-transaction-file)))))
+      (fi::send-string-split process load-string nl-to-cr))))
 
 (defun fi:remove-all-temporary-lisp-transaction-files ()
   "This function will clean up all the files created for Lisp/Emacs
