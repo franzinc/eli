@@ -31,7 +31,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.19 1990/12/13 17:34:46 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.20 1991/02/12 14:55:36 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If `t', semicolons that begin comments are indented as they are typed.")
@@ -1475,7 +1475,21 @@ if matched at the beginning of a line, means don't indent that line."
   (put 'let tag '((1 1 quote) (0 t 1)))
   (put 'let* tag '(like let))
   (put 'locally tag '(funcall fi::lisp-indent-predicated-special))
-  (put 'loop tag 'tagbody)
+  (put 'loop tag
+       '((0 t (fi:lisp-indent-keyword-list
+	       nil			; quotedp
+	       t			; keyword-arg-pairs-p
+	       t			; keyword-count
+	       t			; special-keyword-count
+	       1			; special-count
+	       nil			; ignore-after-count
+	       ;; keywords recognized:
+	       "named" "initially" "finally" "nodeclare" "do" "doing"
+	       "return" "collect" "collecting" "append" "appending" "nconc"
+	       "nconcing" "count" "counting" "sum" "summing" "maximize"
+	       "minimize" "always" "never" "thereis" "while" "until" "when"
+	       "if" "unless" "with" "for" "as" "repeat" "=" "first" "in"
+	       "on" "from" "downfrom" "upfrom" "below" "to" "being"))))
   (put 'macrolet tag '(like flet))
   (put 'map tag 1)
   (put 'multiple-value-bind tag '((1 1 quote) (0 t 2)))
