@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.63 1994/09/21 22:43:25 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.64 1994/09/21 22:52:40 smh Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -26,7 +26,7 @@
       (eval form))
     (setq fi::initialization-forms nil)))
 
-(unless (symbol-function 'add-hook)	;not in 18.59
+(unless (fboundp 'add-hook)	;not in 18.59
   (defun add-hook (hook function &optional append)
     "Add to the value of HOOK the function FUNCTION.
 FUNCTION is not added if already present.

@@ -4,6 +4,7 @@ Wed Sep 21 15:37:08 1994  Steve Haflich  (smh@vapor)
 
 	* fi-indent.el: Add property for pprint=logical-block.
 
+	* fi-utils.el:
 	* fi-leep.el:
 	* fi-emacs19.el:
 	* fi-lemacs.el:
