@@ -549,16 +549,40 @@ search on a string.
 
    The features of this package include:
    
-    * Command completion: begin typing in a symbol and hit completion
-      key.  If you want completion for a symbol in either the
-      common-windows or the allegro-matrix package, precede the symbol
-      with either cw: or math:
+    * Command completion: begin typing in a symbol and hit the completion
+      key.  Note: You cannot use command completion when you precede a symbol 
+      with a package qualifier, but see the item below.
+
+    * Package-specific search.  To confine the search to a particular 
+      package, type the nickname of the package to the prompt and hit the
+      carriage return.  You can then type the name of a symbol in this package
+      or use command completion to see a list of all the symbols in the
+      package.  The following is the complete list of package nicknames. 
+      (One of the nicknames, "about", while not properly the name
+      of a package, refers to a group of broad conceptual entries such as
+      "about-reading" and "about-process-locks".) :
+
+		about  
+		cl
+		compiler
+		excl
+		foreign
+		matrix
+		mp
+		sys
+		tpl  
+		xcw
 
     * Default Lookup: the program assumes you want to lookup the
-      symbol just to the left of your cursor.  Thus you can easily
-      look up a function in the midst of using it in your code, or
-      quickly pick a symbol to lookup in the See Also section of the
-      manual page.
+      symbol that surrounds, or is immediately to the left of,
+      your cursor.  Thus you can easily look up a function in 
+      the midst of using it in your code, or quickly pick a symbol 
+      to lookup in the See Also section of the manual page.
+
+    * All instances of a symbol in a particular package are found.  Use 
+      fi:clman-next-entry to go to the next documented entry for a particular
+      symbol.  (To narrow the search for a symbol down to a particular 
+      package, use fi:clman-apropos.)
 
    Known limitations:
 
