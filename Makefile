@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.144.6.3 2001/05/30 20:10:53 layer Exp $
+# $Id: Makefile,v 1.144.6.4 2001/10/22 16:26:58 layer Exp $
 # This makefile requires GNU make.
 
 include version.mak
@@ -10,15 +10,15 @@ SHELL = sh
 ifeq ($(OS),Windows_NT)
 ifdef xemacs
 #### non-Cygwin can't do -nw
-#xemacsdir = $(shell //c/perl/bin/perl xemacsdir.pl)
+#xemacsdir = $(shell /cygdrive/c/perl/bin/perl xemacsdir.pl)
 #emacs = $(xemacsdir)/XEmacs-21.1.9/i386-pc-win32/xemacs.exe
 #### Cygwin version is just right
 emacs = /usr/bin/i686-pc-cygwin32/xemacs
 pwd = $(shell pwd)
 else
-emacsdir = $(shell //c/perl/bin/perl emacsdir.pl)
+emacsdir = $(shell /cygdrive/c/perl/bin/perl emacsdir.pl)
 emacs = $(emacsdir)/bin/emacs.exe
-# ../bin/pwd prints like c:/... instead of //c/... like the cygnus version.
+# ../bin/pwd prints like c:/... instead of /c/... like the cygnus version.
 pwd = $(shell ../bin/pwd.exe)
 endif
 ###############################################################################

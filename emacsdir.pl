@@ -1,4 +1,4 @@
-# $Id: emacsdir.pl,v 2.4 2000/06/22 20:48:53 layer Exp $
+# $Id: emacsdir.pl,v 2.4.6.1 2001/10/22 16:26:58 layer Exp $
 #
 # This script requires Active Perl version 502
 #  (\\beast\import\pc\perl-win32\APi502e.exe)
@@ -17,8 +17,6 @@ $emacsdir =~ y/A-Z/a-z/;
 $emacsdir =~ s/\\/\//;
 
 ($drive, $dir) = $emacsdir =~ /([a-zA-Z]):(.*)/;
-# Upcase drive letter for Interix:
-$drive = uc $drive;
-$emacsdir = "//$drive$dir";
+$emacsdir = "/cygdrive/$drive$dir";
 
 print "$emacsdir";
