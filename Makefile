@@ -13,8 +13,11 @@ all:	depend doc.n
 
 depend: ${elc-files}
 
-doc.n:	list.n ${elc-files}
+doc.n:	list.n ${elc-files} doc.el
 	$(emacs) -batch -q -l doc.el
+
+print.doc:
+	${pr} doc.n
 
 pr = enscript -Plw -h -2r
 
