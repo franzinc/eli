@@ -1,0 +1,137 @@
+To: sun-spots@rice.edu, comp-ai@ucbvax, comp-editors@ucbvax,
+    comp-emacs@ucbvax, comp-lang-lisp@ucbvax, comp-lang-franz@ucbvax,
+    comp-software-eng@ucbvax, gnu-emacs@ucbvax,
+    common-lisp@sail.standford.edu, excl-forum@ucbarpa
+Subject: Franz Inc. makes available Allegro CL/GNU Emacs Interface
+Date: Sat, 16 Jul 88 10:46:08 PDT
+
+			     Introduction
+			     ------------
+
+Franz Inc. is offering to the Lisp community version 1.2 of their
+interface between Allegro Common Lisp (previously known as "Extended
+Common Lisp") and GNU Emacs.  This interface will also work between
+GNU Emacs and Franz Lisp Opus 43 (the current release from Franz Inc.)
+or Franz Lisp Opus 38 (the last public domain version).
+
+The goal of this interface is to offer the Lisp programmer a tightly
+integrated Lisp environment.  The interface can be broken down into
+three parts:
+
+	* Lisp editing modes for Common and Franz Lisp,
+	* Inferior modes for Common and Franz Lisp subprocesses, and
+	* TCP Common Lisp modes for socket communication with Common
+	  Lisp.
+
+The first two are available for both Common and Franz Lisp, but the
+third feature, which enables the tight coupling of the environments,
+is only available for Allegro CL.  It uses multiprocessing in Allegro
+CL and UNIX domain socket to communicate information between the GNU
+Emacs and Allegro CL worlds.
+
+The features of the interface are:
+
+	* enhanced subprocess modes, including
+	  - file name completion
+	  - an input ring to allow fetching of previously typed input
+	* macroexpansion of forms in a Lisp source file
+	* `find-tag' for Lisp functions (the Allegro CL world is
+	  queried for the location of Lisp functions)
+	* who-calls: find all callers of a Lisp function
+	* Arglist, `describe' and function documentation are available
+	  in Lisp source buffers (again, the information comes
+	  dynamically from Allegro CL)
+	* automatic indentation of forms entered to an inferior Lisp
+
+The interface is written entirely in GNU Emacs Lisp, with the
+exception of a replacement for the standard `open-network-stream' in
+src/process.c.  Some of the advanced features use UNIX domain sockets
+and also use features specific to the implementation of Allegro CL
+(multiprocessing).
+
+The interface is fully documented on-line.
+
+
+			      Ownership
+			      ---------
+
+The Lisp/GNU Emacs interface is the property of Franz Incorporated.
+The Emacs Lisp source code is distributed and the following notice is
+present in all source files for which it applies:
+
+;;
+;; copyright (C) 1987, 1988 Franz Inc, Berkeley, Ca.
+;;
+;; The software, data and information contained herein are the property 
+;; of Franz, Inc.  
+;;
+;; This file (or any derivation of it) may be distributed without 
+;; further permission from Franz Inc. as long as:
+;;
+;;	* it is not part of a product for sale,
+;;	* no charge is made for the distribution, other than a tape
+;;	  fee, and
+;;	* all copyright notices and this notice are preserved.
+;;
+;; If you have any comments or questions on this interface, please feel
+;; free to contact Franz Inc. at
+;;	Franz Inc.
+;;	Attn: Kevin Layer
+;;	1995 University Ave
+;;	Suite 275
+;;	Berkeley, CA 94704
+;;	(415) 548-3600
+;; or
+;;	emacs-info%franz.uucp@Berkeley.EDU
+;;	ucbvax!franz!emacs-info
+
+Some files contain GNU Emacs derived code, and those files contain
+the GNU Emacs standard copyright notice.
+
+
+			Obtaining the Software
+			----------------------
+
+To obtain version 1.2 of this interface either:
+
+1) copy it from ucbarpa.berkeley.edu or ucbvax.berkeley.edu via FTP
+   (login `ftp', password your login name) from the directory
+   pub/fi/gnudist-1.2-tar.Z, or
+
+2) send a check (sorry, no PO's accepted) in the amount of $50 for a
+   US address and $75 for a foreign address to Franz Inc. to the
+   following address:
+
+	Franz Inc.
+	Attn: Emacs/LISP Interface Request
+	1995 University Ave
+	Suite 275
+	Berkeley, CA 94704
+
+   Please specify the media (`tar' format only) which is one of:
+
+	* 1/2", 1600 bpi, 9-track
+	* 1/4", cartridge tape--specify the machine type (ie, TEK, SUN)
+
+
+			     Future Work
+			     -----------
+
+Improvements to this interface will be made in the future, so to
+facilitate the exchange of information about this and user's
+experiences, questions and suggestions a mailing list will be created
+as a forum for discussion on topics relating to this interface.  If
+you would like to be on this mailing list (local redistribution is
+encouraged), please drop me a note.  If you have trouble with one of
+the addresses below, try one of:
+
+			  layer@Berkeley.EDU
+				 -or-
+			     ucbvax!layer
+
+----------------------------------------------------------------------------
+
+	D. Kevin Layer			Franz Inc.
+	layer%franz.uucp@Berkeley.EDU	1995 University Avenue, Suite 275
+	ucbvax!franz!layer		Berkeley, CA  94704
+					(415) 548-3600, FAX: (415) 548-8253

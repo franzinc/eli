@@ -1,0 +1,10 @@
+news:
+	gnu.emacs.announce
+x	comp.lang.lisp
+x	comp.emacs
+x	gnu.emacs.sources
+
+mail:
+x	allegro-cl@ucbarpa.berkeley.edu
+x	lisp-emacs-forum@ucbarpa.berkeley.edu
+	common-lisp@mcc.com

@@ -1,0 +1,48 @@
+To: lisp-emacs-forum@ucbarpa
+Cc: comp-lang-lisp@ucbvax, comp-lang-franz@ucbvax,
+    info-gnu-emacs@prep.ai.mit.edu, excl-forum@ucbarpa
+Subject: new version of GNU Emacs/Lisp interface available
+Date: Fri, 17 Feb 89 23:37:42 -0800
+From: layer
+
+Version 1.3 of the Franz Inc. GNU Emacs/Lisp interface is now ready
+for digestion.  The major new features are:
+
+  * Completion of Lisp symbols (M-TAB)!  It does *dynamic* lookup in
+    the lisp so user defined symbols are can be completed.
+
+  * New variable fi:common-lisp-file-types.
+
+  * New function fi:eval-in-lisp which evaluates arbitrary lisp
+    expressions.
+
+  * Updated ipc.cl and and new file, emacs.cl, which has some support
+    routines.  The foreign load from the C library is not done unless
+    absolutely necessary (/bin/ld on the Sun4 is very slow sometimes).
+
+  * New variable, fi:emacs-to-lisp-transaction-directory, which
+    controls where transaction files are created.  This is especially
+    helpful when emacs and lisp are on different machines.
+
+  * New variable, fi:echo-evals-from-buffer-in-listener-p, controls
+    whether or not expressions evaluated by key strokes in emacs are
+    silently evaluated in lisp or are `echo'd by the lisp listener.
+
+  * Shell tracking of directory is now much better.  "cd ...; ...",
+    "cd ... &" and "...; cd ..." are now handled.  Also, pushd +N and
+    popd +N are handled properly.
+
+  * Added command completion.
+
+  * A multitude of small fixes.
+
+A complete list of the changes since 1.2 is part of the distribution.
+
+It can be had by FTP from ucbarpa.berkeley.edu or ucbvax.berkeley.edu,
+login name `ftp' and your login name as password.  Retrieve the file
+pub/fi/gnudist_1_3.tar.Z.
+
+	D. Kevin Layer			Franz Inc.
+	layer%franz.uucp@Berkeley.EDU	1995 University Avenue, Suite 275
+	ucbvax!franz!layer		Berkeley, CA  94704
+					(415) 548-3600, FAX: (415) 548-8253

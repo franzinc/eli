@@ -1,0 +1,59 @@
+Subject: new version of GNU Emacs/Lisp interface available
+
+Version 1.5.1 of the Franz Inc. GNU Emacs/Lisp interface is now ready
+for digestion.  The major changes from the last version are:
+
+  * fi:remote-common-lisp and fi:remote-explicit-common-lisp have been
+    greatly enhanced to increase their utility.  For example, it used
+    to be that EOF typed to a *common-lisp* created by one of these
+    functions would cause the Lisp to read EOF infinitely.
+
+  * the INTERNET domain is now the default (as opposed to the UNIX
+    domain) for the communication between Lisp and Emacs.  Also, the
+    selection of the INTERNET port happens automagically and no longer
+    is there the contraint that there can be only one emacs-lisp
+    connection per machines (communicating via socket files in the
+    UNIX domain never suffered from this misfeature),
+
+  * the interface works regardless of the case-mode of the Common
+    Lisp,
+
+  * indenting for some of the trickier Common Lisp special forms and
+    macros is now handled (ie, the condition system),
+
+  * the interface as a whole is much easier to startup: no more
+    hacking around with $HOME/.clinit.cl,
+
+  * lots of bugs fixed,
+
+  * some requested features added, and
+
+  * much, much more...
+
+See the ChangeLog for more details.
+
+You can get it in the following ways:
+
+  ftp : uunet.uu.net:/lisp/emacs-lisp-1.5.1.tar.Z
+		- or -
+        ucbvax.berkeley.edu:/pub/franzinc/emacs-lisp-interface/1.5.1.tar.Z
+  uucp: uunet!~/lisp/emacs-lisp-1.5.1.tar.Z
+
+[When ftp'ing, login as user `ftp' and give any password.]
+
+This release is packaged a little different than previous ones.  When
+you uncompress and untar it, just move (or copy) the `fi'
+directory to be a subdirectory of <...>emacs/lisp where <...> is the
+path to your emacs directory.   At this point, use fi/docompile.sh to
+compile emacs.cl and ipc.cl (docompile.sh causes the fasl files of the
+compilation to be put in the Lisp library).
+
+At this point, you can remove old stuff from your $HOME/.clinit.cl
+which started the interface--this will happen automatically, now.
+
+Send mail to bugs@franz.com to report any problems you encounter.
+
+If you want to be on the mailing list, send mail to
+	lisp-emacs-forum-request@ucbarpa.berkeley.edu
+and I'll put you on it.
+

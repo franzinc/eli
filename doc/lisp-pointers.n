@@ -1,0 +1,350 @@
+.de @m
+..
+.ie t .po 1.25i
+.
+.he ''''
+.fo ''''
+.
+.ds UX \s-1UNIX\s+1
+.ds AL A\s-2LLEGRO\s+2 CL
+.ds FL F\s-2RANZ\s+2 L\s-2ISP\s+2
+.ds LI L\s-2ISP\s+2
+.ds CL C\s-2OMMON\s+2 L\s-2ISP\s+2
+.ds GN GNU E\s-2MACS\s+2
+.ds EM E\s-2MACS\s+2
+.
+.ls 1
+.
+.ce 2
+\fB\s+3Programming Environments\s-3\fP
+\fIJohn Foderaro\fP
+.sp 2
+.ce 2
+\fB\s+1The Franz Inc. \*(AL/\*(GN Interface\s-1\fP
+\fIJohn Foderaro and D. Kevin Layer\fP
+.
+.(f
+\*(AL is a trademark of Franz Inc., 
+Macintosh is a trademark licensed to Apple Computer, and
+\*(UX is a trademark of AT&T.
+.)f
+.
+.ls 1
+.sp 1
+.
+.sh 1 Introduction
+.lp
+The editor is an important part of a \*(LI programming environment.
+In this paper we describe how we have integrated the \*(GN editor
+with \*(AL (previously known as Extended \*(CL).
+Parts of the interface between \*(AL and \*(GN
+can be used with any version of \*(LI, including \*(FL.
+Other parts require a
+sophisticated multiprocessing facility,
+such as the one found in \*(AL or on \*(LI-machines.
+The interface can be obtained at no charge as described at
+the end of this paper.
+.
+.sh +0 "Choosing the Editor"
+.lp
+Our goal was to choose an appropriate editor for \*(AL running on
+general-purpose \*(UX workstations.  Our choices were:
+.ip "1."
+write an Inter\*(LI-style structure editor,
+.ip "2."
+write an in-\*(LI \*(EM-style text editor,
+.ip "3."
+or use an existing editor for general-purpose workstations.
+.lp
+We ruled out an Inter\*(LI-style structure editor because \*(AL
+is not a residential \*(LI in the Inter\*(LI style.
+A structure editor
+would still be useful for examining and modifying objects and we may write
+one in the future, but we do not see ourselves using one as the primary
+program editor.
+.lp
+We were then faced with choosing between writing an \*(EM-like editor
+in \*(LI and using an existing editor.
+We chose \*(GN, currently the most widely used \*(EM editor on
+general-purpose \*(UX workstations, for these reasons:
+.
+.ip \(bu
+Most people prefer to learn just one editor.  Aside from not wanting to
+learn and remember the conventions of more than one editor, many
+people expend great effort customizing their editor environment.
+.
+.ip \(bu 
+\*(GN is a comprehensive, well-designed editor.
+Duplication of all of
+its features would be a difficult task and wasted effort.
+.
+.ip \(bu
+On a general-purpose machine, developers want a general-purpose editor
+since they will be using that editor not only for editing \*(CL
+programs but for reading and processing mail, writing papers using TeX
+or \fItroff\fP, and editing programs in other languages such as C or
+Fortran.
+Also, the editor should work on whatever terminal
+or bit-mapped display is available.
+.
+.ip \(bu
+The editor must be reliable.
+In the model where \*(LI and \*(EM share the same address space
+(i.e., \*(EM is implemented in \*(LI), changes made to files or buffers can
+be lost if \*(LI dies.
+(It is not normal for \*(LI to die, but buggy foreign functions and
+\fIunsafe\fP user-written programs can 
+cause any \*(LI to fail unexpectedly.)
+.
+.sh +0 "\*(GN"
+.lp
+\*(GN is a portable and extensible text editor written by Richard
+Stallman, with contributions by many others.
+It is written in C and \*(EM \*(LI (Elisp) and
+runs on most machines running the \*(UX operating system.
+Elisp, the extension language, is similar in many ways to \*(CL,
+and includes a \*(LI-to-portable-byte-code compiler and garbage
+collector.
+.lp
+\*(EM is extensible at a very basic level: there is a
+table that maps every key on the keyboard (and some key sequences) to
+a function.
+When you press
+a key, a function is executed which defines the behavior of the key.
+For example, with the initial key bindings,
+when you press the `a' key, a function called
+\fBself-insert-command\fP is executed that
+inserts an `a' into the buffer at the location of the cursor.
+Another feature of \*(EM is that it permits
+you to edit more than one file at a time, each file being stored in its
+own buffer.  Each buffer has a local mapping of keys to functions, thus
+you can alter the behavior of \*(EM in each buffer.
+For example, in a mail-reading
+buffer pressing the `a' key may mean `answer the mail', and the function
+executed would set up a buffer in which to write a reply to the
+current letter.
+.lp
+The set of key to function bindings in a buffer is called the \fImode\fP.
+In our
+interface we define several modes.
+One is \*(CL mode which
+makes it easier to write \*(CL programs.
+For example, in \*(CL mode there is a function, or key sequence,
+that displays the argument list for a given symbol by querying
+the \*(LI environment.
+There is also a mode for interacting with a \*(LI process, and another
+for having multiple \*(LI listeners connect to the \fIsame\fP \*(LI.
+.
+.sh +0 "Features of the interface"
+.lp
+The parts of the interface include:
+.ip \(bu
+A mode for editing \*(LI programs.
+Expressions are automatically indented
+as they are typed.  Matching parentheses are highlighted with
+the cursor.
+This mode is an enhancement to the standard \*(LI mode provided by \*(GN,
+and provides features not available in the standard \*(LI mode.
+.
+.ip \(bu
+A mode for interacting with a \*(LI process.
+The \*(LI process can be running on any machine on the
+network.
+Expressions are indented when they are typed and matching
+parenthesis highlighting is done as in \*(LI editing mode.
+Previous typed input can be
+edited and re-executed.
+Previous lines of input can be recalled based on a search pattern.
+.ip \(bu
+A mode that combines the first two.
+While editing a file you can request an
+argument list or description of a symbol or function
+(\fImeta shift a\fP), the result of a
+macroexpansion (\fImeta shift m\fP),
+or to see the source associated with a function,
+defstruct, or variable (\fImeta dot\fP).
+The \*(EM part of the interface accomplishes this by sending
+information 
+to and receiving information from
+\*(LI via a \fIback door\fP (explained below).  When the response
+is received from \*(LI, \*(EM displays the information requested by the
+user.
+.ip \(bu
+A mode that simulates a residential or Inter\*(LI-like environment.
+Instead of having to recompile and load entire files, this interface
+allows single functions or a group of functions to be compiled and
+loaded into the \*(LI environment.
+This merging of the \*(EM and \*(LI worlds regains
+what is lost in the file-based approach to \*(LI development,
+and makes the \*(EM and \*(LI seem like they inhabit the same
+world (like an in-\*(LI \*(EM would).
+.
+.ip \(bu
+Other features, such as an improved \fIShell\fP mode (for issuing commands
+to the operating system)
+and a function for creating multiple
+separate \*(LI listeners onto the same \*(LI, using the
+multiprocessing feature of \*(AL.
+.
+.sh +0 "Implementation"
+.lp
+The modes for editing \*(LI programs and talking with a \*(LI 
+process are written in entirely in Elisp (\*(EM \*(LI).
+They are important parts of the interface but there is nothing worth
+noting here.
+.lp
+For the rest of the interface, which deals with the interaction
+between a running \*(LI and \*(EM, 
+the global view
+is that there is a \*(LI process
+running in a separate \*(UX process under the control of
+\*(EM.
+In other words, the characters
+that \*(LI writes to \fB*terminal-io*\fP are sent to \*(EM and what
+\*(EM sends to \*(LI appears as input in \fB*terminal-io*\fP.
+\*(LI runs in
+a named \*(EM buffer, called, for example, \fI*common-lisp*\fP.
+The user types to \*(EM in the *common-lisp* buffer, which then
+becomes input to the \*(LI process.
+When \*(LI produces output, it is
+read by \*(EM and put in the *common-lisp* buffer.
+.lp
+Consider now the case of a user running \*(EM with a connection to
+\*(LI.
+Say, for example, the user wants to describe (in the
+\*(CL sense) the \*(CL function \fBmake-package\fP.
+The key sequence ``M-D make-package RET''
+(\fImeta shift d\fP, followed by \fImake-package\fP, followed by
+a carriage return),
+in a \*(CL moded buffer (as
+opposed to, say, a mail moded buffer),
+is the way to request that this information be displayed by
+\*(EM.
+If the user were just talking with \*(CL, the form to
+evaluate to get this information would be:
+.(l
+(describe 'make-package)
+.)l
+\*(EM could just send the above sequence of characters to the \*(CL
+process, but there would be no guarantee that the \*(CL process was in
+a state where a reply would be possible (the user may be running an
+application).  For this reason, there needs to be a dedicated
+communication link between \*(EM and \*(CL.
+In our interface, this \fIlink\fP is
+referred to as the \fIback-door \*(LI listener\fP.
+It is called \fIback door\fP because 
+the user never actually sees it or types to it.  \fI\*(LI listener\fP
+is the conventional name for a read-eval-print loop to which a
+user of \*(LI types.  Using this terminology, the \*(LI process
+connected to a buffer (the one to which the user types) could be
+called the \fIfront-door \*(LI listener\fP, or just \fIfront-door\fP.
+.lp
+The back-door communication between \*(EM and \*(AL is at the
+heart of the interface.
+While the user is interacting with \*(AL through the front door,
+\*(EM has a communication channel open to \*(AL through the back-door.
+This back-door is just another
+listener which \*(EM uses to query the Lisp
+environment for information pertaining to, for example, argument
+lists, macro definitions, documentation strings of functions, etc.
+It uses the networking primitives available on Berkeley \*(UX, which
+allow communication over \*(UX or Internet domain sockets.
+This use of \fItwo\fP listeners to the same \*(LI is possible
+because of \*(AL's multiprocessing and stack group facilities.
+(\*(LI machines have used stack groups and
+multiprocessing for some time as the basis for their
+multi-tasking operating systems.
+These features have been available in some versions of \*(AL for
+almost two years.)
+.
+.sh +0 "Problems in the interface"
+.lp
+One problem we faced was selecting the appropriate network address for
+\*(LI to monitor for messages from \*(EM.
+If we chose an Internet domain port then only one user on a machine
+could use the interface unless each user chose a unique port number
+for \*(LI-\*(EM communication.
+We support both styles of network addressing, but decided to use,
+by default, a \*(UX domain port (with the
+address being a file in the user's home directory, thus providing
+a unique address for each user).
+One problem with using a \*(UX domain address is that \*(EM and
+\*(LI must be running on the same machine.
+Another problem with using \*(UX domain addresses
+is that the
+standard \*(GN we started with (version 18.50)
+did not have
+support for \*(UX domain sockets.  It was a straight-forward task to
+extend \fBopen-network-stream\fP in \*(GN to allow the creation of
+\*(UX domain sockets and this modification has been sent to the
+maintainers of \*(GN and made part of the interface release.
+.
+.sh +0 "Future work"
+.lp
+Currently \*(EM drives the interface and \*(LI acts
+as a slave.
+We will expand the interface to permit \*(LI programs to
+request services from \*(EM (e.g. edit files or expressions, pop up
+buffers, etc).
+We will also generalize the interface and define in \*(EM an
+\&`eval in \*(LI' function and define in \*(LI an `eval in \*(EM'
+function, thus permitting users to extend the interface.
+.
+.sh +0 Conclusion
+.lp
+General-purpose machines are popular because they run a variety
+of applications, often written in many different languages.
+But, if each application provides its own editor it will be unpleasant
+for the user.
+The Apple Macintosh is currently the best example of a system that
+provides a uniform interface across applications,
+and it is second to none in ease of use.
+.lp
+On \*(UX machines we see \*(EM as the best solution to
+providing a uniform application environment.
+\*(GN, in particular, is much
+more powerful and extensible than the Macintosh `point and click'
+interface and the subprocess control facilities of \*(GN already
+provide a uniform interface between editing files and interacting with
+the \*(UX command parser (the shell).
+With our \*(LI-\*(EM interface we add \*(LI to the
+set of programs tightly coupled to \*(EM.
+.
+.sh +0 "How to obtain \*(GN and the \*(EM/\*(LI interface"
+.lp
+You can obtain \*(GN by copying
+the latest distribution
+version of \*(EM from the file \fI/u2/emacs/edist.tar\fP on host
+prep.ai.mit.edu (or the file \fI/u2/emacs/edist.tar.Z\fP which has
+been run through compress after tar).  These files are about 7 and 3
+megabytes long, respectively.  After you unpack the distribution, be
+sure to look at the files \fIREADME\fP and \fIINSTALL\fP.
+.lp
+To obtain the current release of the \*(EM/\*(LI interface, either:
+.ip "1)"
+if you have Internet access, copy it from ucbarpa.berkeley.edu or
+ucbvax.berkeley.edu via FTP (login \fIftp\fP, password your login name)
+from the directory pub/fi/gnudist-1.2-tar.Z, or
+.
+.ip "2)"
+send a check (sorry, no PO's accepted) in the amount of $50 for a
+US address or $75 for a foreign address to Franz Inc. to the
+following address:
+.(l
+Franz Inc.
+Attn: \*(LI/\*(EM Interface Request
+Suite 275
+1995 University Ave
+Berkeley, CA 94704
+.)l
+Please specify the media (\fItar\fP format only) which is one of:
+.(l
+\(bu 1/2", 1600 bpi, 9-track
+\(bu 1/4", cartridge tape\(emspecify the machine type (e.g., Tektronix 4300)
+.)l
+.sp 1
+.lp
+There is a mailing list for the discussion of issues related to this
+interface, called `lisp-emacs-forum@Berkeley.EDU'.
+If you would like to be on it, send mail to
+`lisp-emacs-forum-request@Berkeley.EDU'.

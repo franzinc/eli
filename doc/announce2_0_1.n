@@ -1,0 +1,83 @@
+To: allegro-cl@berkeley.edu
+Subject: new minor release of the GNU Emacs-Allegro CL interface (2.0.1)
+Date: Tue, 21 Jul 92 12:25:19 -0700
+From: layer
+
+Since version 2.0 of the GNU Emacs-Allegro CL interface was released,
+there have been a few minor fixes.  Version 2.0.1 only works with
+Allegro CL 4.1.  If you want to install the new version, grab
+
+	/vendor/franz/emacs/emacs-lisp-2.0.1.tar.Z
+
+from ftp.uu.net (353707 bytes) and uncompress and extract the
+resulting tar file, which will create an `fi' directory in the place
+it is extracted.  This new `fi' directory is a replacement for the one
+you are currently using EXCEPT FOR `fi/manual', which is NOT contained
+in the above .tar.Z file.  So, the steps to install are:
+
+	1. uncompress, `tar x',
+	2. move fi/manual directory to new fi directory, and
+	3. replace old fi directory with new one.
+
+The ChangeLog since 2.0 is included below.
+
+-----
+Kevin Layer, Franz Inc.         1995 University Avenue, Suite 275
+layer@Franz.COM (internet)      Berkeley, CA  94704  USA
+Phone: (510) 548-3600           FAX: (510) 548-8253
+
+===============================================================================
+Mon Jul 20 10:09:06 1992  Kevin Layer  (layer@ice)
+
+	* subproc.el: make default of
+	fi:pop-to-sublisp-buffer-after-lisp-eval be nil
+
+Fri Jul 17 12:18:09 1992  Kevin Layer  (layer@ice)
+
+	* indent.el: without-interrupts indent method fixed
+
+	* clman.el lep.el db.el keys.el: use (goto-char (point-max))
+	instead of (end-of-buffer) because the latter causes "Mark set" to
+	appear in the minibuffer.
+
+	* lze.el: fi:pop-to-sublisp-buffer-after-lisp-eval (bug2683) was
+	being ignored.
+
+Thu May 28 15:29:15 1992  Kevin Layer  (layer@ice)
+
+	* utils.el: move fi::explode here from subproc.el; new
+	fi::shell-command-output-to-string
+
+	* subproc.el: use csh's cdpath, not CDPATH env variable; move
+	fi::explode to utils.el
+
+Tue May 19 08:31:52 1992  Kevin Layer  (layer@ice)
+
+	* subproc.el: fix bug2601 (fi:common-lisp-buffer-name not handled
+	in non-interactive fi:common-lisp); make sure DISPLAY is set
+	properly
+
+Tue Apr 28 23:20:59 1992  Kevin Layer  (layer@ice)
+
+	* lze.el: don't lock buffer during eval/compile
+
+Tue Apr 28 13:49:18 1992  Kevin Layer  (layer@ice)
+
+	* indent.el: make fi:lisp-semicolon take a numerical prefix arg so
+	it is easy to insert multiple semis; fix egregious bug in
+	indenting forms like (cond ((let (x) (foo x)) #|RET HERE|# bar));
+	fix indent spec for without-scheduling (0 instead of 1)
+
+>>>	* basic-lep.el: add fi:send-reply
+
+>>>	* subproc.el: handle cdpath variable
+
+	* site-init.el: set version to 2.0.1
+
+	* lze.el: fix bug with where eval/compile background status gets
+	wedged
+
+	* stream.el: add `name' keyword to lep::create-listener-stream
+	(called from ACL)
+
+	* leep.el: conditionalize for Epoch 4.0

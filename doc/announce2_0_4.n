@@ -1,0 +1,150 @@
+Subject: new release of emacs-lisp interface to support epoch 4.2
+
+Version 2.0.4 of Franz Inc.'s GNU Emacs-Allegro CL interface is now
+released.  There are misc fixes (ChangeLog below from 2.0.1, the last
+public release) and the following new versions of emacs supported:
+
+	- GNU Emacs 18.58 and 18.59
+	- Epoch 3.2 and 4.2
+
+If you want to get and install this new version, grab
+
+	/vendor/franz/emacs/emacs-lisp-2.0.4.tar.Z
+
+and
+
+	/vendor/franz/emacs/OBLIST.el-2.0.4
+
+from ftp.uu.net (the first is 355265 bytes) and uncompress and extract
+the resulting tar file, which will create an `fi' directory in the
+place it is extracted.  This new `fi' directory is a replacement for
+the one you are currently using EXCEPT FOR `fi/manual', which is NOT
+contained in the above .tar.Z file.  So, the steps to install are:
+
+	1. uncompress, `tar x',
+	2. move fi/manual directory to new fi directory, and
+	3. replace old fi directory with new one.
+
+Copy OBLIST.el-2.0.4 to .../lisp/fi/manual/OBLIST.el.  This will make
+the on-line manual viewing work with version 2.0.4.
+
+The ChangeLog since 2.0.1 is included below.
+
+-----
+Kevin Layer, Franz Inc.         1995 University Avenue, Suite 275
+layer@Franz.COM (internet)      Berkeley, CA  94704  USA
+Phone: (510) 548-3600           FAX: (510) 548-8253
+
+===============================================================================
+public release 2.0.4
+===============================================================================
+
+Fri Apr  9 08:09:23 1993  Kevin Layer  (layer@sole)
+
+	* subproc.el: properly string-match $ for env variabie substitution
+
+Tue Mar 23 10:08:35 1993  Kevin Layer  (layer@ice)
+
+	* Makefile: testit rule
+
+	* UserGuide.n: update
+
+	* modes.el: move fi:in-package-regexp and
+	fi:default-in-package-regexp to this file; set comment-column
+	only when unbound;
+>>>	fi:define-emacs-lisp-mode, default is `t'.
+
+	* indent.el: change defclass indent spec
+
+	* keys.el: comment
+
+	* utils.el: fix fi::explode
+
+	* subproc.el: fix directory tracking for relative pathnames
+
+	* site-init.el: new variable fi::load-subprocess-files (default
+	`t').
+
+	* clman.el: totally revamped (uses OBLIST.el now)
+
+===============================================================================
+public release 2.0.3 (with ACL 4.1 on the HP700)
+===============================================================================
+
+Mon Dec 14 17:30:28 1992  Kevin Layer  (layer@ice)
+
+>>>	* shell.el: put fi:shell-mode-bang under control of variable,
+>>>	turned off by default: fi:shell-mode-use-history
+
+	* subproc.el: for the hp700: don't assume `rsh' is there, check
+	for `remsh' first.  Also, `localhost' doesn't exist so default to
+	(system-name).
+
+	* utils.el: new function fi::command-exists-p
+
+Thu Dec 10 06:01:08 1992  Kevin Layer  (layer@ice)
+
+	* rlogin.el: new function: fi:rlogin-new-user
+
+===============================================================================
+public release 2.0.2 (with ACL 4.2 beta under CLIM 2.0 beta)
+===============================================================================
+
+Mon Oct  5 08:43:27 1992  Kevin Layer  (layer@ice)
+
+	* clman.el: allow symbols from different packages to be retrieved
+
+Fri Oct  2 09:08:06 1992  Kevin Layer  (layer@ice)
+
+	* leep.el: hack for epoch 4.2
+
+Thu Sep 24 17:58:38 1992  Kevin Layer  (layer@ice)
+
+	* indent.el: handle named-function
+
+Thu Sep 17 10:46:30 1992  Kevin Layer  (layer@ice)
+
+	* indent.el: make auto-file-mode in #||# comments work like
+	indented text mode.
+
+	* site-init.el: version 2.0.2
+
+	* keys.el: use only the first 128 entries in keymap (for Epoch
+	4.2)
+
+	* changes.el: pass fi:emacs-to-lisp-transaction-directory to
+	scm::list-changed-definitions
+
+	* lze.el: pass fi:emacs-to-lisp-transaction-directory to
+	evaluation request
+
+Wed Aug 19 07:14:19 1992  Kevin Layer  (layer@ice)
+
+	* changes.el: use find-backup-file-name instead of
+	make-backup-file-name.
+
+>>>	* shell.el: fi:shell-mode-bang that expands !$
+
+	* ring.el: added fi:pop-input-last-word (for new shell-mode !
+	command)
+
+Tue Aug  4 15:49:10 1992  Kevin Layer  (layer@ice)
+
+	* Doc.el: member-equal -> fi:member-equal
+
+	* utils.el: added fi:member-equal
+
+	* keys.el: use (current-global-map) instead of variable global-map
+
+	* filec.el: replace-match for file completion only if search successful
+
+Thu Jul 23 15:06:32 1992  Kevin Layer  (layer@ice)
+
+	* lze.el: don't echo results in minibuffer if
+	fi:echo-evals-from-buffer-in-listener-p is non-nil
+
+Wed Jul 22 11:34:56 1992  Kevin Layer  (layer@ice)
+
+>>>	* filec.el: implement filename abbreviations, where something like
+	/foo/bar/baz could expand to /foobar/bartab/bazmaster.
+

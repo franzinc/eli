@@ -1,0 +1,219 @@
+
+	       The Franz Inc. GNU Emacs/Lisp Interface
+
+* Introduction
+
+This interface works on any GNU Emacs version 18, and works with a
+variety of Lisp dialects.  There are a few features, such as the
+dynamic completion of Lisp symbols, which work only if a network
+communication channel between Lisp and Emacs has been established--the
+code for this is distributed with the interface and is written in
+Common Lisp, though it currently only works in Allegro Common Lisp
+from Franz Inc.
+
+The goal of the interface is to offer an integrated environment for
+programming in Lisp.  While Lisp and Emacs are run as separate UNIX
+processes, the Emacs-Lisp interface tries hard to hide this
+separation.  To this end, the main parts of the interface are:
+
+	* Lisp editing modes for various dialects of Lisp (Common Lisp
+	  and Franz Lisp, currently),
+	* Local modes for the execution of Lisp images, and
+	* Bindings to take advantage of Lisps which have the Emacs
+	  equivalent of OPEN-NETWORK-STREAM for "hidden" communication
+	  between with Emacs and Lisp.
+
+Additionally, there is a generalized subprocess package, which offers
+the following features:
+
+	* input ring (history of previously typed input), and commands
+	  to search and yank text from it,
+	* filename completion,
+	* bindings which implement the all special functions of the
+	  UNIX tty drivers--^C (interrupt subjob), ^\ (quit subjob),
+	  ^Z (suspend subjob), ^O (flush output from subjob), ^D (send
+	  EOF to subjob), and more, and
+	* tracking of directory changes in subprocesses.
+
+Both the subprocess modes for interacting with shell and Lisp use the
+above package, which makes extensions for `rlogin', `telnet', and
+`su' modes trivial in their definition.
+
+There is an extensive on-line document which describes the interface
+in detail.
+
+* Interacting with a Lisp process
+
+The interactive functions (in the sense they are available via
+``M-x'') for starting Lisp images are many and simple.  For example,
+
+    M-x fi:common-lisp RET
+
+will use the values of the Emacs variables
+
+    fi:common-lisp-image-name
+    fi:common-lisp-image-arguments
+    fi:common-lisp-prompt-pattern
+
+to create and start a Common Lisp image, while
+
+    M-x fi:explicit-common-lisp RET
+
+will read all the arguments from the minibuffer.  Once done, however,
+the following bindings are available for interacting with the Lisp
+subprocess:
+
+    Local Bindings:
+    key		    binding
+    ---		    -------
+    DEL             backward-delete-char-untabify
+    TAB             fi:lisp-indent-line
+    RET             fi:inferior-lisp-newline
+    C-c C-a         fi:subprocess-beginning-of-line
+    ESC C-q         fi:indent-sexp
+
+    C-c C-\         fi:subprocess-quit
+	Equivalent to ^\ in the tty driver (quit).
+    C-c C-d         fi:subprocess-send-eof
+	Equivalent to ^D in the tty driver (eof).
+    C-c C-c         fi:subprocess-interrupt
+	Equivalent to ^C in the tty driver (intr).
+    C-c C-w         fi:subprocess-backward-kill-word
+	Equivalent to ^W in the tty driver (werase).
+    C-c C-o         fi:subprocess-send-flush
+	Equivalent to ^O in the tty driver (flush).
+    C-c C-u         fi:subprocess-kill-input
+	Equivalent to ^U in the tty driver (kill).
+
+    C-c C-v         fi:subprocess-show-output
+	Puts the output of the last command at the top of the window.
+    C-c C-k         fi:subprocess-kill-output
+	Move the output of the last command to the kill-ring.
+    C-c .           fi:lisp-sync-current-working-directory
+	Sync Emacs and the shell/Lisp regaring the current directory.
+
+    C-c C-l         fi:list-input-ring
+    C-c C-p         fi:pop-input
+    C-c C-n         fi:push-input
+    C-c C-s         fi:re-search-forward-input
+    C-c C-r         fi:re-search-backward-input
+	These manipulate the input (history) ring.
+
+    ESC W           fi:lisp-walk
+    ESC M           fi:lisp-macroexpand
+    ESC F           fi:lisp-function-documentation
+    ESC D           fi:lisp-describe
+    ESC C           fi:lisp-who-calls
+    ESC A           fi:lisp-arglist
+    ESC TAB         fi:lisp-complete-symbol
+    ESC ,           fi:lisp-tags-loop-continue
+    ESC .           fi:lisp-find-tag
+	The above set of commands dynamically query the Lisp
+	environment for the specified information.  For example,
+	fi:lisp-arglist gets the current arglist from Lisp--this does
+	NOT find the source a get the arglist from it, since that
+	might be out of date, it at the time fi:lisp-arglist is
+	evaluated it asks Lisp for an arglist.
+
+Aside from the above bindings, there are a great number of Emacs
+variables which control various aspects of the interaction with Lisp:
+
+    fi:common-lisp-image-arguments
+    fi:common-lisp-image-name
+    fi:common-lisp-package-regexp
+    fi:common-lisp-prompt-pattern
+    fi:default-explicit-common-lisp-image-arguments
+    fi:default-explicit-common-lisp-image-name
+    fi:default-input-ring-max
+    fi:default-remote-common-lisp-directory
+    fi:default-remote-common-lisp-host
+    fi:display-buffer-function
+    fi:echo-evals-from-buffer-in-listener-p
+    fi:emacs-to-lisp-transaction-directory
+    fi:filename-frobber-hook
+    fi:lisp-evalserver-number-reads
+    fi:lisp-evalserver-timeout
+    fi:package
+    fi:pop-to-sublisp-buffer-after-lisp-eval
+    fi:remote-lisp-track-image-name-directory
+    fi:shell-cd-regexp
+    fi:shell-popd-regexp
+    fi:shell-pushd-regexp
+    fi:source-info-not-found-hook
+    fi:start-lisp-interface-function
+    fi:subprocess-continuously-show-output-in-visible-buffer
+    fi:subprocess-enable-superkeys
+    fi:subprocess-map-nl-to-cr
+    fi:subprocess-write-quantum
+    fi:unix-domain
+    fi:unix-domain-socket
+
+* Modes for editing Lisp programs
+
+There is an enhanced mode for editing programs written in Lisp, which
+provides indentations for all Common Lisp forms and means to evaluate
+and operate on quatities in a Lisp source buffer.  The following
+bindings are available, for example, in "Common Lisp" mode:
+
+    Local Bindings:
+    key		    binding
+    ---		    -------
+    RET             fi:lisp-mode-newline
+    TAB             fi:lisp-indent-line
+    DEL             backward-delete-char-untabify
+    ESC C-q         fi:indent-sexp
+    C-c -           fi:log-functional-change
+	Annotate the current definition with text, by putting the
+	current date and the user performing the modification, just
+	inside the top-level definition form.
+
+    C-c C-r         fi:lisp-eval-region
+    C-c C-s         fi:lisp-eval-last-sexp
+    C-c C-b         fi:lisp-eval-current-buffer
+    ESC C-x         fi:lisp-eval-defun
+	The above evaluate parts (region, last form, current defun or
+	the entire buffer) of a source buffer in the Lisp environment.
+
+    ESC W           fi:lisp-walk
+    ESC M           fi:lisp-macroexpand
+    ESC F           fi:lisp-function-documentation
+    ESC D           fi:lisp-describe
+    ESC C           fi:lisp-who-calls
+    ESC A           fi:lisp-arglist
+    ESC TAB         fi:lisp-complete-symbol
+    ESC ,           fi:lisp-tags-loop-continue
+    ESC .           fi:lisp-find-tag
+	These do exactly what they do in a subprocess buffer (see the
+	previous section).
+
+As with the subprocess modes for interacting with Lisp, there are a
+host of variables which control the writing of Lisp code:
+ 
+    fi:common-lisp-file-types
+    fi:emacs-lisp-mode-syntax-table
+    fi:lisp-body-indent
+    fi:lisp-case-sensitive
+    fi:lisp-comment-indent-specification
+    fi:lisp-do-indentation
+    fi:lisp-electric-semicolon
+    fi:lisp-indent-hook
+    fi:lisp-indent-hook-property
+    fi:lisp-indent-offset
+    fi:lisp-keyword-argument-indentation
+    fi:lisp-keyword-indentation
+    fi:lisp-keyword-indentation-hook
+    fi:lisp-maximum-indent-struct-depth
+    fi:lisp-mode-syntax-table
+    fi:lisp-package
+    fi:lisp-tag-body-indentation
+    fi:lisp-tag-indentation
+    fi:lisp-tag-indentation-hook
+    fi:subprocess-mode
+
+* Future work
+
+Suggestions for improvement are greatly appreciated.  We expect much
+future work to take place on this interface, and the direction it
+takes comes from the user community.
+
+* How to get this software
