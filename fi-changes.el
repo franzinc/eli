@@ -24,60 +24,87 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-changes.el,v 1.2 1991/03/13 21:42:09 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-changes.el,v 1.3 1991/03/15 12:43:42 layer Exp $
 
 ;;; Support for changed definitions
 
-
-;; prefix arg of 1 (which is the default) is changes since first read.
-;; 2 changes since saved
-;; 3 changes since last evaluated.
-;; Is this compatible with slymbolics
-
 (defun fi:list-buffer-changed-definitions (since)
-  "List the changed definitions SINCE read, saved, last evalled"
+  "List the definitions in the current buffer which have been added,
+deleted or changed since it was first read by Common Lisp.  When prefix arg
+SINCE is 2, list changes since the current buffer was last saved, or when
+SINCE is 3, list the changes since the changed definitions in the current
+buffer were last evaluated."
   (interactive "p")
   (do-buffer-changed-definitions ':list since))
 
 (defun fi:list-changed-definitions (since)
-  "List the changed definitions SINCE read, saved, last evalled"
+  "List the definitions in all buffers which have been added,
+deleted or changed since they were first read by Common Lisp.  When prefix
+arg SINCE is 2, list changes since they were last saved, or when
+SINCE is 3, list the changes since the changed definitions in all buffers
+were last evaluated."
   (interactive "p")
   (do-buffer-changed-definitions ':list since t))
 
 (defun fi:eval-buffer-changed-definitions (since)
-  "eval the changed definitions SINCE read, saved, last evalled"
+  "Eval the definitions in the current buffer which have been added or
+changed since it was first read by Common Lisp.  When prefix arg
+SINCE is 2, eval changes since the current buffer was last saved, or when
+SINCE is 3, eval the changes since the changed definitions in the current
+buffer were last evaluated."
   (interactive "p")
   (do-buffer-changed-definitions ':eval since))
 
-
 (defun fi:eval-changed-definitions (since)
-  "eval the changed definitions SINCE read, saved, last evalled"
+  "Eval the definitions in all buffers which have been added or
+changed since they were first read by Common Lisp.  When prefix
+arg SINCE is 2, eval changes since they were last saved, or when
+SINCE is 3, eval the changes since the changed definitions in all buffers
+were last evaluated."
   (interactive "p")
   (do-buffer-changed-definitions ':eval since t))
 
 (defun fi:compile-buffer-changed-definitions (since)
-  "eval the changed definitions SINCE read, saved, last evalled"
+  "Compile the definitions in the current buffer which have been added or
+changed since it was first read by Common Lisp.  When prefix arg
+SINCE is 2, compile changes since the current buffer was last saved, or when
+SINCE is 3, compile the changes since the changed definitions in the current
+buffer were last evaluated."
   (interactive "p")
   (do-buffer-changed-definitions ':compile since))
 
 (defun fi:compile-changed-definitions (since)
-  "eval the changed definitions SINCE read, saved, last evalled"
+  "Compile the definitions in all buffers which have been added or
+changed since they were first read by Common Lisp.  When prefix
+arg SINCE is 2, compile changes since they were last saved, or when
+SINCE is 3, compile the changes since the changed definitions in all buffers
+were last evaluated."
   (interactive "p")
   (do-buffer-changed-definitions ':compile since t))
 
 (defun fi:copy-buffer-changed-definitions (since)
-  "copy into the killring the changed definitions SINCE read, saved, last evalled"
+  "Copy into the kill ring the definitions in the current buffer which have
+been added or changed since it was first read by Common Lisp.  When prefix arg
+SINCE is 2, copy changes since the current buffer was last saved, or when
+SINCE is 3, copy the changes since the changed definitions in the current
+buffer were last evaluated."
   (interactive "p")
   (do-buffer-changed-definitions ':copy since))
 
 (defun fi:copy-changed-definitions (since)
-  "copy into the killring the changed definitions SINCE read, saved, last evalled"
+  "Copy into the kill ring the definitions in all buffers which have been
+added or changed since they were first read by Common Lisp.  When prefix
+arg SINCE is 2, copy changes since they were last saved, or when
+SINCE is 3, copy the changes since the changed definitions in all buffers
+were last evaluated."
   (interactive "p")
   (do-buffer-changed-definitions ':copy since t))
 
 (defun fi:compare-source-files (new-file old-file)
-  (interactive "fnew file:
-fold file")
+  "Compare two files, NEW-FILE and OLD-FILE, listing the definitions in the
+in NEW-FILE which have been added, deleted or changed with respect to
+OLD-FILE."
+  (interactive "fNew file: \nfOld file: ")
   (find-file new-file)
   (let ((buffer (current-buffer))
 	(package fi:package))
