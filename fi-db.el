@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.6 1991/02/22 00:49:53 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.7 1991/02/27 16:21:10 layer Exp $
 ;;
 
 (defconst lep:current-frame-regexp "^ ->")
@@ -33,9 +33,9 @@
 (defconst lep:debugger-help
     "Debugger commands:
 
-  C-c    :continue
-  C-p    :pop
-  C-r    :reset
+  C-cC-c :continue
+  C-cC-p :pop
+  C-cC-r :reset
   .      make frame under the point the current frame
   R      restart the current frame (give prefix to specify different form)
   a      toggle all frames visible (by default a subset are visible)
@@ -109,10 +109,13 @@ Type SPACE to hide this help summary.
   (setq major-mode 'let:scan-stack-mode)
   (setq mode-name "Scan stack mode")
   (if (null lep:scan-stack-mode-map)
-      (let ((map (make-keymap)))
-	(define-key map "\C-c"	'lep:ss-continue)
-	(define-key map "\C-p"	'lep:ss-pop)
-	(define-key map "\C-r"	'lep:ss-reset)
+      (let ((map (make-keymap))
+	    (ccmap (make-sparse-keymap)))
+	(define-key ccmap "\C-c"	'lep:ss-continue)
+	(define-key ccmap "\C-p"	'lep:ss-pop)
+	(define-key ccmap "\C-r"	'lep:ss-reset)
+	(define-key map "\C-c"	ccmap)
+	
 	(define-key map " "	'lep:ss-hide-help-text)
 	(define-key map "."	'lep:ss-set-current)
 	(define-key map "R"	'lep:ss-restart)
