@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.20 1992/01/12 11:48:39 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.21 1992/01/16 11:09:39 layer Exp $
 ;;
 ;; Code the implements evaluation in via the backdoor
 
@@ -25,7 +25,6 @@
 		   fi::mode-line-note-for-eval)))
     (message "%s..." message1)
     (let ((item (assq 'fi::show-compilation-status minor-mode-alist)))
-      (setq layer item)
       (or (and item (not (string= "" (car (cdr item)))))
 	  (or (and item (rplacd item (list message)))
 	      (setq minor-mode-alist
