@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.2 1988/07/15 18:32:34 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.3 1989/02/14 17:24:43 layer Exp $
 
 ;;; Misc utilities
 
@@ -89,3 +89,13 @@ nil if non-exists.  Yes, a value of nil and no local value are the same."
 	  ((= (following-char) ?\))
 	   (forward-char 1) (scan-sexps (point) (- arg)))
 	  (t (error "not on the beginning or end of a list")))))
+
+(defun fi::find-path (string)
+  (let ((p load-path)
+	(done nil) res)
+    (while (and (not done) p)
+      (if (file-exists-p (setq res (concat (car p) "/" string)))
+	  (setq done t)
+	(setq res nil))
+      (setq p (cdr p)))
+    res))
