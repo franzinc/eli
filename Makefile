@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.55 1991/03/16 00:14:05 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.56 1991/03/16 00:24:50 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -13,7 +13,7 @@ cl_library =
 
 elcs = modes.elc indent.elc subproc.elc sublisp.elc filec.elc ring.elc\
 	    su.elc telnet.elc rlogin.elc shell.elc keys.elc tcplisp.elc\
-	    nonlep/ltags.elc nonlep/query.elc utils.elc clman.elc doc.elc\
+	    nonlep/ltags.elc nonlep/query.elc utils.elc clman.elc Doc.elc\
 	    lep/basic-lep.elc lep/lep.elc lep/lze.elc lep/db.elc\
 	    lep/dmode.elc lep/stream.elc lep/composer.elc lep/changes.elc
 
@@ -24,7 +24,7 @@ compile_time_env = -l cl -l bytecomp -l `pwd`/lep/basic-lep
 .el.elc: 
 	$(emacs) -nw -batch -q $(compile_time_env) -f batch-byte-compile $*.el
 
-default:	elcs ug.out spec.out refcard.out
+default:	elcs UserGuide.doc RefMan.doc RefCard.doc
 
 all:	default fasls
 
@@ -40,26 +40,26 @@ elcs: ${elcs}
 
 ###############################################################################
 
-spec.n:	ug.n
-	rm -f spec.n
-	egrep '^%%' ug.n > spec.n
+RefMan.n:	UserGuide.n
+	rm -f RefMan.n
+	egrep '^%%' UserGuide.n > RefMan.n
 
-refcard.n:	ug.n
-	rm -f refcard.n
-	egrep '^%%' ug.n | sed 's/%%/@@/' > refcard.n
+RefCard.n:	UserGuide.n
+	rm -f RefCard.n
+	egrep '^%%' UserGuide.n | sed 's/%%/@@/' > RefCard.n
 
-spec.out:	spec.n ${elcs}
-	$(emacs) -batch -q -l doc.elc -- spec.n spec.out
+RefMan.doc:	RefMan.n ${elcs}
+	$(emacs) -batch -q -l Doc.elc -- RefMan.n RefMan.doc
 
-refcard.out:	refcard.n ${elcs}
-	$(emacs) -batch -q -l doc.elc -- refcard.n refcard.out
+RefCard.doc:	RefCard.n ${elcs}
+	$(emacs) -batch -q -l Doc.elc -- RefCard.n RefCard.doc
 
-ug.out:	ug.n ${elcs}
-	$(emacs) -batch -q -l doc.elc -- ug.n ug.out
+UserGuide.doc:	UserGuide.n ${elcs}
+	$(emacs) -batch -q -l Doc.elc -- UserGuide.n UserGuide.doc
 
 
 install:
-	cp -rp spec.out *.cl dot.* *.sh *.el *.elc *.data $(DEST)
+	cp -rp *.doc *.cl *.sh *.el *.elc *.data $(DEST)
 	mkdir $(DEST)/lep
 	mkdir $(DEST)/nonlep
 	cp -p lep/*.el* $(DEST)/lep
