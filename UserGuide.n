@@ -2,7 +2,7 @@
 			      User Guide
 			   Release 2.0beta
 
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.14 1991/06/20 10:29:21 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.15 1991/06/20 10:48:45 layer Exp $
 
 			     Introduction
 
@@ -788,7 +788,7 @@ Functions and Variables for editing Common Lisp programs:
 %% fi:compile-file
 %% fi:load-file
 
-%% fi:check-for-unbalanced-parens-on-write-file
+%% fi:check-unbalanced-parentheses-when-saving
 %% fi:common-lisp-file-types
 %% fi:echo-evals-from-buffer-in-listener-p
 %% fi:fill-paragraph
