@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.85 1991/02/15 23:17:41 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.86 1991/02/21 22:00:24 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -118,11 +118,6 @@ no automatic directory changes will be made.")
   "*The regular expression matching the Common Lisp expression(s) to change
 packages.  If nil, no automatic package tracking will be done.")
 
-(defvar fi:subprocess-map-nl-to-cr nil
-  "*If t, then map newline to carriage-return.")
-
-(make-variable-buffer-local 'fi:subprocess-map-nl-to-cr)
-
 (defvar fi:subprocess-continuously-show-output-in-visible-buffer t
   "*If t, output from a subprocess to a visible buffer is continuously
 shown.  If a subprocess buffer is visible and the window point is beyond
@@ -133,9 +128,6 @@ symbol.")
 
 (make-variable-buffer-local
  'fi:subprocess-continuously-show-output-in-visible-buffer)
-
-(defvar fi:subprocess-write-quantum 120
-  "*Maximum size in bytes of a single write request to a subprocess.")
 
 (defvar fi:subprocess-enable-superkeys nil
   "*If t, certain keys become `superkeys' in subprocess buffers--this
@@ -546,8 +538,7 @@ are read from the minibuffer."
 	 (insert-file-contents start-up-feed-name)
 	 (setq start-up-feed-name (buffer-substring (point) (point-max)))
 	 (delete-region (point) (point-max))
-	 (fi::send-string-split process start-up-feed-name
-				fi:subprocess-map-nl-to-cr)))
+	 (send-string process start-up-feed-name)))
       (goto-char (point-max))
       (set-marker (process-mark process) (point))
       (condition-case ()
@@ -660,44 +651,6 @@ are read from the minibuffer."
   (setq fi::last-input-start (make-marker))
   (setq fi::last-input-end (make-marker)))
 
-(defun fi::send-region-split (process start-position end-position
-				      &optional nl-cr)
-  "Send region to process in small pieces."
-  (interactive "sSend region in pieces (to process): \nr")
-  (let* ((start (if (markerp start-position)
-		    (marker-position start-position)
-		  start-position))
-	 (end (if (markerp end-position)
-		  (marker-position end-position)
-		end-position))
-	 (string (buffer-substring start end)))
-    (fi::send-string-split process string nl-cr)))
-
-(defun fi::send-string-split (process string &optional nl-cr)
-  "Send string to process in small pieces using send-string."
-  (interactive "sSend (to process): \nsSend to process in pieces (string): ")
-  (let ((size (length string))
-	(filtered-string
-	 (if nl-cr
-	     (fi::substitute-chars-in-string '((?\n . ?\r)) string)
-	   string))
-	(start 0))
-    (while (and (> size 0)
-		(condition-case nil
-		    (progn
-		      (send-string
-		       process
-		       (substring filtered-string
-				  start
-				  (+ start
-				     (min size
-					  fi:subprocess-write-quantum))))
-		      t)		    
-		  (error
-		   (message "Error writing to subprocess.")
-		   nil)))
-      (setq size (- size fi:subprocess-write-quantum))
-      (setq start (+ start fi:subprocess-write-quantum)))))
 
 ;;; Sentinel and filter for subprocesses.  The sentinel is currently
 ;;;   not used.

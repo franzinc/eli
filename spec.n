@@ -3,7 +3,7 @@
 	      Franz Inc. GNU Emacs/Common Lisp Interface
 			   Release 2.0alpha
 
-;; $Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.53 1991/02/12 14:55:33 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.54 1991/02/21 21:59:59 layer Exp $
 
 ****** Common Lisp Mode *******************************************************
 
@@ -234,10 +234,8 @@
 %% fi:subprocess-continuously-show-output-in-visible-buffer
 %% fi:subprocess-enable-superkeys
 %% fi:subprocess-env-vars
-%% fi:subprocess-map-nl-to-cr
 %% fi:subprocess-mode
 %% fi:subprocess-super-key-map
-%% fi:subprocess-write-quantum
 %% fi:shell-cd-regexp
 %% fi:shell-popd-regexp
 %% fi:shell-pushd-regexp
