@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.24 1991/03/15 12:54:28 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.25 1991/03/15 20:53:26 layer Exp $
 
 (require 'cl)
 
@@ -106,33 +106,45 @@
 		       (insert (format " in %s" xmode-name))))
 	       (insert (format "   Invoke with \"M-x %s\"" var)))
 	     (insert ".\n")
-	     (insert (format "   %s")
-		     (or (documentation var)
-			 (error "no documentation available for %s" var)))))
+	     (insert-doc-string (or (documentation var)
+				    (error "no documentation available for %s" var)))))
 	  (t ;; assume a bound variable
 	   (let* ((val (symbol-value var))
 		  (type (cond ((syntax-table-p val) " [syntax-table]")
 			      ((keymapp val) " [keymap]")
 			      (t " [variable]")))
-		  (doc (or (documentation-property
-			    var 'variable-documentation)
+		  (doc (or (documentation-property var 'variable-documentation)
 			   (error "no documentation available for %s" var))))
 	     (insert-char ?  (- 78 (length type)
 				(length (symbol-name var))))
 	     (cond ((syntax-table-p val)
-		    (insert (format "%s\n   %s" type doc)))
+		    (insert (format "%s\n" type))
+		    (insert-doc-string doc))
 		   ((keymapp val)
+		    (insert (format "%s\n" type))
+		    (insert-doc-string doc)
 		    (insert
-		     (format "%s\n   %s\n%s" type doc
-			     (substitute-command-keys
-			      (format "\\{%s}" var)))))
+		     (format "\n%s" (substitute-command-keys (format "\\{%s}" var)))))
 		   (t
-		    (insert (format "%s\n   Value: %s\n   %s" type
-				    (frob-newlines (prin1-to-string val))
-				    doc)))))))
+		    (insert (format "%s\n   Initial value: %s\n" type
+				    (frob-newlines (prin1-to-string val))))
+		    (insert-doc-string doc))))))
 	 (insert "\n\n")))))
 
   (write-region (point-min) (point-max) output-file))
+
+(defun insert-doc-string (string)
+  ;;(insert (format "   %s") string)
+  (insert "\n")
+  (let* ((start (point))
+	 (end (progn
+		(insert string)
+		(point)))
+	 )
+    (goto-char start)
+    (while (< (point) end)
+      (insert "   ")
+      (forward-line 1))))
 
 (defun frob-newlines (string)
   (let ((i 0)
