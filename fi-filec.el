@@ -1,6 +1,9 @@
-;; $Header: /repo/cvs.copy/eli/fi-filec.el,v 1.6 1988/07/11 23:34:13 layer Exp $
+
+;; $Header: /repo/cvs.copy/eli/fi-filec.el,v 1.7 1988/07/15 18:33:59 layer Exp $
 
 ;; File name completions
+
+;; I don't remember the origin of this code...
 
 (defvar fi:shell-token-pattern "[ \t\n()<>&|;=]"
   "*The regular expression used by file name completion to mark path name
