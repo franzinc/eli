@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-emacs21.el,v 1.1.2.4 2003/08/11 20:50:37 layer Exp $
+;; $Id: fi-emacs21.el,v 1.1.2.5 2003/08/11 20:53:54 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; emacs specific stuff
@@ -59,7 +59,7 @@
 
 (defun fi::initialize-menu-bar-map ()
   (when (not (memq major-mode fi::menu-bar-initialized))
-    (let* ((composer (and fi:composer-menu (not (on-ms-windows))))
+    (let* ((composer (not (on-ms-windows)))
 	   (map (cond
 		 ((eq major-mode 'fi:common-lisp-mode) fi:common-lisp-mode-map)
 		 ((eq major-mode 'fi:inferior-common-lisp-mode)
