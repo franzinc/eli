@@ -24,11 +24,13 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.4 1991/01/31 14:48:01 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.5 1991/02/12 17:17:35 layer Exp $
 ;;
 ;;;;;; This LEP file redefines many of the fi:functions in the fi/keys.el file
 
 ;;;; Implementation of arglist
+
+
 
 (defun fi:lisp-arglist (string)
   (interactive (fi::get-default-symbol "Arglist for"))
@@ -41,8 +43,11 @@
 		((string) (error)
 		 (message "Cannot get the arglist of %s: %s" string error))))
 
+(defvar *always-in-a-window* t)
 (defun show-some-short-text (text &rest args)
   (when args (setq text (apply (function format) text args)))
+  (if *always-in-a-window*
+      (show-some-text text fi:package)
   (let* ((window (minibuffer-window))
 	 (height (1- (window-height window)))
 	 (width (window-width window))
@@ -50,7 +55,7 @@
     (if (and (< (car lines/len) 2)
 	     (<= (second lines/len) width))
 	(message text)
-      (show-some-text text fi:package))))
+      (show-some-text text fi:package)))))
 
 (defun frob-string (text)
   (let ((start 0)
@@ -90,14 +95,14 @@
   "Lep version"
   (interactive (if current-prefix-arg
 		   '(nil t)
-		 (list (fi::get-default-symbol "Lisp locate source") nil)))
+		 (list (car (fi::get-default-symbol "Lisp locate source")) nil)))
   (fi::lisp-find-tag-common something next nil))
 
 
 (defun fi:lisp-find-tag-other-window (something &optional next)
   (interactive (if current-prefix-arg
 		   '(nil t)
-		 (list (fi::get-default-symbol "Lisp locate source") nil)))
+		 (list (car (fi::get-default-symbol "Lisp locate source")) nil)))
   (fi::lisp-find-tag-common something next nil))
 
 (defun delete-metadot-session ()
@@ -152,9 +157,11 @@
 	   "%s was defined somewhere at the top-level, %d more definitions"
 	   thing n-more)
 	(let ((mess ""))
+	  (if fi:filename-frobber-hook
+	      (setq pathname (funcall fi:filename-frobber-hook pathname)))
 	  (if (or other-window-p
-		  ;; Perhaps if the current buffer is a listener we want to
-		  ;; find it elsewhere
+		  fi:subprocess-mode
+		  ;; Perhaps there is already a window for this file
 		  )
 	      (find-file-other-window pathname)
 	    (find-file pathname))
@@ -235,8 +242,8 @@ return the pathname of temp file."
 	      (buffer-modified-p buffer)
 	      (and write-if-modified
 		   (or (not (integerp write-if-modified))
-		       (not (fboundp 'buffer-tick))
-		       (not (equal (buffer-tick) write-if-modified)))
+		       (not (fboundp 'buffer-modified-tick))
+		       (not (equal (buffer-modified-tick) write-if-modified)))
 		   (buffer-modified-p buffer)
 		   (save-excursion
 		     (set-buffer buffer)
@@ -320,7 +327,10 @@ package of PACKAGE"
 	(switched nil))
     (unless (eq (current-buffer) buffer)
       (setq switched t)
-      (switch-to-buffer-other-window buffer))
+      (if (one-window-p)
+	  (split-window-vertically))
+      (other-window 1)
+      (switch-to-buffer buffer t))
     (erase-buffer)
     (fi:common-lisp-mode)
     (setq fi:package package)
@@ -329,8 +339,12 @@ package of PACKAGE"
     (unless (one-window-p)
       (let ((height (1- (window-height)))
 	    (lines (count-lines (point-min) (point-max))))
-	(if (> 4 lines) (setq lines 4))
-	(if (> height lines) (shrink-window (- height lines)))))
+	;; What is a good maximum????
+	(setq lines (min 100 (max lines 3)))
+	(cond ((> height lines) 
+	       (shrink-window (- height lines)))
+	      ((> lines height) 
+	       (enlarge-window (- lines height))))))
     (when switched (other-window 1))))
 
 ;;; Function documentation
@@ -528,34 +542,36 @@ from the sexp around the point."
 (defun lep::show-clman (string)
   (if string 
       (fi:clman string)
-    (call-interactively 'fi::clman)))
+    (call-interactively 'fi:clman)))
   
 (defun lep::buffer-region (buffer start end)
   (set-buffer buffer)
   (list (buffer-substring (or start (point-min)) (or end (point-max)))))
 
 (defun lep::kill-definition (prefix)
-  "Kill the definition that starts at the point"
+  "Kill the definition that starts at the point. Without a prefix argument
+it inserts a form to undefine it at the end of the definition. With a
+prefix argument do it"
   (interactive "P")
   (make-request (lep::undefine-reply :buffer (buffer-name) 
 				     :start-point (point)
 				     :end-point (save-excursion
 						  (forward-sexp)
 						  (point))
-				     :doit (not  prefix))
+				     :doit prefix)
 		((prefix) (ok form)
-		 (if prefix
+		 (if (not prefix)
 		     (progn (end-of-defun) 
 			    (save-excursion (insert form)
 					    (insert "\n")))))
 		(() (error)
-		 (message "Cannot undefine current definition %s" error))))
+		 (message "Cannot undefine current definition %s"  error))))
 
 
 (defun fi:toggle-trace-definition (string)
   "Trace or untrace the specified function"
   (interactive (fi::get-default-symbol "(un)trace"))
-  (make-request (lep::toggle-trace :fspec string)
+  (make-request (lep::toggle-trace :fspec string :break current-prefix-arg)
 		;; Normal continuation
 		(() (what tracep)
 		 (message (if tracep
@@ -565,3 +581,4 @@ from the sexp around the point."
 		;; Error continuation
 		((string) (error)
 		 (message "Cannot (un)trace %s: %s" string error))))
+
