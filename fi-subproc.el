@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.55 1990/08/31 23:47:59 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.56 1990/09/01 20:15:29 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -166,7 +166,7 @@ buffer.")
 from the optional prefix argument BUFFER-NUMBER.  Common Lisp buffer names
 start with `*common-lisp' and end with `*', with an optional `-N' in
 between.  If BUFFER-NUMBER is not given it defaults to 1.  If BUFFER-NUMBER
-is >= 0, then the buffer is named `*common-lisp-<BUFFER-NUMBER>*'.  If
+is >= 0, then the buffer is named `*common-lisp*<BUFFER-NUMBER>'.  If
 BUFFER-NUMBER is < 0, then the first available buffer name is chosen.
 
 The image file and image arguments are taken from the variables
@@ -207,7 +207,7 @@ from the optional prefix argument BUFFER-NUMBER, where the Common Lisp
 image is run on another machine.  Common Lisp buffer names start with
 `*common-lisp' and end with `*', with an optional `-N' in between.  If
 BUFFER-NUMBER is not given it defaults to 1.  If BUFFER-NUMBER is >= 0,
-then the buffer is named `*common-lisp-<BUFFER-NUMBER>*'.  If BUFFER-NUMBER
+then the buffer is named `*common-lisp*<BUFFER-NUMBER>'.  If BUFFER-NUMBER
 is < 0, then the first available buffer name is chosen.
 
 The host on which the image is run is read from the minibuffer.
@@ -257,7 +257,7 @@ BUFFER-NAME, connect to a Common Lisp using either a UNIX domain socket
 file or internet port number.  Common Lisp buffer names start with
 `*common-lisp' and end with `*', with an optional `-N' in between.  If
 BUFFER-NUMBER is not given it defaults to 1.  If BUFFER-NUMBER is >= 0,then
-the buffer is named `*common-lisp-<BUFFER-NUMBER>*'.  If BUFFER-NUMBER is <
+the buffer is named `*common-lisp*<BUFFER-NUMBER>'.  If BUFFER-NUMBER is <
 0, then the first available buffer name is chosen.
 
 See `fi:unix-domain' and `fi:explicit-tcp-common-lisp'."
@@ -286,7 +286,7 @@ sockets."
 from the optional prefix argument BUFFER-NUMBER.  Franz Lisp buffer names
 start with `*franz-lisp' and end with `*', with an optional `-N' in
 between.  If BUFFER-NUMBER is not given it defaults to 1.  If BUFFER-NUMBER
-is >= 0, then the buffer is named `*franz-lisp-<BUFFER-NUMBER>*'.  If
+is >= 0, then the buffer is named `*franz-lisp*<BUFFER-NUMBER>'.  If
 BUFFER-NUMBER is < 0, then the first available buffer name is chosen.
 
 The image file and image arguments are taken from the variables
@@ -336,11 +336,18 @@ are read from the minibuffer."
 	 (status (if process (process-status process)))
 	 (runningp (memq status '(run stop)))
 	 start-up-feed-name)
-    (if (and (not runningp)
-	     (consp image-file))
-	(setq image-file (funcall image-file)))
-    (if (stringp image-file)
-	(setq image-file (substitute-in-file-name image-file)))
+
+    (if (not runningp)
+	(progn				; hack image-file
+	  (if (consp image-file)
+	      (if (not (stringp (setq image-file (funcall image-file))))
+		  (error "image-file function didn't return a string"))
+	    (if (not (stringp image-file))
+		(error "image-file not a string or cons: %s" image-file))
+	    (setq image-file (substitute-in-file-name image-file)))
+	  (if (= ?~ (aref image-file 0))
+	      (setq image-file (expand-file-name image-file)))))
+    
     (if fi:display-buffer-function
 	(funcall fi:display-buffer-function buffer)
       (switch-to-buffer buffer))
