@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.2 1988/05/11 14:55:52 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.3 1988/05/12 10:17:15 layer Exp $
 
 ;;;;
 ;;; Key defs
@@ -95,13 +95,14 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
   
   (cond
     ((memq mode '(sub-lisp tcp-lisp))
-     (define-key map "\r"	'fi:inferior-lisp-newline))
-    (t 
-     (define-key map "\r"	'fi:lisp-reindent-newline-indent)))
-  
+     (define-key map "\r"	'fi:inferior-lisp-newline)
+     (define-key map "\e\r"	'fi:inferior-lisp-send-sexp-input)
+     (define-key map "\C-x\r"	'fi:inferior-lisp-send-list-input))
+    (t (define-key map "\r"	'fi:lisp-reindent-newline-indent)))
+
   (cond
     ((memq major-mode '(fi:common-lisp-mode fi:inferior-common-lisp-mode
-			fi:tcp-lisp-mode))
+			fi:tcp-common-lisp-mode))
      (define-key map "\e."	'fi:lisp-find-tag)
      (define-key map "\e,"	'fi:lisp-tags-loop-continue)
      (define-key map "\eA"	'fi:lisp-arglist)
@@ -121,7 +122,7 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
      (define-key map "\C-c\C-r"	'fi:lisp-eval-region)))
   map)
 
-(defun fi::tcp-lisp-mode-commands (map supermap)
+(defun fi::tcp-common-lisp-mode-commands (map supermap)
   (fi::lisp-mode-commands (fi::subprocess-mode-commands map supermap 'tcp-lisp)
 			  supermap
 			  'tcp-lisp))
@@ -227,12 +228,40 @@ source sent to the subprocess is compiled."
 
 ;;;;;;;;;;;;;;;;;;;;; TCP lisp mode related functions
 
-(defun fi:lisp-arglist (&optional symbol)
+(defun fi::get-default-symbol (prompt &optional up-p)
+  (let* ((sdefault
+	  (save-excursion
+	    (if up-p
+		(progn
+		  (if (= (following-char) ?\() (forward-char 1))
+		  (if (= (preceding-char) ?\)) (forward-char -1))
+		  (up-list -1)
+		  (forward-char 1)))
+	    (while (looking-at "\\sw\\|\\s_")
+	      (forward-char 1))
+	    (if (re-search-backward "\\sw\\|\\s_" nil t)
+		(progn (forward-char 1)
+		       (buffer-substring
+			(point)
+			(progn (forward-sexp -1)
+			       (while (looking-at "\\s'")
+				 (forward-char 1))
+			       (point))))
+	      nil)))
+	 (spec (read-string
+		(if sdefault
+		    (format "%s: (default %s) " prompt sdefault)
+		  (format "%s: " prompt)))))
+    (list 
+     (fi::add-package-info
+      (if (equal spec "")
+	  sdefault
+	spec)))))
+
+(defun fi:lisp-arglist (symbol)
   "Print the arglist (using excl:arglist) for a symbol, which is read from
 the minibuffer.  The word around the point is used as the default."
-  (interactive)
-  (setq symbol (fi::add-package-info
-		(fi::get-cl-symbol nil t (interactive-p) "Function")))
+  (interactive (fi::get-default-symbol "Function" t))
   (process-send-string
    (fi::background-sublisp-process)
    (format
@@ -246,42 +275,61 @@ the minibuffer.  The word around the point is used as the default."
       (values))\n"
     symbol symbol symbol symbol symbol symbol symbol)))
 
-(defun fi:lisp-describe (&optional symbol)
+(defun fi:lisp-describe (symbol)
   "Describe a symbol, which is read from the minibuffer.  The word around
 the point is used as the default."
-  (interactive)
-  (setq symbol (fi::add-package-info
-		(fi::get-cl-symbol
-		 nil nil (interactive-p) "Describe symbol")))
+  (interactive (fi::get-default-symbol "Describe symbol"))
   (process-send-string
    (fi::background-sublisp-process)
    (format "(progn (lisp:describe '%s) (values))\n" symbol)))
 
-(defun fi:lisp-function-documentation (&optional symbol)
+(defun fi:lisp-function-documentation (symbol)
   "Print the function documentation for a symbol, which is read from the
 minibuffer.  The word around the point is used as the default." 
-  (interactive)
-  (setq symbol (fi::add-package-info
-		(fi::get-cl-symbol
-		 nil nil (interactive-p) "Function documentation for symbol")))
+  (interactive
+   (fi::get-default-symbol "Function documentation for symbol"))
   (process-send-string
    (fi::background-sublisp-process)
    (format "(princ (lisp:documentation '%s 'lisp:function))\n" symbol)))
 
-(defun fi:lisp-find-tag (&optional symbol)
+(defun fi:who-calls (&optional symbol)
+  "Asks the sublisp which functions reference a symbol."
+  (interactive (fi::get-default-symbol "Find references to symbol"))
+  ;; Since this takes a while, tell the user that it has started.
+  (message "searching...")		; Find some way to flush when done...
+  (process-send-string
+   (fi::background-sublisp-process)
+   (format "(progn (excl::who-references '%s) (values))\n" symbol)))
+
+(defun fi:lisp-macroexpand ()
+  "Print the macroexpansion of the form at the point."
+  (interactive)
+  (fi::lisp-macroexpand-common "lisp:macroexpand"))
+
+(defun fi:lisp-walk (arg)
+  "Print the full macroexpansion the form at the point.
+With a prefix argument, macroexpand the code as the compiler would."
+  (interactive "P")
+  (fi::lisp-macroexpand-common
+   (if arg "excl::compiler-walk" "excl::walk")))
+
+(defun fi:lisp-find-tag (symbol &optional next)
   "Find the Common Lisp source for a symbol, using the characters around
 the point as the default tag."
-  (interactive)
-  (setq symbol (fi::get-cl-symbol nil nil (interactive-p) "Source for symbol"))
-  (let ((s (fi::add-package-info symbol)))
-    (condition-case ()
-	(process-send-string
-	 (fi::background-sublisp-process)
-	 (format "(format t \"\2~s\" (cons '%s (source-file '%s t)))\n"
-		 s s))
-      (error ;; the backdoor-lisp-listener is not listening...
-       (setq fi::tag-state nil)
-       (fi::lisp-find-etag (symbol-name symbol))))))
+  (interactive (if current-prefix-arg
+		   '(nil t)
+		 (fi::get-default-symbol "Source for symbol")))
+  (if next
+      (fi:lisp-tags-loop-continue)
+    (let ((s (fi::add-package-info symbol)))
+      (condition-case ()
+	  (process-send-string
+	   (fi::background-sublisp-process)
+	   (format "(format t \"\2~s\" (cons '%s (source-file '%s t)))\n"
+		   s s))
+	(error;; the backdoor-lisp-listener is not listening...
+	 (setq fi::tag-state nil)
+	 (fi::lisp-find-etag (symbol-name symbol)))))))
 
 (defun fi:lisp-tags-loop-continue ()
   "Find the next occurrence of the tag last used by fi:lisp-find-tag."
@@ -328,29 +376,6 @@ backdoor lisp listener."
       #'break \"interrupt from emacs\")\n"
    (buffer-name (current-buffer))))
 
-(defun fi:lisp-macroexpand ()
-  "Print the macroexpansion of the form at the point."
-  (interactive)
-  (fi::lisp-macroexpand-common "lisp:macroexpand"))
-
-(defun fi:who-calls (&optional symbol)
-  "Asks the sublisp which functions reference a symbol."
-  (interactive)
-  (setq symbol
-    (fi::add-package-info
-     (fi::get-cl-symbol nil nil (interactive-p) "Find references to symbol")))
-  ;; Since this takes a while, tell the user that it has started.
-  (message "searching...")		; Find some way to flush when done...
-  (process-send-string
-   (fi::background-sublisp-process)
-   (format "(progn (excl::who-references '%s) (values))\n" symbol)))
-
-(defun fi:lisp-walk (arg)
-  "Print the full macroexpansion the form at the point.
-With a prefix argument, macroexpand the code as the compiler would."
-  (interactive "P")
-  (fi::lisp-macroexpand-common
-   (if arg "excl::compiler-walk" "excl::walk")))
 
 ;;;;;;;;;;;;;;;;;;;;; general subprocess related functions
 
@@ -451,7 +476,8 @@ possible.  This regexp should start with \"^\"."
   (interactive)
   (goto-char (point-max))
   (kill-region fi::last-input-end (point))
-  (insert "[output flushed]\n"))
+  (insert "[output flushed]\n")
+  (set-marker (process-mark (get-buffer-process (current-buffer))) (point)))
 
 (defun fi:subprocess-send-flush ()
   "Send `flush output' character (^O) to subprocess."
