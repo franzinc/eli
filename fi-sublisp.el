@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.19 1988/04/26 09:26:40 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.20 1988/04/26 18:25:57 layer Exp $
 
 ;; Interaction with a Lisp subprocess
 
@@ -59,14 +59,20 @@
 ;;; Variables
 ;;;
 
+(defvar fi:package nil
+  "A buffer-local variable whose value should either be nil or a string
+which names a Lisp package.  This is used when expressions are sent from
+Emacs buffers to Lisp so that the expressions are read in the proper
+Lisp package.")
+
 (defvar fi:unix-domain t
   "If non-nil, then `fi:unix-domain-socket' specifies the name of the
 socket file.  It is recommended that this interface be used, and not
 internet ports, because when internet ports are used only one process on a
 machine may use this interface (it is a global resource).  When using UNIX
 domain sockets, communication is done through a socket file in the user's
-home directory.  But, if you really want to use them, here are the steps to
-take:
+home directory.  But, if you really want to use internet ports, here are
+the steps to take:
 
 1. Set this variable to nil.
 2. Add the following line to /etc/services:
@@ -104,8 +110,13 @@ to be used when the information is not present in Lisp.")
 ;;;
 
 (defun fi:inferior-lisp-newline ()
-  "Bound to newline in an inferior lisp buffer so that indentation of lisp
-forms is done while they are entered."
+  "Bound to newline in an inferior lisp buffer.  At the end of the buffer
+it inserts a newline and performs automatic
+indentation.  Whole expressions are sent to Lisp (and not each piece after
+each newline is typed).  This allows previously types lines to be edited
+before Lisp sees the input.  Typed anywhere else in the buffer, this
+functions causes the current line, minus the prompt, to be sent to the Lisp
+process, or listener when using TCP/IP-style communication."
   (interactive)
   (if (eobp)
       (let ((start (marker-position
@@ -126,7 +137,8 @@ forms is done while they are entered."
 		;; not a complete sexp, so newline and indent
 		(progn
 		  (newline)
-		  (fi:lisp-indent-line))))
+		  (funcall indent-line-function)
+		  )))
 	  ;; a non-list s-exp, so just send it off...
 	  (fi:subprocess-send-input)))
     (fi:subprocess-send-input)))
@@ -153,7 +165,7 @@ prefix argument, the source sent to the subprocess is compiled."
 
 (defun fi:lisp-eval-defun (compile-file-p)
   "Send the current top-level form to the Lisp subprocess.  A `top-level'
-form is one that starts in column 0.  If a Lisp subprocess has not been
+form is one that starts in column 1.  If a Lisp subprocess has not been
 started, then one is started.  With a prefix argument, the source sent to
 the subprocess is compiled."
   (interactive "P")
@@ -181,8 +193,10 @@ source sent to the subprocess is compiled."
   (fi::eval-send (point-min) (point-max) compile-file-p))
 
 (defun fi:set-associated-sublisp (buffer-name)
-  "Set the Lisp process associated with a Lisp source file.  The buffer
-name is interactively read and must be the name of an existing buffer."
+  "On a per-buffer basis, this function can be used to set the Lisp process
+associated with a Lisp source file.  The buffer name is interactively read
+and must be the name of an existing buffer. This process is used when
+sending expressions to Lisp for evaluation."
   (interactive "bBuffer name containing a Lisp process: ")
   (let ((process (get-buffer-process (get-buffer buffer-name))))
     (if process
@@ -250,7 +264,7 @@ the point as the default tag."
        (fi::lisp-find-etag (symbol-name symbol))))))
 
 (defun fi:lisp-tags-loop-continue ()
-  "Find the next occurrance of the tag last used by fi:lisp-find-tag."
+  "Find the next occurrence of the tag last used by fi:lisp-find-tag."
   (interactive)
   (if (and fi::tag-state (cdr fi::tag-state))
       (let ((symbol (car fi::tag-state))
@@ -331,8 +345,8 @@ backdoor lisp listener."
   (fi::lisp-macroexpand-common "lisp:macroexpand"))
 
 (defun fi:lisp-walk (arg)
-  "Print the full macroexpansion, using excl::walk, the form at the point.
-With a prefix argument, use excl::compiler-walk instead."
+  "Print the full macroexpansion the form at the point.
+With a prefix argument, macroexpand the code as the compiler would."
   (interactive "P")
   (fi::lisp-macroexpand-common
    (if arg "excl::compiler-walk" "excl::walk")))
@@ -567,7 +581,7 @@ parsed, the enclosing list is processed."
 	(move-marker fi::last-input-start
 		     (process-mark (get-buffer-process (current-buffer))))
 	(insert "\n")
-	(fi:lisp-indent-line)
+	(funcall indent-line-function)
 	(move-marker fi::last-input-end (point)))
 
     ;; we are in the middle of the buffer somewhere and need to collect
@@ -606,7 +620,7 @@ parsed, the enclosing list is processed."
       (if (eobp)
 	  (progn
 	    (insert "\n")
-	    (fi:lisp-indent-line)
+	    (funcall indent-line-function)
 	    (move-marker fi::last-input-start start-resend)
 	    (move-marker fi::last-input-end (point-max)))
 	(progn
