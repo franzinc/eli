@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.25 1991/10/15 11:39:57 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.26 1991/11/11 14:43:21 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -217,12 +217,13 @@ versions of the emacs-lisp interface.
       (set-buffer buffer)
       (goto-char (point-max))
       (insert string))
-    (let (form)
+    (let (form error)
       (while 
 	  (condition-case ignore
 	      (save-excursion
 		(set-buffer buffer)
-		(and 
+		(and
+		 (null error)
 		 (not (eq (point-max) (point-min)))
 		 (progn
 		   (goto-char (point-min))
@@ -231,11 +232,13 @@ versions of the emacs-lisp interface.
 		     (goto-char (point-min))
 		     (condition-case ignore 
 			 (progn (setq form (read (current-buffer))) t)
-		       (error (setq form nil)))
+		       (error (setq error t)))
 		     (delete-region (point-min) p))
 		   t)))
 	    (error nil))
-	(if form (fi::handle-lep-input process form))))))
+	(if error
+	    (error "error reading return value: %s" string)
+	  (fi::handle-lep-input process form))))))
 
 (defun fi::handle-lep-input (process form)
   "A reply is (session-id . rest) or (nil . rest)"
@@ -533,13 +536,8 @@ lisp-eval-server has not been started, then this function starts it."
      ((string) (error)
       (message "error evaluating %s: %s" string error)))))
 
-(defvar fi:lisp-evalserver-timeout 5
-  "The time which fi:eval-in-lisp will wait before timing out and
-signalling an error.  Without a timeout Emacs would potentially be locked
-out if Lisp did not `return' a result.")
-
 (defvar fi:lisp-evalserver-number-reads 20
-  "The number of times the Lisp eval server tries to read from the
+  "*The number of times the Lisp eval server tries to read from the
 lisp-evalserver process before giving up.  Without this feature Emacs would
 hang if Lisp got into an infinite loop while printing.  If the size of the
 values returned to Emacs is large, then the value of this variable should
@@ -583,14 +581,11 @@ lisp-eval-server has not been started, then this function starts it."
 
 (defun fi::wait-for-reply-to-come-back (result-cons)
   (when (not (car result-cons))
-    (let ((count fi:lisp-evalserver-number-reads)
-	  ;; the user can type ^G if they get tired of waiting
-	  (fi:lisp-evalserver-timeout 1000))
+    (let ((count fi:lisp-evalserver-number-reads))
       (while (and (> (setq count (1- count)) 0)
 		  (null (car result-cons)))
 	(accept-process-output 
-	 (fi::connection-process (fi::ensure-lep-connection))
-	 fi:lisp-evalserver-timeout)))
+	 (fi::connection-process (fi::ensure-lep-connection)))))
     (when (not (car result-cons)) (error "Eval in lisp timed out"))
     (if (third result-cons)
 	(error (second result-cons))
