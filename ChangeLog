@@ -11,6 +11,17 @@ Tests for new features:	<`no new features', `no tests for new features', or
 	* <changes go here...>
 
 *******************************************************************************
+2.0.20.pre-beta.8
+
+Documentation changes:	none
+Tests for new features:	no new features
+
+Mon Jan 27 11:47:26 1997    <layer@HOBART>
+
+	* fi-subproc.el: set fi:emacs-to-lisp-transaction-directory
+	appropriately on Windows
+
+*******************************************************************************
 2.0.20.pre-beta.7
 
 Documentation changes:	none
