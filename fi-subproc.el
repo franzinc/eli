@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.109 1991/06/20 15:22:31 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.110 1991/06/20 17:57:19 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -302,6 +302,11 @@ the first \"free\" buffer name and start a subprocess in that buffer."
   (interactive
    (fi::get-lisp-interactive-arguments 'fi::common-lisp-first-time
 				       'fi:common-lisp-buffer-name
+				       (let ((name "*common-lisp*"))
+					 (if (numberp current-prefix-arg)
+					     (fi::buffer-number-to-buffer
+					      name current-prefix-arg)
+					   name))
 				       'fi:common-lisp-directory
 				       'fi:common-lisp-image-name
 				       'fi:common-lisp-image-arguments
@@ -314,7 +319,8 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	 (local (or (string= "localhost" host)
 		    (string= host (system-name))))
 	 (startup-message
-	  (format "Starting image %s in %s on %s...\n"
+	  (format "\n%s\nStarting image `%s'\n  in directory `%s' on machine `%s'.\n\n"
+		  "====================================================="
 		  image-name directory host))
 	 (proc (fi::make-subprocess
 		startup-message
@@ -350,7 +356,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
     (setq fi::common-lisp-first-time nil)
     proc))
 
-(defun fi:goto-common-lisp (arg)
+(defun fi:goto-common-lisp ()
   "This interactive function is meant to be bound to a global key, so that
 getting to the *common-lisp* buffer can be done with a minimum of key
 strokes.  You can, for example, put the following form in your ~/.emacs
@@ -359,8 +365,8 @@ file:
 	(define-key global-map \"\\C-xl\" 'fi:goto-common-lisp)
 
 and typing ``C-x l'' provide an easy way to start a Common Lisp and go to it."
-  (interactive "p")
-  (fi:common-lisp arg))
+  (interactive)
+  (call-interactively 'fi:common-lisp))
 
 (defun fi:open-lisp-listener (&optional buffer-number buffer-name)
   "Open a connection to an existing Common Lisp process, started with the
@@ -412,6 +418,11 @@ the first \"free\" buffer name and start a subprocess in that buffer."
   (interactive
    (fi::get-lisp-interactive-arguments 'fi::franz-lisp-first-time
 				       'fi:franz-lisp-buffer-name
+				       (let ((name "*franz-lisp*"))
+					 (if (numberp current-prefix-arg)
+					     (fi::buffer-number-to-buffer
+					      name current-prefix-arg)
+					   name))
 				       'fi:franz-lisp-directory
 				       'fi:franz-lisp-image-name
 				       'fi:franz-lisp-image-arguments
@@ -467,16 +478,23 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	  '("'")))
 
 (defun fi::get-lisp-interactive-arguments (s-first-time s-buffer-name
+					   buffer
 					   s-directory s-image-name
 					   s-image-args s-host)
   (let ((first-time (symbol-value s-first-time))
-	(buffer-name (symbol-value s-buffer-name))
+	(buffer-name (or (and buffer (buffer-name buffer))
+			 (symbol-value s-buffer-name)))
 	(directory (symbol-value s-directory))
 	(image-name (symbol-value s-image-name))
 	(image-args (symbol-value s-image-args))
 	(host (symbol-value s-host))
 	local)
-    (if (or first-time current-prefix-arg)
+    (if (or first-time
+	    (and current-prefix-arg
+		 (or (null buffer)
+		     (not (get-buffer-process buffer))
+		     (not (fi:process-running-p
+			   (get-buffer-process buffer))))))
 	(prog1
 	    (list (setq buffer-name
 		    (or current-prefix-arg
