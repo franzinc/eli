@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.40 1988/07/21 23:49:57 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.41 1988/07/23 12:13:42 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -591,7 +591,7 @@ This function implements continuous output to visible buffers."
 		      (setq fi::shell-directory-stack
 			(append head fi::shell-directory-stack))
 		      (cd (car head)))))))
-	     ((looking-at "[ \t]+\\(.*\\)[;\n]")
+	     ((looking-at "[ \t]+\\([^ \t]+\\)[;\n]")
 	      ;; pushd dir
 	      (let ((dir (expand-file-name
 			  (substitute-in-file-name
