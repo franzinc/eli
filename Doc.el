@@ -1,3 +1,7 @@
+(setq load-path
+  (cons (file-name-directory (directory-file-name default-directory))
+	load-path))
+
 (load "fi/site-init.el")
 
 (defun xxx-doc-xxx ()
