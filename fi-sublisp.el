@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.21 1988/04/26 22:25:08 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.22 1988/04/27 10:29:51 layer Exp $
 
 ;; Interaction with a Lisp subprocess
 
@@ -165,10 +165,10 @@ prefix argument, the source sent to the subprocess is compiled."
     (fi::eval-send start (point) compile-file-p)))
 
 (defun fi:lisp-eval-defun (compile-file-p)
-  "Send the current top-level form to the Lisp subprocess.  A `top-level'
-form is one that starts in column 1.  If a Lisp subprocess has not been
-started, then one is started.  With a prefix argument, the source sent to
-the subprocess is compiled."
+  "Send the current top-level (or nearest previous) form to the Lisp
+subprocess.  A `top-level'form is one that starts in column 1.  If a Lisp
+subprocess has not been started, then one is started.  With a prefix
+argument, the source sent to the subprocess is compiled."
   (interactive "P")
   (let* ((end (save-excursion (end-of-defun) (point)))
 	 (start (save-excursion
