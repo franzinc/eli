@@ -1,4 +1,4 @@
-;;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.14 1988/04/07 15:19:10 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.15 1988/04/08 09:41:40 layer Exp $
 ;;;
 ;;; Mode initializations
 
@@ -483,12 +483,14 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
   map)
 
 (defun fi::tcp-lisp-mode-commands (map supermap)
-  (fi::subprocess-mode-commands (fi::lisp-mode-commands map 'tcp-lisp)
-			   supermap 'tcp-lisp))
+  (fi::lisp-mode-commands (fi::subprocess-mode-commands
+			   map supermap 'tcp-lisp)
+			  'tcp-lisp))
 
 (defun fi::inferior-lisp-mode-commands (map supermap)
-  (fi::subprocess-mode-commands (fi::lisp-mode-commands map 'sub-lisp)
-			   supermap 'sub-lisp))
+  (fi::lisp-mode-commands (fi::subprocess-mode-commands
+			   map supermap 'sub-lisp)
+			  'sub-lisp))
 
 (defun fi:lisp-reindent-newline-indent ()
   "Indent the current line, insert newline and then indent again."
