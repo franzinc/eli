@@ -1,4 +1,8 @@
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.6 1991/03/28 12:59:30 layer Exp $
+		    GNU Emacs-Allegro CL Interface
+			      User Guide
+			   Release 2.0alpha
+
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.7 1991/04/22 19:51:01 layer Exp $
 
 			     Introduction
 
