@@ -24,9 +24,35 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.5 1989/06/01 22:33:15 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.6 1989/07/19 14:09:40 layer Rel $
 
 ;;; Misc utilities
+
+(defun fi::lisp-find-char (char string &optional from-end)
+  (let* ((l (length string))
+	 (i (if from-end (1- l) 0))
+	 (e (if from-end -1 l))
+	 (d (if from-end -1 1))
+	 (n nil))
+    (while (and (not n) (not (= i e)))
+      (if (= char (elt string i))
+	  (setq n i)
+	(setq i (+ i d))))
+    n))
+
+(defconst space (string-to-char " "))
+
+(defun fi::listify-string (string)
+  "Take a string \"a b c\" and turn it into a list of \"a\" \"b\" and
+\"c\".  nil is represented by the null string."
+  (let ((res nil)
+	n)
+    (while (setq n (fi::lisp-find-char space string t))
+      (setq res (cons (substring string (+ n 1)) res))
+      (setq string (substring string 0 n))
+      )
+    (if (/= 0 (length string))
+	(setq res (cons string res)))))
 
 (defun fi::symbol-value-in-buffer (symbol buffer)
   "Return the value of the local binding of SYMBOL in BUFFER, or
@@ -137,3 +163,76 @@ arguments."
 	  (symbol-function 'fi::fast-parse-partial-sexp))
   (fset 'fi::parse-partial-sexp
 	(symbol-function 'fi::slow-parse-partial-sexp)))
+
+;;;; diagnostic test
+
+(defun fi:test-tcp-interface ()
+  (interactive)
+  
+  ;; check that EMACSLIBRARY is in the environment
+  (let ((emacs-dir (getenv "EMACSLIBRARY")))
+    (if (null emacs-dir)
+	(error "EMACSLIBRARY is not in the environment.  See clinit.cl."))
+    (if (or (not (file-exists-p emacs-dir))
+	    (not (file-directory-p emacs-dir)))
+	(error "EMACSLIBRARY points to a non-existent directory."))
+
+    ;; check fi:unix-domain-socket
+    (cond
+     (fi:unix-domain
+      (if (null fi:unix-domain-socket)
+	  (error "fi:unix-domain-socket doesn't have a non-nil value"))
+      (let* ((path (expand-file-name fi:unix-domain-socket))
+	     (dir (file-name-directory path)))
+	(if (not (file-exists-p dir))
+	    (error
+	     "The parent directory of fi:unix-domain-socket doesn't exist"))
+	(cond
+	 ((null (fi::background-sublisp-process))
+	  (progn
+	    (with-output-to-temp-buffer "*Help*"
+	      (princ
+	       (format
+		"1. Check that %s is not on an NFS mounted filesystem.\n"
+		path))
+	      (princ
+	       (format
+		"2. Check that your .clinit.cl file has been setup properly,\n"))
+	      (princ
+	       (format
+		"   according to the instructions in %s/clinit.cl.\n" 
+		emacs-dir))
+	      )
+	    (error "couldn't connect to ACL in the UNIX domain."))))))
+     (t
+      (if (null fi:local-host-name)
+	  (error "fi:local-host-name doesn't have a non-nil value."))
+      (if (null fi:excl-service-name)
+	  (error "fi:excl-service-name doesn't have a non-nil value."))
+      (if (null (fi::background-sublisp-process))
+	  (progn
+	    (with-output-to-temp-buffer "*Help*"
+	      (princ
+	       (format
+		"1. Check that /etc/services has an service named %s.\n"
+		fi:excl-service-name))
+	      (princ
+	       (format
+		"2. Check that ipc:*inet-port* in ipc.cl and /etc/services\n"))
+	      (princ
+	       (format
+		"   agree on the port number.\n"))
+	      (princ
+	       (format
+		"3. Check that fi:local-host-name (in GNU Emacs) has the correct value.\n"))
+	      (princ
+	       (format
+		"   This is the name of the host on the net to which you want to connect.\n"))
+	      (princ
+	       (format
+		"4. Check that ipc:*unix-domain* is set to nil in your .clinit.cl.\n"))
+	      )
+	    (error "couldn't connect to ACL in the INTERNET domain.")))))
+    
+    (if (not (eq 'nil (fi:eval-in-lisp "nil")))
+	(error "fi:eval-in-lisp not working in the %s domain." type))))
