@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.109 1995/01/18 00:48:12 smh Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.110 1995/01/18 04:08:12 smh Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -136,7 +136,7 @@ echo_acl_release_files:
 fi-dist:	all
 	chmod 644 fi-site-init.el ChangeLog
 	rm -f version
-	emacs -batch -l `pwd`/fi-inc-vers > version
+	emacs -batch -l `pwd`/fi-inc-vers > version 2>&1
 	@echo new emacs-lisp interface version: `cat version`
 	cvs commit -m"`cat version`" fi-site-init.el ChangeLog
 	@if test -d "$(release_root)/fi-`cat version`"; then\
