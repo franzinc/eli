@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.33 1992/01/24 18:51:02 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.34 1992/02/20 10:22:02 layer Exp $
 
 ;;; Misc utilities
 
@@ -282,20 +282,11 @@ that starts with ~."
 
 (defun fi:verify-emacs-support ()
   "A function used to test the GNU Emacs in which it is run to see if the
-minimum require support for the Emacs-Lisp interface exists."
+minimum require support for the Emacs-Lisp interface exists.
+As of GNU Emacs 18.58, there is no additional support/modifications needed
+for the emacs-lisp interface to function properly."
   (interactive)
-  (condition-case condition
-      (accept-process-output 1 2)
-    (wrong-number-of-arguments
-     (fi:error "
-accept-process-output does not accept two arguments.  This means that the C
-kernel of this version of emacs does not have the necessary modifications
-to process.c to run the Franz Inc. emacs-lisp interface.  Please
-refer to the installation guide for further information."))
-    (wrong-type-argument
-     nil))
-  (if (interactive-p)
-      (message "everything looks fine!")))
+  (if (interactive-p) (message "everything looks fine!")))
 
 (defun fi:note (format-string &rest args)
   (let ((string (apply 'format format-string args)))
