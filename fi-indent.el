@@ -19,7 +19,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.36 1991/11/21 13:16:33 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.37 1992/04/28 14:01:49 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If non-nil, semicolons that begin comments are indented as they are
@@ -234,10 +234,10 @@ little consing as possible.")
 
 (defvar fi::lisp-doing-electric-semicolon nil)
 
-(defun fi:lisp-semicolon ()
-  "Lisp semicolon hook."
-  (interactive)
-  (insert ";")
+(defun fi:lisp-semicolon (&optional count)
+  "Lisp semicolon hook.  Prefix argument is number of semicolons to insert."
+  (interactive "p")
+  (insert-char ?; count)
   (if fi:lisp-electric-semicolon
       (save-excursion
 	(skip-chars-backward ";")
@@ -433,7 +433,7 @@ of the start of the containing expression."
 				(cdr fi::lisp-most-recent-parse-result))
 	    (rplaca fi::lisp-most-recent-parse-result (point))
 	    (cond
-	     ((and nil			; 10/13/91 - dkl - this
+	     ((and nil			; 10/13/91, dkl: this
 					; optimization screws things like
 					; (defmethod foo :around ((a b)
 					; &key c d) d), if you type RET
@@ -460,8 +460,8 @@ of the start of the containing expression."
 	      ;; Last sexp is on same line as containing sexp.
 	      ;; It's almost certainly a function call.
 	      (fi::parse-partial-sexp (point) last-sexp 0 t nil
-				  ;; the result goes here:
-				  (cdr fi::lisp-most-recent-parse-result))
+				      ;; the result goes here:
+				      (cdr fi::lisp-most-recent-parse-result))
 	      (rplaca fi::lisp-most-recent-parse-result (point))
 	      (if (/= (point) last-sexp)
 		  ;; Indent beneath first argument or, if only one sexp
@@ -496,15 +496,18 @@ of the start of the containing expression."
 	     ;; Indent by constant offset
 	     (goto-char containing-sexp)
 	     (setq desired-indent (+ fi:lisp-indent-offset (current-column))))
-	    ((not (or desired-indent
-		      (and (boundp 'fi:lisp-indent-hook)
-			   fi:lisp-indent-hook
-			   (not retry)
-			   (setq desired-indent
-			     (funcall fi:lisp-indent-hook
-				      indent-point state)))))
-	     ;; Use default indentation if not computed yet
-	     (setq desired-indent (current-column))))
+	    (desired-indent)
+	    ((and (boundp 'fi:lisp-indent-hook)
+		  fi:lisp-indent-hook
+		  (not retry))
+	     (cond ((setq desired-indent
+		      (catch 'fi:lisp-indent-hook-escape
+			(funcall fi:lisp-indent-hook indent-point state))))
+		   (t 
+		    ;; Use default indentation if not computed yet
+		    (setq desired-indent (current-column)))))
+	    (t (setq desired-indent (current-column))))
+      
       desired-indent)))
 
 (defun fi:lisp-indent-hook (indent-point state)
@@ -512,6 +515,8 @@ of the start of the containing expression."
 	(calculated-indent nil))
     (save-excursion
       (goto-char (1+ (car (cdr state))))
+      (when (looking-at "\\s(")
+	(throw 'fi:lisp-indent-hook-escape nil))
       (re-search-forward "\\sw\\|\\s_")
       (if (/= (point) (car (cdr state)))
 	  (let ((function (buffer-substring (progn (forward-char -1) (point))
