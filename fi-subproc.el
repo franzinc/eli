@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.167 1996/08/29 17:05:28 layer Exp $
+;; $Id: fi-subproc.el,v 1.168 1996/08/29 17:06:26 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -509,7 +509,6 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 			 (and buffer
 			      (eq buffer (fi::connection-buffer
 					  fi::*connection*))))))
-	      (setq layer executable-image-name)
 	      (append (funcall fi:start-lisp-interface-arguments
 			       fi:use-background-streams
 			       (when (on-ms-windows)
