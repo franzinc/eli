@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-emacs21.el,v 1.1.2.2 2003/08/08 17:00:32 layer Exp $
+;; $Id: fi-emacs21.el,v 1.1.2.3 2003/08/08 17:02:17 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; emacs specific stuff
@@ -813,8 +813,6 @@
 (add-hook 'fi:rlogin-mode-hook 'fi::initialize-popup-menu-map)
 (add-hook 'fi:su-mode-hook 'fi::initialize-popup-menu-map)
 (add-hook 'fi:telnet-mode-hook 'fi::initialize-popup-menu-map)
-
-fi:subprocess-mode-hook
 
 (defun fi::add-shell-popup-menu-items (name main-map)
   (let* ((map (make-sparse-keymap name)))
