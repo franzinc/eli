@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.13 1991/03/15 12:54:37 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.14 1991/04/22 13:41:07 layer Exp $
 ;;
 
 (defconst lep:current-frame-regexp "^ ->")
@@ -390,7 +390,8 @@ buffer."
    (lep::process-name)
    (t
     (let* ((processes
-	    (cdr (car (lep::eval-in-lisp 'lep::list-all-processes-session))))
+	    (cdr (car (lep::eval-session-in-lisp
+		       'lep::list-all-processes-session))))
 	   (completions
 	    (mapcar (function (lambda (x) (list x))) processes)))
       (completing-read "Process to debug: "
