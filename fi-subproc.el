@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.87 1991/02/27 13:30:45 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.88 1991/02/28 23:06:31 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -740,7 +740,9 @@ info from Lisp in the Lisp subprocess buffer.")
 
 (defun fi::subprocess-control-a-frammis (string)
   (if (and (fi::fast-search-string 1 string)
-	   (string-match "\\(.*\\)\\(.*\\)\\(.*\\)" string))
+	   (string-match
+	    "\\([\000-\255]*\\)\\(.*\\)\\([\00-\255]*\\)"
+	    string))
       (let* ((res (concat
 		   (substring string (match-beginning 1) (match-end 1))
 		   (substring string (match-beginning 3) (match-end 3))))
