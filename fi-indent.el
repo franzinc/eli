@@ -31,7 +31,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.22 1991/02/28 23:06:42 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.23 1991/03/07 14:54:33 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If `t', semicolons that begin comments are indented as they are typed.")
@@ -1505,7 +1505,10 @@ if matched at the beginning of a line, means don't indent that line."
   
   (put 'compiler-let tag '((1 1 quote) (0 t 1)))
   (put 'defclass tag '((1 2 quote) (0 t 3)))
-  (put 'defgeneric tag '(like defmethod))
+  (put 'defgeneric tag
+       (quote (if (fi:lisp-atom-p 2)
+		  ((1 3 lambda-list) (0 t 3))
+		((1 2 lambda-list) (0 t 2)))))
   (put 'define-condition tag '(like defclass))
   (put 'defmacro tag '((1 2 (recursive lambda-list)) (0 t 2)))
   (put 'defmethod tag 
