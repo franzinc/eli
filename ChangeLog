@@ -22,6 +22,8 @@ post-6.2 release changes:
 	* fi-keys.el (fi:super-paren): bug13181: fi:super-paren: at end of
 	  comment, would loop infinitely (until ^G)
 
+	* fi-xemacs.el: bug12467: fix problems with 21.4
+
 2003-08-19  Kevin Layer  <layer@crikey>
 
 	* Makefile: fi-vers.el change not put into makefile!
