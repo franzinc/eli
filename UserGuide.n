@@ -2,7 +2,7 @@
 			      User Guide
 			    Release 2.0.7
 
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.44 1993/08/31 19:08:44 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.45 1993/08/31 19:10:28 layer Exp $
 
 			     Introduction
 
@@ -794,6 +794,7 @@ Functions and Variables for editing Common Lisp programs:
 %% fi:copy-buffer-changed-definitions
 %% fi:copy-changed-definitions
 %% fi:compare-source-files
+%% fi:change-definitions-since-default
 
 %% fi:definition-mode
 %% fi:inverse-definition-mode
