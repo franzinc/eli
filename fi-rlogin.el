@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.7 1988/05/19 16:24:15 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.8 1988/05/25 10:18:27 layer Exp $
 
 (defvar fi:rlogin-mode-map nil
   "The rlogin major-mode keymap.")
@@ -40,7 +40,11 @@
   "Used for super-key processing in rlogin mode.")
 
 (defvar fi:rlogin-image-name "rlogin"
-  "*Default remote-login image to invoke from (fi:rlogin).")
+  "*Default remote-login image to invoke from (fi:rlogin).  If the value
+is a string then it names the image file or image path that
+`fi:common-lisp' invokes.  Otherwise, the value of this variable is given
+to funcall, the result of which should yield a string which is the image
+name or path.")
 
 (defvar fi:rlogin-image-arguments nil
   "*Default remote-login image arguments when invoked from (fi:rlogin).")

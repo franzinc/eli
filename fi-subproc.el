@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.35 1988/05/19 16:24:06 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.36 1988/05/25 10:18:21 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -40,7 +40,11 @@
 ;;;;
 
 (defvar fi:common-lisp-image-name "cl"
-  "*Default Common Lisp image to invoke from `fi:common-lisp'.")
+  "*Default Common Lisp image to invoke from `fi:common-lisp'.  If the
+value is a string then it names the image file or image path that
+`fi:common-lisp' invokes.  Otherwise, the value of this variable is given
+to funcall, the result of which should yield a string which is the image
+name or path.")
 
 (defvar fi:common-lisp-image-arguments nil
   "*Default Common Lisp image arguments when invoked from `fi:common-lisp',
@@ -53,11 +57,14 @@ Inferior Common Lisp mode.  Anything from beginning of line up to the end
 of what this pattern matches is deemed to be a prompt.")
 
 (defvar fi:franz-lisp-image-name "lisp"
-  "*Default Franz Lisp image to invoke from `fi:franz-lisp'.")
+  "*Default Franz Lisp image to invoke from `fi:franz-lisp'.  If the value
+is a string then it names the image file or image path that
+`fi:common-lisp' invokes.  Otherwise, the value of this variable is given
+to funcall, the result of which should yield a string which is the image
+name or path.")
 
 (defvar fi:franz-lisp-image-arguments nil
-  "*Default Franz Lisp image arguments when invoked from `fi:franz-lisp',
-which must be a list of strings.")
+  "*Default Franz Lisp image arguments when invoked from `fi:franz-lisp'.")
 
 (defvar fi:franz-lisp-prompt-pattern
   "^[-=]> +\\|^c{[0-9]+} +"
