@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.213 2003/09/29 23:28:23 layer Exp $
+;; $Id: fi-subproc.el,v 1.214 2003/10/13 21:03:10 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -108,13 +108,6 @@ Lisp process so that the expressions are read using the correct
 readtable.")
 
 (make-variable-buffer-local 'fi:readtable)
-
-;; The following variable and use of same courtesy of KURODA Hisao
-;; (kuroda@msi.co.jp):
-(defvar fi:connect-to-windows (on-ms-windows)
-  "*If non-nil, then connect to Lisp running on a Windows machine.  Since
-we connect in a fundamentally different way, the default value of this is
-non-nil only on Windows.")
 
 (defvar fi::started-via-file nil
   "If non-nil, then ELI started via fi:start-interface-via-file.")
@@ -259,6 +252,9 @@ buffer.")
 (defvar fi::prompt-pattern)
 (make-variable-buffer-local 'fi::prompt-pattern)
 
+(defvar fi::process-is-local t)
+(make-variable-buffer-local 'fi::process-is-local)
+
 (defvar fi:franz-lisp-directory)
 
 (defconst fi:subprocess-max-buffer-lines nil
@@ -308,12 +304,6 @@ connection.")
 machine, which implies that it was started via an `rsh'.  This variable is
 buffer local.")
 (make-variable-buffer-local 'fi::lisp-is-remote)
-
-(when (on-ms-windows)
-  (unless fi:common-lisp-host (setq fi:common-lisp-host "localhost"))
-  (unless fi::lisp-host (setq-default fi::lisp-host "localhost"))
-  (unless fi::lisp-port (setq-default fi::lisp-port 9666))
-  (unless fi::lisp-password (setq-default fi::lisp-password 0)))
 
 ;;;;
 ;;; User visible functions
@@ -410,21 +400,27 @@ risk.")
 	(error "fi:common-lisp aborted by user."))))
   (when fi::started-via-file
     (error "Emacs-Lisp interface already started via a file."))
-  (when (not (or fi::rsh-command fi:connect-to-windows))
+  (when (not fi::rsh-command)
     (setq fi::rsh-command
       (cond ((fi::command-exists-p "remsh") "remsh")
 	    ((fi::command-exists-p "rsh") "rsh")
+	    ((and (on-ms-windows) (fi::command-exists-p "rsh.exe") "rsh.exe"))
 	    (t (error "can't find the rsh command in your path")))))
   (when (and fi::shell-buffer-for-common-lisp-interaction-host-name
 	     (or (y-or-n-p "A make-dist might be in progress.  Continue? ")
 		 (error "fi:common-lisp aborted.")))
     (setq fi::shell-buffer-for-common-lisp-interaction-host-name nil))
+  (setq fi::process-is-local (or (string= "localhost" host)
+				 ;; so it is case insensitive:
+				 (string-match host (system-name))))
   (let* ((process-environment process-environment)
 	 (buffer-name (if (interactive-p)
 			  buffer-name
 			(or buffer-name fi:common-lisp-buffer-name)))
 	 (directory (if (interactive-p)
-			(and directory (expand-file-name directory))
+			(if fi::process-is-local
+			    (and directory (expand-file-name directory))
+			  directory)
 		      (or directory fi:common-lisp-directory)))
 	 (executable-image-name
 	  (if (interactive-p)
@@ -469,139 +465,20 @@ be a string. Use the 6th argument for image file."))
 			       image-file)
 		      image-args)
 	    image-args))
-	 (real-args (fi::reorder-arguments real-args))
+	 (real-args (if (on-ms-windows)
+			(if fi::process-is-local
+			    (fi::reorder-arguments real-args)
+			  (fi::remove-windows-arguments real-args))
+		      real-args))
 	 (process-connection-type fi::common-lisp-connection-type) ;bug3033
 	 (proc
-	  (if fi:connect-to-windows
-	      (let ((start-lisp-after-failed-connection t)
-		    (i 0)
-		    (process nil))
-                (unless fi::lisp-host (setq-default fi::lisp-host host))
-                (unless fi::lisp-port (setq-default fi::lisp-port 9666))
-                (unless fi::lisp-password (setq-default fi::lisp-password 0))
-		(fi::set-environment fi:subprocess-env-vars)
-		(while
-		    (condition-case nil
-			(progn
-			  (setq process
-			    (let ((fi::muffle-open-network-stream-errors t))
-			      (fi::make-tcp-connection
-			       buffer-name 1
-			       'fi:lisp-listener-mode
-			       fi:common-lisp-prompt-pattern
-			       fi::lisp-host fi::lisp-port
-			       fi::lisp-password
-			       'fi::setup-tcp-connection)))
-			  nil)
-		      (error
-		       (and fi::last-network-condition
-			    (consp fi::last-network-condition)
-			    (eq 'file-error (first fi::last-network-condition))
-			    (equal "connection failed"
-				   (second fi::last-network-condition)))))
-		  (cond
-		   (fi:common-lisp-subprocess-wait-forever)
-		   ((and (> i 0) (zerop (mod i 10)))
-		    ;; Every 10 iterations, ask if they still want to wait:
-		    (when (not (y-or-n-p
-				"Continue waiting for ACL to startup? "))
-		      (error "Connection aborted.")))
-		   (t
-		    (when (> i fi:common-lisp-subprocess-timeout)
-		      (error "Couldn't make connection to existing Lisp."))))
-		  (when start-lisp-after-failed-connection
-		    (save-excursion
-		      (set-buffer (get-buffer-create buffer-name))
-		      (setq default-directory directory))
-		    (let* ((default-directory directory)
-			   (p
-			    (fi::socket-start-lisp
-			     buffer-name
-			     "common-lisp"
-			     executable-image-name
-			     real-args)))
-		      (unless (or (eq 'run (process-status p))
-				  ;; From Greg Klanderman:
-				  ;; XEmacs 21.0 on NT process status
-				  ;; is 'exit but it's really OK.
-				  ;; May be an XEmacs bug...
-				  (and (eq fi::emacs-type 'xemacs20)
-				       (on-ms-windows)))
-			(error "Program %s died." executable-image-name))
-		      (setq start-lisp-after-failed-connection nil)))
-		  (sleep-for 1)
-		  (setq i (+ i 1)))
-		(unless process
-		  (error "Couldn't make connection to existing Lisp."))
-		(setq default-directory directory)
-		process)
-	    (let ((local
-		   (or
-		    ;; the convention on many machines, except HP (argh!!)
-		    (string= "localhost" host)
-		    (string= host (system-name))))
-		  (startup-message
-		   (concat
-		    "\n====================================="
-		    "=========================\n"
-		    (format "Starting image `%s'\n" executable-image-name)
-		    (when image-file
-		      (format "  with image (dxl) file `%s'\n" image-file))
-		    (if image-args
-			(format "  with arguments `%s'\n" image-args)
-		      "  with no arguments\n")
-		    (format "  in directory `%s'\n" directory)
-		    (format "  on machine `%s'.\n" host)
-		    "\n")))
-	      (fi::make-subprocess
-	       startup-message
-	       "common-lisp"
-	       buffer-name
-	       directory
-	       'fi:inferior-common-lisp-mode
-	       fi:common-lisp-prompt-pattern
-	       (if local executable-image-name fi::rsh-command)
-	       (if local
-		   real-args
-		 (fi::remote-lisp-args host executable-image-name real-args
-				       directory))
-	       'fi::common-lisp-subprocess-filter
-	       'fi::start-backdoor-interface
-	       ;;
-	       ;; rest of the arguments are the
-	       ;; mode-hook function and its arguments
-	       (function
-		(lambda (local host dir)
-		  (if local
-		      (save-excursion
-			(set-buffer (current-buffer))
-			;; can't use "localhost" below because HP can't
-			;; write an operating system.
-			(setq fi::lisp-host host) ; used to use "localhost"
-			)
-		    (save-excursion
-		      (set-buffer (current-buffer))
-		      (setq fi::lisp-is-remote t)
-		      (setq fi::lisp-host host)
-		      (condition-case ()
-			  (cd dir)
-			(error nil))))))
-	       local host directory)))))
-    (when (and fi:connect-to-windows (not (fi::lep-open-connection-p)))
-      (fi::start-backdoor-interface proc)
-      (fi::ensure-lep-connection)
-      (condition-case ()
-	  (setq fi::lisp-case-mode
-	    (case (car
-		   (read-from-string
-		    (fi:eval-in-lisp "excl:*current-case-mode*")))
-	      ((case-insensitive-lower case-sensitive-lower) ':lower)
-	      ((CASE-INSENSITIVE-UPPER CASE-SENSITIVE-UPPER) ':upper)))
-	(error nil))
-      (cond ((consp fi:start-lisp-interface-hook)
-	     (mapcar 'funcall fi:start-lisp-interface-hook))
-	    (fi:start-lisp-interface-hook
-	     (funcall fi:start-lisp-interface-hook))))
+	  (if (and (on-ms-windows) fi::process-is-local)
+	      (fi::common-lisp-1-windows host buffer-name directory
+					 executable-image-name image-file
+					 image-args real-args)
+	    (fi::common-lisp-1-unix host buffer-name directory
+				    executable-image-name image-file
+				    image-args real-args))))
     (setq fi::common-lisp-first-time nil
 	  fi:common-lisp-buffer-name buffer-name
 	  fi:common-lisp-image-name executable-image-name
@@ -613,8 +490,140 @@ be a string. Use the 6th argument for image file."))
       (setq fi:common-lisp-directory directory))
     proc))
 
+(defun fi::common-lisp-1-windows (host buffer-name directory
+				  executable-image-name image-file image-args
+				  real-args)
+  (let* ((process-name "common-lisp")
+	 (startup-message
+	  (concat
+	   "\n====================================="
+	   "=========================\n"
+	   (format "Starting image `%s'\n" executable-image-name)
+	   (when image-file
+	     (format "  with image (dxl) file `%s'\n" image-file))
+	   (if image-args
+	       (format "  with arguments `%s'\n" image-args)
+	     "  with no arguments\n")
+	   (format "  in directory `%s'\n" directory)
+	   (format "  on machine `%s'.\n" host)
+	   "\n"))
+	 (proc (fi::socket-start-lisp nil process-name
+				      executable-image-name real-args))
+	 (connection-file
+	  (format "%s\\elistartup%d"
+;;;; This calculation needs to be the same as in ACL's
+;;;; sys:temporary-directory, otherwise the rendevzous file won't be
+;;;; found.
+		  (let ((temp (getenv "TEMP"))
+			(tmp (getenv "TMP")))
+		    (or (and temp (fi::probe-file temp))
+			(and tmp (fi::probe-file tmp))
+			(fi::probe-file "/tmp/")
+			(fi::probe-file "c:/tmp/")
+			(fi::probe-file "c:/")))
+		  (process-id proc)))
+	 (i 0))
+
+    (while (not (file-exists-p connection-file))
+      (cond
+       (fi:common-lisp-subprocess-wait-forever)
+       ((and (> i 0) (zerop (mod i 10)))
+	;; Every 10 iterations, ask if they still want to wait:
+	(when (not (y-or-n-p "Continue waiting for ACL to startup? "))
+	  (error "Connection aborted.")))
+       (t (when (> i fi:common-lisp-subprocess-timeout)
+	    (error "Couldn't make connection to existing Lisp."))))
+      (sleep-for 1)
+      (setq i (+ i 1)))
+
+    ;; this is temporary, so the fi::make-tcp-connection in
+    ;; fi::start-interface-via-file-1 works.
+    ;; fi::start-interface-via-file-1 will change this to point to the
+    ;; tcp connection, since that one has a buffer.
+    (setq fi::common-lisp-backdoor-main-process-name process-name)
+
+    (let ((proc (fi::start-interface-via-file-1 host buffer-name
+						connection-file)))
+      (delete-file connection-file)
+      proc)))
+
+(defun fi::common-lisp-1-unix (host buffer-name directory
+			       executable-image-name image-file image-args
+			       real-args)
+  (let ((startup-message
+	 (concat
+	  "\n====================================="
+	  "=========================\n"
+	  (format "Starting image `%s'\n" executable-image-name)
+	  (when image-file
+	    (format "  with image (dxl) file `%s'\n" image-file))
+	  (if image-args
+	      (format "  with arguments `%s'\n" image-args)
+	    "  with no arguments\n")
+	  (format "  in directory `%s'\n" directory)
+	  (format "  on machine `%s'.\n" host)
+	  "\n")))
+    (fi::make-subprocess
+     startup-message
+     "common-lisp"
+     buffer-name
+     directory
+     'fi:inferior-common-lisp-mode
+     fi:common-lisp-prompt-pattern
+     (if fi::process-is-local executable-image-name fi::rsh-command)
+     (if fi::process-is-local
+	 real-args
+       (fi::remote-lisp-args host executable-image-name real-args
+			     directory))
+     'fi::common-lisp-subprocess-filter
+     'fi::start-backdoor-interface
+     ;;
+     ;; rest of the arguments are the
+     ;; mode-hook function and its arguments
+     (function
+      (lambda (local host dir)
+	(if local
+	    (save-excursion
+	      (set-buffer (current-buffer))
+	      ;; can't use "localhost" below because HP can't
+	      ;; write an operating system.
+	      (setq fi::lisp-host host)	; used to use "localhost"
+	      )
+	  (save-excursion
+	    (set-buffer (current-buffer))
+	    (setq fi::lisp-is-remote t)
+	    (setq fi::lisp-host host)
+	    (condition-case ()
+		(cd dir)
+	      (error nil))))))
+     fi::process-is-local host directory)))
+
+(defun fi::remove-windows-arguments (arguments)
+  ;; remove windows only + arguments
+  (let ((args nil)
+	(arg nil))
+    (while arguments
+      (setq arg (car arguments))
+      (cond ((or (string= "+c" arg)
+		 (string= "+cm" arg)
+		 (string= "+cn" arg)
+		 (string= "+cx" arg)
+		 (string= "+p" arg)
+		 (string= "+R" arg)
+		 (string= "+M" arg)
+		 (string= "+B" arg)
+		 (string= "+Bt" arg)))
+	    ((or (string= "+s" arg)
+		 (string= "+d" arg)
+		 (string= "+t" arg)
+		 (string= "+b" arg))
+	     (setq arguments (cdr arguments)))
+	    (t (push arg args)))
+      (setq arguments (cdr arguments)))
+    (nreverse args)))
+
 (defun fi::reorder-arguments (arguments)
-  ;; make sure the dlisp arguments are first
+  ;; make sure the + arguments are first
   (let ((dlisp-args nil)
 	(other-args nil)
 	(arg nil))
@@ -673,14 +682,14 @@ prefix arguments > 1.  If a negative prefix argument is given, then the
 first \"free\" buffer name is found and used.  When called from a program,
 the buffer name is the second optional argument."
   (interactive "p")
-  (if (or fi:connect-to-windows fi::started-via-file)
+  (if fi::started-via-file
       (fi::ensure-lep-connection)
     (if (or (null fi::common-lisp-backdoor-main-process-name)
 	    (not (fi:process-running-p
 		  (get-process fi::common-lisp-backdoor-main-process-name)
 		  buffer-name)))
 	(error "Common Lisp must be running to open a lisp listener.")))
-  (if (or fi:connect-to-windows fi::started-via-file)
+  (if fi::started-via-file
       (fi::make-tcp-connection (or buffer-name "lisp-listener")
 			       buffer-number
 			       'fi:lisp-listener-mode
@@ -752,6 +761,9 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	    ((fi::command-exists-p "rsh") "rsh")
 	    (t
 	     (error "can't find the rsh command in your path")))))
+  (setq fi::process-is-local (or (string= "localhost" host)
+				 ;; so it is case insensitive:
+				 (string-match host (system-name))))
   (let* ((buffer-name (if (interactive-p)
 			  buffer-name
 			(or buffer-name fi:franz-lisp-buffer-name)))
@@ -768,8 +780,6 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	 (host (if (interactive-p)
 		   host
 		 (or host fi:franz-lisp-host)))
-	 (local (or (string= "localhost" host)
-		    (string= host (system-name))))
 	 (proc (fi::make-subprocess
 		nil
 		"franz-lisp"
@@ -777,8 +787,8 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		directory
 		'fi:inferior-franz-lisp-mode
 		fi:franz-lisp-prompt-pattern
-		(if local executable-image-name fi::rsh-command)
-		(if local
+		(if fi::process-is-local executable-image-name fi::rsh-command)
+		(if fi::process-is-local
 		    image-args
 		  (fi::remote-lisp-args host executable-image-name image-args
 					directory))
@@ -793,7 +803,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		     (condition-case ()
 			 (cd dir)
 		       (error nil)))))
-		local directory)))
+		fi::process-is-local directory)))
     (setq fi:franz-lisp-process-name (process-name proc))
     (setq fi::franz-lisp-first-time nil
 	  fi:franz-lisp-buffer-name buffer-name
@@ -808,32 +818,26 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 ;;;;
 
 (defun fi::remote-lisp-args (host executable-image-name image-args directory)
-  (append
-   fi::rsh-args
-   (list
-    host
-    "sh"
-    "-c"
-    (format "%s%s if test -d %s; then cd %s; fi; exec %s %s%s"
-	    ;; exec added to remove sh process - smh 27jun94
-	    (if (fi:member-equal (file-name-nondirectory fi::rsh-command)
-				 '("remsh" "rsh"))
-		"'"
-	      "")
-	    (fi::env-vars)
-	    directory
-	    directory
-	    executable-image-name
-	    (mapconcat (function
-			(lambda (x)
-			  (if x
-			      (concat "\"" x "\"")
-			    "")))
-		       image-args
-		       " ")
-	    (if (fi:member-equal (file-name-nondirectory fi::rsh-command)
-				 '("remsh" "rsh"))
-		"'" "")))))
+  (let ((remote (fi:member-equal (file-name-nondirectory fi::rsh-command)
+				 '("remsh" "rsh" "rsh.exe"))))
+    (append
+     fi::rsh-args
+     (list
+      host
+      "sh"
+      "-c"
+      ;; use `exec' to get rid of `sh' process
+      (format
+       "%s%s if test -d %s; then cd %s; fi; exec %s %s%s"
+       (if remote "'" "")
+       (fi::env-vars)
+       directory
+       directory
+       executable-image-name
+       (mapconcat (function (lambda (x) (if x (concat "\"" x "\"") "")))
+		  image-args
+		  " ")
+       (if remote "'" ""))))))
 
 (defun fi::get-lisp-interactive-arguments (first-time buffer-name buffer
 					   directory exe image-args host
@@ -850,10 +854,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 			   buffer-name)))))
 
     (setq buffer-name (read-buffer "Buffer: " buffer-name))
-      
-    (if (on-ms-windows)
-	(setq host "localhost")
-      (setq host (read-string "Host: " host)))
+    (setq host (read-string "Host: " host))
       
     ;; make sure it ends in a slash:
     (setq directory
@@ -861,8 +862,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 				      (or directory default-directory)
 				      (or directory default-directory)
 				      ;; must match only if local:
-				      (or (string= "localhost" host)
-					  (string= host (system-name))))))
+				      fi::process-is-local)))
 	(if (= ?/ (aref temp (- (length temp) 1)))
 	    temp
 	  (concat temp "/"))))
@@ -990,8 +990,11 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	  (switch-to-buffer buffer)
 	  (goto-char (point-max))
 	  (if (stringp startup-message) (insert startup-message))
-	  (if (and directory (file-exists-p directory))
-	      (setq default-directory directory))
+	  (when (and directory
+		     (file-exists-p directory)
+		     (or (not (on-ms-windows))
+			 fi::process-is-local))
+	    (setq default-directory directory))
 	  (if process (delete-process process))
 	  (fi::set-environment fi:subprocess-env-vars)
 	  (let (
@@ -1073,8 +1076,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 					  given-service
 					  given-password
 					  setup-function)
-  (or fi:connect-to-windows
-      fi::started-via-file
+  (or fi::started-via-file
       fi::common-lisp-backdoor-main-process-name
       (error "A Common Lisp subprocess has not yet been started."))
   (let* ((buffer-name
@@ -1088,25 +1090,19 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	 (default-dir default-directory)
 	 (buffer-name (buffer-name buffer))
 	 (process-buffer
-	  (when (not (or fi::started-via-file fi:connect-to-windows))
+	  (when (not fi::started-via-file)
 	    (and (get-process fi::common-lisp-backdoor-main-process-name)
 		 (process-buffer
 		  (get-process fi::common-lisp-backdoor-main-process-name)))))
 	 (host (or given-host
-		   (and fi:connect-to-windows
-			(error "Windows mode, need to specify host."))
 		   (and fi::started-via-file
 			(error "Via file mode, need to specify host."))
 		   (fi::get-buffer-host process-buffer)))
 	 (service (or given-service
-		      (and fi:connect-to-windows
-			   (error "Windows mode, need to specify service."))
 		      (and fi::started-via-file
 			   (error "Via file mode, need to specify service."))
 		      (fi::get-buffer-port process-buffer)))
 	 (password (or given-password
-		       (and fi:connect-to-windows
-			    (error "Windows mode, need to specify passwd."))
 		       (and fi::started-via-file
 			    (error "Via file mode, need to specify passwd."))
 		       (fi::get-buffer-password process-buffer)))

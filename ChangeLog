@@ -7,6 +7,21 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.4.3
+
+2003-10-13    <layer@HOBART>
+
+    for rfe5678: change emacs-lisp rendezvous on windows to be more like *NIX
+	* fi-subproc.el: lots of changes to make eli startup on windows
+	  more like *NIX; also made remote startups of *NIX lisps on
+	  windows emacs work--built-in win2k rsh.exe seems to work, as
+	  does Cygwin rsh.exe.  fi:connect-to-windows is gone, since it's
+	  not needed anymore.
+	* fi-sublisp.el: see above
+	* fi-utils.el: support for above; added fi::probe-file;
+	  fi::file-contents now kills buffer after it's done
+
+*******************************************************************************
 2.4.2
 
 2003-10-08  Kevin Layer  <layer@crikey>

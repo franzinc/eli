@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 1.76 2003/10/08 18:42:42 layer Exp $
+;; $Id: fi-utils.el,v 1.77 2003/10/13 21:03:10 layer Exp $
 
 ;;; Misc utilities
 
@@ -1100,18 +1100,28 @@ created by fi:common-lisp."
 ;;;(debug-on-entry 'fi::breakpoint)
 
 (defun fi::file-contents (filename)
-  (save-excursion
-    (set-buffer (get-buffer-create "  *file-contents-tmp*"))
-    (erase-buffer)
-    (insert-file-contents filename)
-    (buffer-string)))
+  (let* ((buffer (get-buffer-create "  *file-contents-tmp*"))
+	 (s 
+	  (save-excursion
+	    (set-buffer buffer)
+	    (erase-buffer)
+	    (insert-file-contents filename)
+	    (buffer-string))))
+    (kill-buffer buffer)
+    s))
 
 (defun fi:start-interface-via-file (host buffer connection-file)
+  (interactive "sHost: \nBBuffer name: \nfConnection data file: ")
+  (fi::start-interface-via-file-1 host buffer connection-file)
+  ;; Can't bind this, or background errors will not be handled
+  ;; correctly.
+  (setq fi::started-via-file t))
+
+(defun fi::start-interface-via-file-1 (host buffer connection-file)
   ;; On the lisp side, you would do something like this:
   ;;  (sys::start-emacs-lisp-interface t 1 7666 "~/.eli-startup")
   ;; then, sometime later on the emacs side, do this:
   ;;  (fi:start-interface-via-file "pie" "*common-lisp*" "~/.eli-startup")
-  (interactive "sHost: \nBBuffer name: \nfConnection data file: ")
   (save-excursion
     (set-buffer (get-buffer-create buffer))
     (setq fi::lisp-host host)
@@ -1120,23 +1130,29 @@ created by fi:common-lisp."
 	  (error "couldn't parse connection string in %s." connection-file))
       (fi::set-connection-vars command))
 
-    ;; Can't bind this, or background errors will not be handled
-    ;; correctly.
-    (setq fi::started-via-file t)
-    
     (let ((host fi::lisp-host)
 	  (port fi::lisp-port)
-	  (pw fi::lisp-password))
-      (fi::make-tcp-connection buffer 1
-			       'fi:lisp-listener-mode
-			       fi:common-lisp-prompt-pattern
-			       fi::lisp-host fi::lisp-port
-			       fi::lisp-password
-			       'fi::setup-tcp-connection)
+	  (pw fi::lisp-password)
+	  proc)
+      (setq proc
+	(fi::make-tcp-connection buffer 1
+				 'fi:lisp-listener-mode
+				 fi:common-lisp-prompt-pattern
+				 fi::lisp-host fi::lisp-port
+				 fi::lisp-password
+				 'fi::setup-tcp-connection))
       (setq-default fi::lisp-host host)
       (setq-default fi::lisp-port port)
-      (setq-default fi::lisp-password pw))
-    ;; Make the backdoor connection, too:
-    (fi::make-connection-to-lisp fi::lisp-host fi::lisp-port
-				 fi::lisp-password)
-    (fi:show-run-status)))
+      (setq-default fi::lisp-password pw)
+      
+      (setq fi::common-lisp-backdoor-main-process-name (process-name proc))
+
+      ;; Make the backdoor connection, too:
+      (fi::make-connection-to-lisp fi::lisp-host fi::lisp-port
+				   fi::lisp-password)
+      (fi:show-run-status)
+      proc)))
+
+(defun fi::probe-file (file)
+  (when (file-exists-p file)
+    file))
