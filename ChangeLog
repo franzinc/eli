@@ -7,12 +7,37 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+join from acl62 to trunk on 1/14/2003
+command:
+  ./join.sh acl62 acl62_to_trunk_merge2 acl62_to_trunk_merge3 eli
+
+*******************************************************************************
 join from acl62 to trunk on 8/14/2002
 command:
   ./join.sh acl62 acl62_to_trunk_merge1 acl62_to_trunk_merge2 eli
 
 *******************************************************************************
 join from acl62 to trunk on 7/9/02
+
+******************************************************************************
+post-6.2 release changes: 
+
+2002-12-12  Kevin Layer  <layer@crikey>
+
+	* fi-emacs19.el (fi::lisp-font-lock-keywords): bug12862: fix order
+	of regexp parts for better font-locking
+
+2002-10-24  Kevin Layer  <layer@crikey>
+
+	* fi-subproc.el: bug12600: add `.' to lisp prompt regexp
+
+2002-09-27    <layer@HOBART>
+
+	* Makefile: updated cygwin no longer has `pwd' in env, so make it
+
+2002-09-25  Kevin Layer  <layer@crikey>
+
+	* fi-lep.el: bug12531: fix another fontification problem
 
 ******************************************************************************
 2.3.5

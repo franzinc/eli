@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 1.86 2002/07/09 22:15:31 layer Exp $
+;; $Id: fi-lep.el,v 1.87 2003/01/15 04:57:16 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -523,9 +523,10 @@ beginning of words in target symbols."
 		(let ((opoint (point)))
 		  (if (re-search-forward ":?:" end t)
 		      (setq xpackage
-			(concat ":"
-				(buffer-substring opoint
-						  (match-beginning 0))))))
+			(concat
+			 ":"
+			 (fi::defontify-string
+			     (buffer-substring opoint (match-beginning 0)))))))
 		(point)))
 	 (pattern (fi::defontify-string (buffer-substring beg end)))
 	 (functions-only (if (eq (char-after (1- real-beg)) ?\() t nil))
