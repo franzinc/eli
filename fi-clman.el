@@ -24,26 +24,13 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.6 1989/06/01 22:33:26 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.7 1989/07/11 18:20:33 layer Exp $
 
-(defconst fi:clman-doc-directory
-    (let ((p load-path)
-	  (string "fi/manual/")
-	  (done nil) res)
-      (while (and (not done) p)
-	(if (file-exists-p (setq res (concat (car p) "/" string)))
-	    (setq done t)
-	  (setq res nil))
-	(setq p (cdr p)))
-      res))
+(defvar fi:clman-package-info nil
+  "A list of (PRODUCT DIRECTORY) which tells where the manual pages are (in
+DIRECTORY) for PRODUCT.")
 
-(defconst fi:clman-package-info
-    (list 
-     (list "xcw" (concat fi:clman-doc-directory "xcw/"))
-     (list "math" (concat fi:clman-doc-directory "matrix/"))
-     (list "lisp" (concat fi:clman-doc-directory "cl/"))))
-
-(if (not (boundp 'fi::clman-oblist)) (load "fi/clman-oblist"))
+(if (not (boundp 'fi::clman-oblist)) (load "fi/clman.data"))
 
 (defvar fi:clman-mode-map nil
   "Major mode key definitions for viewing a clman page.")
@@ -72,6 +59,8 @@ cursor.  To get completion for a symbol in a package other than the :lisp
 package, use the nickname of that package, followed by a colon (e.g. cw: or
 math:).  The buffer that is displayed will be in CLMAN mode."
   (interactive)
+  (if (null fi:clman-package-info)
+      (setq fi:clman-package-info (fi:setup-clman-package-info)))
   (setq fi::clman-window-configuration (current-window-configuration))
   (let* ((temp-info fi:clman-package-info)(package nil)
          (doc-page nil)(sym nil)
@@ -121,6 +110,8 @@ math:).  The buffer that is displayed will be in CLMAN mode."
 buffer which lists all documented symbols which match the string.  The
 buffer will be in CLMAN mode."
   (interactive)
+  (if (null fi:clman-package-info)
+      (setq fi:clman-package-info (fi:setup-clman-package-info)))
   (let* ((string (downcase (read-string "clman apropos: ")))
 	 (apropos-buffer-name "*CLMan-Apropos*"))
     (with-output-to-temp-buffer apropos-buffer-name
@@ -135,7 +126,6 @@ buffer will be in CLMAN mode."
     (switch-to-buffer-other-window apropos-buffer-name)
     (replace-string "\"" "")
     (fi:clman-mode)(goto-char (point-min))))
-
 
 (defun fi:clman-mode ()
   "Major mode for viewing Allegro manual pages.  text-mode-syntax-table and
@@ -365,6 +355,24 @@ Return the full pathname of the file the symbol is in. "
 					  (?\. . ?e)(?\  . ?B))
 					str)))
     (concat result ".doc")))
+
+(defun fi::setup-clman-package-info ()
+  (mapcar (function
+	   (lambda (xxx)
+	     (let* ((p load-path)
+		    (string "fi/manual/")
+		    (done nil)
+		    res)
+	       (while (and (not done) p)
+		 (if (file-exists-p (setq res (concat (car p) "/" string)))
+		     (setq done t)
+		   (setq res nil))
+		 (setq p (cdr p)))
+	       (rplaca (cdr xxx) (format "%s%s" res (car (cdr xxx))))
+	       xxx)))
+	  '(("xcw" "xcw/")
+	    ("math" "matrix/")
+	    ("lisp" "cl/"))))
 
 (if fi:clman-mode-map
     nil
