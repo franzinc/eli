@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.16 1991/06/19 22:16:37 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.17 1991/08/22 21:28:24 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -108,6 +108,7 @@
 	 (let* ((buffer-name (format "*LEP buffer %s %d %d*" host port passwd))
 		(buffer (get-buffer-create buffer-name))
 		(process (open-network-stream buffer-name nil host port)))
+	   (bury-buffer buffer)
 	   (save-excursion (set-buffer buffer) (erase-buffer))
 	   (set-process-buffer process buffer)
 	   (set-process-filter process 'fi::lep-connection-filter)
@@ -261,7 +262,11 @@ handle it"
 
 (defun lep::send-request-in-new-session (session-class oncep session-arguments 
 					 continuation-and-arguments
-					 &optional error-continuation-and-arguments)
+					 &optional error-continuation-and-arguments
+						   ignore-package)
+  (unless (fi::lep-open-connection-p)
+    (error "There is no connection to Lisp.  See fi:common-lisp documentation."))
+  
   (let* ((connection (fi::ensure-lep-connection))
 	 (session (fi::make-new-session connection oncep
 					continuation-and-arguments
@@ -271,8 +276,9 @@ handle it"
 			  (list* nil
 				 'lep::make-session session-class 
 				 ':session-id (fi::session-id session)
-				 (if (fi::member-plist ':buffer-package
-						       session-arguments)
+				 (if (or ignore-package
+					 (fi::member-plist ':buffer-package
+							   session-arguments))
 				     session-arguments 
 				   (list* ':buffer-package
 					  (fi::string-to-keyword fi:package)
@@ -280,8 +286,9 @@ handle it"
     (send-string process "\n")
     session))
 
-(defmacro make-request (type-and-options continuation
-			&optional error-continuation)
+(defmacro fi::make-request (type-and-options continuation
+			&optional error-continuation
+				  ignore-package)
   (list 'lep::send-request-in-new-session
 	(list 'quote (car type-and-options))
 	t
@@ -299,10 +306,11 @@ handle it"
 						  (fi::listify
 						   (first error-continuation)))
 				  (cddr error-continuation)))
-	       (first error-continuation))))
+	       (first error-continuation))
+	ignore-package))
 
 
-(defmacro make-complex-request (type-and-options continuation
+(defmacro fi::make-complex-request (type-and-options continuation
 				&optional error-continuation)
   (list 'lep::send-request-in-new-session
 	(list 'quote (car type-and-options))
@@ -433,6 +441,14 @@ be increased.")
   "Apply (Emacs Lisp) format to STRING and ARGS and sychronously evaluate
 the result in the Common Lisp to which we are connected.  If a
 lisp-eval-server has not been started, then this function starts it."
+  (if (not (fi::lep-open-connection-p))
+      (let ((i 0) (max 20))
+	(while (and (< i max)
+		    fi::common-lisp-backdoor-main-process-name
+		    (get-process fi::common-lisp-backdoor-main-process-name)
+		    (not (fi::lep-open-connection-p))
+		    (progn (sleep-for 3) t))
+	  (setq i (+ i 1)))))
   (let ((string (if args
 		    (apply 'format string args)
 		  string)))
