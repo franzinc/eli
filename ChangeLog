@@ -9,6 +9,13 @@ For more detailed instructions on filling in the ChangeLog form, see
 ******************************************************************************
 post-6.2 release changes: 
 
+2003-08-08  Kevin Layer  <layer@crikey>
+
+	* fi-lep.el: bugs -> support
+	* fi-keys.el: rfe5611: rename fi:extended-keybindings to
+	  fi:legacy-keybindings
+	* fi-emacs21.el: rfe5611: add menu items
+
 2003-08-07  Kevin Layer  <layer@crikey>
 
 	* fi-keys.el: fix minor bug with keymap init

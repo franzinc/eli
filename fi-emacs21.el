@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-emacs21.el,v 1.1.2.1 2003/08/07 15:27:23 layer Exp $
+;; $Id: fi-emacs21.el,v 1.1.2.2 2003/08/08 17:00:32 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; emacs specific stuff
@@ -57,16 +57,8 @@
 		  :keys (when keys (key-description keys)))
 	    (when enable (list :enable enable)))))
 
-;;;(defun fi::xxx (n map)
-;;;  (when (eq map (current-global-map))
-;;;    (message "xxxxxxxxxxxxxxxxx yes!"))
-;;;  (when (lookup-key fi:shell-mode-map [menu-bar acl])
-;;;    (message "xxxxxxxxxxxxxxxxx %d" n)))
-
 (defun fi::initialize-menu-bar-map ()
-  ;;(message "in fi::initialize-menu-bar-map")
   (when (not (memq major-mode fi::menu-bar-initialized))
-    ;;(message "fi::initialize-menu-bar-map: doing it")
     (let* ((map (cond
 		 ((eq major-mode 'fi:common-lisp-mode) fi:common-lisp-mode-map)
 		 ((eq major-mode 'fi:inferior-common-lisp-mode)
@@ -102,7 +94,6 @@
 	(define-key map [menu-bar acledit] (cons edit-name edit-map))
 	(define-key map [menu-bar aclfile] (cons file-name file-map))))
 
-      ;;(message "fi::initialize-menu-bar-map: here1")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE NOTE:
 ;;;; Blech.  Have to build the menus in reverse order, since
@@ -235,6 +226,54 @@
     
 ;;;; ACLEdit menu:
     
+      (define-key map (fi::keys [acledit pop-input])
+	(fi::menu "Previous input" 'fi:pop-input
+		  :enable '(fi::subproc-buffer-p)))
+      
+      (define-key map (fi::keys [acledit push-input])
+	(fi::menu "Next input" 'fi:push-input
+		  :enable '(fi::subproc-buffer-p)))
+      
+      (define-key map (fi::keys [acledit backward-search-input])
+	(fi::menu "Search input backward" 'fi:re-search-backward-input
+		  :enable '(fi::subproc-buffer-p)))
+      
+      (define-key map (fi::keys [acledit forward-search-input])
+	(fi::menu "Search input forward" 'fi:re-search-forward-input
+		  :enable '(fi::subproc-buffer-p)))
+      
+      (define-key map (fi::keys [acledit list-input])
+	(fi::menu "List input" 'fi:list-input-ring
+		  :enable '(fi::subproc-buffer-p)))
+      
+      (define-key map (fi::keys [acledit show-output])
+	(fi::menu "Show last command output" 'fi:subprocess-show-output
+		  :enable '(fi::subproc-buffer-p)))
+
+      (define-key map (fi::keys [acledit acledit-sep3]) (fi::menu "----"))
+      
+      (define-key map (fi::keys [acledit previous-tpl-form])
+	(fi::menu "Previous Top-level form" 'fi:previous-top-level-form))
+
+      (define-key map (fi::keys [acledit next-tpl-form])
+	(fi::menu "Next Top-level form" 'fi:next-top-level-form))
+
+      (define-key map (fi::keys [acledit center-defun])
+	(fi::menu "Center defun" 'fi:center-defun))
+      
+      (define-key map (fi::keys [acledit acledit-sep2]) (fi::menu "----"))
+
+      (define-key map (fi::keys [acledit extract-list])
+	(fi::menu "Extract List" 'fi:extract-list))
+      
+      (define-key map (fi::keys [acledit log-change])
+	(fi::menu "Log change" 'fi:log-functional-change
+		  :enable '(fi::source-buffer-p)))
+      
+      (define-key map (fi::keys [acledit indent-sexp])
+	(fi::menu "Indent S-Exp"
+		  (if fi:lisp-do-indentation 'fi:indent-sexp 'indent-sexp)))
+      
       (define-key map (fi::keys [acledit uncomment-region])
 	(fi::menu "Uncomment region" 'fi:uncomment-region))
     
@@ -250,11 +289,16 @@
       (define-key map (fi::keys [acledit super-paren])
 	(fi::menu "Close all parens" 'fi:super-paren))
     
-      (define-key map (fi::keys [acledit center-defun])
-	(fi::menu "Center defun" 'fi:center-defun))
-
-      (define-key map (fi::keys [acledit acledit-sep1])
-	(fi::menu "----"))
+      (define-key map (fi::keys [acledit complete-symbol])
+	(fi::menu "Complete symbol" 'fi:lisp-complete-symbol
+		  :enable '(fi::connection-open)))
+      
+      (define-key map (fi::keys [acledit acledit-sep1]) (fi::menu "----"))
+      
+      (define-key map (fi::keys [acledit pop-definition-mark])
+	(fi::menu "Pop definition mark"
+		  'fi:pop-definition-mark
+		  :enable '(fi::connection-open)))                 
 
       (define-key map (fi::keys [acledit find-next-definition])
 	(fi::menu "Find next definition" 'fi:lisp-find-next-definition
@@ -268,9 +312,9 @@
       (define-key map (fi::keys [acledit find-definition])
 	(fi::menu "Find definition"
 		  'fi:lisp-find-definition :enable '(fi::connection-open)))
-    
+          
 ;;;; ACLDebug
-    
+
       (define-key map (fi::keys [acldebug xref])
 	(cons "Cross reference" (make-sparse-keymap "Cross reference")))
     
@@ -307,10 +351,14 @@
 	(fi::menu "Debug process" 'fi:scan-stack
 		  :enable '(fi::connection-open)))
     
+      (define-key map (fi::keys [acldebug trace-definer])
+	(fi::menu "Trace definer" 'fi:trace-definer
+		  :enable '(fi::connection-open)))
+    
       (define-key map (fi::keys [acldebug toggle-trace])
 	(fi::menu "Toggle trace" 'fi:toggle-trace-definition
 		  :enable '(fi::connection-open)))
-    
+      
 ;;;; ACLDebug > Cross Reference menu:
     
       (define-key map (fi::keys [acldebug xref edit-who-is-called-by])
@@ -557,7 +605,8 @@
   (message "Creating Composer options dialog...")
   (fi:eval-in-lisp
    "wt:(progn
-	(unless(and(composer-initialized-p)*mouse-line*)(start-mouse-line-process))
+	(unless
+          (and(composer-initialized-p)*mouse-line*)(start-mouse-line-process))
 	(do()((and(composer-initialized-p)*mouse-line*)) (sleep 2))
 	(run-motif-application 'make-main-options)nil)")
   (message "Creating Composer options dialog...done."))
@@ -629,7 +678,8 @@
   (message "Creating profiler options dialog...")
   (fi:eval-in-lisp
    "wt:(progn
-	(unless(and(composer-initialized-p)*mouse-line*)(start-mouse-line-process))
+	(unless
+         (and(composer-initialized-p)*mouse-line*)(start-mouse-line-process))
 	(do()((and(composer-initialized-p)*mouse-line*)) (sleep 2))
 	(run-motif-application 'make-profiler-options)nil)")
   (message "Creating profiler options dialog...done."))
@@ -637,6 +687,11 @@
 (defun fi::source-buffer-p ()
   (and (fi::connection-open)
        (eq major-mode 'fi:common-lisp-mode)))
+
+(defun fi::subproc-buffer-p ()
+  (and (fi::connection-open)
+       (member major-mode '(fi:inferior-common-lisp-mode
+			    fi:lisp-listener-mode))))
 
 (defun fi::acl-buffer-p ()
   (and (fi::connection-open)
@@ -730,22 +785,59 @@
 (defvar fi::popup-menu-initialized nil)
 
 (defun fi::initialize-popup-menu-map ()
-  (when (not fi::popup-menu-initialized)
+  (when (not (memq major-mode fi::popup-menu-initialized))
     (cond
      ((eq major-mode 'fi:common-lisp-mode)
-      (fi::add-popup-menu-items fi:common-lisp-mode-map))
+      (fi::add-common-lisp-popup-menu-items (current-local-map)))
      ((eq major-mode 'fi:inferior-common-lisp-mode)
-      (fi::add-inferieor-popup-menu-items fi:inferior-common-lisp-mode-map))
+      (fi::add-shell-popup-menu-items "Inferior CL popup menu"
+				      (current-local-map))
+      (fi::add-inferior-cl-popup-menu-items (lookup-key (current-local-map)
+							[down-mouse-3])))
      ((eq major-mode 'fi:lisp-listener-mode)
-      (fi::add-inferieor-popup-menu-items fi:lisp-listener-mode-map))) 
+      (fi::add-shell-popup-menu-items "Inferior CL popup menu"
+				      (current-local-map))
+      (fi::add-inferior-cl-popup-menu-items (lookup-key (current-local-map)
+							[down-mouse-3])))
+     ((memq major-mode '(fi:shell-mode fi:rlogin-mode fi:su-mode
+			 fi:remote-su-mode fi:telnet-mode))
+      (fi::add-shell-popup-menu-items "Subprocess popup menu"
+				      (current-local-map))))
     
-    (setq fi::popup-menu-initialized t)))
+    (push major-mode fi::popup-menu-initialized)))
 
 (add-hook 'fi:inferior-common-lisp-mode-hook 'fi::initialize-popup-menu-map)
 (add-hook 'fi:common-lisp-mode-hook 'fi::initialize-popup-menu-map)
 (add-hook 'fi:lisp-listener-mode-hook 'fi::initialize-popup-menu-map)
+(add-hook 'fi:shell-mode-hook 'fi::initialize-popup-menu-map)
+(add-hook 'fi:rlogin-mode-hook 'fi::initialize-popup-menu-map)
+(add-hook 'fi:su-mode-hook 'fi::initialize-popup-menu-map)
+(add-hook 'fi:telnet-mode-hook 'fi::initialize-popup-menu-map)
 
-(defun fi::add-popup-menu-items (main-map)
+fi:subprocess-mode-hook
+
+(defun fi::add-shell-popup-menu-items (name main-map)
+  (let* ((map (make-sparse-keymap name)))
+    (define-key main-map [down-mouse-3] (cons name map))
+  
+    (define-key map [sep1] (fi::menu "----"))
+    
+    (define-key map [garbage-filter]
+      (fi::menu "Start ^M garbage filter" 'fi:telnet-start-garbage-filter))
+    
+    (define-key map [show-output]
+	(fi::menu "Show last command output" 'fi:subprocess-show-output))
+    (define-key map [list-input] (fi::menu "List input" 'fi:list-input-ring))
+    (define-key map [search-input-forward]
+      (fi::menu "Search input forward" 'fi:re-search-forward-input))
+    (define-key map [search-input]
+      (fi::menu "Search input backward" 'fi:re-search-backward-input))
+    (define-key map [push-input] (fi::menu "Next input" 'fi:push-input))
+    (define-key map [pop-input] (fi::menu "Previous input" 'fi:pop-input))
+;;;;;;....    
+    ))
+
+(defun fi::add-common-lisp-popup-menu-items (main-map)
   (let* ((name "CL popup menu")
 	 (map (make-sparse-keymap name)))
     (define-key main-map [down-mouse-3] (cons name map))
@@ -792,52 +884,48 @@
       (fi::menu "Compile form" 'fi:lisp-compile-active-region-or-defun
 		:enable '(fi::acl-buffer-p)))))
 
-(defun fi::add-inferieor-popup-menu-items (main-map)
-  (let* ((name "inferior CL popup menu")
-	 (map (make-sparse-keymap name)))
-    (define-key main-map [down-mouse-3] (cons name map))
-    
-    (define-key map [list-processes]
-      (fi::menu "List processes" 'fi:debug-menu-processes
-		:enable '(fi::connection-open)))
+(defun fi::add-inferior-cl-popup-menu-items (map)
+  (define-key map [list-processes]
+    (fi::menu "List processes" 'fi:debug-menu-processes
+	      :enable '(fi::connection-open)))
 
-    (define-key map [sep1] (fi::menu "----"))
+  (define-key map [sep1] (fi::menu "----"))
     
-    (define-key map [reset]
-      (fi::menu "Reset" 'fi:debug-menu-reset :enable '(fi::connection-open)))
+  (define-key map [reset]
+    (fi::menu "Reset" 'fi:debug-menu-reset :enable '(fi::connection-open)))
     
-    (define-key map [pop]
-      (fi::menu "Pop" 'fi:debug-menu-pop :enable '(fi::connection-open)))
+  (define-key map [pop]
+    (fi::menu "Pop" 'fi:debug-menu-pop :enable '(fi::connection-open)))
     
-    (define-key map [restart]
-      (fi::menu "Restart" 'fi:debug-menu-restart
-		:enable '(fi::connection-open)))
+  (define-key map [restart]
+    (fi::menu "Restart" 'fi:debug-menu-restart
+	      :enable '(fi::connection-open)))
     
-    (define-key map [continue]
-      (fi::menu "Continue" 'fi:debug-menu-continue
-		:enable '(fi::connection-open)))
+  (define-key map [continue]
+    (fi::menu "Continue" 'fi:debug-menu-continue
+	      :enable '(fi::connection-open)))
     
-    (define-key map [sep2] (fi::menu "----"))
+  (define-key map [sep2] (fi::menu "----"))
     
-    (define-key map [locals]
-      (fi::menu "Locals for frame" 'fi:debug-menu-locals
-		:enable '(fi::connection-open)))
+  (define-key map [locals]
+    (fi::menu "Locals for frame" 'fi:debug-menu-locals
+	      :enable '(fi::connection-open)))
     
-    (define-key map [edit-frame]
-      (fi::menu "Edit frame" 'fi:debug-menu-edit-frame
-		:enable '(fi::connection-open)))
+  (define-key map [edit-frame]
+    (fi::menu "Edit frame" 'fi:debug-menu-edit-frame
+	      :enable '(fi::connection-open)))
     
-    (define-key map [up-frame]
-      (fi::menu "Up frame" 'fi:debug-menu-up-frame
-		:enable '(fi::connection-open)))
+  (define-key map [up-frame]
+    (fi::menu "Up frame" 'fi:debug-menu-up-frame
+	      :enable '(fi::connection-open)))
     
-    (define-key map [down-frame]
-      (fi::menu "Down frame" 'fi:debug-menu-down-frame
-		:enable '(fi::connection-open)))
+  (define-key map [down-frame]
+    (fi::menu "Down frame" 'fi:debug-menu-down-frame
+	      :enable '(fi::connection-open)))
     
-    (define-key map [zoom]
-      (fi::menu "Zoom" 'fi:debug-menu-zoom
-		:enable '(fi::connection-open)))))
+  (define-key map [zoom]
+    (fi::menu "Zoom" 'fi:debug-menu-zoom
+	      :enable '(fi::connection-open))))
 
 (defun fi:menu-lisp-find-definition ()
   (interactive)

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 1.117.6.4.8.3 2003/08/07 16:53:59 layer Exp $
+;; $Id: fi-keys.el,v 1.117.6.4.8.4 2003/08/08 17:00:32 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -41,16 +41,16 @@ is'' if there are too many or few parens--answering no leaves the point at
 the place of error.  If the value is 'warn, then a warning is issued and
 the file is written.")
 
-(defvar fi:extended-keybindings t
-  "*If non-nil then define the extended keybindings, which in some cases
-are in violation of the Elisp major mode conventions outlined in the Emacs
-Lisp Manual.  For compatibility reasons the value of this variable is `t'
-by default.")
+(defvar fi:legacy-keybindings t
+  "*If non-nil then define the global, legacy keybindings, which in some
+cases are in violation of the Elisp major mode conventions outlined in the
+Emacs Lisp Manual.  For compatibility reasons the value of this variable is
+`t' by default.")
 
 (defvar fi:menu-bar-single-item t
   "*If non-nil then put a single item onto the menu-bar.  Otherwise, the
 sub-menus in the single menu are put onto the menu-bar.  This variable is
-ignored in all but Emacs 21 and later.")
+ignored in all but XEmacs and Emacs 21 and later.")
 
 
 ;;;;
@@ -67,7 +67,7 @@ ignored in all but Emacs 21 and later.")
 
 (defun fi::initialize-mode-map (mode-map-sym &optional mode-super-map-sym type)
   (when (null (symbol-value mode-map-sym))
-    (let* ((ext fi:extended-keybindings)
+    (let* ((ext fi:legacy-keybindings)
 	   (elsrc (eq major-mode 'fi:emacs-lisp-mode))
 	   (clsrc (eq major-mode 'fi:common-lisp-mode))
 	   (flsrc (eq major-mode 'fi:franz-lisp-mode))
