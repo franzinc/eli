@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 1.114 1998/10/08 18:36:45 layer Exp $
+;; $Id: fi-keys.el,v 1.115 1999/02/25 08:27:48 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -1110,16 +1110,29 @@ window, leaving the point unchanged."
     (recenter 0)
     (goto-char p)))
 
-(defvar fi::toggle-to-lisp-window-config nil)
+(defvar fi::toggle-to-lisp-last-lisp-buffer nil)
+(defvar fi::toggle-to-lisp-common-lisp-buffer-name nil)
 
 (defun fi:toggle-to-lisp ()
   "On each invocation, switch back and forth between the Lisp subprocess
 buffer and the source buffer from which this function was invoked."
   (interactive)
-  (if (and fi::toggle-to-lisp-window-config
-	   (memq major-mode
-		 '(fi:inferior-common-lisp-mode fi:lisp-listener-mode)))
-      (set-window-configuration fi::toggle-to-lisp-window-config)
-    (progn (setq fi::toggle-to-lisp-window-config
-	     (current-window-configuration))
-	   (call-interactively 'fi:common-lisp))))
+  (when (and fi::toggle-to-lisp-common-lisp-buffer-name
+	     (null (get-buffer fi::toggle-to-lisp-common-lisp-buffer-name)))
+    (setq fi::toggle-to-lisp-common-lisp-buffer-name))
+  (when (null fi::toggle-to-lisp-common-lisp-buffer-name)
+    (or (and fi::common-lisp-backdoor-main-process-name
+	     (setq fi::toggle-to-lisp-common-lisp-buffer-name
+	       (buffer-name
+		(process-buffer
+		 (get-process fi::common-lisp-backdoor-main-process-name)))))
+	(error "Common Lisp process is not running.")))
+  (let (target-buffer)
+    (cond ((memq major-mode '(fi:inferior-common-lisp-mode
+			      fi:lisp-listener-mode))
+	   (or (setq target-buffer fi::toggle-to-lisp-last-lisp-buffer)
+	       (error "There is no previous source buffer.")))
+	  (t ;; a lisp source buffer
+	   (setq fi::toggle-to-lisp-last-lisp-buffer (current-buffer))
+	   (setq target-buffer fi::toggle-to-lisp-common-lisp-buffer-name)))
+    (funcall fi:display-buffer-function target-buffer)))

@@ -7,6 +7,15 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.17 -- join from acl50 branch
+
+(rectify version misnumbering on the trunk)
+
+- changes from 2.0.21.16.3 to 2.0.21.16.12
+- cvs command: cvs update -d -j acl50_merge4 -j acl50
+- next merge tag: acl50_merge5
+
+*******************************************************************************
 2.0.22.3 -- join from acl50 branch (version 2.0.21.16.2)
 next merge tag: acl50_merge4
 
@@ -21,6 +30,105 @@ next merge tag: acl50_merge2
 *******************************************************************************
 2.0.21.1 -- join from acl50 branch (versions 2.0.21.beta.0 to 2.0.21.0)
 next merge tag: acl50_merge1
+
+*******************************************************************************
+2.0.21.16.12
+
+1999-01-20  Kevin Layer  <layer@ultra>
+
+	* fi-lep.el: protect against 'sendmail module not being there (as
+	it isn't in XEmacs 21.0.62)
+	* fi-site-init.el: fi::emacs-type for XEmacs 21
+	* fi-subproc.el: workaround for bug in XEmacs 21; fix for XEmacs 21
+
+*******************************************************************************
+2.0.21.16.11
+
+1999-02-08  Kevin Layer  <layer@ultra>
+
+	* fi-site-init.el: fix NT predicate test (again, last fixed in
+	version 2.0.21.16.9)
+
+*******************************************************************************
+2.0.21.16.10
+
+1999-02-04  Kevin Layer  <layer@ultra>
+
+	* fi-keys.el: fix fi:toggle-to-lisp further (deleted buffer case)
+
+*******************************************************************************
+2.0.21.16.9
+
+1999-02-02  Kevin Layer  <layer@ultra>
+
+	* fi-site-init.el: fix NT predicate test
+
+*******************************************************************************
+2.0.21.16.8
+
+1999-02-01  Kevin Layer  <layer@ultra>
+
+	* fi-utils.el: strip off font stuff from symbols before sending to
+	lisp
+
+*******************************************************************************
+2.0.21.16.7
+
+1999-01-27  Kevin Layer  <layer@ultra>
+
+	* doc/eli.htm: fix links destroyed by MS FrontPage
+	* fi-keys.el: fix fi:toggle-to-lisp per spr18788
+
+*******************************************************************************
+2.0.21.16.6
+
+1999-01-26    <layer@HOBART>
+
+	* doc/eli.htm: add notes about new features
+
+*******************************************************************************
+<no version change>
+
+1999-01-25  Kevin Layer  <layer@ultra>
+
+	* CHANGES: file rfes
+
+*******************************************************************************
+2.0.21.16.5
+
+1999-01-18  Kevin Layer  <layer@ultra>
+
+	* Makefile: use emacs20
+	* fi-compile.el: add comment
+	* fi-subproc.el: use frame-width not screen-width; rfe3358:
+	fi:connect-to-windows implementation; rfe3391:
+	fi:common-lisp-subprocess-wait-forever
+	* fi-xcompile.el: turn off byte-compile-compatibility
+
+1999-01-18    <layer@HOBART>
+
+	* fi-compile.el: turn off byte-compile-compatibility due to
+	problems with new versions of emacs
+	* fi-keys.el: bug7565: new version of fi:toggle-to-lisp, which
+	isn't quite ready
+
+*******************************************************************************
+2.0.21.16.4
+
+1999-01-07  Kevin Layer  <layer@ultra>
+
+	* fi-lep.el: [bug7266] fi::lisp-complete-symbol doesn't do
+	defontification
+	* fi-site-init.el: let users set fi::library-directory before they
+	load us
+
+*******************************************************************************
+2.0.21.16.3
+
+Thu Dec  3 11:31:45 1998  Kevin Layer  <layer@ultra>
+
+	* fi-lep.el: further fixes to completion
+	* fi-utils.el: more for completion
 
 *******************************************************************************
 2.0.21.16.2
@@ -41,6 +149,8 @@ Wed Sep 23 09:34:13 1998  Kevin Layer  <layer@ultra>
 	* fi-lep.el: fix completion
 	* fi-subproc.el: (windows) fix + arg handling
 
+*******************************************************************************
+*** ACL 5.0 release
 *******************************************************************************
 2.0.21.16
 

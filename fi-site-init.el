@@ -1,4 +1,4 @@
-;; $Id: fi-site-init.el,v 1.113 1998/11/10 22:07:59 layer Exp $
+;; $Id: fi-site-init.el,v 1.114 1999/02/25 08:27:48 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -9,13 +9,13 @@
 
 (defvar *on-windows-nt*
     (and (on-ms-windows)
-	 (file-exists-p (format "%s/system32" (getenv "WINDIR")))))
+	 (string-match "Windows_NT" (or (getenv "OS") ""))))
 
 (setq fi::emacs-type
   (let ((case-fold-search t))
     (cond ((or (string-match "xemacs" emacs-version)
 	       (string-match "lucid" emacs-version))
-	   (cond ((string-match "^20\." emacs-version) 'xemacs20)
+	   (cond ((string-match "^2[01]\." emacs-version) 'xemacs20)
 		 (t 'xemacs19)))
 	  ((string-match "^20\." emacs-version) 'emacs20)
 	  ((string-match "^19\." emacs-version) 'emacs19)
@@ -48,7 +48,7 @@
       (setq path (cdr path)))
     res))
 
-(defvar fi::library-directory)
+(defvar fi::library-directory nil)
 (cond
  ((or (not (boundp 'load-file-name))
       ;; The following clause is due to Emacs 20.2, where load-file-name is
@@ -63,11 +63,12 @@
 	      (fi::find-path load-path file))))
     (when (not path)
       (error "Can't find fi/%s or %s in your load-path." file file))
-    (setq fi::library-directory (file-name-directory path)))
+    (unless fi::library-directory
+      (setq fi::library-directory (file-name-directory path))))
   ;; Toss this version of fi::find-path, since it is redefined later
   ;; (compiled, too).
   (fset 'fi::find-path nil))
- (t 
+ ((null fi::library-directory) 
   (setq fi::library-directory (file-name-directory load-file-name))))
 
 (defun fi::locate-library (file)
@@ -192,8 +193,8 @@ exists.")
 
 (fi::load "fi-vers")
 (when (and (= 19 (car fi:compiled-with-version))
-	   (= 20 emacs-major-version)
-	   (eq 'xemacs20 fi::emacs-type))
+	   (eq 'xemacs20 fi::emacs-type)
+	   (>= emacs-major-version 20))
   (delete-other-windows)
   (switch-to-buffer "*Help*")
   (erase-buffer)

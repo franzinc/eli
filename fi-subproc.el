@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.203 1998/10/08 18:36:45 layer Exp $
+;; $Id: fi-subproc.el,v 1.204 1999/02/25 08:27:48 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -81,7 +81,7 @@ a buffer, which is used to display a buffer when a subprocess is created.")
     '(("EMACS" . "t")
       ("TERM" . "emacs")
       ("DISPLAY" . (or (getenv "DISPLAY") (format "%s:0.0" (system-name))))
-      ("TERMCAP" . (format "emacs:co#%d:tc=unknown:" (screen-width))))
+      ("TERMCAP" . (format "emacs:co#%d:tc=unknown:" (frame-width))))
   "*An alist containing the environment variables to pass to newly created
 subprocesses.")
 
@@ -109,6 +109,13 @@ readtable.")
 
 (make-variable-buffer-local 'fi:readtable)
 
+;; The following variable and use of same courtesy of KURODA Hisao
+;; (kuroda@msi.co.jp):
+(defvar fi:connect-to-windows (on-ms-windows)
+  "*If non-nil, then connect to Lisp running on a Windows machine.  Since
+we connect in a fundamentally different way, the default value of this is
+non-nil only on Windows.")
+ 
 ;;;;
 ;;; Common Lisp Variables and Constants
 ;;;;
@@ -323,6 +330,11 @@ process-connection-type (q.v.).")
 in seconds, that Emacs will wait for Lisp to startup, when no connection
 can be made in fi:common-lisp.")
 
+(defvar fi:common-lisp-subprocess-wait-forever nil
+  "*This variable only has an effect on Windows.  If the value is non-nil,
+then wait forever for the Lisp to startup.  Use with caution.  The
+keyboard-quit function will interrupt the waiting, however.")
+
 (defvar minibuffer-confirm-incomplete)
 
 (defun fi:common-lisp (&optional buffer-name directory executable-image-name
@@ -389,7 +401,7 @@ completions read in the minibuffer.  Use this combination at your own
 risk.")
       (when (null (y-or-n-p "Run Lisp anyway? "))
 	(error "fi:common-lisp aborted by user."))))
-  (unless (or fi::rsh-command (on-ms-windows))
+  (unless (or fi::rsh-command fi:connect-to-windows)
     (setq fi::rsh-command
       (cond ((fi::command-exists-p "remsh") "remsh")
 	    ((fi::command-exists-p "rsh") "rsh")
@@ -451,10 +463,15 @@ be a string. Use the 6th argument for image file."))
 	 (real-args (fi::reorder-arguments real-args))
 	 (process-connection-type fi::common-lisp-connection-type) ;bug3033
 	 (proc
-	  (if (on-ms-windows)
+	  (if fi:connect-to-windows
 	      (let ((start-lisp-after-failed-connection t)
 		    (i 0)
 		    (process nil))
+                (unless fi::lisp-host (setq-default fi::lisp-host host))
+                (unless fi::lisp-port (setq-default fi::lisp-port 9666))
+                (unless fi::lisp-password (setq-default fi::lisp-password 0))
+                (unless fi::lisp-ipc-version
+		  (setq-default fi::lisp-ipc-version 1))
 		(fi::set-environment fi:subprocess-env-vars)
 		(while
 		    (condition-case nil
@@ -476,8 +493,9 @@ be a string. Use the 6th argument for image file."))
 			    (equal "connection failed"
 				   (second fi::last-network-condition)))))
 		  (cond
+		   (fi:common-lisp-subprocess-wait-forever)
 		   ((and (> i 0) (zerop (mod i 10)))
-		    ;; Every 10 seconds, ask if they still want to wait:
+		    ;; Every 10 iterations, ask if they still want to wait:
 		    (when (not (y-or-n-p
 				"Continue waiting for ACL to startup? "))
 		      (error "Connection aborted.")))
@@ -495,7 +513,13 @@ be a string. Use the 6th argument for image file."))
 			     "common-lisp"
 			     executable-image-name
 			     real-args)))
-		      (unless (eq 'run (process-status p))
+		      (unless (or (eq 'run (process-status p))
+				  ;; From Greg Klanderman:
+				  ;; XEmacs 21.0 on NT process status
+				  ;; is 'exit but it's really OK.
+				  ;; May be an XEmacs bug...
+				  (and (eq fi::emacs-type 'xemacs20)
+				       (on-ms-windows)))
 			(error "Program %s died." executable-image-name))
 		      (setq start-lisp-after-failed-connection nil)))
 		  (sleep-for 1)
@@ -556,7 +580,7 @@ be a string. Use the 6th argument for image file."))
 			  (cd dir)
 			(error nil))))))
 	       local host directory)))))
-    (when (and (on-ms-windows) (not (fi::lep-open-connection-p)))
+    (when (and fi:connect-to-windows (not (fi::lep-open-connection-p)))
       (fi::start-backdoor-interface proc)
       (fi::ensure-lep-connection)
       (condition-case ()
@@ -623,7 +647,10 @@ be a string. Use the 6th argument for image file."))
 	(win32-start-process-show-window t)
 	(w32-start-process-show-window t)
 	(win32-quote-process-args t)
-	(w32-quote-process-args t))
+	(w32-quote-process-args t)
+	;; from Greg Klanderman:
+	;; XEmacs 21 NT does this differently...
+	(nt-quote-args-functions-alist '(("." . nt-quote-args-double-quote))))
     (apply (function start-process)
 	   process-name
 	   nil ;; buffer-name
@@ -639,14 +666,14 @@ prefix arguments > 1.  If a negative prefix argument is given, then the
 first \"free\" buffer name is found and used.  When called from a program,
 the buffer name is the second optional argument."
   (interactive "p")
-  (if (on-ms-windows)
+  (if fi:connect-to-windows
       (fi::ensure-lep-connection)
     (if (or (null fi::common-lisp-backdoor-main-process-name)
 	    (not (fi:process-running-p
 		  (get-process fi::common-lisp-backdoor-main-process-name)
 		  buffer-name)))
 	(error "Common Lisp must be running to open a lisp listener.")))
-  (if (on-ms-windows)
+  (if fi:connect-to-windows
       (fi::make-tcp-connection (or buffer-name "lisp-listener")
 			       buffer-number
 			       'fi:lisp-listener-mode
@@ -850,7 +877,8 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 			   &optional directory default mustmatch initial)
   (let ((temp (read-file-name prompt directory
 			      (if (null default) "" default)
-			      mustmatch initial)))
+			      mustmatch
+			      initial)))
     (setq temp
       (cond ((string= temp "")
 	     ;; user deleted `initial' text or just hit RET
@@ -1042,7 +1070,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 					  given-password
 					  given-ipc-version
 					  setup-function)
-  (if (and (not (on-ms-windows))
+  (if (and (not fi:connect-to-windows)
 	   (not fi::common-lisp-backdoor-main-process-name))
       (error "A Common Lisp subprocess has not yet been started."))
   (let* ((buffer-name
@@ -1056,18 +1084,21 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	 (default-dir default-directory)
 	 (buffer-name (buffer-name buffer))
 	 (process-buffer
-	  (unless (on-ms-windows)
+	  (unless fi:connect-to-windows
 	    (and (get-process fi::common-lisp-backdoor-main-process-name)
 		 (process-buffer
 		  (get-process fi::common-lisp-backdoor-main-process-name)))))
 	 (host (or given-host
-		   (and (on-ms-windows) (error "on windows"))
+		   (and fi:connect-to-windows
+			(error "Windows mode, need to specify host."))
 		   (fi::get-buffer-host process-buffer)))
 	 (service (or given-service
-		      (and (on-ms-windows) (error "on windows"))
+		      (and fi:connect-to-windows
+			   (error "Windows mode, need to specify service."))
 		      (fi::get-buffer-port process-buffer)))
 	 (password (or given-password
-		       (and (on-ms-windows) (error "on windows"))
+		       (and fi:connect-to-windows
+			    (error "Windows mode, need to specify passwd."))
 		       (fi::get-buffer-password process-buffer)))
 	 (proc (get-buffer-process buffer)))
 

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 1.80 1998/10/08 18:36:45 layer Exp $
+;; $Id: fi-lep.el,v 1.81 1999/02/25 08:27:48 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -364,7 +364,10 @@ since the Emacs-Lisp interface will not create it."
   "Get the buffer tick if it is supported"
   (and (fboundp 'buffer-modified-tick) (buffer-modified-tick)))
 
-(require 'sendmail) ;; for mail-to
+;; XEmacs 21 pre-release versions don't have this, so protect ourselves
+(condition-case ()
+    (require 'sendmail) ;; for mail-to
+  (error nil)) 
 
 (defun fi:bug-report ()
   "Create a mail buffer which contains information about the Common Lisp
@@ -478,7 +481,7 @@ separator that causes the substring before the hyphen to be matched at the
 beginning of words in target symbols."
   (interactive)
   (let* ((end (point))
-	 xpackage real-beg
+	 package-name xpackage real-beg
 	 (beg (save-excursion
 		(backward-sexp 1)
 		(while (= (char-syntax (following-char)) ?\')
@@ -488,21 +491,36 @@ beginning of words in target symbols."
 		  (if (re-search-forward ":?:" end t)
 		      (setq xpackage
 			(concat ":"
-				(buffer-substring opoint
-						  (match-beginning 0))))))
+				(setq package-name
+				  (buffer-substring opoint
+						    (match-beginning 0)))))))
 		(point)))
-	 (pattern (buffer-substring beg end))
+	 (pattern (format "%s" (buffer-substring beg end)))
 	 (functions-only (if (eq (char-after (1- real-beg)) ?\() t nil))
 	 (downcase (not (fi::all-upper-case-p pattern)))
 	 (xxalist (fi::lisp-complete-1 pattern xpackage functions-only))
 	 (xalist
-	  (if xpackage
+	  (if (and xpackage (cdr xxalist))
 	      (fi::package-frob-completion-alist xxalist)
 	    xxalist))
 	 (alist (if downcase
 		    (mapcar 'fi::downcase-alist-elt xalist)
 		  xalist))
-	 (completion (if alist (try-completion pattern alist))))
+	 (completion
+	  (when alist
+	    (let* ((xfull-package-name
+		    (when xpackage
+		      (fi:eval-in-lisp "(package-name (find-package %s))"
+				       xpackage)))
+		   (full-package-name
+		    (when xfull-package-name
+		      (if downcase
+			  (downcase xfull-package-name)
+			xfull-package-name))))
+	      (when full-package-name
+		(setq pattern
+		  (format "%s::%s" full-package-name pattern)))
+	      (try-completion pattern alist)))))
 
     (cond ((eq completion t)
 	   (message "Completion is unique."))
@@ -579,9 +597,11 @@ beginning of words in target symbols."
 				       (setq xpackage "keyword"))
 				   (intern (fi::frob-case-to-lisp xpackage)))
 		       ':functions-only-p (intern
-					   (fi::frob-case-to-lisp functions-only))
+					   (fi::frob-case-to-lisp
+					    functions-only))
 		       ':ignore-keywords (intern
-					  (fi::frob-case-to-lisp ignore-keywords))))))
+					  (fi::frob-case-to-lisp
+					   ignore-keywords))))))
 	    (fi::lisp-complete-2 completions xpackage))
 	(quit
 	 (fi:eval-in-lisp
