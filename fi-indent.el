@@ -31,7 +31,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.26 1991/06/19 22:16:03 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.27 1991/06/27 15:26:38 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If non-nil, semicolons that begin comments are indented as they are
@@ -39,7 +39,7 @@ inserted into the buffer.")
 
 (make-variable-buffer-local 'fi:lisp-electric-semicolon)
 
-(defvar fi:lisp-comment-indent-specification nil
+(defvar fi:lisp-comment-indent-specification '(40 t nil 0)
   "*Specification list for indentations of semicolon comments.
 The nth element of the list specifies the indentation for a comment beginning
 with n semicolons (e.g. the first element of the list is the indentation for
@@ -178,12 +178,32 @@ Called with two arguments, indent-point and `state'.")
 
 (make-variable-buffer-local 'fi::comment-indent-hook-values)
 
+(defvar fi::lisp-most-recent-parse-result nil
+  "Most recent parse result: point at parse end and parse state.
+A list that is the `cons' of the point at which the most recent
+parse ended and the parse state from `fi::parse-partial-sexp'.")
+
+(make-variable-buffer-local 'fi::lisp-most-recent-parse-result)
+
+(defvar fi::calculate-lisp-indent-state-temp nil
+  "Used as the last argument to fi::parse-partial-sexp so we do as little
+consing as is possible.")
+
+(make-variable-buffer-local 'fi::calculate-lisp-indent-state-temp)
+
+(defvar fi::lisp-indent-state-temp nil
+  "Used as the last argument to fi::parse-partial-sexp so we can do as
+little consing as possible.")
+
+(make-variable-buffer-local 'fi::lisp-indent-state-temp)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun fi:lisp-comment-indent (&optional addr)
   (let* ((begin (if addr addr (point)))
 	 (comment-spec
 	  (or (and fi:lisp-comment-indent-specification
+		   (numberp (car fi:lisp-comment-indent-specification))
 		   (progn
 		     (if (not
 			  (= comment-column
@@ -191,7 +211,8 @@ Called with two arguments, indent-point and `state'.")
 			 (rplaca fi:lisp-comment-indent-specification
 				 comment-column))
 		     fi:lisp-comment-indent-specification))
-	      (list comment-column t nil 0)))
+	      (or fi:lisp-comment-indent-specification
+		  (list comment-column t nil 0))))
 	 (spec-length (length comment-spec))
 	 spec
 	 count)
@@ -215,7 +236,7 @@ Called with two arguments, indent-point and `state'.")
 	((eq spec t) (let ((tem (fi::calculate-lisp-indent)))
 		       (list (if (listp tem) (car tem) tem) nil)))
 	((and (integerp spec) (>= spec 0)) (list spec t))
-	((integerp spec) (- (current-column) (list spec nil)))
+	((integerp spec) (list (- (current-column) spec) nil))
 	(t (error "Bad comment indentation specification for count %d."
 		  count)))))))
  
@@ -301,11 +322,6 @@ status of that parse."
 			(indent-to to-column 0)))
 		(error "sexp parse anomaly: no comment where expected"))))))))
 
-(defvar fi::lisp-most-recent-parse-result nil
-  "Most recent parse result: point at parse end and parse state.
-A list that is the `cons' of the point at which the most recent
-parse ended and the parse state from `fi::parse-partial-sexp'.")
-
 (defun fi:lisp-indent-line (&optional whole-exp)
   "Indent current line as Lisp code.
 With argument, indent any additional lines of the same expression
@@ -347,10 +363,6 @@ rigidly along with this one."
 	     (> end beg))
 	   (fi:indent-code-rigidly beg end shift-amt)))))
  
-(defvar fi::calculate-lisp-indent-state-temp nil
-  "Used as the last argument to fi::parse-partial-sexp so we do as little
-consing as is possible.")
-
 (defun fi::calculate-lisp-indent (&optional parse-start)
   "Return appropriate indentation for current line as Lisp code.
 In usual case returns an integer: the column to indent to.
@@ -478,10 +490,6 @@ of the start of the containing expression."
 	     ;; Use default indentation if not computed yet
 	     (setq desired-indent (current-column))))
       desired-indent)))
-
-(defvar fi::lisp-indent-state-temp nil
-  "Used as the last argument to fi::parse-partial-sexp so we can do as
-little consing as possible.")
 
 (defun fi:lisp-indent-hook (indent-point state)
   (let ((normal-indent (current-column))
