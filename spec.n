@@ -1,7 +1,7 @@
 	      Franz Inc. GNU Emacs/Common Lisp Interface
-			     Release 1.5.1
+			     Release 1.5.2
 
-;; $Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.48 1990/10/19 13:57:18 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.49 1990/12/07 00:45:51 layer Exp $
 
 This document is a specification of the Franz Inc. GNU Emacs interface
 to Common Lisp, which is written entirely in GNU Emacs Lisp (for GNU
@@ -54,11 +54,11 @@ from programs running on the same machine.  However the flexibility of
 using file names in UNIX domain addresses allows the Emacs to Lisp
 interface to choose unique addresses for each user running on a
 machine.  The file name convention we use is this: when user `smith'
-starts up Lisp, the UNIX domain address `~smith/.excl_to_emacs' is used
-by Lisp.  When `smith' directs Emacs to connect to Lisp, it knows it
-was started by smith and thus talks to address `~smith/.excl_to_emacs'.
-Thus multiple users on a given machine can run the Emacs to Lisp
-interface.
+starts up Lisp, the UNIX domain address `/tmp/GnutoACLxxx' (xxx is the
+UID for user smith) is used by Lisp.  When `smith' directs Emacs to
+connect to Lisp, it knows it was started by smith and thus talks to
+address `/tmp/GnutoACLxxx'.  Thus multiple users on a given machine
+can run the Emacs to Lisp interface.
 
    The Emacs/Lisp interface in this document can use both of these
 methods of communication, but the preferred method uses UNIX domain
@@ -435,63 +435,21 @@ is started (called a "read-eval-print" loop) to which Emacs can send
 expressions for evaluation and from which Emacs receives the results
 of evaluation (see fi:eval-in-lisp).
 
-   The preferred method to start this daemon is to put one of the
-following group of forms in your .clinit.cl (in your home directory):
-
-    ;;;;;;; Method 1
-    ;;
-    ;; this will merely load the ipc package and start it up
-    ;;
-    (require :ipc)
-    (require :emacs)
-    (ipc:start-lisp-listener-daemon)
-
-    ;;;;;;; Method 2
-    ;;
-    ;; this will load the ipc package and start it up when `+ipc' is given on
-    ;; the Allegro CL command line.  For example, if you put the following in
-    ;; your .emacs file:
-    ;;
-    ;;     (setq fi:common-lisp-image-arguments '("+ipc"))
-    ;;
-    ;; then when you startup Allegro CL from within emacs (using
-    ;; fi:common-lisp) you will automatically load and start the
-    ;; emacs/lisp interface. 
-    ;;
-    (cond
-     ((find "+ipc" (system:command-line-arguments) :test #'string=)
-      (require :ipc)
-      (require :emacs)
-      (funcall (find-symbol (symbol-name :start-lisp-listener-daemon)
-			    (find-package :ipc)))))
-
-    ;;;;;;; Method 3
-    ;;
-    ;; this will load the ipc package and require you to start it manually
-    ;; with the top-level command `:listen'.
-    ;;
-    (tpl:alias "ipc" ()
-      (require :ipc)
-      (require :emacs)
-      (funcall (find-symbol (symbol-name :start-lisp-listener-daemon)
-			    (find-package :ipc))))
-
-and to put the following in your .emacs file in your home directory:
+   Unlike previous versions of the interface, nothing at all need be
+added to your .clinit.cl file.  You do, however, need to add the
+following line to the .emacs file in your home directory:
 
 	(load "fi/site-init.el")
 
-Assuming method 2 was chosen, consider the following typed to Emacs:
+Now, consider the following typed to Emacs:
 
 	M-x fi:common-lisp RET
 
 This will cause a Common Lisp (the default image name is `cl') to be
 started in a buffer called `*common-lisp*', as an inferior process of
-Emacs.  This Common Lisp will be passed a command line argument of
-`+ipc', which will cause Common Lisp to load and start the Lisp
-listener daemon.  Emacs and Common Lisp will communicate through a
-UNIX domain socket (a file) in /tmp called `USER_emacs_to_acl', where
-USER is the currently-logged-in-user's name.  All of the bindings and
-functions described above are now available.
+Emacs.  The connection between Emacs and Lisp will automatically be
+started, in the Internet domain.  All of the bindings and functions
+described above are now available.
 
 
 4.2 Examples
@@ -514,59 +472,18 @@ program in one buffer while typing forms to another), while the latter
 starts two separate Common Lisp processes, and thus uses twice the
 memory and swap space.
 
-
-4.2.1 Remote Common Lisps using TCP/IP
-
-   It is possible, with the functions and bindings in this interface,
-to run an Emacs and Common Lisp on two different machines.  For
+There is also a function for running Lisp on a remote machine.  For
 example, to run Emacs on a machine called `snooze' and Common Lisp on
 one called `akbar', where both machines are accessible on the network,
-~/.emacs on `snooze' would contain:
+you just need to execute the following sequence in Emacs:
 
-	(setq fi:unix-domain nil)
-	(setq fi:local-host-name "akbar")	; the remote host name
+	M-x fi:explicit-remote-common-lisp RET
+	akbar RET
+	/usr/local/cl RET
+	x y z RET
 
-and ~/.clinit.cl on `akbar' would contain the forms given in section
-4.1 with the call to load-and-start-ipc-package replaced with:
-
-	(load-and-start-ipc-package :unix-domain nil)
-
-Then, make sure the value of ipc::*inet-port* in ipc.cl and
-fi:excl-service-name in tcplisp.el (all in the lisp/fi directory)
-match what is in /etc/services.  For the interface as distributed, put
-the following line in /etc/services:
-
-	excl		6789/tcp
-
-on both `akbar' and `snooze'.
-
-Then, on `akbar', possibly in a shell buffer remotely logged into
-`akbar', startup Common Lisp with the +ipc argument:
-
-	akbar% cl +ipc
-
-(If you get the error "bind: Address already in use" then the port
-number you chose is already being used by another program.  In this
-case, use something other than 6789 (in the default case) or the one
-currently being used.)  Then, on `snooze' do:
-
-	M-x fi:tcp-common-lisp RET
-
-which will open a connection to the Lisp on `akbar' from `snooze'.
-
-
-4.2.2 Remote Common Lisps using `rsh'
-
-   It is also possible to run Common Lisp on another machine using
-`rsh'.  For example, typing the following to Emacs will start a Lisp
-process on host `akbar' without using the TCP/IP connection between
-Common Lisp and Emacs:
-
-	M-x fi:remote-common-lisp RET akbar RET
-
-NOTE: fi:remote-common-lisp uses fi:common-lisp-image-name to
-determine which image to activate.  If the image name is incorrect for
-the remote machine, then use fi:explicit-remote-common-lisp.
+which will run the program Lisp image /usr/local/cl (on akbar), giving
+Lisp the three arguments "x", "y" and "z".
 
 5. Using the Online Manual
   
