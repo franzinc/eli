@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.77 1992/07/17 15:28:55 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.78 1992/08/04 15:50:03 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -413,7 +413,7 @@ which is a buffer local variable."
   (interactive)
   (if (eobp)
       (fi::subprocess-reprocess-keys fi:subprocess-super-key-map)
-    (fi::subprocess-reprocess-keys global-map)))
+    (fi::subprocess-reprocess-keys (current-global-map))))
 
 (defun fi::subprocess-reprocess-keys (&optional map key)
   "Reprocess KEY or the last key sequence (which may be incomplete) in MAP.
@@ -421,7 +421,7 @@ This is used to reprocess a key sequence as if it were seen in another
 context, e.g. to process global bindings of keys from a subprocess
 buffer (in fi:shell-mode or fi:inferior-lisp-mode) when some keys are hit
 other than at the end of the buffer."
-  (if (null map) (setq map global-map))
+  (if (null map) (setq map (current-global-map)))
   (let* ((last-key (if key
 		       (if (integerp key)
 			   (char-to-string key)
