@@ -19,7 +19,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.143 1992/12/14 17:32:15 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.144 1993/03/23 10:14:14 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -76,20 +76,6 @@ a buffer, which is used to display a buffer when a subprocess is created.")
       ("TERMCAP" . (format "emacs:co#%d:tc=unknown:" (screen-width))))
   "*An alist containing the environment variables to pass to newly created
 subprocesses.")
-
-(defvar fi:in-package-regexp nil
-  "*If non-nil, the regular expression that describes the IN-PACKAGE form,
-for purposes of tracking package changes in a subprocess Lisp buffer.  The
-value of this is taken from fi:default-in-package-regexp in Lisp subprocess
-buffers, but is nil elsewhere.")
-(make-variable-buffer-local 'fi:in-package-regexp)
-
-(defvar fi:default-in-package-regexp
-  "(in-package\\>\\|:pa\\>\\|:pac\\>\\|:pack\\>\\|:packa\\>\\|:packag\\>\\|:package\\>"
-  "*The regular expression matching the Lisp expression to change the
-current package.  The two things this must match are the IN-PACKAGE macro
-form and all the possible instances of the :package top-level command.
-If nil, no automatic package tracking will be done.")
 
 (defvar fi:pop-to-sublisp-buffer-after-lisp-eval nil
   "*If non-nil, then go to the Lisp subprocess buffer after sending
@@ -1080,7 +1066,9 @@ to your `.cshrc' after the `set cdpath=(...)' in the same file."
 			  (expand-file-name (substitute-in-file-name xdir))
 			xdir)))
 		(setq directory dir)
-		(setq directory-stack 'replace)))))))
+		(if (string-match "^/" dir)
+		    (setq directory-stack 'replace)
+		  (setq directory-stack 'append))))))))
 	(when directory
 	  (if (file-directory-p directory)
 	      (progn
@@ -1089,7 +1077,13 @@ to your `.cshrc' after the `set cdpath=(...)' in the same file."
 		       (setq fi::shell-directory-stack
 			 (cons directory fi::shell-directory-stack)))
 		      ((eq 'replace directory-stack)
-		       (rplaca fi::shell-directory-stack directory))))
+		       (rplaca fi::shell-directory-stack directory))
+		      ((eq 'append directory-stack)
+		       (rplaca fi::shell-directory-stack
+			       (fi::new-directory
+				(car fi::shell-directory-stack)
+				directory)))))
+	    
 	    ;; check $cdpath
 	    (unless fi::cdpath (setq fi::cdpath (fi::listify-cdpath)))
 	    (let ((cdpath fi::cdpath)
@@ -1103,10 +1097,25 @@ to your `.cshrc' after the `set cdpath=(...)' in the same file."
 			 (setq fi::shell-directory-stack
 			   (cons dir fi::shell-directory-stack)))
 			((eq 'replace directory-stack)
-			 (rplaca fi::shell-directory-stack dir)))
+			 (rplaca fi::shell-directory-stack dir))
+			((eq 'append directory-stack)
+			 (rplaca fi::shell-directory-stack
+				 (fi::new-directory
+				  (car fi::shell-directory-stack)
+				  directory))))
 		  (setq done t))
 		(setq cdpath (cdr cdpath)))))))
     (error nil)))
+
+(defun fi::new-directory (old new)
+  (cond ((string= "." new) old)
+	((string= ".." new)
+	 (file-name-directory
+	  (directory-file-name old)))
+	(t (concat old
+		   (unless (string-match "/$" old)
+		     "/")
+		   new))))
 
 (defun fi::listify-cdpath ()
   (let ((cdpath (fi::shell-command-output-to-string
