@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.49 1993/09/02 22:34:23 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.50 1993/09/08 00:22:08 layer Exp $
 
 ;;; Misc utilities
 
@@ -687,8 +687,7 @@ created by fi:common-lisp."
 
 (defun fi::switch-to-buffer-new-screen (buffer)
   (cond
-   ((and (eq fi:common-lisp-buffer-name (buffer-name buffer))
-	 fi:new-screen-for-common-lisp-buffer)
+   (fi:new-screen-for-common-lisp-buffer
     (let ((screen (get-screen-for-buffer buffer t)))
       (select-screen screen)
       ;; make sure the buffer is visible

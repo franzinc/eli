@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.56 1993/09/01 23:12:27 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.57 1993/09/08 00:21:54 layer Exp $
 
 ;;;; Mode initializations
 
@@ -87,8 +87,6 @@ If nil, no automatic package tracking will be done.")
 ;;;;
 ;;; The Modes
 ;;;;
-
-(put 'fi:inferior-common-lisp-mode 'screen-name 'common-lisp)
 
 (defun fi:inferior-common-lisp-mode (&optional mode-hook &rest mode-hook-args)
   "Major mode for interacting with Common Lisp subprocesses.

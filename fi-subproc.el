@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.154 1993/09/01 23:12:34 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.155 1993/09/08 00:22:02 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -830,38 +830,47 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		       (fi::get-buffer-password process-buffer)))
 	 (proc (get-buffer-process buffer)))
     
-    (funcall fi:display-buffer-function buffer)
-    
-    (if (fi:process-running-p proc)
-	(goto-char (point-max))
-      (setq default-directory default-dir)
-      (setq proc (fi::open-network-stream buffer-name buffer host service))
-      (set-process-sentinel proc 'fi::tcp-sentinel)
-      ;;
-      ;; The first input the new (Common Lisp) process is sent is the name
-      ;; of the process.  This is so that the processes are named similarly
-      ;; in Emacs and Lisp.
-      ;;
-      (when given-ipc-version
-	(process-send-string
-	 proc
-	 (format "%s\n" (fi::prin1-to-string fi::listener-protocol))))
-      (process-send-string proc (format "\"%s\"\n" (buffer-name buffer)))
-      (process-send-string proc (format "%d\n" password))
+    (unless (fi:process-running-p proc)
+      (save-excursion
+	(save-window-excursion
+	  (switch-to-buffer buffer)
+	  (goto-char (point-max))
+	  (setq default-directory default-dir)
+	  (setq proc (fi::open-network-stream buffer-name buffer host service))
+	  (set-process-sentinel proc 'fi::tcp-sentinel)
+	  ;;
+	  ;; The first input the new (Common Lisp) process is sent is the name
+	  ;; of the process.  This is so that the processes are named similarly
+	  ;; in Emacs and Lisp.
+	  ;;
+	  (when given-ipc-version
+	    (process-send-string
+	     proc
+	     (format "%s\n" (fi::prin1-to-string fi::listener-protocol))))
+	  (process-send-string proc (format "\"%s\"\n" (buffer-name buffer)))
+	  (process-send-string proc (format "%d\n" password))
 
-      (when setup-function
-	(process-send-string proc (funcall setup-function proc)))
+	  (when setup-function
+	    (process-send-string proc (funcall setup-function proc)))
       
-      (goto-char (point-max))
-      (set-marker (process-mark proc) (point))
-      (let ((saved-input-ring fi::input-ring)
-	    (saved-input-ring-yank-pointer fi::input-ring-yank-pointer))
-	(funcall mode)
-	(setq fi::input-ring saved-input-ring)
-	(setq fi::input-ring-yank-pointer saved-input-ring-yank-pointer))      
-      (make-local-variable 'subprocess-prompt-pattern)
-      (setq subprocess-prompt-pattern image-prompt)
-      (fi::make-subprocess-variables))
+	  (goto-char (point-max))
+	  (set-marker (process-mark proc) (point))
+	  (let ((saved-input-ring fi::input-ring)
+		(saved-input-ring-yank-pointer fi::input-ring-yank-pointer))
+	    (funcall mode)
+	    (setq fi::input-ring saved-input-ring)
+	    (setq fi::input-ring-yank-pointer saved-input-ring-yank-pointer))      
+	  (make-local-variable 'subprocess-prompt-pattern)
+	  (setq subprocess-prompt-pattern image-prompt)
+	  (fi::make-subprocess-variables))))
+    
+    ;; display last so we can do proper screen creation on lemacs
+    (condition-case nil
+	(funcall fi:display-buffer-function buffer)
+      (error (fi::switch-to-buffer buffer)))
+    
+    (goto-char (point-max))
+    
     proc))
 
 (defun fi::subprocess-sentinel (process status)

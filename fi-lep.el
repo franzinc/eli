@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.56 1993/09/02 22:34:20 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.57 1993/09/08 00:21:50 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -525,7 +525,9 @@ beginning of words in target symbols."
 				       ignore-keywords))))))
 	(fi::lisp-complete-2 completions nil))
     (quit
-     (fi:eval-in-lisp "(lep::kill-list-all-completions-session)"))))
+     (fi:eval-in-lisp
+      "(when (fboundp 'lep::kill-list-all-completions-session)
+	 (lep::kill-list-all-completions-session))"))))
 
 (defun fi::lisp-complete-2 (completions &optional dont-strip-package)
   (if (consp completions)

@@ -10,20 +10,47 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/Attic/fi-lemacs.el,v 2.9 1993/09/02 19:56:02 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-lemacs.el,v 2.10 1993/09/08 00:21:46 layer Exp $
 
 (defconst fi:allegro-file-menu
     '("ACLFile"
+      ["Run/Restart Common Lisp, new window" fi:menu-common-lisp-new-screen
+       fi::connection-not-open]
       ["Run/Restart Common Lisp" fi:menu-common-lisp fi::connection-not-open]
-      ["New Listener" fi:open-lisp-listener fi::connection-open]
+      ["Create Listener, new window" fi:menu-open-lisp-listener-new-screen
+       fi::connection-open]
+      ["Create Listener" fi:open-lisp-listener fi::connection-open]
       "----"
-      ["Compile active region or top-level form"
+      ["Compile region or form"
        fi:lisp-compile-active-region-or-defun
        fi::connection-open]
       ("Compile other"
        ["region" fi:lisp-compile-region fi::connection-open]
        ["last s-exp" fi:lisp-compile-last-sexp fi::connection-open]
        ["buffer" fi:lisp-compile-current-buffer fi::connection-open])
+      "----"
+      ("Changed definitions"
+       ["List all changed definitions" fi:list-changed-definitions
+	fi::connection-open]
+       ["List buffer changed definitions"
+	fi:list-buffer-changed-definitions
+	fi::connection-open]
+       ["Compile all changed definitions" fi:compile-changed-definitions
+	fi::connection-open]
+       ["Compile buffer changed definitions"
+	fi:compile-buffer-changed-definitions
+	fi::connection-open]
+       ["Eval all changed definitions" fi:eval-changed-definitions
+	fi::connection-open]
+       ["Eval buffer changed definitions"
+	fi:eval-buffer-changed-definitions
+	fi::connection-open]
+       ["Copy all changed definitions" fi:copy-changed-definitions
+	fi::connection-open]
+       ["Copy buffer changed definitions" fi:copy-buffer-changed-definitions
+	fi::connection-open]
+       ["Compare source files" fi:compare-source-files fi::connection-open]
+       )
       ["Compile file" fi:compile-file fi::connection-open]
       ["Load file" fi:load-file fi::connection-open]
       "----"
@@ -74,29 +101,6 @@
        fi::connection-open]
       ["Edit generic function methods" fi:edit-generic-function-methods
        fi::connection-open]
-      "----"
-      ("Changed definitions"
-       ["List all changed definitions" fi:list-changed-definitions
-	fi::connection-open]
-       ["List buffer changed definitions"
-	fi:list-buffer-changed-definitions
-	fi::connection-open]
-       ["Compile all changed definitions" fi:compile-changed-definitions
-	fi::connection-open]
-       ["Compile buffer changed definitions"
-	fi:compile-buffer-changed-definitions
-	fi::connection-open]
-       ["Eval all changed definitions" fi:eval-changed-definitions
-	fi::connection-open]
-       ["Eval buffer changed definitions"
-	fi:eval-buffer-changed-definitions
-	fi::connection-open]
-       ["Copy all changed definitions" fi:copy-changed-definitions
-	fi::connection-open]
-       ["Copy buffer changed definitions" fi:copy-buffer-changed-definitions
-	fi::connection-open]
-       ["Compare source files" fi:compare-source-files fi::connection-open]
-       )
       ("Cross reference"
        ["List calls to" fi:list-who-calls fi::connection-open]
        ["List callers of" fi:list-who-is-called-by fi::connection-open]
@@ -167,13 +171,19 @@
   (and (not (fi::lep-open-connection-p))
        (not fi::common-lisp-first-time)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defvar fi::connection-open-composer-loaded nil)
+(defvar fi::composer-connection-open nil)
+(defvar fi::composer-running nil)
+
 (defvar fi::composer-cached-connection nil)
 
 (defun fi::connection-open-composer-loaded ()
   (when (not (eq fi::*connection* fi::composer-cached-connection))
     ;; the lisp was (possibly) restarted
-    (setq fi::connection-open-composer-loaded nil))
+    (setq fi::connection-open-composer-loaded nil)
+    (setq fi::composer-running nil))
   (and (fi::lep-open-connection-p)
        (or (when (null fi::connection-open-composer-loaded)
 	     (if (let ((fi:package nil))
@@ -184,32 +194,34 @@
 	     nil)
 	   (eq fi::connection-open-composer-loaded 'yes))))
 
-(defvar fi::connection-open-composer-loaded-and-stopped nil)
-
 (defun fi::connection-open-composer-loaded-and-stopped ()
   (and (fi::connection-open-composer-loaded)
-       (or (unless fi::connection-open-composer-loaded-and-stopped
+       (or (unless fi::composer-running
 	     (if (let ((fi:package nil))
 		   (fi:eval-in-lisp
 		    "(when (and (find-package :wt)
-                                (not (wt::common-windows-initialized-p)))
+                                (wt::common-windows-initialized-p)
+				(wt::connected-to-server-p))
                        t)"))
-		 (setq fi::connection-open-composer-loaded-and-stopped 'yes)
-	       (setq fi::connection-open-composer-loaded-and-stopped 'no))
+		 (setq fi::composer-running 'yes)
+	       (setq fi::composer-running 'no))
 	     nil)
-	   (eq fi::connection-open-composer-loaded-and-stopped 'yes))))
-
-(defvar fi::composer-connection-open nil)
+	   (eq fi::composer-running 'no))))
 
 (defun fi::composer-connection-open ()
   (and (fi::connection-open-composer-loaded)
        (or (unless fi::composer-connection-open
 	     (if (let ((fi:package nil))
-		   (fi:eval-in-lisp "(wt::connected-to-epoch-p)"))
+		   (fi:eval-in-lisp
+		    "wt::(and (connected-to-epoch-p)
+ 			      (common-windows-initialized-p)
+			      (connected-to-server-p))"))
 		 (setq fi::composer-connection-open 'yes)
 	       (setq fi::composer-connection-open 'no))
 	     nil)
 	   (eq fi::composer-connection-open 'yes))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun fi::install-menubar (menu-bar)
   (set-menubar (delete (assoc (car menu-bar) current-menubar)
@@ -227,8 +239,20 @@
 
 (defun fi:menu-common-lisp ()
   (interactive)
-  (let ((fi:new-screen-for-common-lisp-buffer t))
+  (let ((fi:new-screen-for-common-lisp-buffer nil))
     (call-interactively 'fi:common-lisp)))
+
+(defun fi:menu-common-lisp-new-screen ()
+  (interactive)
+  (let ((get-screen-for-buffer-default-screen-name 'common-lisp)
+	(fi:new-screen-for-common-lisp-buffer t))
+    (call-interactively 'fi:common-lisp)))
+
+(defun fi:menu-open-lisp-listener-new-screen ()
+  (interactive)
+  (let ((get-screen-for-buffer-default-screen-name 'lisp-listener)
+	(fi:new-screen-for-common-lisp-buffer t))
+    (call-interactively 'fi:open-lisp-listener)))
 
 (defun fi:lisp-compile-active-region-or-defun ()
   (interactive)
@@ -264,13 +288,17 @@
   (interactive)
   (message "Starting Allegro Composer...")
   (fi:eval-in-lisp "(progn(wt::start-composer :mouse-line nil)nil)")
-  (message "Starting Allegro Composer...done."))
+  (message "Starting Allegro Composer...done.")
+  (setq fi::composer-running 'yes)
+  (setq fi::composer-connection-open 'yes))
 
 (defun fi:start-composer-mouse-line ()
   (interactive)
   (message "Starting Allegro Composer...")
   (fi:eval-in-lisp "(progn(wt::start-composer :mouse-line t)nil)")
-  (message "Starting Allegro Composer...done."))
+  (message "Starting Allegro Composer...done.")
+  (setq fi::composer-running 'yes)
+  (setq fi::composer-connection-open 'yes))
   
 (defun fi:composer-other-options ()
   (interactive)
@@ -288,7 +316,9 @@
 
 (defun fi:composer-exit ()
   (interactive)
-  (fi:eval-in-lisp "(progn(composer:stop-composer :kill-cw t)nil)"))
+  (fi:eval-in-lisp "(progn(composer:stop-composer :kill-cw t)nil)")
+  (setq fi::composer-running 'no)
+  (setq fi::composer-connection-open 'no))
 
 (defun fi:composer-process-browser ()
   (interactive)
@@ -349,6 +379,12 @@
 
 (defconst fi:common-lisp-mode-popup-menu
     '("common lisp mode popup menu"
+      ["Compile region or form"
+       fi:lisp-compile-active-region-or-defun
+       fi::connection-open]
+      ["Compile and load file" fi:menu-compile-and-load-file
+       fi::connection-open]
+      "----"
       ["Find definition" fi:menu-lisp-find-definition fi::connection-open]
       ["Find next definition" fi:lisp-find-next-definition fi::connection-open]
       ["Arglist" fi:menu-lisp-arglist fi::connection-open]
@@ -356,13 +392,6 @@
       ["Macroexpand" fi:lisp-macroexpand fi::connection-open]
       ["Recursive macroexpand" fi:lisp-macroexpand-recursively
        fi::connection-open]
-      "----"
-      ["Compile active region or top-level form"
-       fi:lisp-compile-active-region-or-defun
-       fi::connection-open]
-      ["Compile and load file" fi:menu-compile-and-load-file
-       fi::connection-open]
-      ["Load file" fi:menu-load-file fi::connection-open]
       ))
 
 (defun fi:menu-lisp-find-definition ()

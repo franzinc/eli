@@ -1,3 +1,20 @@
+Tue Sep  7 17:17:52 1993  Kevin Layer  (layer at sole)
+
+	* fi-lemacs.el: more fiddling with the menus; fix bugs in active-p
+	menu functions
+
+	* fi-lep.el: only call lep::kill-list-all-completions-session when
+	it exists
+
+	* fi-modes.el: remove put of 'screen-name since we'll do it
+	differently now
+
+	* fi-subproc.el: fix calling of fi:display-buffer-function tcp
+	connection code, too
+
+	* fi-utils.el: fi::switch-to-buffer-new-screen doesn't care about
+	which mode anymore.
+
 Thu Sep  2 11:32:57 1993  Kevin Layer  (layer at sole)
 
 	* fi-utils.el:
