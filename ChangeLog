@@ -1,7 +1,13 @@
+2005-03-14  Kevin Layer  <layer@gemini>
+
+	* fi-keys.el (fi:inferior-lisp-newline): only call
+	  fi::maybe-update-default-right-margin if fboundp
+
 2005-02-17  Kevin Layer  <layer@gemini>
 
 	* fi-emacs21.el (fi::maybe-update-default-right-margin): minor
 	  cleanup -- set fi::*current-frame-width* inside the inner `when'
+	* fi-keys.el: call fi::maybe-update-default-right-margin
 
 2005-02-09  Kevin Layer  <layer@gemini>
 
@@ -5036,4 +5042,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.9.2.10.2.4 $
+$Revision: 3.9.2.10.2.5 $
