@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.62 1991/08/22 21:29:00 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.63 1991/08/22 21:35:25 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -567,7 +567,10 @@ subprocess buffer."
   (send-string (get-buffer-process (current-buffer)) "\C-c"))
 
 (defun fi:interrupt-listener (select)
-  "Send a kill (SIGINT) signal to the current subprocess."
+  "Interrupt a Lisp listener (send a SIGINT).  Without a prefix argument,
+interrupt the Lisp process tied to the buffer in which this function is
+invoked.  With a prefix argument, the listener in which this is invoked
+asks which Lisp process to interrupt and does a lisp:break on that process." 
   (interactive (list current-prefix-arg))
   (cond (select
 	 (let ((process (get-buffer-process (current-buffer))))
