@@ -1,4 +1,4 @@
-;;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.13 1988/04/07 13:57:49 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.14 1988/04/07 15:19:10 layer Exp $
 ;;;
 ;;; Mode initializations
 
@@ -450,13 +450,8 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
   (define-key map "\C-x" (make-sparse-keymap))
   (define-key map "\C-c" (make-sparse-keymap))
   
-  (define-key map "\e\C-q"	'fi:indent-sexp)
+  (define-key map "\e\C-q"	'indent-sexp)
   (define-key map "\C-?"	'backward-delete-char-untabify)
-  
-  (if fi:lisp-auto-semicolon-mode
-      (progn
-	(define-key map ";"	'fi:lisp-semicolon)
-	(define-key map "\t"	'fi:lisp-indent-line)))
   
   (cond
     ((memq mode '(sub-lisp tcp-lisp))
@@ -494,6 +489,56 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
 (defun fi::inferior-lisp-mode-commands (map supermap)
   (fi::subprocess-mode-commands (fi::lisp-mode-commands map 'sub-lisp)
 			   supermap 'sub-lisp))
+
+(defun fi:lisp-reindent-newline-indent ()
+  "Indent the current line, insert newline and then indent again."
+  (interactive)
+  (save-excursion (funcall indent-line-function))
+  (newline)
+  (funcall indent-line-function))
+
+(setq fi:indent-setup-hook 'fi::indent-setup-hook)
+
+(defun fi::indent-setup-hook ()
+  (make-local-variable 'indent-line-function)
+  (setq indent-line-function 'lisp-indent-line)
+  (make-local-variable 'comment-start)
+  (setq comment-start ";")
+  (make-local-variable 'comment-start-skip)
+  (setq comment-start-skip ";+ *")
+  (make-local-variable 'comment-column)
+  (setq comment-column 40)
+  (make-local-variable 'comment-indent-hook)
+  (setq comment-indent-hook 'lisp-comment-indent))
+
+(defun fi::lisp-indent-do (path state indent-point sexp-column normal-indent)
+  "A better do indenter than the standard GNU has."
+  (if (>= (car path) 3)
+      (let ((lisp-tag-body-indentation lisp-body-indent))
+        (funcall (function lisp-indent-tagbody)
+		 path state indent-point sexp-column normal-indent))
+    (funcall (function lisp-indent-259)
+	     '((&whole nil &rest)
+	       (&whole nil &rest 1))
+	     path state indent-point sexp-column normal-indent)))
+
+(defun fi::lisp-indent-if* (path state indent-point sexp-column normal-indent)
+  "An excl:if* indentation hook."
+  (let ((lisp-if-then-else-indent 3)
+	(lisp-if-elseif-indent 1))
+    (if (not (null (cdr path)))
+	normal-indent
+      (save-excursion
+	(goto-char indent-point)
+	(beginning-of-line)
+	(skip-chars-forward " \t")
+	(list (cond ((looking-at "elseif")
+		     (+ sexp-column lisp-if-elseif-indent))
+		    ((looking-at "then\\|else")
+		     (+ sexp-column lisp-if-then-else-indent))
+		    (t (+ sexp-column
+			  (+ lisp-if-then-else-indent 5))))
+	      (elt state 1))))))
 
 ;;;;
 ;;; Initializations
@@ -515,3 +560,76 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
 (fi::def-auto-mode "\\.l$" 'fi:franz-lisp-mode)
 (fi::def-auto-mode "\\.el$" 'fi:emacs-lisp-mode)
 (fi::def-auto-mode "[]>:/]\\..*emacs" 'fi:emacs-lisp-mode)
+
+(let ((l '((block 1)
+	   (catch 1)
+           (case (4 &rest (&whole 2 &rest 1)))
+           (ccase . case)
+	   (ecase . case)
+           (typecase . case)
+	   (etypecase . case)
+	   (ctypecase . case)
+           (catch 1)
+	   (concatenate 1)
+           (cond (&rest (&whole 2 &rest 1)))
+           (block 1)
+           (defvar (4 2 2))
+           (defconstant . defvar)
+	   (defparameter . defvar)
+           (define-modify-macro (4 &body))
+           (define-setf-method (4 (&whole 4 &rest 1) &body))
+           (defsetf (4 (&whole 4 &rest 1) 4 &body))
+           (defun (4 (&whole 4 &rest 1) &body))
+           (defmacro . defun) (deftype . defun)
+           (defstruct ((&whole 4 &rest (&whole 2 &rest 1))
+			&rest (&whole 2 &rest 1)))
+           (destructuring-bind ((&whole 6 &rest 1) 4 &body))
+           (do fi::lisp-indent-do)
+           (do* . do)
+           (dolist ((&whole 4 2 1) &body))
+           (dotimes . dolist)
+           (eval-when 1)
+           (flet ((&whole 4 &rest (&whole 1 (&whole 4 &rest 1) &body))
+		  &body))
+           (labels . flet)
+           (macrolet . flet)
+           (if (nil nil &body))
+ 	   ;;(lambda     ((&whole 4 &rest 1) &body))
+           (lambda ((&whole 4 &rest 1)
+		    &rest lisp-indent-function-lambda-hack))
+           (let ((&whole 4 &rest (&whole 1 1 2)) &body))
+           (let* . let)
+           (locally 1)
+ 	   ;;(loop ...)
+           (multiple-value-bind ((&whole 6 &rest 1) 4 &body))
+           (multiple-value-call (4 &body))
+           (multiple-value-list 1)
+           (multiple-value-prog1 1)
+           (multiple-value-setq (4 2))
+ 	   ;; Combines the worst features of BLOCK, LET and TAGBODY
+           (prog ((&whole 4 &rest 1) &rest lisp-indent-tagbody))
+           (prog* . prog)
+           (prog1 1)
+           (prog2 2)
+           (progn 0)
+           (progv (4 4 &body))
+	   (setq 1)
+	   (setf 1)
+           (return 0)
+           (return-from (nil &body))
+           (tagbody lisp-indent-tagbody)
+           (throw 1)
+           (unless 1)
+           (unwind-protect (5 &body))
+           (when 1)
+	   (with-input-from-string 1)
+           (with-open-file 1)
+	   (if* fi::lisp-indent-if*))))
+  (while l
+    (put (car (car l)) 'common-lisp-indent-hook
+         (if (symbolp (cdr (car l)))
+             (get (cdr (car l)) 'common-lisp-indent-hook)
+	   (car (cdr (car l)))))
+    (setq l (cdr l))))
+
+(setq lisp-indent-hook 'common-lisp-indent-hook)
