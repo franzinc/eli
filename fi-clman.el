@@ -8,19 +8,19 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-clman.el,v 2.15 1996/10/03 07:21:05 layer Exp $
+;; $Id: fi-clman.el,v 2.16 1996/10/10 21:50:22 layer Exp $
 
 (defvar fi::clman-prog)
 (setq fi::clman-prog
   (let ((s (if (on-ms-windows) "clman.exe" "clman")))
-    (format "%s%s" (file-name-directory load-file-name) s)))
+    (format "%s%s" fi::library-directory s)))
 
 (defvar fi::clman-data)
 (setq fi::clman-data
-  (format "%sclman.data" (file-name-directory load-file-name)))
+  (format "%sclman.data" fi::library-directory))
 
 (defvar fi::manual-dir)
-(setq fi::manual-dir (format "%smanual/" (file-name-directory load-file-name)))
+(setq fi::manual-dir (format "%smanual/" fi::library-directory))
 
 (defvar fi::clman-big-oblist)
 (unless (boundp 'fi::clman-big-oblist)

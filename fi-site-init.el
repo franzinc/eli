@@ -1,17 +1,49 @@
-;; $Id: fi-site-init.el,v 1.84 1996/10/03 07:21:08 layer Exp $
+;; $Id: fi-site-init.el,v 1.85 1996/10/10 21:50:29 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
-(setq fi:emacs-lisp-interface-version "2.0.20.alpha.5")
+(require 'cl)
+
+(setq fi:emacs-lisp-interface-version "2.0.20.alpha.6")
 (defvar fi::required-ipc-version 1)
 (defvar fi::load-subprocess-files t)
 (defvar fi::install-acl-menubar t)
 (defvar fi::build-time nil)
 (defvar fi::emacs-type nil)
 
-(defvar fi::library-directory)
+(defun fi::find-path (path file)
+  (let ((done nil) res temp)
+    (while (and (not done) path)
+      ;; accommodate nil's in the exec-path (bug3159)
+      (setq temp (car path))
+      (if (null temp)
+	  (setq temp default-directory))
+      (if (file-exists-p
+	   (setq res (concat temp
+			     (unless (string-match "/$" temp) "/")
+			     file)))
+	  (setq done t)
+	(setq res nil))
+      (setq path (cdr path)))
+    res))
 
-(setq fi::library-directory (file-name-directory load-file-name))
+(defvar fi::library-directory)
+(cond
+ ((not (boundp 'load-file-name))
+  ;; In this case, load-path must be used to find fi/fi-site-init.el and
+  ;; the directory where it is found is used as fi::library-directory.
+  (let* ((file "fi-site-init.el")
+	 (path
+	  (or (fi::find-path load-path (format "fi/%s" file))
+	      (fi::find-path load-path file))))
+    (when (not path)
+      (error "Can't find fi/%s or %s in your load-path." file file))
+    (setq fi::library-directory (file-name-directory path)))
+  ;; Toss this version of fi::find-path, since it is redefined later
+  ;; (compiled, too).
+  (fset 'fi::find-path nil))
+ (t 
+  (setq fi::library-directory (file-name-directory load-file-name))))
 
 (defun fi::locate-library (file)
   (let (p)
@@ -30,8 +62,6 @@
 
 (load (or (fi::locate-library "fi-version.el")
 	  (error "Couldn't find fi-version.el.")))
-
-(require 'cl)
 
 ;; It would be nice to be able to differentiate between NT and 95, but that
 ;; doesn't appear possible right now.  The follow variable should default

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 1.98 1996/10/03 21:17:39 layer Exp $
+;; $Id: fi-keys.el,v 1.99 1996/10/10 21:50:26 layer Exp $
 
 (cond ((eq fi::emacs-type 'xemacs19)
        (require 'tags "etags"))
@@ -396,7 +396,9 @@ parsed, the enclosing list is processed."
       (progn
 	(move-marker fi::last-input-start
 		     (process-mark (get-buffer-process (current-buffer))))
-	(insert "\n")
+	(if (and (on-ms-windows) (not *on-windows-nt*))
+	    (insert "\n\r")
+	  (insert "\n"))
 	(funcall indent-line-function)
 	(move-marker fi::last-input-end (point)))
 
