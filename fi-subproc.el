@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.183 1997/01/17 23:46:45 layer Exp $
+;; $Id: fi-subproc.el,v 1.184 1997/01/27 18:54:26 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -116,7 +116,14 @@ readtable.")
 ;;; Common Lisp Variables and Constants
 ;;;;
 
-(defvar fi:emacs-to-lisp-transaction-directory "/tmp"
+(defvar fi:emacs-to-lisp-transaction-directory
+    (if (on-ms-windows)
+	(if (file-exists-p "c:/tmp")
+	    "c:/tmp"
+	  (or (getenv "TEMP")
+	      (getenv "TMP")
+	      (error "c:/tmp doesn't exist, nor are there TEMP or TMP env variables")))
+      "/tmp")
   "*The directory in which files for Emacs/Lisp communication are stored.
 When using Lisp and Emacs on different machines, this directory must be
 accessible on both machine with the same pathname (via the wonders of NFS).")
