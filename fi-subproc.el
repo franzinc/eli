@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.45 1988/11/21 21:12:01 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.46 1988/11/22 20:21:39 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -178,9 +178,7 @@ See fi:explicit-common-lisp."
 	       buffer-number "common-lisp" 
 	       'fi:inferior-common-lisp-mode
 	       fi:common-lisp-prompt-pattern
-	       (if (stringp fi:common-lisp-image-name)
-		   fi:common-lisp-image-name
-		 (funcall fi:common-lisp-image-name))
+	       fi:common-lisp-image-name
 	       fi:common-lisp-image-arguments)))
     (setq fi::freshest-common-sublisp-name (process-name proc))
     proc))
@@ -219,10 +217,7 @@ See fi:explicit-remote-common-lisp."
 	       'fi:inferior-common-lisp-mode
 	       fi:common-lisp-prompt-pattern
 	       "rsh"
-	       (append (list host
-			     (if (stringp fi:common-lisp-image-name)
-				 fi:common-lisp-image-name
-			       (funcall fi:common-lisp-image-name)))
+	       (append (list host fi:common-lisp-image-name)
 		       fi:common-lisp-image-arguments))))
     (setq fi::freshest-common-sublisp-name (process-name proc))
     proc))
@@ -238,8 +233,7 @@ arguments are read from the minibuffer."
 	       'fi:inferior-common-lisp-mode
 	       fi:common-lisp-prompt-pattern
 	       "rsh"
-	       (append (list host image-name)
-		       image-arguments))))
+	       (append (list host image-name) image-arguments))))
     (setq fi::freshest-common-sublisp-name (process-name proc))
     proc))
 
@@ -290,9 +284,7 @@ See fi:explicit-franz-lisp."
 	       buffer-number "franz-lisp" 
 	       'fi:inferior-franz-lisp-mode
 	       fi:franz-lisp-prompt-pattern
-	       (if (stringp fi:franz-lisp-image-name)
-		   fi:franz-lisp-image-name
-		 (funcall fi:franz-lisp-image-name))
+	       fi:franz-lisp-image-name
 	       fi:franz-lisp-image-arguments)))
     (setq fi::freshest-franz-sublisp-name (process-name proc))
     proc))
@@ -320,13 +312,17 @@ are read from the minibuffer."
   (let* ((buffer (fi::make-process-buffer process-name buffer-number))
 	 (default-dir default-directory)
 	 (buffer-name (buffer-name buffer))
-	 start-up-feed-name process status)
+	 (process (get-buffer-process buffer))
+	 (status (if process (process-status process)))
+	 (runningp (memq status '(run stop)))
+	 start-up-feed-name)
+    (if (and (not runningp)
+	     (consp image-file))
+	(setq image-file (funcall image-file)))
     (if fi:display-buffer-function
 	(funcall fi:display-buffer-function buffer)
       (switch-to-buffer buffer))
-    (setq process (get-buffer-process buffer))
-    (setq status (if process (process-status process)))
-    (if (memq status '(run stop))
+    (if runningp
 	(goto-char (point-max))
       (setq default-directory default-dir)
       (if process (delete-process process))
