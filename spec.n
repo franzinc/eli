@@ -300,6 +300,7 @@ from the following variables:
 with the name `fi:<IMAGE>-prompt-pattern' or from the following:
 
 %% fi:common-lisp-prompt-pattern
+%% fi:common-lisp-package-regexp
 
 %% fi:subprocess-enable-superkeys
 %% fi:pop-to-sublisp-buffer-after-lisp-eval
