@@ -19,7 +19,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.147 1993/06/18 20:02:43 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.148 1993/07/13 18:55:24 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -83,11 +83,12 @@ expressions to Lisp (via the functions which eval or compile the region, a
 form or the entire buffer).")
 
 (defvar fi:package nil
-  "A buffer-local variable whose value should either be nil or a string
-which names a package in the Lisp world (ie, in a Lisp subprocess running
-as an inferior of Emacs in some buffer).  It is used when expressions are
-sent from an Emacs buffer to a Lisp process so that the symbols are read
-into the correct Lisp package.")
+  "A buffer-local variable whose value is automatically set for editing
+modes and will be nil or a string which names a package in the Lisp world
+(ie, in a Lisp subprocess running as an inferior of Emacs in some buffer)
+for other modes.  It is used when expressions are sent from an Emacs buffer
+to a Lisp process so that the symbols are read into the correct Lisp
+package.")
 
 (make-variable-buffer-local 'fi:package)
 
@@ -148,10 +149,8 @@ fi:common-lisp when a new buffer name is used.")
 A CD is done into this directory before the process is started.")
 
 (defvar fi:common-lisp-image-name "cl"
-  "*Default Common Lisp image used by fi:common-lisp.  If the value is a
-string then it names the image file or image path that fi:common-lisp
-invokes.  Otherwise, the value of this variable is given to funcall, the
-result of which should yield a string which is the image name.")
+  "*Default Common Lisp image used by fi:common-lisp.  The value is a
+string that names the image fi:common-lisp invokes.")
 
 (defvar fi:common-lisp-image-arguments nil
   "*Default Common Lisp image arguments when invoked from `fi:common-lisp',
@@ -318,7 +317,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		 (error "fi:common-lisp aborted.")))
     (setq fi::shell-buffer-for-common-lisp-interaction-host-name nil))
   (let* ((buffer-name (if (interactive-p)
-			  fi:common-lisp-buffer-name
+			  buffer-name
 			(or buffer-name fi:common-lisp-buffer-name)))
 	 (directory (if (interactive-p)
 			(expand-file-name directory)
@@ -405,13 +404,23 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 			 (error nil))))))
 		local host directory)))
     (when (interactive-p)
-      (setq fi::common-lisp-first-time nil
-	    fi:common-lisp-buffer-name buffer-name
-	    fi:common-lisp-directory directory
-	    fi:common-lisp-image-name image-name
-	    fi:common-lisp-image-arguments image-args
-	    fi:common-lisp-host host))
+      (setq fi::common-lisp-first-time nil))
+    (setq fi:common-lisp-buffer-name buffer-name
+	  fi:common-lisp-directory directory
+	  fi:common-lisp-image-name image-name
+	  fi:common-lisp-image-arguments image-args
+	  fi:common-lisp-host host)
     proc))
+
+(defun fi:restart-common-lisp ()
+  "Run Common Lisp again, with the same arguments that were given to
+fi:common-lisp the last time it was evaluated, interactively or not."
+  (interactive)
+  (fi:common-lisp fi:common-lisp-buffer-name
+		  fi:common-lisp-directory
+		  fi:common-lisp-image-name
+		  fi:common-lisp-image-arguments
+		  fi:common-lisp-host))
 
 (defun fi:open-lisp-listener (&optional buffer-number
 					buffer-name
@@ -537,12 +546,12 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		local directory)))
     (setq fi:franz-lisp-process-name (process-name proc))
     (when (interactive-p)
-      (setq fi::franz-lisp-first-time nil
-	    fi:franz-lisp-buffer-name buffer-name
-	    fi:franz-lisp-directory directory
-	    fi:franz-lisp-image-name image-name
-	    fi:franz-lisp-image-arguments image-args
-	    fi:franz-lisp-host host))
+      (setq fi::franz-lisp-first-time nil))
+    (setq fi:franz-lisp-buffer-name buffer-name
+	  fi:franz-lisp-directory directory
+	  fi:franz-lisp-image-name image-name
+	  fi:franz-lisp-image-arguments image-args
+	  fi:franz-lisp-host host)
     proc))
 
 ;;;;
@@ -604,8 +613,12 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		    (if (= ?/ (aref dir (- (length dir) 1)))
 			dir
 		      (concat dir "/")))))
-	      (expand-file-name
-	       (read-file-name "Image name: " image-name image-name nil))
+	      (let ((file-name
+		     (read-file-name "Image name: " image-name
+				     image-name nil)))
+		(if (string-match "[\$~]" file-name)
+		    (expand-file-name file-name)
+		  file-name))
 	      (setq image-args
 		(fi::listify-string
 		 (read-from-minibuffer

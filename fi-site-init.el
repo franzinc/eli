@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.39 1993/06/29 23:20:59 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.40 1993/07/13 18:55:16 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -45,3 +45,6 @@
 (autoload 'fi:clman-apropos "fi-clman" nil t)
 
 (setq fi:package-loaded t)
+
+(when (string-match "Lucid" emacs-version)
+  (load "fi-lemacs"))

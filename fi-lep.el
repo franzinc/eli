@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.49 1993/04/29 18:53:50 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.50 1993/07/13 18:55:05 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -17,17 +17,13 @@ operation is done.  In a subprocess buffer, the package is tracked
 automatically.  In source buffer, the package is parsed at file visit
 time."
   (interactive (fi::get-default-symbol "Arglist for" t t))
-  (fi::make-request
-   (lep::arglist-session :fspec string)
-   ;; Normal continuation
-   (() (what arglist)
-    (fi:show-some-text nil
-		       "%s's arglist: %s"
-		       what arglist))
-   ;; Error continuation
-   ((string) (error)
-    (message "Cannot get the arglist of %s: %s" string error))))
-
+  (fi::make-request (lep::arglist-session :fspec string)
+    ;; Normal continuation
+    (() (what arglist)
+     (fi:show-some-text nil "%s's arglist: %s" what arglist))
+    ;; Error continuation
+    ((string) (error)
+     (message "Cannot get the arglist of %s: %s" string error))))
 
 
 (defun fi:lisp-apropos (string &optional regexp)
@@ -332,26 +328,43 @@ is obtained from the \"Initial Lisp Listener\".  See M-x mail for more
 information on how to send the mail." 
   (interactive)
   (fi::make-request
-   (lep::bug-report-session
-    :process-name (fi::read-lisp-process-name "Process for stack :zoom: "))
-   ;; Normal continuation
-   (() (error-message stack lisp-info)
-    (mail)
-    (mail-to)
-    (insert "bugs@franz.com")
-    (mail-subject)
-    (insert "Bug-report")
-    (goto-char (point-max))
-    (save-excursion
-      (insert "\n")
-      (insert error-message)
-      (insert "------------------------------\n")
-      (insert stack)
-      (insert "------------------------------\n")	     
-      (insert lisp-info)))
-   ;; Error continuation
-   (() (error)
-    (message "Cannot do a backtrace because: %s" error))))
+      (lep::bug-report-session
+       :process-name
+       (fi::read-lisp-process-name "Process for stack :zoom: "))
+    ;; Normal continuation
+    (() (error-message stack lisp-info)
+      (mail)
+      (mail-to)
+      (insert "bugs@franz.com")
+      (mail-subject)
+      (insert "Bug-report")
+      (goto-char (point-max))
+      (save-excursion
+	(insert "\n")
+	(when (and error-message (not (string= "" error-message)))
+	  (insert "------------------------------\n\n")
+	  (insert error-message))
+	(insert "\n------------------------------\n\n")
+	(insert stack)
+	(insert "\n------------------------------\n\n")	     
+	(insert lisp-info)
+	(insert "\n------------------------------\n\n")	     
+	(insert (format "Emacs-Lisp interface version: %s\n\n"
+			fi:emacs-lisp-interface-version))
+	(insert (format "load-path: %s\n\n" load-path))
+	(let* ((file (fi::find-path "fi-site-init.el"))
+	       (dir (when file
+		      (file-name-directory file))))
+	  (if dir
+	      (progn
+		(insert (format "Contents of %s directory:\n" dir))
+		(call-process "ls" nil t nil "-la" dir)
+		(insert "\n"))
+	    (insert (format "Could not find fi-site-init.el\n")))
+	  (insert "\n"))))
+    ;; Error continuation
+    (() (error)
+      (message "Cannot do a backtrace because: %s" error))))
 
 ;;; Macroexpansion and walking
 
@@ -492,22 +505,26 @@ beginning of words in target symbols."
 
 (defun fi::lisp-complete-1 (pattern package functions-only
 			    &optional ignore-keywords)
-  (let ((completions
-	 (car (lep::eval-session-in-lisp 
-	       'lep::list-all-completions-session
-	       ':pattern (fi::frob-case-to-lisp pattern)
-	       ':buffer-package (fi::string-to-keyword fi:package)
-	       ':package (progn
-			   (if (equal ":" package)
-			       (setq package "keyword"))
-			   (intern (fi::frob-case-to-lisp
-				    package)))
-	       ':functions-only-p (intern
-				   (fi::frob-case-to-lisp
-				    functions-only))
-	       ':ignore-keywords (intern
-				  (fi::frob-case-to-lisp ignore-keywords))))))
-    (fi::lisp-complete-2 completions nil)))
+  (condition-case nil
+      (let ((completions
+	     (car (lep::eval-session-in-lisp 
+		   'lep::list-all-completions-session
+		   ':pattern (fi::frob-case-to-lisp pattern)
+		   ':buffer-package (fi::string-to-keyword fi:package)
+		   ':package (progn
+			       (if (equal ":" package)
+				   (setq package "keyword"))
+			       (intern (fi::frob-case-to-lisp
+					package)))
+		   ':functions-only-p (intern
+				       (fi::frob-case-to-lisp
+					functions-only))
+		   ':ignore-keywords (intern
+				      (fi::frob-case-to-lisp
+				       ignore-keywords))))))
+	(fi::lisp-complete-2 completions nil))
+    (quit
+     (fi:eval-in-lisp "(lep::kill-list-all-completions-session)"))))
 
 (defun fi::lisp-complete-2 (completions &optional dont-strip-package)
   (if (consp completions)

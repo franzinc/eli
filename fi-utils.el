@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.40 1993/06/29 23:21:04 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.41 1993/07/13 18:55:32 layer Exp $
 
 ;;; Misc utilities
 
@@ -526,14 +526,15 @@ at the beginning of the line."
   (when hook (apply hook args)))
 
 (defun fi::display-pop-up-window-other (buffer hook args)
-  (cond ((one-window-p)
-	 (split-window)
-	 (other-window 1)
-	 (switch-to-buffer buffer))
-	((eq (current-buffer) buffer))
-	(t
-	 (other-window 1)
-	 (switch-to-buffer buffer)))
+  (cond
+   ((eq (current-buffer) buffer))
+   ((one-window-p)
+    (split-window)
+    (other-window 1)
+    (switch-to-buffer buffer))
+   (t
+    (other-window 1)
+    (switch-to-buffer buffer)))
 
   (when hook (apply hook args))
     

@@ -19,7 +19,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.44 1993/04/12 16:36:06 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.45 1993/07/13 18:54:57 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If non-nil, semicolons that begin comments are indented as they are
@@ -235,9 +235,10 @@ little consing as possible.")
 (defvar fi::lisp-doing-electric-semicolon nil)
 
 (defun fi:lisp-semicolon (&optional count)
-  "Lisp semicolon hook.  Prefix argument is number of semicolons to insert."
+  "Lisp semicolon hook.  Prefix argument is number of semicolons to
+insert.  The default value is 1."
   (interactive "p")
-  (insert-char ?; count)
+  (insert-char ?; (or count 1))
   (if fi:lisp-electric-semicolon
       (save-excursion
 	(skip-chars-backward ";")
@@ -529,7 +530,14 @@ of the start of the containing expression."
 	(calculated-indent nil))
     (save-excursion
       (goto-char (1+ (car (cdr state))))
-      (when (looking-at "\\s(")
+      (when (and (looking-at "\\s(")
+		 (not (looking-at "\\s()"))
+		 ;; only return if there is an indent method for the thing
+		 ;; following the open paren.
+		 (let ((function (buffer-substring
+				  (progn (forward-char 1) (point))
+				  (progn (forward-sexp 1) (point)))))
+		   (fi::lisp-get-method function)))
 	(throw 'fi:lisp-indent-hook-escape nil))
       (re-search-forward "\\sw\\|\\s_")
       (if (/= (point) (car (cdr state)))
@@ -1738,10 +1746,16 @@ if matched at the beginning of a line, means don't indent that line."
 (let ((tag 'fi:emacs-lisp-indent-hook))
   (put 'condition-case tag 2)
   (put 'defconst tag 2)
+  (put 'fi::make-request tag
+       '((1 (2 t)
+	    ((1 (0 1) quote)
+	     (0 t quote)))
+	 (0 t 1)))
   (put 'save-excursion tag 0)
   (put 'save-restriction tag 0)
   (put 'save-window-excursion tag 0)
   (put 'setq-default tag 1)
   (put 'while tag 1)
+  (put 'with-keywords tag 2)
   (put 'with-output-to-temp-buffer tag 1)
   )

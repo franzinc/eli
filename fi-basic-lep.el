@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.29 1992/12/14 17:32:00 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.30 1993/07/13 18:54:53 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -72,14 +72,20 @@ printed in the minibuffer can easily be erased.")
 
 (defvar fi::show-some-text-1-first-time t)
 
-(defun fi::show-some-text-1 (text package &optional hook &rest args)
+(defun fi::show-some-text-1 (text apackage &optional hook &rest args)
+  ;;A note from cer:
+  ;;  I think there is some buffer local variable called package
+  ;;  Outside of the save-excursion package has the correct value.
+  ;;  Inside it has the value of NIL.
+  ;;  Consequently fi:package ends up as NIL in *CL-temp* buffers.
+  ;;  I renamed package to apackage and that seemed to fix it.
   (let ((buffer (get-buffer-create "*CL-temp*")))
     ;; fill the buffer
     (save-excursion
       (set-buffer buffer)
       (erase-buffer)
       (fi:common-lisp-mode)
-      (setq fi:package package)
+      (setq fi:package apackage)
       (insert text)
       (beginning-of-buffer))
     (fi::display-pop-up-window buffer hook args))

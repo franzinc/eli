@@ -2,7 +2,7 @@
 			      User Guide
 			    Release 2.0.6
 
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.40 1993/06/30 04:29:52 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.41 1993/07/13 18:54:50 layer Exp $
 
 			     Introduction
 
@@ -433,6 +433,7 @@ Lisp Listeners
 Functions and Variables for Interacting with a Common Lisp subprocess
 
 %% fi:common-lisp
+%% fi:restart-common-lisp
 %% fi:open-lisp-listener
 
 %% fi:common-lisp-buffer-name
@@ -823,6 +824,8 @@ Functions and Variables for editing Common Lisp programs:
 %% fi:kill-definition
 %% fi:lisp-electric-semicolon
 %% fi:parse-mode-line-and-package
+%% fi:package
+%% fi:default-package
 %% fi:pop-to-sublisp-buffer-after-lisp-eval
 %% fi:pop-up-temp-window-behavior
 %% fi:set-associated-sublisp

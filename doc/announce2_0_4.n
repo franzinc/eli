@@ -4,29 +4,44 @@ Version 2.0.4 of Franz Inc.'s GNU Emacs-Allegro CL interface is now
 released.  There are misc fixes (ChangeLog below from 2.0.1, the last
 public release) and the following new versions of emacs supported:
 
-	- GNU Emacs 18.58 and 18.59
-	- Epoch 3.2 and 4.2
+    - GNU Emacs 18.58 and 18.59
+    - Epoch 3.2 and 4.2
 
-If you want to get and install this new version, grab
+If you to use this new version, then grab from ftp.uu.net:
 
-	/vendor/franz/emacs/emacs-lisp-2.0.4.tar.Z
+    /vendor/franz/emacs/emacs-lisp-2.0.4.tar.Z (355265 bytes, a binary file)
 
-and
+To use the on-line manual (clman), then you'll also need to get either 
 
-	/vendor/franz/emacs/OBLIST.el-2.0.4
+    /vendor/franz/emacs/OBLIST.el-2.0.4 (325896 bytes, a text file) 
 
-from ftp.uu.net (the first is 355265 bytes) and uncompress and extract
-the resulting tar file, which will create an `fi' directory in the
-place it is extracted.  This new `fi' directory is a replacement for
-the one you are currently using EXCEPT FOR `fi/manual', which is NOT
-contained in the above .tar.Z file.  So, the steps to install are:
+or one of (each of the following files contains a correct OBLIST.el
+file, so if you grab one of the below files, then you don't need
+OBLIST.el-2.0.4):
 
-	1. uncompress, `tar x',
-	2. move fi/manual directory to new fi directory, and
-	3. replace old fi directory with new one.
+    /vendor/franz/emacs/clman4.2.tar.gz (1444567 bytes, a binary file)
+    /vendor/franz/emacs/clman4.2.tar.Z (2444782 bytes, a binary file)
 
-Copy OBLIST.el-2.0.4 to .../lisp/fi/manual/OBLIST.el.  This will make
-the on-line manual viewing work with version 2.0.4.
+You don't need clman4.2.tar.* if you have Allegro CL 4.2.beta or
+later.
+
+The .Z files are uncompressed with zcat or uncompress, and the .gz
+files are uncompressed with gzip (GNU zip).
+
+Extracting emacs-lisp-2.0.4.tar.Z will create an `fi' directory.  This
+new `fi' directory is a replacement for the one you are currently
+using EXCEPT FOR `fi/manual', which is NOT contained in this compress
+tar archive.
+
+Next, if you want to use the on-line manual, and you have
+
+    1) Allegro CL 4.2.beta or later, copy OBLIST.el-2.0.4 to
+       fi/manual/OBLIST.el.  This will make the on-line manual
+       viewing work with version 2.0.4.
+
+    2) Allegro CL 4.1, move or copy the new manual directory you
+       obtained from the clman.tar.* file into the fi/ directory.
+       NOTE: uncompressed, clman.tar is almost 9MB.
 
 The ChangeLog since 2.0.1 is included below.
 

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.51 1993/06/18 20:02:19 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.52 1993/07/13 18:55:12 layer Exp $
 
 ;;;; Mode initializations
 
@@ -338,6 +338,12 @@ any other mode setup."
     ;; the GNU style
     (lisp-mode-variables t)))
 
+(defvar fi:default-package
+    "user"
+  "*The name of the package to use as the default package, if there is no
+package specification in the mode line.  See fi:parse-mode-line-and-package
+for more information.")
+
 (defun fi:parse-mode-line-and-package ()
   "Determine the current package in which the buffer is defined.
 The buffer's IN-PACKAGE form and the -*- mode line are parsed for this
@@ -375,7 +381,7 @@ package."
 			     (skip-chars-backward " \t")
 			     (cond
 			      ((>= beg (point))
-			       (setq fi:package "common-lisp-user"))
+			       (setq fi:package fi:default-package))
 			      (t
 			       (let ((package
 				      (if (= (string-to-char "(")
@@ -415,7 +421,7 @@ package."
   (if (or (not (boundp 'fi:package))
 	  (null fi:package))
       (progn
-	(setq fi:package "user")
+	(setq fi:package fi:default-package)
 	(message "using default package specification of `%s'" fi:package))
     (message "package specification is `%s'" fi:package)))
 

@@ -1,6 +1,38 @@
-===============================================================================
-2.0.6 public release
-===============================================================================
+Tue Jul 13 11:46:44 1993  Kevin Layer  (layer@sole)
+
+	* Makefile: add fi-lemacs.el
+
+>>>	* UserGuide.n: add fi:package, fi:default-package,
+	fi:restart-common-lisp
+
+	* fi-basic-lep.el: fix fi::show-some-text-1 per cer (comment added
+	to describe the problem)
+
+	* fi-indent.el: install fix for fi:lisp-semicolon;
+	fi::make-request indent spec; fix to 4/28/92 fix for aborting the
+	application of an indent spec--the old fix made some things indent
+	badly, the new fix seems better.
+
+	* fi-lep.el: fi:bug-report is more verbose (include info on eli
+	version, etc); when quit is typed and we are doing a completion,
+	kill the process we started on the lisp side.
+
+>>>	* fi-modes.el: use fi:default-package instead of hardwired string
+	"user".
+
+	* fi-site-init.el: load fi-lemacs conditionally.
+
+	* fi-subproc.el: fix fi:common-lisp-image-name doc string;
+>>>	fi:restart-common-lisp; expand-file-name the thing the user gives
+	as the image only if there is a $ or ~ in the name; minor bug in
+	handling of fi:common-lisp-buffer-name.
+
+	* fi-utils.el: fi::display-pop-up-window-other now doesn't split
+	the only window if (current-buffer) is buffer.
+
+	* doc/announce2_0_4.n: amend for accuracy.
+
+	* fi-lemacs.el: work in progress
 
 Thu Jul  1 13:15:57 1993  Kevin Layer  (layer at sole)
 
