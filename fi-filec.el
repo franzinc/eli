@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-filec.el,v 1.16 1992/08/04 15:50:24 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-filec.el,v 1.17 1992/08/19 08:02:17 layer Exp $
 
 ;; Command and file name completion
 
@@ -51,16 +51,17 @@ is displayed when there is more than one completion for a partially
 completed file name."
   (interactive)
   (let* ((shell-expand-string
-	  (substitute-in-file-name
-	   (fi::shell-completion-default-prefix)))
+	  (substitute-in-file-name (fi::shell-completion-default-prefix)))
 	 (shell-expand-abbrev-string
 	  (fi::expand-file-name-abbrevs shell-expand-string))
 	 (shell-expand-dir nil)
 	 (shell-expand-file nil)
 	 (shell-expand-completion nil))
-
+    
     ;; replace abbrev, if different than shell-expand-string
-    (if (not (string= shell-expand-string shell-expand-abbrev-string))
+    (if (and shell-expand-abbrev-string
+	     (not (string= shell-expand-string
+			   shell-expand-abbrev-string)))
 	(progn
 	  (when (search-backward shell-expand-string nil t)
 	    (replace-match shell-expand-abbrev-string t t)
@@ -80,7 +81,9 @@ completed file name."
 
     ;; display the results
     (if (eq shell-expand-completion t) (message "Sole completion")
-      (if (eq shell-expand-completion nil) (message "No match")
+      (if (or (eq shell-expand-completion nil)
+	      (string= "" shell-expand-completion))
+	  (message "No match")
 	(if (equal shell-expand-completion shell-expand-file)
 	    (progn
 	      (if fi::shell-completions-window nil
@@ -98,27 +101,29 @@ completed file name."
 	  (replace-match shell-expand-completion t t))))))
 
 (defun fi::expand-file-name-abbrevs (filename)
-  (let* ((flist (fi::explode filename ?/))
-	 (fl flist)
-	 (fn nil)
-	 ft)
-    (if (string= "" (car flist))
-	(progn
-	  (setq flist (cdr flist))
-	  (setq fl flist)))
-    (while fl
-      (setq ft (concat fn (if fn "/" "") (car fl)))
-      (if (file-exists-p ft)
-	  (setq fn ft)
-	(let ((c (file-name-completion (car fl) (or fn "."))))
-	  (setq fn
-	    (concat (or fn "")
-		    (if fn "/" "")
-		    (if (and c (string-match "\\(.*\\)/$" c))
-			(substring c (match-beginning 1) (match-end 1))
-		      c)))))
-      (setq fl (cdr fl)))
-    fn))
+  (catch 'fi::expand-file-name-abbrevs
+    (let* ((flist (fi::explode filename ?/))
+	   (fl flist)
+	   (fn nil)
+	   ft)
+      (if (string= "" (car flist))
+	  (progn
+	    (setq flist (cdr flist))
+	    (setq fl flist)))
+      (while fl
+	(setq ft (concat fn (if fn "/" "") (car fl)))
+	(if (file-exists-p ft)
+	    (setq fn ft)
+	  (let ((c (file-name-completion (car fl) (or fn "."))))
+	    (unless c (throw 'fi::expand-file-name-abbrevs nil))
+	    (setq fn
+	      (concat (or fn "")
+		      (if fn "/" "")
+		      (if (and c (string-match "\\(.*\\)/$" c))
+			  (substring c (match-beginning 1) (match-end 1))
+			c)))))
+	(setq fl (cdr fl)))
+      fn)))
 
 (defun fi:shell-command-completion ()
   "Perform command name completion in subprocess modes.  A completion buffer
