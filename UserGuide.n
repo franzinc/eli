@@ -2,7 +2,7 @@
 			      User Guide
 			   Release 2.0beta
 
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.16 1991/06/20 15:22:46 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.17 1991/06/27 15:28:16 layer Exp $
 
 			     Introduction
 
@@ -261,6 +261,7 @@ Key bindings in Common Lisp subprocess mode (fi:inferior-common-lisp-mode)
 		C-c ]		fi:super-paren
 		C-c C-e		fi:end-of-defun
 		C-c ;		fi:comment-region
+		C-c ^		fi:center-defun
 		C-c %		fi:extract-list
 		C-c C-y		fi:pop-input
 		C-c C-s		fi:re-search-forward-input
@@ -719,14 +720,16 @@ Information sharing between Common Lisp and Emacs
 Functions and Variables for editing Common Lisp programs:
 
 %% fi:common-lisp-mode
+%% fi:center-defun			fi:common-lisp-mode-map
 %% fi:comment-region			fi:common-lisp-mode-map
+%% fi:describe-symbol			fi:common-lisp-mode-map
 %% fi:end-of-defun			fi:common-lisp-mode-map
 %% fi:extract-list			fi:common-lisp-mode-map
 %% fi:indent-sexp			fi:common-lisp-mode-map
 %% fi:lisp-apropos			fi:common-lisp-mode-map
 %% fi:lisp-arglist			fi:common-lisp-mode-map
 %% fi:lisp-complete-symbol 		fi:common-lisp-mode-map
-%% fi:describe-symbol			fi:common-lisp-mode-map
+%% fi:lisp-delete-pop-up-window		fi:common-lisp-mode-map
 %% fi:lisp-eval-current-buffer		fi:common-lisp-mode-map
 %% fi:lisp-eval-defun			fi:common-lisp-mode-map
 %% fi:lisp-eval-last-sexp		fi:common-lisp-mode-map
@@ -742,7 +745,6 @@ Functions and Variables for editing Common Lisp programs:
 %% fi:log-functional-change		fi:common-lisp-mode-map
 %% fi:super-paren			fi:common-lisp-mode-map
 %% fi:toggle-trace-definition		fi:common-lisp-mode-map
-%% fi:lisp-delete-pop-up-window		fi:common-lisp-mode-map
 
 %% fi:list-who-calls			fi:common-lisp-mode-map
 %% fi:list-who-is-called-by
