@@ -8,14 +8,13 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.21 1991/10/21 20:04:30 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.22 1991/10/29 14:59:16 layer Exp $
 
 ;; Create a mode in which each line is a definition and . on that
 ;; definition brings up the definition in another window
 
 (defvar lep::definition-mode-saved-window-configuration nil)
-
-(make-variable-buffer-local 'lep::definition-mode-saved-window-configuration)
+(defvar lep::inverse-definition-mode-saved-window-configuration nil)
 
 (defvar fi:definition-mode-map nil)
 (defvar fi:inverse-definition-mode-map nil)
@@ -200,7 +199,8 @@ before definition mode was entered."
 was before inverse-definition mode was entered."
   (interactive)
   (bury-buffer)
-  (set-window-configuration lep::definition-mode-saved-window-configuration))
+  (set-window-configuration
+   lep::inverse-definition-mode-saved-window-configuration))
 
 (defun fi:definition-mode-goto-definition ()
   "Find the definition associated with the entry on the current line.  This
@@ -283,7 +283,9 @@ in definition mode."
 				     fn-and-arguments
 				     &optional buffer-name)
   (let ((buffer (get-buffer-create (or buffer-name "*definitions*"))))
-    (fi::goto-definitions-buffer buffer)
+    (fi::goto-definitions-buffer
+     buffer
+     'lep::definition-mode-saved-window-configuration)
     (save-excursion
       (set-buffer buffer)
       (setq buffer-read-only nil)
@@ -309,7 +311,9 @@ in definition mode."
 					     fn-and-arguments
 					     &optional buffer-name)
   (let ((buffer (get-buffer-create (or buffer-name "*inverse-definitions*"))))
-    (fi::goto-definitions-buffer buffer)
+    (fi::goto-definitions-buffer
+     buffer
+     'lep::inverse-definition-mode-saved-window-configuration)
     (save-excursion
       (set-buffer buffer)
       (setq buffer-read-only nil)
@@ -331,8 +335,7 @@ in definition mode."
       (setq fi:package package)
       (beginning-of-buffer))))
 
-(defun fi::goto-definitions-buffer (buffer)
+(defun fi::goto-definitions-buffer (buffer config-var)
   (unless (eq buffer (current-buffer))
-    (setq lep::definition-mode-saved-window-configuration
-      (current-window-configuration))  
+    (set config-var (current-window-configuration))
     (fi::display-pop-up-window buffer)))
