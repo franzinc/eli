@@ -504,7 +504,7 @@ fi:excl-service-name in tcplisp.el (all in the lisp/fi directory)
 match what is in /etc/services.  For the interface as distributed, put
 the following line in /etc/services:
 
-	excl		1123/tcp
+	excl		6789/tcp
 
 on both `akbar' and `snooze'.
 
@@ -515,7 +515,7 @@ Then, on `akbar', possibly in a shell buffer remotely logged into
 
 (If you get the error "bind: Address already in use" then the port
 number you chose is already being used by another program.  In this
-case, use something other than 1123 (in the default case) or the one
+case, use something other than 6789 (in the default case) or the one
 currently being used.)  Then, on `snooze' do:
 
 	M-x fi:tcp-common-lisp RET
