@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.62 1990/09/04 15:16:52 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.63 1990/09/05 16:58:53 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -332,9 +332,9 @@ See `fi:unix-domain' and `fi:explicit-tcp-common-lisp'."
 
 (defun fi:explicit-tcp-common-lisp (&optional buffer-number
 					      host service password)
-  "The same as fi:tcp-common-lisp, except that the host name a port number
-are read from the minibuffer.  Use a port number of 0 for UNIX domain
-sockets."
+  "The same as fi:tcp-common-lisp, except the buffer name of the Lisp onto
+which the listener is disired is read from the minibuffer.  Use port 0 if
+fi:unix-domain is non-nil."
   (interactive
    (let ((buffer (read-buffer "Buffer with Lisp subprocess: ")))
      (if fi:unix-domain
