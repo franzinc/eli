@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-rlogin.el,v 3.0 2003/12/15 22:52:57 layer Exp $
+;; $Id: fi-rlogin.el,v 3.1 2004/01/16 19:27:49 layer Exp $
 
 (defvar fi:rlogin-mode-map nil
   "The rlogin major-mode keymap.")
@@ -93,7 +93,8 @@ The rlogin image file and image arguments are taken from the variables
 				 (list host)
 				 (when user
 				   (list "-l" user)))
-			 'fi::rlogin-filter)))
+			 'fi::rlogin-filter
+			 (function (lambda (&rest ignore) (cd "~/"))))))
 
 (defun fi:rlogin-new-user (&optional buffer-number host user)
   (interactive "p\nsRemote login to host: \nsUser name: ")

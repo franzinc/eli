@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 3.0 2003/12/15 22:52:57 layer Exp $
+;; $Id: fi-subproc.el,v 3.1 2004/01/16 19:27:49 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -198,7 +198,8 @@ is a string that names the executable image fi:common-lisp invokes.")
 variable is nil, and the corresponding argument to fi:common-lisp is not
 given, then a default heap image is loaded.")
 
-(defvar fi:common-lisp-image-arguments nil
+(defvar fi:common-lisp-image-arguments
+    (if (on-ms-windows) '("+B" "+cn") nil)
   "*Default Common Lisp image arguments when invoked from `fi:common-lisp',
 which must be a list of strings.  Each element of the list is one command
 line argument.")
@@ -965,7 +966,9 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	  (car (setq xx (read-from-string
 			 (fi::frob-case-from-lisp command)
 			 (cdr xx))))
-	(error nil)))))
+	(error nil)))
+    ;; The ipc version is now ignored.  It was never used.  Ever.
+    ))
 
 (defun fi::make-subprocess (startup-message process-name buffer-name
 			    directory mode-function image-prompt image-file

@@ -1,10 +1,13 @@
-For more detailed instructions on filling in the ChangeLog form, see 
-`/fi/doc/procedures/changelogs.txt'.
-*******************************************************************************
-<version for this commit> (in version.mak)
+2004-01-16  Kevin Layer  <layer@gemini>
 
-<standard changelog date stamp>
-	* <changes go here...>
+	* fi-keys.el: bug13995: move fi::arglist-lisp-space-1 to fi-lep.el
+	* fi-lep.el: bug13995: move fi::arglist-lisp-space-1 here from
+	  fi-keys.el
+	* fi-rlogin.el (fi:rlogin): rfe5748: cd to ~ before doing the
+	  rlogin
+	* fi-subproc.el (fi:common-lisp-image-arguments): rfe5747: default
+	  on windows is +B +cn
+	* version.mak: get version from ChangeLog
 
 *******************************************************************************
 join from acl62 to trunk on 12/11/03
@@ -4883,3 +4886,6 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 
 	* lisp-mode and common-lisp-mode are the same as
 	fi:common-lisp-mode (this is for -*- mode defs)
+
+*******************************************************************************
+$Revision: 3.1 $

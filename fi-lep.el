@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 3.0 2003/12/15 22:52:57 layer Exp $
+;; $Id: fi-lep.el,v 3.1 2004/01/16 19:27:49 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -24,6 +24,71 @@ time."
     ;; Error continuation
     ((string) (error)
      (fi::show-error-text "Cannot get the arglist of %s: %s" string error))))
+
+;; The implementation of fi::arglist-lisp-space-1 is from Bill Clementson
+;; (Bill_Clementson@jdedwards.com), who says it is an adaptation of ILISP
+;; code.  The idea for fi:auto-arglist-pop-up-style came from Steve Haflich
+;; (smh@franz.com).
+
+(defun fi::arglist-lisp-space-1 ()
+  (let* ((old-point (point))
+	 (last-char
+	  (progn (ignore-errors (backward-char))
+		 (unless (eql (point) old-point)
+		   (buffer-substring-no-properties old-point (point)))))
+	 (string
+	  (buffer-substring-no-properties old-point
+					  (progn
+					    (goto-char old-point)
+					    (ignore-errors
+					     (backward-sexp))
+					    (point))))
+	 (prefix-char 
+	  (let ((save (ignore-errors
+		       (goto-char old-point)
+		       (backward-sexp)
+		       (backward-char)
+		       (point))))
+	    (when save
+	      (buffer-substring-no-properties save (1+ save)))))
+	 (double-quote-pos (and string (string-match "\"" string)))
+	 (paren-pos (and string
+			 (string-match "(" string)))
+	 (symbol-with-package
+	  (unless (eql paren-pos 0)
+	    (if (and double-quote-pos (eql double-quote-pos 0)
+		     string (ignore-errors (elt string 2)))
+		(substring string 1 -1)
+	      string)))
+	 (symbol symbol-with-package))
+    (flet ((no-arglist-output-p ()
+	     (or (and last-char 
+		      (or
+		       ;; don't do silly things after comment character
+		       (equal last-char ";")
+		       ;; do something only if directly after a sexp.
+		       (equal last-char " ")))
+		 ;; could be something like #+foo, #-foo, or #:foo, any of
+		 ;; which is likely to lose.
+		 (and string (string-match "^#" string))
+		 double-quote-pos ;; there is no output  for strings only.
+		 (not (and symbol (stringp symbol) (> (length symbol) 0)))
+		 (string-match "^\. " symbol)
+		 (string-match "^\\\\" symbol))))
+      (goto-char old-point)
+      (unless (no-arglist-output-p)
+	;; only output for functions within brackets; too much lisp-traffic!
+	(when (equal prefix-char "(")
+	  (fi::make-request (lep::arglist-session :fspec string)
+	    ;; Normal continuation
+	    (() (what arglist)
+	     (let ((fi:pop-up-temp-window-behavior
+		    fi:auto-arglist-pop-up-style))
+	       (fi:show-some-text nil "%s's arglist: %s" what arglist)))
+	    ;; Error continuation
+	    ((string) (error)
+	     (fi::show-error-text "")))))))
+  (self-insert-command (prefix-numeric-value current-prefix-arg)))
 
 (defun fi:lisp-apropos (string &optional regexp)
   "In the Common Lisp environment evaluate lisp:apropos on STRING.
