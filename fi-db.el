@@ -24,50 +24,81 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.2 1991/02/15 01:42:30 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.3 1991/02/15 15:27:49 layer Exp $
 ;;
 
-;;; need to figure out a nice heuristic for determining the process-name of
-;;; the Lisp process in the current Lisp subprocess buffer.  One solution:
-;;; put the process name in the listener in the startup frammis.
+(defconst lep:current-frame-regexp "^ ->")
+(defconst lep:ok-frame-regexp "^   (")
+(defconst lep:scan-stack-mode-map nil)
+(defconst lep:debugger-help
+    "Debugger commands:
 
-;;; all the commands which operate on the current frame should set it if it
-;;; is not current.
+  C-c    :continue
+  C-p    :pop
+  C-r    :reset
+  .      make frame under the point the current frame
+  R      restart the current frame (give prefix to specify different form)
+  a      toggle all frames visible (by default a subset are visible)
+  d      next line
+  e      edit source corresponding to function in the current frame
+  g      revert stack from Lisp
+  h      Causes this help text to become visible
+  l      display the lexical variables for the current frame
+  p      pretty print the current frame
+  q      switch back to \"%s\" buffer
+  r      return a value from the current frame
+  u      previous line             
 
-;;; need to make sure no commands have disturbed the stack.  To do this,
-;;; need to hack the toplevel to set a flag each time it does one of the
-;;; unsafe tpl commands (dn, up, pop, etc).  when fi:scan-stack starts, it
-;;; should clear the flag, so the lep:ss-* commands can check it before
-;;; doing their thang.
+Type SPACE to hide this help summary.
 
-(defvar lep:current-frame-regexp "^ ->")
+")
+(defconst lep::help-displayed t)
+(defconst lep:show-all-frames nil)
 
-(defvar lep:scan-stack-mode-map nil)
+(defvar lep::process-name nil)
+(make-variable-buffer-local 'lep::process-name)
 
-(defun fi:scan-stack ()
-  (interactive)
-  (let ((process-name (lep::buffer-process)))
-    (make-request (lep::zoom-session :process-name process-name)
+(defun fi:scan-stack (&optional all)
+  (interactive "P")
+  (let ((process-name (lep::buffer-process))
+	(from-buffer (when fi:subprocess-mode
+		       (current-buffer))))
+    (make-request (lep::zoom-session :process-name process-name
+				     :all (or lep:show-all-frames all))
 		  ;; Normal continuation
-		  ((process-name) (stack)
-		   (lep::display-stack process-name stack))
+		  ((from-buffer process-name) (stack)
+		   (let* ((name "*acl debugger*")
+			  (big-name (format "%s<%s>" name process-name))
+			  (buffer-name
+			   (cond ((get-buffer name) name)
+				 ((get-buffer big-name) big-name)
+				 (t name))))
+		     (pop-to-buffer buffer-name)
+		     (if buffer-read-only (toggle-read-only))
+		     (erase-buffer)
+		     (insert (format lep:debugger-help
+				     (buffer-name
+				      (or from-buffer
+					  lep::debugger-from-buffer))))
+		     (unless lep::help-displayed
+		       (lep:ss-hide-help-text))
+		     (insert stack)
+		     (beginning-of-buffer)
+		     (re-search-forward lep:current-frame-regexp)
+		     (beginning-of-line)
+		     (lep::scan-stack-mode from-buffer process-name)))
 		  ;; Error continuation
 		  (() (error)
 		   (message "Cannot zoom on stack: %s" error)))))
 
-(defun lep::display-stack (process-name stack)
-  (pop-to-buffer (format "*%s's stack*" process-name))
-  (if buffer-read-only (toggle-read-only))
-  (erase-buffer)
-  (insert stack)
-  (beginning-of-buffer)
-  (re-search-forward lep:current-frame-regexp)
-  (beginning-of-line)
-  (lep::scan-stack-mode))
-
-(defun lep::scan-stack-mode ()
+(defun lep::scan-stack-mode (from-buffer process-name)
   (interactive)
-  (kill-all-local-variables)
+  (let ((saved-from-buffer lep::debugger-from-buffer))
+    (kill-all-local-variables)
+    (make-local-variable 'lep::debugger-from-buffer)
+    (setq lep::debugger-from-buffer (or from-buffer
+					saved-from-buffer)))
+  (setq lep::process-name process-name)
   (setq major-mode 'let:scan-stack-mode)
   (setq mode-name "Scan stack mode")
   (if (null lep:scan-stack-mode-map)
@@ -75,27 +106,137 @@
 	(define-key map "\C-c"	'lep:ss-continue)
 	(define-key map "\C-p"	'lep:ss-pop)
 	(define-key map "\C-r"	'lep:ss-reset)
+	(define-key map " "	'lep:ss-hide-help-text)
 	(define-key map "."	'lep:ss-set-current)
-	(define-key map "L"	'lep:ss-set-local)
-	(define-key map "R"	'lep:ss-return)
+	(define-key map "R"	'lep:ss-restart)
 	(define-key map "d"	'next-line)
+	(define-key map "a"	'lep:ss-toggle-all)
 	(define-key map "e"	'lep:ss-edit)
 	(define-key map "g"	'lep:ss-get-new-stack)
+	(define-key map "h"	'lep:ss-unhide-help-text)
 	(define-key map "l"	'lep:ss-display-locals-for-frame)
 	(define-key map "p"	'lep:ss-pprint-frame)
 	(define-key map "q"	'lep:ss-quit)
-	(define-key map "r"	'lep:ss-restart)
+	(define-key map "r"	'lep:ss-return)
 	(define-key map "u"	'previous-line)
-
 	(setq lep:scan-stack-mode-map map)))
   (use-local-map lep:scan-stack-mode-map)
   (if (not buffer-read-only) (toggle-read-only))
   (setq truncate-lines t)
   (run-hooks 'lep:scan-stack-mode-hook))
 
-(defun lep::do-tpl-command-on-process (done command &rest args)
+(defun lep:ss-reset ()
+  (interactive)
+  (lep::do-tpl-command-on-process t "reset"))
+
+(defun lep:ss-continue ()
+  (interactive)
+  (lep::do-tpl-command-on-process t "continue"))
+
+(defun lep:ss-pop ()
+  (interactive)
+  (lep::do-tpl-command-on-process t "pop"))
+
+(defun lep:ss-return ()
+  (interactive)
+  (lep::do-tpl-command-on-process
+   t
+   "return"
+   (list 'read-from-string
+	   (read-string "Form (evaluated in the Lisp environment): " "nil"))))
+
+(defun lep:ss-restart (new-form)
+  (interactive "P")
+  (lep::do-tpl-command-on-process
+   t
+   "restart"
+   (when new-form
+     (list 'read-from-string
+	   (read-string "Form (evaluated in the Lisp environment): ")))))
+
+(defun lep:ss-edit ()
+  (interactive)
+  (lep::do-tpl-command-on-process 'make-current "edit"))
+
+(defun lep:ss-get-new-stack ()
+  (interactive)
+  (fi:scan-stack))
+
+(defun lep:ss-toggle-all ()
+  (interactive)
+  (setq lep:show-all-frames (not lep:show-all-frames))
+  (fi:scan-stack))
+
+(defun lep:ss-set-current ()
+  (interactive)
+  (let ((offset (lep::offset-from-current-frame)))
+    (if offset
+	(if (> offset 0)
+	    (lep::do-tpl-command-on-process nil "dn" offset ':zoom nil)
+	  (lep::do-tpl-command-on-process nil "up" (- offset) ':zoom nil)))))
+
+(defun lep:ss-quit (&optional buffer)
+  (interactive)
+  (let* ((buf (or lep::debugger-from-buffer buffer))
+	 (win (get-buffer-window buf)))
+    (bury-buffer)
+    (if win
+	(select-window win)
+      (switch-to-buffer buf))))
+
+(defun lep:ss-display-locals-for-frame ()
+  (interactive)
   (let ((process-name (lep::buffer-process))
 	(offset (lep::offset-from-current-frame)))
+    (make-request
+     (lep::local-session :process-name process-name
+			 :offset offset)
+     ((offset) (text)
+      (when offset (lep::make-current offset))
+      (show-some-text text nil))
+     (() (error)
+      (message "Cannot find locals: %s" error)))))
+
+(defun lep:ss-pprint-frame ()
+  (interactive)
+  (let ((process-name (lep::buffer-process))
+	(offset (lep::offset-from-current-frame)))
+    (make-request
+     (lep::pprint-frame-session :process-name process-name
+				:offset offset)
+     ((offset) (text)
+      (when offset (lep::make-current offset))
+;;;; figure out how to find the package
+      (show-some-text text nil))
+     (() (error)
+      (message "Cannot pprint: %s" error)))))
+
+(defun lep:ss-hide-help-text ()
+  (interactive)
+  (save-excursion
+    (widen)
+    (beginning-of-buffer)
+    (or (re-search-forward "^Evaluation stack:$" nil t)
+	(end-of-buffer))
+    (beginning-of-line)
+    (narrow-to-region (point) (point-max))
+    (setq lep::help-displayed nil)))
+
+(defun lep:ss-unhide-help-text ()
+  (interactive)
+  (save-excursion
+    (widen))
+  (recenter)
+  (setq lep::help-displayed t))
+
+;;;
+;;; internals
+;;;
+
+(defun lep::do-tpl-command-on-process (done command &rest args)
+  (let ((process-name (lep::buffer-process))
+	(offset (lep::offset-from-current-frame))
+	(buffer lep::debugger-from-buffer))
     (make-request (lep::tpl-command-session
 		   :process-name process-name
 		   :command command
@@ -103,12 +244,9 @@
 		   :done (eq t done)
 		   :offset (when done offset))
 		  ;; Normal continuation
-		  ((offset) (done)
+		  ((buffer offset) (done)
 		   (if (eq t done)
-		       (progn
-			 (bury-buffer)
-;;;; shouldn't hardwire this:
-			 (switch-to-buffer "*common-lisp*"))
+		       (lep:ss-quit buffer)
 		     (when offset (lep::make-current offset))))
 		  ;; Error continuation
 		  ((process-name) (error)
@@ -124,6 +262,8 @@
   (beginning-of-line)
   (if (looking-at lep:current-frame-regexp)
       nil
+    (if (not (looking-at lep:ok-frame-regexp))
+	(error "not on a frame"))
     (let* ((down t)
 	   (start (point))
 	   (end
@@ -149,70 +289,20 @@
     (unwind-protect
 	(progn
 	  (if (not (looking-at lep:current-frame-regexp))
-	      (error "not on current frame"))
+	      (error "Not on current frame."))
 	  (replace-match "   "))
       (toggle-read-only))))
 
-
-(defun lep:ss-reset ()
-  (interactive)
-  (lep::do-tpl-command-on-process t "reset"))
-
-(defun lep:ss-continue ()
-  (interactive)
-  (lep::do-tpl-command-on-process t "continue"))
-
-(defun lep:ss-pop ()
-  (interactive)
-  (lep::do-tpl-command-on-process t "pop"))
-
-(defun lep:ss-return ()
-  (interactive)
-  (lep::do-tpl-command-on-process t "return"))
-
-(defun lep:ss-restart ()
-  (interactive)
-  (lep::do-tpl-command-on-process t "restart"))
-
-(defun lep:ss-edit ()
-  (interactive)
-  (lep::do-tpl-command-on-process 'make-current "edit"))
-
-(defun lep:ss-get-new-stack ()
-  (interactive)
-  (fi:scan-stack))
-
-(defun lep:ss-set-current ()
-  (interactive)
-  (let ((offset (lep::offset-from-current-frame)))
-    (if offset
-	(if (> offset 0)
-	    (lep::do-tpl-command-on-process nil "dn" offset ':zoom nil)
-	  (lep::do-tpl-command-on-process nil "up" (- offset) ':zoom nil)))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;; stuff below here is not done
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defun lep:ss-quit ()
-  (interactive)
-  (bury-buffer)
-  (switch-to-buffer "*common-lisp*"))
-
-
 (defun lep::buffer-process ()
-  "Initial Lisp Listener")
-
-(defun lep:ss-pprint-frame ()
-  (interactive)
-  (error "not done"))
-
-(defun lep:ss-display-locals-for-frame ()
-  (interactive)
-  (error "not done"))
-
-(defun lep:ss-set-local ()
-  (interactive)
-  ;; since the emacs reader can't read real lisp objects, it may be better
-  ;; to just pop to the *common-lisp* buffer and insert ":set-local foo "
-  (error "not done"))
+  (cond
+   (lep::process-name)
+   (t
+    (let* ((processes
+	    (cdr (car (lep::eval-in-lisp 'lep::list-all-processes-session))))
+	   (completions
+	    (mapcar (function (lambda (x) (list x))) processes)))
+      (completing-read "Process to debug: "
+		       completions
+		       nil
+		       t
+		       "Initial Lisp Listener")))))
