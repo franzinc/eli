@@ -1,4 +1,4 @@
-;;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.16 1988/04/04 20:16:50 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.17 1988/04/14 12:02:53 layer Exp $
 ;;;
 ;;; Interaction with a Lisp subprocess
 
@@ -187,15 +187,28 @@ the major-mode of the buffer."
 	 (fi::background-sublisp-process)
 	 (format "(format t \"\2~s\" (cons '%s (source-file '%s t)))\n"
 		 s s))
-      (error
-       ;; the backdoor-lisp-listener is not listening...
-       (if fi:source-info-not-found-hook
-	   (funcall fi:source-info-not-found-hook (symbol-name symbol))
-	 (message "The source location of `%s' is unknown." symbol))))))
+      (error ;; the backdoor-lisp-listener is not listening...
+       (setq fi::tag-state nil)
+       (fi::lisp-find-etag (symbol-name symbol))))))
 
-(defun fi:lisp-tags-loop-continue (&optional symbol)
-  "Not implemented yet."
-  )
+(defun fi:lisp-tags-loop-continue ()
+  (interactive)
+  (if (and fi::tag-state (cdr fi::tag-state))
+      (let ((symbol (car fi::tag-state))
+	    (info (cdr (cdr fi::tag-state))))
+	(cond (info
+	       (setq fi::tag-state (cons symbol info))
+	       (fi::find-source-from-lisp-info symbol info t))
+	      (t (setq fi::tag-state (cons symbol nil))
+		 (if (y-or-n-p
+		      "no more source info from lisp, use tags file? ")
+		     (progn
+		       ;; the following is a crock, but it works
+		       (setq last-tag (symbol-name symbol))
+		       (find-tag nil t))))))
+    (if fi::tag-state
+	(setq last-tag (symbol-name (car fi::tag-state))))
+    (find-tag nil t)))
 
 (defun fi:tcp-lisp-send-eof ()
   "Do a debug-pop to the TCP listener."
@@ -302,21 +315,26 @@ Lisp at the other end of our socket."
   ;; If UP-P, then the default is the symbol at the car of the form at the
   ;; cursor.  Otherwise, it is the symbol at the cursor.
   (let ((default 
-	    (if up-p
-		(save-excursion
-		  (buffer-substring (progn (up-list -1)
-					   (forward-char 1)
-					   (point))
-				    (progn (forward-sexp 1) (point))))
-	      (save-excursion
-		(buffer-substring (progn (forward-char 1)
-					 (backward-sexp 1)
-					 (skip-chars-forward "#'")
-					 (point))
-				  (progn (forward-sexp 1) (point)))))))
+	    (condition-case ()
+		(if up-p
+		    (save-excursion
+		      (buffer-substring (progn (up-list -1)
+					       (forward-char 1)
+					       (point))
+					(progn (forward-sexp 1) (point))))
+		  (save-excursion
+		    (buffer-substring (progn (forward-char 1)
+					     (backward-sexp 1)
+					     (skip-chars-forward "#'")
+					     (point))
+				      (progn (forward-sexp 1) (point)))))
+	      (error ""))))
     (if interactive-p
 	(setq symbol
-	  (read-string (format "%s (default %s): " interactive default))))
+	  (read-string
+	   (if (equal default "")
+	       (format "%s: " interactive)
+	     (format "%s (default %s): " interactive default)))))
     (if (or (null symbol) (equal symbol ""))
 	(setq symbol default))
     (fi::remove-package-info symbol)))
@@ -412,16 +430,14 @@ Lisp at the other end of our socket."
 			  (setq form (car (read-from-string (buffer-string))))
 			  (kill-buffer temp))
 			(setq fi::sublisp-returns "")
+			(setq fi::tag-state form)
 			(if (cdr form)
 			    (fi::find-source-from-lisp-info
 			     (car form) (cdr form))
-			  (if fi:source-info-not-found-hook
-			      (funcall fi:source-info-not-found-hook
-				       (symbol-name
-					(fi::remove-package-info
-					 (symbol-name (car form)))))
-			    (message "The source location of `%s' is unknown."
-				     (car form))))))
+			  (fi::lisp-find-etag
+			   (symbol-name
+			    (fi::remove-package-info
+			     (symbol-name (car form))))))))
 		     (t  
 		      (if (or (> (length fi::sublisp-returns) 78)
 			      ;; should be mbuf width
@@ -431,28 +447,27 @@ Lisp at the other end of our socket."
 			(message fi::sublisp-returns))
 		      (setq fi::sublisp-returns "")))))))))
 
-(defun fi::find-source-from-lisp-info (xname info)
+(defvar fi::tag-state nil
+  "The last source info requested from cl.  This is used to implement
+tags-loop-continue for lisp.")
+
+(defun fi::lisp-find-etag (string)
+  (if fi:source-info-not-found-hook
+      (funcall fi:source-info-not-found-hook string)
+    (message "The source location of `%s' is unknown." string)))
+
+(defun fi::find-source-from-lisp-info (xname info &optional same-window)
   ;; info is an alist of (type . filename)
-  (if (= 1 (length info))
-      (setq info (car info))
-    (let ((completion-ignore-case t)
-	  (string-info (mapcar '(lambda (x)
-				 (rplaca x (symbol-name (car x)))
-				 x)
-			       (copy-alist info))))
-      (setq info
-	(assoc (intern-soft
-		(completing-read (format "Find `%s' of what type? " xname)
-				 string-info
-				 nil t nil))
-	       info))))
+  (setq info (car info))
   (let* ((type (car info))
 	 (file (cdr info))
 	 (name (symbol-name xname))
 	 (search-form nil))
     (if (not (file-exists-p file))
-	(error "can't file source file `%s'" file))
-    (find-file-other-window file)
+	(error "Can't file source file: `%s'" file))
+    (if same-window
+	(find-file file)
+      (find-file-other-window file))
     (beginning-of-buffer)
     (cond ((eq ':function type) (setq search-form "un"))
 	  ((eq ':macro type) (setq search-form "macro"))
