@@ -1,4 +1,4 @@
-;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.20 1988/04/14 12:04:12 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.21 1988/04/18 21:08:04 layer Exp $
 ;;;
 ;;; Low-level subprocess mode guts
 
@@ -90,7 +90,7 @@ normal global binding.  This is a buffer-local symbol.")
   "Maximum size in bytes of a single write request to a subprocess.")
 
 (defvar fi:common-lisp-prompt-pattern
-  "^\\(\\[[0-9]+c?\\] \\|\\[step\\] \\)?<[-A-Za-z]* ?[0-9]*> "
+  "^\\(\\[[0-9]+c?\\] \\|\\[step\\] \\)?<[-A-Za-z]* ?[0-9]*?> "
   "Regexp for Newline command in inferior-lisp mode to match Common Lisp
 prompts. Anything from beginning of line up to the end of what this pattern
 matches is deemed to be prompt, and is not re-executed.")
@@ -293,6 +293,11 @@ Also put cursor there."
   "Interrupt this shell's current subjob."
   (interactive)
   (interrupt-process nil t))
+
+(defun fi:subprocess-kill ()
+  "Send a `kill' signal to the subprocess in the current buffer."
+  (interactive)
+  (kill-process nil t))
 
 (defun fi:subprocess-quit ()
   "Send quit signal to this shell's current subjob."
