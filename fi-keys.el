@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.10 1988/05/25 17:16:13 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.11 1988/06/07 14:49:51 layer Exp $
 
 ;;;;
 ;;; Key defs
@@ -399,8 +399,9 @@ With a prefix argument, macroexpand the code as the compiler would."
     (if start
 	(write-region start (point) filename nil 'nomessage)
       (let ((form (read-string (format "form to %s: " type)))
-	    (obuf (current-buffer)))
-	(set-buffer "*cl-macroexpand-temp*")
+	    (obuf (current-buffer))
+	    (tbuf (get-buffer-create "*cl-macroexpand-temp*")))
+	(set-buffer tbuf)
 	(erase-buffer)
 	(insert form)
 	(write-region (point-min) (point-max) filename nil 'nomessage)
