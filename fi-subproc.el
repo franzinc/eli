@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.75 1990/12/04 23:11:31 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.76 1990/12/13 17:15:45 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -259,17 +259,19 @@ The image file and image arguments are taken from the variables
 
 See fi:explicit-common-lisp."
   (interactive "p")
-  (let ((proc (fi::make-subprocess
-	       buffer-number
-	       "common-lisp" 
-	       'fi:inferior-common-lisp-mode
-	       fi:common-lisp-prompt-pattern
-	       fi:common-lisp-image-name
-	       fi:common-lisp-image-arguments
-	       nil
-	       fi:start-lisp-interface-function)))
+  (let* ((already-running (fi::is-running-p "common-lisp" buffer-number))
+	 (proc (fi::make-subprocess
+		buffer-number
+		"common-lisp" 
+		'fi:inferior-common-lisp-mode
+		fi:common-lisp-prompt-pattern
+		fi:common-lisp-image-name
+		fi:common-lisp-image-arguments
+		nil
+		fi:start-lisp-interface-function)))
+    (if (not already-running)
+	(fi::set-buffer-host (process-buffer proc) (system-name)))
     (setq fi::freshest-common-sublisp-name (process-name proc))
-    (fi::set-buffer-host (process-buffer proc) (system-name))
     proc))
 
 (defun fi:explicit-common-lisp (&optional buffer-number
@@ -284,17 +286,19 @@ are read from the minibuffer."
     (or fi:default-explicit-common-lisp-image-arguments
 	(fi::listify-string
 	 (read-from-minibuffer "Image arguments (separate by spaces): ")))))
-  (let ((proc (fi::make-subprocess
-	       buffer-number
-	       "common-lisp" 
-	       'fi:inferior-common-lisp-mode
-	       fi:common-lisp-prompt-pattern
-	       image-name
-	       image-arguments
-	       nil
-	       fi:start-lisp-interface-function)))
+  (let* ((already-running (fi::is-running-p "common-lisp" buffer-number))
+	 (proc (fi::make-subprocess
+		buffer-number
+		"common-lisp" 
+		'fi:inferior-common-lisp-mode
+		fi:common-lisp-prompt-pattern
+		image-name
+		image-arguments
+		nil
+		fi:start-lisp-interface-function)))
+    (if (not already-running)
+	(fi::set-buffer-host (process-buffer proc) (system-name)))
     (setq fi::freshest-common-sublisp-name (process-name proc))
-    (fi::set-buffer-host (process-buffer proc) (system-name))
     proc))
 
 (defun fi:remote-common-lisp (&optional buffer-number host)
@@ -494,6 +498,12 @@ are read from the minibuffer."
 ;;;;
 ;;; Internal functions
 ;;;;
+
+(defun fi::is-running-p (process-name buffer-number)
+  (let* ((buffer (fi::make-process-buffer process-name buffer-number))
+	 (process (get-buffer-process buffer))
+	 (status (if process (process-status process))))
+    (memq status '(run stop))))
 
 (defun fi::make-subprocess (buffer-number process-name mode-function
 			    image-prompt image-file image-arguments
