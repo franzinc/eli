@@ -11,6 +11,16 @@ Tests for new features:	<`no new features', `no tests for new features', or
 	* <changes go here...>
 
 *******************************************************************************
+2.0.20.beta.4
+
+Documentation changes:	none
+Tests for new features:	no new features
+
+Fri Dec 20 11:41:47 1996    <layer@HOBART>
+
+	* fi-subproc.el: change image-name default value for Windows
+
+*******************************************************************************
 2.0.20.beta.3
 
 Documentation changes:	none

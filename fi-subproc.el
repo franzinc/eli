@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.180 1996/12/17 00:46:35 layer Exp $
+;; $Id: fi-subproc.el,v 1.181 1996/12/20 19:44:24 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -172,7 +172,7 @@ A CD is done into this directory before the process is started.")
 
 (defvar fi:common-lisp-image-name
     (if (on-ms-windows)
-	(cons "c:/acl4.3/dlisp.exe" "c:/acl4.3/user.svl")
+	(cons "c:/acl432/lisp.exe" "c:/acl432/lisp.dxl")
       "cl")
   "*Default Common Lisp image used by fi:common-lisp.  The value is a
 string that names the image fi:common-lisp invokes.")
