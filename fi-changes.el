@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-changes.el,v 1.3 1991/03/15 12:43:42 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-changes.el,v 1.4 1991/03/15 21:05:27 layer Exp $
 
 ;;; Support for changed definitions
 
@@ -106,15 +106,14 @@ in NEW-FILE which have been added, deleted or changed with respect to
 OLD-FILE."
   (interactive "fNew file: \nfOld file: ")
   (find-file new-file)
-  (let ((buffer (current-buffer))
-	(package fi:package))
+  (let ((package fi:package))
     (make-request (scm::list-changed-definitions
 		   :operation ':list
 		   :old-file old-file
 		   :new-file new-file)
-		   ((buffer package) (changes)
+		   ((package) (changes)
 		    (if changes
-			(show-changes buffer package changes)
+			(show-changes changes nil package)
 		      (message "There are no changes.")))
 		   (() (error)
 		    (error "Cannnot list changed definitions: %s" error)))))
@@ -216,11 +215,11 @@ OLD-FILE."
       (copy-region-as-kill (point-min) (point-max)))
     (kill-buffer buffer)))
 
-(defun show-changes (changes)
-  (lep:display-some-definitions fi:package
+(defun show-changes (changes &optional buffer-name package)
+  (lep:display-some-definitions (or package fi:package)
 				changes
 				(list 'find-buffer-definition)
-				"*changes*"))
+				(or buffer-name "*changes*")))
 
 (defun convert-since-prefix (since)
   (ecase since
