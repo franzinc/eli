@@ -7,6 +7,14 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.4.7
+
+2003-10-14    <layer@HOBART>
+
+	* fi-indent.el (fi::calculate-lisp-indent): rfe4814: do nicer
+	  indentation when element after opening paren is #+/#- pair
+
+*******************************************************************************
 2.4.6
 
 2003-10-14    <layer@HOBART>

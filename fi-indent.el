@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-indent.el,v 1.62 2003/07/03 21:05:02 layer Exp $
+;; $Id: fi-indent.el,v 1.63 2003/10/14 23:20:33 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If non-nil, semicolons that begin comments are indented as they are
@@ -230,12 +230,13 @@ little consing as possible.")
 
 (defvar fi::lisp-doing-electric-semicolon nil)
 
+(defconst fi::semi-char 59)
+
 (defun fi:lisp-semicolon (&optional count)
   "Lisp semicolon hook.  Prefix argument is number of semicolons to
 insert.  The default value is 1."
   (interactive "p")
-  (insert-char ?; (or count 1)
-	       )
+  (insert-char fi::semi-char (or count 1))
   (if fi:lisp-electric-semicolon
       (save-excursion
 	(skip-chars-backward ";")
@@ -402,7 +403,8 @@ of the start of the containing expression."
 	  last-sexp
 	  containing-sexp
 	  temp
-	  (comment-hack nil))
+	  comment-hack
+	  sharpm-hack)
       (if parse-start
 	  (goto-char parse-start)
 	(beginning-of-defun))
@@ -432,6 +434,45 @@ of the start of the containing expression."
 	(setq containing-sexp (car (cdr state)))
 	;; Position following last unclosed open.
 	(goto-char (1+ containing-sexp))
+
+	(when (= ?# (char-after (point)))
+	  ;; Do special checking for #+/#-:
+	  ;;   (#+foo x
+	  ;;    #-foo y
+	  ;;    xxx ...
+	  ;; and
+	  ;;   (#+foo x #-foo y
+	  ;;    xxx ...
+	  ;; but, don't change this:
+	  ;; (#+foo x #-foo y yyy
+	  ;;        xxx ...
+	  
+	  (when (save-excursion
+		  (let ((max (save-excursion (forward-line 1) (point))))
+		    (condition-case ()
+			;; If there are 2 or 4 elements on the first line
+			;; after the opening paren, then indent at the
+			;; current column, otherwise, do nothing.  This
+			;; works with comments on the same line, too.
+			(or (and (progn
+				   (forward-sexp 2)
+				   (< (point) max))
+				 (progn 
+				   (forward-sexp 1)
+				   (> (point) max)))
+			    (and (progn
+				   (forward-sexp 1)
+				   (< (point) max))
+				 (progn
+				   (forward-sexp 1)
+				   (> (point) max))))
+		      (error () nil))))
+	    ;; Short circuit most of the rest of this function's
+	    ;; calculations, then set desired-indent to current column.
+	    (setq retry t)
+	    (setq desired-indent (current-column))
+	    (setq sharpm-hack t)))
+	
 	;; Is there a complete sexp since then?
 	(if (and last-sexp (> last-sexp (point)))
 	    ;; Yes, but is there a containing sexp after that?
@@ -510,6 +551,7 @@ of the start of the containing expression."
       ;; Call indentation hook except when overriden by fi:lisp-indent-offset
       ;; or if the desired indentation has already been computed.
       (cond (comment-hack)
+	    (sharpm-hack)
 	    ((nth 3 state)
 	     ;; Inside a string, don't change indentation.
              (goto-char indent-point)
