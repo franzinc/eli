@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.37 1991/01/30 10:38:11 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.38 1991/01/31 10:00:22 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -104,9 +104,12 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
     ;; editing mode
     (let ((c-map (make-sparse-keymap)))
       (define-key map "\C-c" c-map)
-      (define-key c-map "-"	'fi:log-functional-change)
-      (define-key c-map "\C-e"	'fi:end-of-defun)
-      (define-key c-map "]"	'fi:super-paren)))
+      (define-key c-map "-"	'fi:log-functional-change)))
+  
+  (define-key map "\C-c%"	'fi:extract-list)
+  (define-key map "\C-c;"	'fi:comment-region)
+  (define-key map "\C-c\C-e"	'fi:end-of-defun)
+  (define-key map "\C-c]"	'fi:super-paren)
   
   (if fi:lisp-do-indentation
       (progn
@@ -581,20 +584,42 @@ at the head of the function."
 	res)
     comment-start))
 
+(defun fi:beginning-of-defun (&optional n)
+  "Move the point to the start of the current top-level form.  With a
+prefix argument, do it this many times.  Returns t, unless beginning of
+buffer is hit."
+  (interactive "p")
+  (if fi:subprocess-mode
+      (goto-char (process-mark (get-buffer-process (current-buffer))))
+    (progn
+      (and n (< n 0) (forward-char 1))
+      (and (re-search-backward "^\\s(" nil 'move (or n 1))
+	   (progn (beginning-of-line) t)))))
+
 (defun fi:end-of-defun ()
   (interactive)
-  (when (beginning-of-defun 1)
-    (forward-sexp 1)))
+  (if fi:subprocess-mode
+      (goto-char (point-max))
+    (when (or (looking-at "^\\s(") (beginning-of-defun 1))
+      (forward-sexp 1))))
 
 (defun fi:super-paren ()
+  "Insert a sufficient number of parenthesis to complete the enclosing
+form.  If there are too many parens delete them.  The form is indent, too."
   (interactive)
-  (while (save-excursion
-	   (condition-case nil
-	       (progn (forward-sexp -1)
-		      t)
-	     (error (delete-char -1)
-		    nil)))
-    (insert ")")))
+  (save-restriction
+    (narrow-to-region (point) (save-excursion (fi:beginning-of-defun) (point)))
+    (let (p)
+      (while (progn (setq p (point))
+		    (beginning-of-defun)
+		    (condition-case nil (progn (forward-sexp 1) nil)
+		      (error t)))
+	(goto-char p)
+	(insert ")"))
+      (unless (eq p (point)) (delete-region p (point)))))
+  (fi:beginning-of-defun)
+  (indent-sexp)
+  (forward-sexp 1))
 
 (defun fi:find-unbalanced-parenthesis ()
   "Verifies that parentheses in the current Lisp buffer are balanced."
@@ -620,3 +645,69 @@ paragraph as well."
 					     (match-end 1))))
 	  (fill-paragraph arg))
       (fill-paragraph arg))))
+
+(defun fi:extract-list (n)
+  "Take the s-expression to which the cursor points and remove the outer N,
+defaults to 1, s-expressions."
+  (interactive "p")
+  (let ((string (progn
+		  (mark-sexp 1)
+		  (buffer-substring (point) (mark)))))
+    (backward-up-list (or n 1))
+    (mark-sexp 1)
+    (delete-region (point) (mark))
+    (insert string)
+    (backward-sexp 1)))
+
+(defun fi:comment-region (start end &optional arg)
+  "Comment out all lines in the current region.  With arg, 
+un-comments region that was commented by comment region.
+When calling from a program, the arguments are the START
+and END of the region, and the optional ARG."
+  (interactive "r\nP")
+  (save-excursion
+    (let ((start (progn (goto-char (max start (point-min)))
+			(skip-chars-forward " \t\n") ;skip blank lines
+			(beginning-of-line)
+			(point)))
+	  (end (progn (goto-char (min end (point-max)))
+		      (if (or (bolp)
+			      (looking-at "[ \t]*$"))
+			  (skip-chars-backward " \t\n")) ;skip blank lines
+		      (end-of-line)
+		      (point))))
+      (goto-char end)
+      (if (null arg)
+	  ;;Comment Region
+	  (if (string-equal comment-end "")
+	      ;;When no comment-end exists, put a comment-start
+	      ;;at the start of each line.
+	      (while (and (>= (point) start)
+			  (progn (beginning-of-line)
+				 (insert-string comment-start)
+				 (= (forward-line -1) 0))))
+	    ;;When comment-end exists, put comment marks only at the
+	    ;;beginning and end of the region, and put a comment-start after
+	    ;;each comment-end in the region.
+	    (insert-string comment-end)
+	    (goto-char end)
+	    (while (search-backward comment-end start 'move)
+	      (replace-match (concat comment-end comment-start))
+	      (goto-char (match-beginning 0)))
+	    (insert-string comment-start))
+	;;Uncomment Region
+	(if (string-equal comment-end "")
+	    (while (and (>= (point) start)
+			(progn (beginning-of-line)
+			       (if (looking-at (regexp-quote comment-start))
+				   (replace-match ""))
+			       (= (forward-line -1) 0))))
+	  (backward-char (length comment-end))
+	  (if (looking-at (regexp-quote comment-end))
+	      (replace-match ""))
+	  (while (re-search-backward (regexp-quote
+				      (concat comment-end comment-start))
+				     start 'move)
+	    (replace-match comment-end))
+	  (if (looking-at (regexp-quote comment-start))
+	      (replace-match "")))))))
