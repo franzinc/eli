@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.6 1991/03/13 15:03:25 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.7 1991/03/15 12:44:01 layer Exp $
 ;;
 ;;;;;;;;;;;;;;;;;; Composer 2 related stuff
 ;;; Perhaps some of this is generally useful
@@ -77,34 +77,6 @@
 		   '(nil t)
 		 (fi::get-default-symbol "form ")))
   (inspect-something something 'eval "Inspect"))
-
-;;; describing something
-
-(defun describe-something (something function descr)
-  (make-request (lep::describe-something-session
-		 :fspec something :function function)
-		;; Normal continuation
-		(() (what)
-		 (fi:show-some-text nil what))
-		;; Error continuation
-		((something) (error)
-		 (message "Cannot describe %s: %s" something error))))
-
-(defun lep::describe-class (something)
-  (interactive (if current-prefix-arg
-		   '(nil t)
-		 (fi::get-default-symbol "Class name")))
-  (describe-something something 'clos::find-class "Class"))
-
-
-(defun lep::describe-function (something)
-  (interactive (if current-prefix-arg
-		   '(nil t)
-		 (fi::get-default-symbol "Function spec")))
-  (describe-something something 'fdefinition "Function"))
-
-;; describe-method
-;; describe-method-combination
 
 ;;; show-callers
 ;;; show-callees

@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.18 1991/03/13 21:42:00 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.19 1991/03/15 12:44:04 layer Exp $
 ;;
 
 (defvar fi:always-in-a-window nil)
@@ -134,7 +134,10 @@ buffers package to the package of PACKAGE."
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
-STRING."
+STRING.  fi:package is used to determine from which Common Lisp package the
+operation is done.  In a subprocess buffer, the package is tracked
+automatically.  In source buffer, the package is parsed at file visit
+time."
   (interactive (fi::get-default-symbol "Arglist for"))
   (make-request (lep::arglist-session :fspec string)
 		;; Normal continuation
@@ -149,8 +152,12 @@ STRING."
 
 
 (defun fi:lisp-apropos (string &optional regexp)
-  "In the Common Lisp environment evaluate lisp:apropos on STRING.  STRING
-is taken to be a regular expression if a prefix argument is given."
+  "In the Common Lisp environment evaluate lisp:apropos on STRING.
+With prefix arg REGEXP, STRING is a regular expression for which matches
+are sought.  fi:package is used to determine from which Common Lisp package
+the operation is done.  In a subprocess buffer, the package is tracked
+automatically.  In source buffer, the package is parsed at file visit
+time."
   (interactive
    (list (car (fi::get-default-symbol
 	       (if current-prefix-arg "Apropos (regexp)" "Apropos")))
@@ -170,23 +177,31 @@ is taken to be a regular expression if a prefix argument is given."
 
 ;; Both of these should take a next argument but what does it do?
 
-(defun fi:lisp-find-tag (something &optional next)
+(defun fi:lisp-find-tag (tag &optional next)
   "Find TAG using information in the Common Lisp environment, in the current
-window.  If NEXT or a prefix argument is given, then find the next
-occurance of the last tag."
+window.  With prefix arg NEXT, find the next occurance of the last tag.
+fi:package is used to determine from which Common Lisp package the
+operation is done.  In a subprocess buffer, the package is tracked
+automatically.  In source buffer, the package is parsed at file visit
+time."
   (interactive (if current-prefix-arg
 		   '(nil t)
-		 (list (car (fi::get-default-symbol "Lisp locate source")) nil)))
-  (fi::lisp-find-tag-common something next nil))
+		 (list (car (fi::get-default-symbol "Lisp locate source"))
+		       nil)))
+  (fi::lisp-find-tag-common tag next nil))
 
 
 (defun fi:lisp-find-tag-other-window (tag &optional next)
-  "Find TAG using information in the Common Lisp environment, in the other
-window.  If NEXT or a prefix argument is given, then find the next
-occurance of the last tag."
+  "Find TAG in the other window using information in the Common Lisp
+environment, in the current window.  With prefix arg NEXT, find the next
+occurance of the last tag. fi:package is used to determine from which
+Common Lisp package the operation is done. In a subprocess buffer, the
+package is tracked automatically.  In source buffer, the package is parsed
+at file visit time."
   (interactive (if current-prefix-arg
 		   '(nil t)
-		 (list (car (fi::get-default-symbol "Lisp locate source")) nil)))
+		 (list (car (fi::get-default-symbol "Lisp locate source"))
+		       nil)))
   (fi::lisp-find-tag-common tag next t))
 
 (defun delete-metadot-session ()
@@ -220,7 +235,12 @@ occurance of the last tag."
       (find-definition-using-find-tag something other-window-p))))
 
 (defun fi:lisp-tags-loop-continue (&optional first-time)
-  "Find the next definition found by a previous fi:lisp-find-tag."
+  "Continue last tags search, started by fi:lisp-find-tag.  With
+prefix arg FIRST-TIME, begin such a command, if the Emacs tags mechanism is
+used.  fi:package is used to determine from which Common Lisp package the
+operation is done.  In a subprocess buffer, the package is tracked
+automatically.  In source buffer, the package is parsed at file visit
+time."
   (interactive "P")
   (message "Finding next definition...")
   (if (or tags-loop-form (not lep:*meta-dot-session*))
@@ -352,11 +372,11 @@ return the pathname of temp file."
   "Get the buffer tick if it is supported"
   (and (fboundp 'buffer-modified-tick) (buffer-modified-tick)))
 
-;;; This is pretty horrible:
-;;; Some how we need to get the name of the process for the buffer
-;;; and send that
-
-(defun bug-report ()
+(defun fi:bug-report ()
+  "Create a mail buffer which contains information about the Common Lisp
+environment in which the bug occurs.  A :zoom and other related information
+is obtained from the \"Initial Lisp Listener\".  See M-x mail for more
+information on how to send the mail." 
   (interactive)
   (make-request (lep::bug-report-session)
 		;; Normal continuation
@@ -399,47 +419,25 @@ return the pathname of temp file."
       (delete-metadot-session)
       (error "Cannot edit sequence %s: %s" something error)))))
 
-(defun fi:lisp-describe (symbol)
-  "Dynamically, in the Common Lisp environment, describe SYMBOL."
-  (interactive (fi::get-default-symbol "Describe symbol"))
-  (make-request (lep::describe-session
-		 :package (string-to-keyword fi:package) :fspec symbol)
-		;; Normal continuation
-		((symbol) (description)
-		 (fi:show-some-text fi:package description))
-		;; Error continuation
-		((symbol) (error)
-		 (message "Cannot describe %s: %s" symbol error))))
-
-
-;;; Function documentation
-
-(defun fi:lisp-function-documentation (symbol)
-  "Dynamically determine, in the Common Lisp environment, the function
-documentation for SYMBOL."
-  (interactive (fi::get-default-symbol "Describe symbol"))
-  (make-request
-   (lep::function-documentation-session :package fi:package :fspec symbol)
-   ;; Normal continuation
-   ((symbol) (documentation)
-    (if documentation
-	(fi:show-some-text fi:package documentation)
-      (message "There is no documentation for %s" symbol)))
-   ;; Error continuation
-   ((symbol) (error)
-    (message "Cannot find documentation for %s: %s" symbol error))))
-
 ;;; Macroexpansion and walking
 
 (defun fi:lisp-macroexpand ()
-  "Print the macroexpansion of the form at the point."
+  "Print the macroexpansion of the form at the point.
+fi:package is used to determine from which Common Lisp package the
+operation is done.  In a subprocess buffer, the package is tracked
+automatically.  In source buffer, the package is parsed at file visit
+time."
   (interactive)
   (message "Macroexpanding...")
   (fi::lisp-macroexpand-common 'lisp:macroexpand-1 "macroexpand"))
 
 (defun fi:lisp-macroexpand-recursively (arg)
-  "Print the full macroexpansion the form at the point.
-With a prefix argument, macroexpand the code as the compiler would."
+  "Print the full, recursive macroexpansion the form at the point.
+With prefix arg, recursively macroexpand the code as the compiler would.
+fi:package is used to determine from which Common Lisp package the
+operation is done.  In a subprocess buffer, the package is tracked
+automatically.  In source buffer, the package is parsed at file visit
+time."
   (interactive "P")
   (message "Recursively macroexpanding...")
   (fi::lisp-macroexpand-common
@@ -469,7 +467,10 @@ With a prefix argument, macroexpand the code as the compiler would."
 symbol is compared to symbols that exist in the Common Lisp environment.
 If the symbol starts just after an open-parenthesis, then only symbols (in
 the Common Lisp) with function defintions are considered.  Otherwise all
-symbols are considered."
+symbols are considered.  fi:package is used to determine from which Common
+Lisp package the operation is done.  In a subprocess buffer, the package is
+tracked automatically.  In source buffer, the package is parsed at file
+visit time."
   (interactive)
   (let* ((end (point))
 	 package real-beg
@@ -537,8 +538,11 @@ symbols are considered."
 
 
 (defun fi:lisp-who-calls (&optional symbol)
-  "Print all the callers of SYMBOL, the default of which is taken from the
-s-expression around the point."
+  "Print all the callers of SYMBOL.  The default symbol is taken from the
+text surrounding the point.  fi:package is used to determine from which
+Common Lisp package the operation is done.  In a subprocess buffer, the
+package is tracked automatically.  In source buffer, the package is parsed
+at file visit time."
   (interactive (fi::get-default-symbol "Find references to symbol"))
   ;; Since this takes a while, tell the user that it has started.
   (message "Finding callers of %s..." symbol)
@@ -614,10 +618,14 @@ s-expression around the point."
   (set-buffer buffer)
   (list (buffer-substring (or start (point-min)) (or end (point-max)))))
 
-(defun lep::kill-definition (prefix)
-  "Kill the definition that starts at the point. Without a prefix argument
-it inserts a form to undefine it at the end of the definition. With a
-prefix argument do it"
+(defun fi:kill-definition (do-kill)
+  "Insert a form to kill, or undefine, the definition that starts at the
+point.  The undefining form is inserted after the form to undefine.
+With prefix arg DO-KILL, then actually undefine the form in the Common Lisp
+environment instead of inserted the undefining form.  fi:package is used to
+determine from which Common Lisp package the operation is done.  In a
+subprocess buffer, the package is tracked automatically.  In source buffer,
+the package is parsed at file visit time."
   (interactive "P")
   (message "Killing definition...")
   (make-request (lep::undefine-reply :buffer (buffer-name) 
@@ -625,13 +633,14 @@ prefix argument do it"
 				     :end-point (save-excursion
 						  (forward-sexp)
 						  (point))
-				     :doit prefix)
-		((prefix) (ok form)
-		 (if (not prefix)
+				     :doit do-kill)
+		((do-kill) (ok form)
+		 (if (not do-kill)
 		     (progn (end-of-defun) 
-			    (save-excursion (insert form)
-					    (insert "\n")))
-		   (message "Killing definition...done.")))
+			    (save-excursion
+			      (insert form)
+			      (insert "\n"))))
+		 (message "Killing definition...done."))
 		(() (error)
 		 (message "Cannot undefine current definition %s"  error))))
 
@@ -639,9 +648,12 @@ prefix argument do it"
 (defun fi:toggle-trace-definition (string)
   "Dynamically toggle, in the Common Lisp environment, tracing for STRING.
 If tracing is turned on, then it will be turned off for STRING.  If it is
-turned off, then it will be turned on for STRING.  When given a prefix
-argument, cause the debugger to be invoked, via a call to BREAK, when the
-function is called."
+turned off, then it will be turned on for STRING.  With a prefix arg, cause
+the debugger to be invoked, via a call to BREAK, when the function is called.
+fi:package is used to determine from which Common Lisp package the
+operation is done.  In a subprocess buffer, the package is tracked
+automatically.  In source buffer, the package is parsed at file visit
+time."
   (interactive (fi::get-default-symbol "(un)trace"))
   (make-request (lep::toggle-trace :fspec string :break current-prefix-arg)
 		;; Normal continuation
@@ -658,27 +670,31 @@ function is called."
 ;;; Editing callers, callees etc
 
 (defun fi:edit-generic-function-methods (something)
+  "Edit all the methods of the generic function named by SOMETHING."
   (interactive (if current-prefix-arg
 		   '(nil t)
 		 (fi::get-default-symbol "Generic Function Name")))
+  (message "Editing generic function methods...")
   (edit-somethings something 
 		   'lep::generic-function-methods-function-specs
 		   "Generic Function Methods"))
 
 (defun fi:edit-callers (something)
+  "Edit all the callers of the function named by SOMETHING."
   (interactive (if current-prefix-arg
 		   '(nil t)
 		 (fi::get-default-symbol "Function name")))
-  (message "Editing callers ...")
+  (message "Editing callers...")
   (edit-somethings something 
 		   'lep::who-calls
 		   "Who calls"))
 
 (defun fi:edit-callees (something)
+  "Edit all the callees of the function named by SOMETHING."
   (interactive (if current-prefix-arg
 		   '(nil t)
 		 (fi::get-default-symbol "Function name")))
-  (message "Editing callees ...")
+  (message "Editing callees...")
   (edit-somethings something 
 		   'lep::who-is-called-by
 		   "Who is called by"))
@@ -690,3 +706,78 @@ function is called."
 ;;; list-callees
 ;;; list-class-methods
 ;;; list-generic-function-methods
+
+
+;;; describing something
+
+(defun lep::describe-something (something function)
+  (make-request (lep::describe-something-session
+		 :fspec something :function function)
+		;; Normal continuation
+		(() (what)
+		 (fi:show-some-text nil what))
+		;; Error continuation
+		((something) (error)
+		 (message "Cannot describe %s: %s" something error))))
+
+(defun fi:describe-symbol (something)
+  "Dynamically, in the Common Lisp environment, describe the symbol named
+by SOMETHING.
+fi:package is used to determine from which Common Lisp package the
+operation is done.  In a subprocess buffer, the package is tracked
+automatically.  In source buffer, the package is parsed at file visit
+time."
+  (interactive (if current-prefix-arg
+		   '(nil t)
+		 (fi::get-default-symbol "Describe symbol")))
+  (lep::describe-something something 'describe))
+
+(defun fi:describe-class (something)
+  "Dynamically, in the Common Lisp environment, describe the class named by
+SOMETHING.
+fi:package is used to determine from which Common Lisp package the
+operation is done.  In a subprocess buffer, the package is tracked
+automatically.  In source buffer, the package is parsed at file visit
+time."
+  (interactive (if current-prefix-arg
+		   '(nil t)
+		 (fi::get-default-symbol "Class name")))
+  (lep::describe-something something 'clos::find-class))
+
+
+(defun fi:describe-function (something)
+  "Dynamically, in the Common Lisp environment, describe the function named
+by SOMETHING.
+fi:package is used to determine from which Common Lisp package the
+operation is done.  In a subprocess buffer, the package is tracked
+automatically.  In source buffer, the package is parsed at file visit
+time."
+  (interactive (if current-prefix-arg
+		   '(nil t)
+		 (fi::get-default-symbol "Function spec")))
+  (lep::describe-something something 'fdefinition))
+
+;; describe-method
+;; describe-method-combination
+
+;;; Function documentation
+
+(defun fi:lisp-function-documentation (symbol)
+  "Dynamically, in the Common Lisp environment, determine the function
+documentation for SYMBOL.
+fi:package is used to determine from which Common Lisp package the
+operation is done.  In a subprocess buffer, the package is tracked
+automatically.  In source buffer, the package is parsed at file visit
+time."
+  (interactive (fi::get-default-symbol "Describe symbol"))
+  (make-request
+   (lep::function-documentation-session :package fi:package :fspec symbol)
+   ;; Normal continuation
+   ((symbol) (documentation)
+    (if documentation
+	(fi:show-some-text fi:package documentation)
+      (message "There is no documentation for %s" symbol)))
+   ;; Error continuation
+   ((symbol) (error)
+    (message "Cannot find documentation for %s: %s" symbol error))))
+

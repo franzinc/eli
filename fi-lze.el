@@ -24,15 +24,11 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.7 1991/03/13 15:03:05 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.8 1991/03/15 12:44:03 layer Exp $
 ;;
 ;; Code the implements evaluation in via the backdoor
 
 (defun lep::eval-region-internal (start end compilep)
-  "Evaluate the region using the backdoor, print the results of the
-minibuffer, and create a listener if there is any output (which might be
-due to an error)."
-  (interactive "r\np")
   (message "Evaluating...")
   (make-request (lep::evaluation-request
 		 :text (buffer-substring start end)

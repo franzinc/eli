@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.11 1991/03/13 10:39:15 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.12 1991/03/15 12:44:06 layer Exp $
 ;;
 
 (defconst lep:current-frame-regexp "^ ->")
@@ -68,7 +68,7 @@ Type SPACE to hide this help summary.
   "Debug a Common Lisp process, which is read, with completion, from the
 minibuffer.   The \"Initial Lisp Listener\" is the default process.  The
 debugging occurs on a stack scan, created by :zoom on the Common Lisp
-process. With a prefix argument, do a \":zoom :all t\"."
+process. With argument ALL, do a \":zoom :all t\"."
   (interactive "P")
   (setq lep::db-saved-window-configuration (current-window-configuration))
   (let ((process-name (lep::buffer-process))
@@ -107,7 +107,6 @@ process. With a prefix argument, do a \":zoom :all t\"."
 The keymap for this mode is bound to fi:scan-stack-mode-map
 \\{fi:scan-stack-mode-map}
 Entry to this mode runs the lep:scan-stack-mode-hook hook."
-  (interactive)
   (let ((saved-from-buffer
 	 ;; KILL-ALL-LOCAL-VARIABLES will kill lep::debugger-from-buffer
 	 lep::debugger-from-buffer))
@@ -119,7 +118,7 @@ Entry to this mode runs the lep:scan-stack-mode-hook hook."
   (setq mode-name "Scan stack mode")
   (if (null lep:scan-stack-mode-map)
       (let ((map (make-keymap))
-	    (ccmap (make-sparse-keymap)))
+	    (ccmap (make-keymap)))
 	(define-key ccmap "\C-c"	'lep:ss-continue)
 	(define-key ccmap "\C-p"	'lep:ss-pop)
 	(define-key ccmap "\C-r"	'lep:ss-reset)
@@ -186,11 +185,12 @@ it was before this mode was entered is restored."
 (defun lep:ss-restart (new-form)
   "Do a :restart on the process being debugged.  This causes the process
 being debugged to restart the execution of the function associated with the
-current frame.  With a prefix argument, a form to evaluate to obtain the
-function and arguments is read from the minibuffer and evaluated in the
-Common Lisp environment.  The default function and arguments are the ones
-in the current frame.   The debugger buffer is buried and the window
-configuration as it was before this mode was entered is restored."
+current frame.  With argument NEW-FORM, a form to evaluate to obtain the
+function and arguments to be restarted is read from the minibuffer and
+evaluated in the Common Lisp environment.  The default function and
+arguments are the ones in the current frame.   The debugger buffer is
+buried and the window configuration as it was before this mode was entered
+is restored."
   (interactive "P")
   (lep::do-tpl-command-on-process
    t

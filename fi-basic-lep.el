@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.8 1991/03/13 15:03:30 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.9 1991/03/15 12:43:59 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -79,7 +79,7 @@
     (if buffer
 	(save-excursion
 	  (set-buffer buffer)
-	  (start-connection))
+	  (lep::start-connection))
       (error "Cannot start LEP connection"))))
 
 (defun find-connection-from-process (process)
@@ -92,8 +92,7 @@
       (setq sessions (cdr sessions)))
     (and sessions (car sessions))))
 
-(defun start-connection ()
-  (interactive)
+(defun lep::start-connection ()
   (make-connection-to-lisp fi::lisp-host
 			   fi::lisp-port
 			   fi::lisp-password
