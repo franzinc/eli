@@ -1,7 +1,14 @@
 Fri Aug 30 11:01:15 1996    <layer@HOBART>
 
+	* clman.c: for Windows
+	* clman.h: for Windows
+	* fi-clman.el: for Windows
+	* makefile.win32: the Windows makefile
+	* make.bat: just call nmake on makefile.win32, default rule just
+	  compiles el files
+
 	* fi-subproc.el: finishing touches on getting it to work on
-	Windows.
+	  Windows.
 	* make.bat for building .elc files.
 
 Thu Aug 29 10:03:23 1996    <layer@HOBART>

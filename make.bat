@@ -1,3 +1,3 @@
-@rem $Id: make.bat,v 2.1 1996/08/30 18:04:19 layer Exp $
+@rem $Id: make.bat,v 2.2 1996/08/30 21:32:06 layer Exp $
 @echo off
-c:\emacs-19.34\bin\emacs -batch -l fi-compile.el -kill
+nmake -nologo -f makefile.win32 %1 %2 %3 %4 %5 %6 %7 %8 %9

@@ -1,9 +1,16 @@
 /* Copyright (C) 1993, Franz Inc., Berkeley, CA.  All rights reserved. */
 
-/* $Header: /repo/cvs.copy/eli/Attic/clman.c,v 2.5 1995/04/29 18:34:35 smh Exp $ */
+/* $Header: /repo/cvs.copy/eli/Attic/clman.c,v 2.6 1996/08/30 21:32:01 layer Exp $ */
 
 #include "clman.h"
+#ifdef WIN32
+// #include <winsock.h>
+#define ntohl(x) x
+#define htons(x) x
+#define htonl(x) x
+#else
 #include <netinet/in.h>
+#endif
 
 /*
  * Changes 11jul94 to hack binary data on different byte-order machines. -smh
@@ -18,7 +25,7 @@ main(argc, argv)
      */
     struct Header h;
     int symindex;
-    int fd, n;
+    int fd, n, nread;
     char *buf, *name;
 
     failed = 0;		/* the exit status is the number of entries found */
@@ -29,7 +36,14 @@ main(argc, argv)
     }
     name = argv[2];
 
-    if ((fd = open(argv[1], O_RDONLY)) < 0) {
+    if ((fd = open(argv[1],
+#ifdef WIN32
+		   O_RDONLY | O_BINARY
+#else
+		   O_RDONLY
+#endif
+	)) < 0)
+    {
 	perror(argv[1]);
 	fprintf(stderr, "couldn't open %s\n", argv[1]);
 	exit(failed);
@@ -45,8 +59,10 @@ main(argc, argv)
     h.data_size = ntohl(h.data_size);
 
     table = (struct Entry *)malloc(h.entry_table_size);
-    if (read(fd, table, h.entry_table_size) != h.entry_table_size) {
-	fprintf(stderr, "couldn't read entry table\n");
+    if ((nread = read(fd, table, h.entry_table_size)) != h.entry_table_size) {
+	fprintf(stderr,
+		"couldn't read entry table (read %d, wanted %d)\n",
+		nread, h.entry_table_size);
 	exit(failed);
     }
     table_max_entries = h.entry_table_size / sizeof(struct Entry);

@@ -1,8 +1,10 @@
 /* Copyright (C) 1993, Franz Inc., Berkeley, CA.  All rights reserved. */
 
-/* $Header: /repo/cvs.copy/eli/Attic/clman.h,v 2.2 1993/07/27 20:12:10 layer Exp $ */
+/* $Header: /repo/cvs.copy/eli/Attic/clman.h,v 2.3 1996/08/30 21:32:03 layer Exp $ */
 
+#ifndef WIN32
 #include <unistd.h>
+#endif
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>

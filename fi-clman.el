@@ -8,11 +8,14 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-clman.el,v 2.12 1996/08/01 22:35:38 layer Exp $
+;; $Id: fi-clman.el,v 2.13 1996/08/30 21:32:04 layer Exp $
 
 (defvar fi::clman-prog
-    (or (fi::find-path load-path "clman")
-	(fi::find-path exec-path "clman")))
+    (let ((s (if (on-ms-windows)
+		 "clman.exe"
+	       "clman")))
+      (or (fi::find-path load-path s) (fi::find-path exec-path s))))
+
 (defvar fi::clman-data (fi::find-path load-path "clman.data"))
 
 (defvar fi::manual-dir
@@ -61,6 +64,10 @@ math:).  The buffer that is displayed will be in CLMAN mode."
 	    ;; uppercase symbols to do the right thing. -dm 4/12/94
 	    (call-process fi::clman-prog nil t nil fi::clman-data 
 			  (downcase symbol)))
+	  (when (on-ms-windows)
+	    (save-excursion
+	      (goto-char (point-min))
+	      (replace-string (char-to-string 13) "")))
 	  (when (< (buffer-size) 80)
 	    (goto-char (point-min))
 	    (end-of-line)
