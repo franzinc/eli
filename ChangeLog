@@ -1,3 +1,10 @@
+2004-03-21  Kevin Layer  <layer@gemini>
+
+	* fi-emacs21.el: bug14189: many menu items were missing, because
+	  of typos in the code
+	* fi-lep.el (fi::extract-package-from-symbol): bug14151: fix
+	  signaled error if there are no completions for a symbol
+
 2004-03-02    <layer@HOBART>
 
 	* Makefile: make sure fi-vers.el depends on ChangeLog
@@ -4896,4 +4903,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.2 $
+$Revision: 3.3 $

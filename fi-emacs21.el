@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-emacs21.el,v 3.1 2004/03/11 02:10:09 layer Exp $
+;; $Id: fi-emacs21.el,v 3.2 2004/03/21 16:01:00 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; emacs specific stuff
@@ -182,12 +182,12 @@
 
 ;;;; ACLFile > Changed definitions menu:
 
-      (define-key map [menu-bar aclfile compile-changed-definitions compare]
+      (define-key map (fi::keys [aclfile compile-changed-definitions compare])
 	(fi::menu "Compare source files" 'fi:compare-source-files
 		  :enable '(fi::connection-open)))
 
-      (define-key map [menu-bar aclfile compile-changed-definitions
-				copy-buffer]
+      (define-key map (fi::keys [aclfile compile-changed-definitions
+					 copy-buffer])
 	(fi::menu "Copy buffer changed definitions to kill ring"
 		  'fi:copy-buffer-changed-definitions
 		  :enable '(fi::source-buffer-p)))
@@ -197,8 +197,8 @@
 		  'fi:copy-changed-definitions
 		  :enable '(fi::connection-open)))
 
-      (define-key map [menu-bar aclfile compile-changed-definitions
-				eval-buffer]
+      (define-key map (fi::keys [aclfile compile-changed-definitions
+					 eval-buffer])
 	(fi::menu "Eval buffer changed definitions"
 		  'fi:eval-buffer-changed-definitions
 		  :enable '(fi::source-buffer-p)))
@@ -207,19 +207,19 @@
 	(fi::menu "Eval all changed definitions"
 		  'fi:eval-changed-definitions :enable '(fi::connection-open)))
 
-      (define-key map [menu-bar aclfile compile-changed-definitions
-				compile-buffer]
+      (define-key map (fi::keys [aclfile compile-changed-definitions
+					 compile-buffer])
 	(fi::menu "Compile buffer changed definitions"
 		  'fi:compile-buffer-changed-definitions
 		  :enable '(fi::source-buffer-p)))
 
-      (define-key map [menu-bar aclfile compile-changed-definitions compile]
+      (define-key map (fi::keys [aclfile compile-changed-definitions compile])
 	(fi::menu "Compile all changed definitions"
 		  'fi:compile-changed-definitions
 		  :enable '(fi::connection-open)))
 
-      (define-key map [menu-bar aclfile compile-changed-definitions
-				list-buffer]
+      (define-key map (fi::keys [aclfile compile-changed-definitions
+					 list-buffer])
 	(fi::menu "List buffer changed definitions"
 		  'fi:list-buffer-changed-definitions
 		  :enable '(fi::source-buffer-p)))
@@ -424,7 +424,8 @@
 
 ;;;; Composer > Help
     
-	(define-key map [menu-bar composer help composer-help-gesture-bindings]
+	(define-key map (fi::keys [composer help
+					    composer-help-gesture-bindings])
 	  (fi::menu "Current pointer gesture bindings"
 		    'fi:composer-help-gesture-bindings
 		    :enable '(fi::composer-connection-open)))
@@ -466,7 +467,7 @@
 	  (fi::menu "Stop profiler" 'fi:composer-stop-profiler
 		    :enable '(fi::composer-connection-open)))
     
-	(define-key map [menu-bar composer profiler start-space-profiler]
+	(define-key map (fi::keys [composer profiler start-space-profiler])
 	  (fi::menu "Start space profiler" 'fi:composer-start-space-profiler
 		    :enable '(fi::composer-connection-open)))
     
