@@ -1,4 +1,4 @@
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.5 1991/03/16 00:24:34 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.6 1991/03/28 12:59:30 layer Exp $
 
 			     Introduction
 
@@ -166,12 +166,6 @@ Trouble shooting
    in the Emacs-Lisp interface--send the results to Franz Inc.
    Otherwise, there is some problem in your $HOME/.emacs, which you
    can diagnose in the Emacs Lisp debugger.
-
-   * If you run Emacs and Lisp on different machines, then you must be
-   certain that the value of fi:emacs-to-lisp-transaction-directory is
-   a directory which is accessible on both machines.  Care must be
-   taken to get the pathname just right, including the possible NFS
-   prefix (/net/MACHINE-NAME/...).
 
 ===============================================================================
 			 Running Common Lisp
@@ -483,12 +477,10 @@ Functions and Variables for Interacting with a Common Lisp subprocess
 
 %% fi:default-input-ring-max
 %% fi:display-buffer-function
-%% fi:emacs-to-lisp-transaction-directory
 %% fi:eval-in-lisp
 %% fi:filename-frobber-hook
 %% fi:lisp-evalserver-number-reads
 %% fi:lisp-evalserver-timeout
-%% fi:remove-all-temporary-lisp-transaction-files
 %% fi:shell-cd-regexp
 %% fi:shell-popd-regexp
 %% fi:shell-pushd-regexp
