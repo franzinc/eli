@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.3 1989/02/14 17:24:43 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.4 1989/05/19 11:43:16 layer Exp $
 
 ;;; Misc utilities
 
@@ -90,12 +90,48 @@ nil if non-exists.  Yes, a value of nil and no local value are the same."
 	   (forward-char 1) (scan-sexps (point) (- arg)))
 	  (t (error "not on the beginning or end of a list")))))
 
-(defun fi::find-path (string)
+(defun fi::find-path (file)
+  "Find FILE in load-path, return the full pathname."
   (let ((p load-path)
 	(done nil) res)
     (while (and (not done) p)
-      (if (file-exists-p (setq res (concat (car p) "/" string)))
+      (if (file-exists-p (setq res (concat (car p) "/" file)))
 	  (setq done t)
 	(setq res nil))
       (setq p (cdr p)))
     res))
+
+(defun fi::fast-parse-partial-sexp (from to targetdepth stopbefore state
+				    &optional result)
+  "Fast version of fi::parse-partial-sexp which doesn't cons if sixth arg
+is given, which should be a list of length seven.  This requires a hacked
+version of parse-partial-sexp.  This function is automagically selected
+based on whether calling parse-partial-sexp gives an error when called with
+six arguments."
+  (if result
+      (let ((parse-partial-sexp-result result))
+	(parse-partial-sexp from to targetdepth stopbefore state))
+    (parse-partial-sexp from to targetdepth stopbefore state)))
+
+(defun fi::slow-parse-partial-sexp (from to targetdepth stopbefore state
+				    &optional result)
+  "Slow version of fi::parse-partial-sexp which conses like mad, no matter
+what the optional sixth argument is.  This is used if parse-partial-sexp
+hasn't been hacked.  This function is automagically selected based on
+whether calling parse-partial-sexp gives an error when called with six
+arguments."
+  (if result
+      (let ((res result)
+	    (xx (parse-partial-sexp from to targetdepth stopbefore state)))
+	(while res
+	  (setcar res (car xx))
+	  (setq xx (cdr xx))
+	  (setq res (cdr res)))
+	result)
+    (parse-partial-sexp from to targetdepth stopbefore state)))
+
+(if (boundp 'parse-partial-sexp-result)
+    (fset 'fi::parse-partial-sexp
+	  (symbol-function 'fi::fast-parse-partial-sexp))
+  (fset 'fi::parse-partial-sexp
+	(symbol-function 'fi::slow-parse-partial-sexp)))
