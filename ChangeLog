@@ -7,6 +7,13 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.16
+
+Tue Aug 25 10:24:39 1998  Kevin Layer  <layer@ultra>
+
+	* fi-keys.el: fix fi:toggle-to-lisp per spr18221
+
+*******************************************************************************
 2.0.21.15
 
 Thu Aug 20 13:49:03 1998    <layer@HOBART>
