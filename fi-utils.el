@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.9 1990/09/05 22:09:55 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.10 1990/09/11 16:50:34 layer Exp $
 
 ;;; Misc utilities
 
@@ -174,6 +174,16 @@ arguments."
 	  (symbol-function 'fi::fast-parse-partial-sexp))
   (fset 'fi::parse-partial-sexp
 	(symbol-function 'fi::slow-parse-partial-sexp)))
+
+(defun fi::fast-search-string (char string)
+  (let ((index 0)
+	(max+1 (length string))
+	(found nil))
+    (while (and (not found) (< index max+1))
+      (if (= char (aref string index))
+	  (setq found t)
+	(setq index (+ index 1))))
+    found))
 
 ;;;; diagnostic test
 
