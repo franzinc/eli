@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.110 1991/06/20 17:57:19 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.111 1991/06/20 18:02:23 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -306,7 +306,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 					 (if (numberp current-prefix-arg)
 					     (fi::buffer-number-to-buffer
 					      name current-prefix-arg)
-					   name))
+					   (get-buffer-create name)))
 				       'fi:common-lisp-directory
 				       'fi:common-lisp-image-name
 				       'fi:common-lisp-image-arguments
@@ -422,7 +422,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 					 (if (numberp current-prefix-arg)
 					     (fi::buffer-number-to-buffer
 					      name current-prefix-arg)
-					   name))
+					   (get-buffer-create name)))
 				       'fi:franz-lisp-directory
 				       'fi:franz-lisp-image-name
 				       'fi:franz-lisp-image-arguments
