@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.64 1990/09/05 22:09:50 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.65 1990/09/07 18:19:52 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -276,8 +276,14 @@ See fi:explicit-remote-common-lisp."
 	       'fi:inferior-common-lisp-mode
 	       fi:common-lisp-prompt-pattern
 	       "rsh"
-	       (append (list host fi:common-lisp-image-name)
-		       fi:common-lisp-image-arguments)
+	       (append
+		(list
+		 host
+		 (format
+		  "sh -ec 'EMACS=t TERM=emacs TERMCAP=emacs:co#%d:tc=unknown: "
+		  (screen-width))
+		 fi:common-lisp-image-name)
+		fi:common-lisp-image-arguments)
 	       nil
 	       fi:start-lisp-interface-function)))
     (setq fi::freshest-common-sublisp-name (process-name proc))
@@ -301,7 +307,14 @@ arguments are read from the minibuffer."
 	       'fi:inferior-common-lisp-mode
 	       fi:common-lisp-prompt-pattern
 	       "rsh"
-	       (append (list host image-name) image-arguments)
+	       (append
+		(list
+		 host
+		 (format
+		  "sh -ec 'EMACS=t TERM=emacs TERMCAP=emacs:co#%d:tc=unknown: "
+		  (screen-width))
+		 image-name)
+		image-arguments '("'"))
 	       nil
 	       fi:start-lisp-interface-function)))
     (setq fi::freshest-common-sublisp-name (process-name proc))
