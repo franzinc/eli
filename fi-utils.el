@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.12 1991/01/29 19:44:13 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.13 1991/02/27 16:21:04 layer Exp $
 
 ;;; Misc utilities
 
@@ -187,3 +187,16 @@ arguments."
 		(setq temp (get-buffer-process temp))
 		(memq (process-status temp) running-states)))
 	  (t nil))))
+
+(defvar fi:filename-frobber-hook
+    'fi::discombobulate-automounter-lint
+  "*If non-nil, then name of a function which transforms filenames received
+from Lisp.  This exists solely for the purpose of removing /tmp_mnt/net
+from the beginning of filenames that are on automounted filesystems.")
+
+(defun fi::discombobulate-automounter-lint (name)
+  ;; remove /tmp_mnt/net from the beginning of NAME
+  (if (string-match "^\\(/tmp_mnt/net\\)?\\(.*\\)$" name)
+      (substring name (match-beginning 2) (match-end 2))
+    (error "discombobulate-automounter-lint: internal error on %s" name)))
+
