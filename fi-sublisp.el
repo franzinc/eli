@@ -31,7 +31,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.57 1991/07/24 14:01:51 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.58 1991/10/29 14:59:46 layer Exp $
 
 (defun fi:set-associated-sublisp (buffer-name mode)
   "Use BUFFER-NAME as the name of a buffer which contains a Lisp subprocess
@@ -91,7 +91,10 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 	((eq major-mode 'fi:common-lisp-mode)
 	 (if fi::common-lisp-backdoor-main-process-name
 	     (setq fi::process-name fi::common-lisp-backdoor-main-process-name)))
-	(t (error "Cant start a subprocess for Major mode %s." major-mode)))
+	(t
+	 (if fi::common-lisp-backdoor-main-process-name
+	     (setq fi::process-name fi::common-lisp-backdoor-main-process-name)
+	   (error "Cant start a subprocess for Major mode %s." major-mode))))
   ;; start-up the sublisp process if necessary and possible
   (cond ((and fi::process-name
 	      (let ((p (get-process fi::process-name)))
