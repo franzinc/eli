@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-filec.el,v 1.11 1989/05/19 11:44:12 layer Rel $
+;; $Header: /repo/cvs.copy/eli/fi-filec.el,v 1.12 1990/08/31 23:45:46 layer Exp $
 
 ;; Command and file name completion
 
@@ -85,13 +85,15 @@ as Common Lisp or rlogin buffers)."
     ;; executable file names.
     ;;
     (while dirs
-      (let* ((dir (expand-file-name (car dirs)))
-	     (res
-	      (fi::executable-files
-	       (file-name-all-completions shell-expand-string dir)
-	       dir)))
-	(if res
-	    (setq completions (append res completions))))
+      (condition-case ()
+	  (let* ((dir (expand-file-name (car dirs)))
+		 (res
+		  (fi::executable-files
+		   (file-name-all-completions shell-expand-string dir)
+		   dir)))
+	    (if res
+		(setq completions (append res completions))))
+	(error nil))
       (setq dirs (cdr dirs)))
     
     ;; `completions' is now a list of all possible completions
