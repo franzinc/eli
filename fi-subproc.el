@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.102 1991/04/20 23:24:02 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.103 1991/04/22 13:40:20 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -267,8 +267,7 @@ buffer local.")
 (defun fi:start-backdoor-interface (process)
   "Send a string to PROCESS, which should be a Lisp, that starts the
 Emacs-Lisp interface.  This only works in Allegro CL, currently."
-  (unless (or (and fi:use-lep (lep::lep-open-connection-p))
-	      (and (not fi:use-lep) (fi:backdoor-is-running-p)))
+  (unless (lep::lep-open-connection-p)
     (setq fi::common-lisp-backdoor-main-process-name (process-name process))
     (send-string
      process
@@ -516,10 +515,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 (defun fi::common-lisp-subprocess-filter (process output &optional stay cruft)
   (save-excursion
     (set-buffer (process-buffer process))
-    (if (not (or (and fi:use-lep
-		      (lep::lep-open-connection-p))
-		 (and (not fi:use-lep)
-		      (fi:backdoor-is-running-p))))
+    (if (not (lep::lep-open-connection-p))
 	(setq output
 	  (if (and (fi::fast-search-string 1 output)
 		   (string-match
