@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.30 1989/05/24 14:36:19 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.31 1989/05/24 19:56:41 layer Exp $
 
 ;;;; Mode initializations
 
@@ -230,6 +230,8 @@ value is non-nil."
   (setq comment-start-skip ";+[ \t]*")
   (make-local-variable 'comment-column)
   (setq comment-column 40)
+  (make-local-variable 'fi:lisp-comment-indent-specification)
+  (setq fi:lisp-comment-indent-specification (list comment-column t nil 0))
   (if fi:lisp-do-indentation
       (progn
 	(make-local-variable 'indent-line-function)
