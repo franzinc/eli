@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.118 1996/03/26 02:16:33 smh Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.119 1996/03/27 03:05:41 georgej Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -6,7 +6,7 @@ SHELL = /bin/sh
 CC = gcc
 CFLAGS = -O
 
-emacs = xemacs-19.13
+emacs = emacs
 
 elcs = fi-modes.elc fi-indent.elc fi-subproc.elc fi-sublisp.elc fi-filec.elc \
        fi-xemacs.elc fi-emacs19.elc fi-emacs18.elc fi-ring.elc \
