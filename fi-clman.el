@@ -24,9 +24,18 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.3 1989/02/14 21:29:38 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.4 1989/02/15 23:19:01 layer Exp $
 
-(defconst clman:doc-directory (fi::find-path "fi/manual/"))
+(defconst clman:doc-directory
+  (let ((p load-path)
+	(string "fi/manual/")
+	(done nil) res)
+    (while (and (not done) p)
+      (if (file-exists-p (setq res (concat (car p) "/" string)))
+	  (setq done t)
+	(setq res nil))
+      (setq p (cdr p)))
+    res))
 
 (defconst clman:package-info
   (list 
@@ -81,7 +90,38 @@ reuse the same buffer.")
 
 (defun fi:clman-apropos ()
   (interactive)
-  )
+  (let* ((oblist-buffer-name "*clman-oblist*")
+	 (oblist-buffer (get-buffer-create oblist-buffer-name))
+	 (string (read-string "clman apropos: ")))
+    (set-buffer oblist-buffer)
+    (let ((done nil) (lis clman::oblist))
+      (while (not done)
+        (insert-string (car (car lis)))
+        (newline 1)
+        (setq lis (cdr lis))
+        (if (null lis) (setq done t))))
+    (beginning-of-buffer)
+    (with-output-to-temp-buffer "*clman-apropos*"
+      (while (re-search-forward string nil t)
+	(beginning-of-line)
+	(princ (buffer-substring (point) (progn (end-of-line) (point))))
+	(terpri)
+	(forward-line 1)))
+    (fi:clman-mode)
+
+    ;;why was the following here?
+    ;;(beginning-of-buffer)
+    ;;(replace-string "\"" "")
+    ;;(beginning-of-buffer)
+    ;;(replace-string "(" "")
+    ;;(beginning-of-buffer)
+    ;;(replace-string ")" "")
+    ;;(beginning-of-buffer)
+    ;;(while (search-forward "if assoc" nil t)
+    ;;  (beginning-of-line)
+    ;;  (kill-line 1))
+    ;;(beginning-of-buffer)
+    ))
 
 (defun fi:clman-mode ()
   "Major mode for getting around
@@ -272,6 +312,7 @@ Return the full pathname of the file the symbol is in. "
 (if clman:mode-map
     nil
   (setq clman:mode-map (make-sparse-keymap))
+  (define-key clman:mode-map "\C-C\C-C" 'clman:flush-doc)
+  (define-key clman:mode-map "a" 'fi:clman-apropos)
   (define-key clman:mode-map "m" 'fi:clman)
-  (define-key clman:mode-map "s" 'clman:search-forward-see-alsos) 
-  (define-key clman:mode-map "\C-C\C-C" 'clman:flush-doc))
+  (define-key clman:mode-map "s" 'clman:search-forward-see-alsos))
