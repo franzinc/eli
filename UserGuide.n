@@ -2,7 +2,7 @@
 			      User Guide
 			   Release 2.0alpha
 
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.10 1991/04/26 09:28:38 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.11 1991/04/26 09:46:01 layer Exp $
 
 			     Introduction
 
@@ -189,10 +189,10 @@ Trouble shooting
 
 	Allegro CL 4.1 [Sun4] (7/1/91)
 	Copyright (C) 1985-1991, Franz Inc., Berkeley, CA, USA
-	<cl> ;; Starting socket daemon
-	<cl> 
+	user(1): ;; Starting socket daemon
+	user(2): 
 
-   The "<cl> " is the ACL prompt, and the comment after the first
+   The "user(N): " is the ACL prompt, and the comment after the first
    prompt signifies that an ACL "process" (see the "multiprocessing"
    chapter for a definition of "process") was started--Emacs and Lisp
    will be communicating over an network connection established when
@@ -330,39 +330,11 @@ Typing input to Common Lisp
    is done, however, the Emacs variable fi:common-lisp-prompt-pattern
    must be changed--the default value of top-level:*prompt* (in Common
    Lisp) and fi:common-lisp-prompt-pattern (in Emacs Lisp) are in
-   agreement.  For example, the following is a rather complex Common
-   Lisp prompt that is quite nice when debugging applications that use
-   multiprocessing.  For $HOME/.clinit.cl (which can be found in
-   "fi/examples/Prompt.cl"):
+   agreement.
 
-      (setq top-level:*prompt*
-	#'(lambda (n)
-	    (format nil "~a~@[<~a~]> "
-		    (or (car (package-nicknames *package*))
-			(package-name *package*))
-		    (if* tpl::*focus-process*
-		       then (format nil "F:~a" (mp:process-name
-						tpl::*focus-process*))
-		     elseif (and mp:*current-process*
-				 (not (equalp (mp:process-name
-					       mp:*current-process*)
-					      "Initial Lisp Listener")))
-		       then (format nil "P:~a"  (mp:process-name
-						 mp:*current-process*))))))
-
-   and for $HOME/.emacs (which can be found in "fi/examples/Prompt.el"):
-
-      (setq fi:common-lisp-prompt-pattern
-	"^\\(\\[[0-9]+c?\\] \\|\\[step\\] \\)?[-<>:A-Za-z0-9]* ")
-
-   which causes the Common Lisp prompt to have the following form,
-   which includes both the current package (from *package*) and the
-   current process name (from mp:*current-process*):
-
-      user<P:*lisp-listener*> 
-
-   where to "P" would be "F" if the process is the current focus (see
-   the Chapter on debugging and the :focus top-level command).
+   See the file lib/misc/clinit.cl for examples of other prompts, and
+   see the the top level chapter in the User Guide for information on
+   the prompt itself.
 
 Tracking directory changes
 
