@@ -544,7 +544,7 @@ the remote machine, then use fi:explicit-remote-common-lisp.
 			      Appendix B
 			  Sample .clinit.cl
 
-%eval: (insert-file "dot.clinit.cl")
+%eval: (insert-file "dot.clinit")
 
 			      Appendix C
 			Sample X11 interaction
