@@ -1,9 +1,9 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.44 1990/09/02 18:59:10 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.45 1990/11/29 14:12:40 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
 
-emacs = /usr/local/emacs
+emacs = emacs
 
 cl = /usr/local/cl
 
