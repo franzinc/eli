@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.13 1991/02/28 23:05:52 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.14 1991/02/28 23:23:21 layer Exp $
 ;;
 
 (defvar fi:always-in-a-window nil)
@@ -38,14 +38,17 @@
     (let* ((window (minibuffer-window))
 	   (height (1- (window-height window)))
 	   (width (window-width window))
-	   (text
+	   (text-try
 	    (cond (fi:package (format "[package: %s] %s" fi:package text))
 		  (t text)))
-	   (lines/len (fi::frob-string text)))
+	   (lines/len (fi::frob-string text-try)))
       (if (and (< (car lines/len) 2)
 	       (<= (second lines/len) width))
-	  (message text)
-	(fi::show-some-text-1 text (or package fi:package))))))
+	  (message text-try)
+	(fi::show-some-text-1
+	 (cond (fi:package (format "[package: %s]\n%s" fi:package text))
+	       (t text))
+	 (or package fi:package))))))
 
 (defun fi::show-some-text-1 (text package &optional hook &rest args)
   "Display TEXT in a temporary buffer putting that buffer setting that
@@ -410,12 +413,14 @@ the point is used as the default."
 (defun fi:lisp-macroexpand ()
   "Print the macroexpansion of the form at the point"
   (interactive)
+  (message "Macroexpanding...")
   (fi::lisp-macroexpand-common 'lisp:macroexpand "macroexpand"))
 
 (defun fi:lisp-macroexpand-recursively (arg)
   "Print the full macroexpansion the form at the point.
 With a prefix argument, macroexpand the code as the compiler would."
   (interactive "P")
+  (message "Recursively macroexpanding...")
   (fi::lisp-macroexpand-common
    (if arg 'excl::compiler-walk 'clos::walk-form) "walk"))
 
