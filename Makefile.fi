@@ -1,8 +1,10 @@
-# $Header: /repo/cvs.copy/eli/Attic/Makefile.fi,v 2.1 1993/06/29 23:51:15 layer Exp $
+# $Header: /repo/cvs.copy/eli/Attic/Makefile.fi,v 2.2 1993/06/30 00:10:46 layer Exp $
 
-hosts = sole
-#hosts = ox,akbar,clay,hyper,sole,fridge # girls biggie fax
-to = /usr/fi/lib/eli/master
+# removed: girls biggie fax
+hosts = ox akbar clay hyper sole fridge
+
+eli = /usr/fi/lib/eli
+to = $(eli)/master
 
 # /usr/ucb/rdist on Suns has a very serious bug: the special command does
 # not expand rdist variables in the command string.  This one works, however:
@@ -10,5 +12,13 @@ to = /usr/fi/lib/eli/master
 rdist = /usr/ucb/rdist
 
 rdist: all
-	${rdist} -Rc Makefile Makefile.fi ChangeLog \
-		*.n *.doc *.el *.elc '${hosts}:$(to)'
+	rm -fr DIST
+	${rdist} -qc Makefile Makefile.fi ChangeLog *.n *.doc *.el *.elc \
+		 "`hostname`:`pwd`/DIST"
+	(cd DIST; ${rdist} -Rc . "{`echo ${hosts} | sed 's/ /,/g'`}:$(to)")
+
+save_dist:
+	@if test -z "$(version)"; then echo version= is null; exit 1; fi
+	@for host in ${hosts}; do\
+		echo rsh $$host -n mv $(eli)/master $(eli)/fi-$(version);\
+	done
