@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.115 1991/06/28 09:57:19 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.116 1991/07/02 10:08:06 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -261,6 +261,11 @@ buffer local.")
 Emacs-Lisp interface.  This only works in Allegro CL, currently."
   (unless (fi::lep-open-connection-p)
     (setq fi::common-lisp-backdoor-main-process-name (process-name process))
+    ;; It appears that sometimes the following form doesn't make it to the
+    ;; Common Lisp process.  My theory for this is that there is either an
+    ;; Emacs/UNIX bug that causes the input to be thrown away.  The
+    ;; SLEEP-FOR is an attempt to work around this bug.
+    (sleep-for 2)
     (send-string
      process
      "(progn
@@ -274,6 +279,8 @@ Emacs-Lisp interface.  This only works in Allegro CL, currently."
        (find-symbol (symbol-name :start-lisp-listener-daemon) :ipc)
        #+allegro-v4.1 '(:use-lep t :unix-domain nil)
        #-allegro-v4.1 nil)
+      (when (fboundp 'excl::use-background-streams)
+        (excl::use-background-streams))
       (values))\n")))
 
 (defun fi:common-lisp (&optional buffer-name directory image-name
@@ -655,8 +662,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	    (concat "~/.emacs_" (file-name-nondirectory image-file))))
       (cond
 	((and start-up-feed-name (file-exists-p start-up-feed-name))
-	 ;; I hope 1 second is enough!
-	 (sleep-for 1)
+	 (sleep-for 1) ;; I hope 1 second is enough!
 	 (goto-char (point-max))
 	 (insert-file-contents start-up-feed-name)
 	 (setq start-up-feed-name (buffer-substring (point) (point-max)))
@@ -674,7 +680,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
       (make-local-variable 'subprocess-prompt-pattern)
       (setq subprocess-prompt-pattern image-prompt)
       (fi::make-subprocess-variables)
-      (if initial-func (funcall initial-func process)))
+      (when initial-func (funcall initial-func process)))
     process))
 
 (defun fi::make-tcp-connection (buffer-name buffer-number mode image-prompt
