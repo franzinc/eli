@@ -45,13 +45,16 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.32 1988/07/15 18:33:15 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.33 1989/02/14 17:15:40 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; User Visibles
 ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defvar fi:emacs-to-lisp-transaction-directory "/tmp"
+  "The directory in which files for Emacs/Lisp communication are stored.")
 
 (defvar fi:pop-to-sublisp-buffer-after-lisp-eval t
   "*If non-nil, then after sending expressions to a Lisp process do pop to
@@ -256,7 +259,7 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
       (let ()
 	(setq fi::emacs-to-lisp-transaction-file
 	  (let* ((filename (buffer-file-name (current-buffer))))
-	    (format "/tmp/%s,%s"
+	    (format "%s/%s,%s" fi:emacs-to-lisp-transaction-directory
 		    (user-login-name)
 		    (if filename (file-name-nondirectory filename)
 		      "noname"))))
@@ -297,8 +300,9 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
     (fi::send-string-split process load-string nl-to-cr)))
 
 (defun fi:remove-all-temporary-lisp-transaction-files ()
-  "This function will clean up all the files created in /tmp for Emacs/Lisp
-communication.  The files are named /tmp/<USER-LOGIN-NAME>,<BUFFER-NAME>."
+  "This function will clean up all the files created for Lisp/Emacs
+communication.  See the variable fi:emacs-to-lisp-transaction-directory for
+the location of the files."
   (let ((buffers (buffer-list))
 	  file)
       (while buffers
