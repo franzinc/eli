@@ -1,3 +1,11 @@
+2004-03-02    <layer@HOBART>
+
+	* Makefile: make sure fi-vers.el depends on ChangeLog
+	* fi-basic-lep.el: direct debug output to *LEP-DEBUG* instead of
+	  *scratch*
+	* fi-emacs21.el (fi::window-config-changed): bug14073: fix it
+	* fi-subproc.el: bug14049: fix handling of `host' in fi:common-lisp
+
 2004-01-16  Kevin Layer  <layer@gemini>
 
 	* fi-keys.el: bug13995: move fi::arglist-lisp-space-1 to fi-lep.el
@@ -4888,4 +4896,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.1 $
+$Revision: 3.2 $

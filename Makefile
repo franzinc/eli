@@ -1,4 +1,4 @@
-# $Id: Makefile,v 3.0 2003/12/15 22:52:57 layer Exp $
+# $Id: Makefile,v 3.1 2004/03/11 02:10:09 layer Exp $
 # This makefile requires GNU make.
 
 include version.mak
@@ -45,7 +45,7 @@ all default:	fi-vers.el compile
 compile:	fi-vers.el
 	$(emacs) -nw -batch -q -l $(pwd)/fi-compile.el -kill
 
-fi-vers.el: Makefile version.mak
+fi-vers.el: Makefile version.mak ChangeLog
 #	rm -f fi-vers.el
 	echo ';; automatically generate file--do not edit.' > fi-vers.el
 	echo '(defvar fi:emacs-lisp-interface-version)' >> fi-vers.el

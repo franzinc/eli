@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-basic-lep.el,v 3.0 2003/12/15 22:52:57 layer Exp $
+;; $Id: fi-basic-lep.el,v 3.1 2004/03/11 02:10:09 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -254,7 +254,7 @@ emacs-lisp interface cannot be started.
 	(buffer (or (process-buffer process)
 		    (get-buffer-create " LEP temp "))))
     (when fi::trace-lep-filter
-      (print string (get-buffer "*scratch*")))
+      (fi::trace-debug (format "lep-connection-filter: %s" string)))
     (save-excursion
       (set-buffer buffer)
       (goto-char (point-max))
@@ -282,10 +282,22 @@ emacs-lisp interface cannot be started.
 	    (error "error reading return value: %s" string)
 	  (fi::handle-lep-input process form))))))
 
+(defun fi::trace-debug (string)
+  (save-excursion
+    (set-buffer (get-buffer-create "*LEP-DEBUG*"))
+    (goto-char (point-max))
+    (insert "\n")
+    (insert string)
+    (insert "\n")
+    ;;(insert (with-output-to-string (backtrace))) (insert "\n")
+    ))
+
 (defun fi::handle-lep-input (process form)
   "A reply is (session-id . rest) or (nil . rest)"
   (when fi::trace-lep-filter
-    (print (list process form) (get-buffer "*scratch*")))
+    (fi::trace-debug 
+     (format "handle-lep-input:\n  process: %s\n  form: %s"
+		   process form)))
   (let* ((id (car form))
 	 (connection (fi::find-connection-from-process process))
 	 (session (fi::find-session connection id)))

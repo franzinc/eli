@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-emacs21.el,v 3.0 2003/12/15 22:52:57 layer Exp $
+;; $Id: fi-emacs21.el,v 3.1 2004/03/11 02:10:09 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; emacs specific stuff
@@ -1047,18 +1047,19 @@
 (defvar fi::*last-frame-width-given-to-lisp* 0)
 
 (defun fi::window-config-changed ()
-  (let ((width (frame-width)))
+  (let ((width (1- (frame-width))))
     (unless (equal fi::*last-frame-width-given-to-lisp* width)
       ;;(message "window-config-changed frame %s width %s height %s"
-      ;;  (selected-frame) width (frame-height))
+      ;;       (selected-frame) width (frame-height))
       (ignore-errors			; Cautious.
 					; There is probably a better way to
 					; decide whether to try to notify
 					; lisp.
+       ;; Save the value first, in case there an error, so we don't contact
+       ;; Lisp more than we have to.
+       (setq fi::*last-frame-width-given-to-lisp* width)
+
        (when (fi::lep-open-connection-p)
-	 (fi:eval-in-lisp
-	  "(setq excl::*default-right-margin* %d)"
-	  (setq fi::*last-frame-width-given-to-lisp* (1- width))))))))
+	 (fi:eval-in-lisp "(setq excl::*default-right-margin* %d)" width))))))
 
 (add-hook 'window-configuration-change-hook 'fi::window-config-changed)
-

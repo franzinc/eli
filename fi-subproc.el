@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 3.1 2004/01/16 19:27:49 layer Exp $
+;; $Id: fi-subproc.el,v 3.2 2004/03/11 02:10:09 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -420,19 +420,25 @@ risk.")
 	     (or (y-or-n-p "A make-dist might be in progress.  Continue? ")
 		 (error "fi:common-lisp aborted.")))
     (setq fi::shell-buffer-for-common-lisp-interaction-host-name nil))
-  (setq fi::process-is-local (or (null host)
-				 (string= "localhost" host)
-				 ;; so it is case insensitive:
-				 (string-match host (system-name))))
+  
   (let* ((process-environment process-environment)
 	 (buffer-name (if (interactive-p)
 			  buffer-name
 			(or buffer-name fi:common-lisp-buffer-name)))
-	 (directory (if (interactive-p)
-			(if fi::process-is-local
-			    (and directory (expand-file-name directory))
-			  directory)
-		      (or directory fi:common-lisp-directory)))
+	 (host (if (interactive-p)
+		   host
+		 (or host fi:common-lisp-host (system-name))))
+	 (directory
+	  (progn
+	    (setq fi::process-is-local (or (null host)
+					   (string= "localhost" host)
+					   ;; so it is case insensitive:
+					   (string-match host (system-name))))
+	    (if (interactive-p)
+		(if fi::process-is-local
+		    (and directory (expand-file-name directory))
+		  directory)
+	      (or directory fi:common-lisp-directory))))
 	 (executable-image-name
 	  (if (interactive-p)
 	      executable-image-name
@@ -449,9 +455,6 @@ be a string. Use the 6th argument for image file."))
 	  (if (interactive-p)
 	      image-args
 	    (or image-args fi:common-lisp-image-arguments)))
-	 (host (if (interactive-p)
-		   host
-		 (or host fi:common-lisp-host (system-name))))
 	 (real-args
 	  (if (and fi:start-lisp-interface-arguments
 		   ;; can't do this:
