@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.57 1993/09/08 00:21:54 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.58 1993/09/23 07:23:47 layer Exp $
 
 ;;;; Mode initializations
 
@@ -375,9 +375,9 @@ the readtable used for evaluations given to Lisp from emacs."
 	  (search-string (format "%s:" key))
 	  value found start end)
       (goto-char (point-min))
-      (skip-chars-forward " \t\n")
       (when (and (search-forward "-*-"
-				 (save-excursion (end-of-line) (point)) t)
+				 (save-excursion (end-of-line) (point))
+				 t)
 		 (progn
 		   (skip-chars-forward " \t")
 		   (setq start (point))

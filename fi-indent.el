@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.47 1993/07/23 03:48:49 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.48 1993/09/23 07:23:42 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If non-nil, semicolons that begin comments are indented as they are
@@ -540,7 +540,7 @@ of the start of the containing expression."
 				  (progn (forward-sexp 1) (point)))))
 		   (fi::lisp-get-method function)))
 	(throw 'fi:lisp-indent-hook-escape nil))
-      (re-search-forward "\\sw\\|\\s_")
+      (re-search-forward "\\sw\\|\\s_" nil t)
       (if (/= (point) (car (cdr state)))
 	  (let ((function (buffer-substring (progn (forward-char -1) (point))
 					    (progn (forward-sexp 1) (point))))
