@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/Attic/fi-lemacs.el,v 2.16 1994/08/23 01:46:40 smh Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-lemacs.el,v 2.17 1994/09/21 22:43:23 smh Exp $
 
 (defun fi::switch-to-buffer-new-screen (buffer)
   (cond
@@ -20,6 +20,14 @@
       ;; make sure the buffer is visible
       (fi::switch-to-buffer buffer)))
    (t (fi::switch-to-buffer buffer))))
+
+(defun fi::ensure-buffer-visible (buffer)
+  (let ((screen (get-screen-for-buffer buffer)))
+    (when screen (raise-screen screen))))
+
+(defun fi::ensure-minibuffer-visible ()
+  (let ((screen (window-screen (minibuffer-window))))
+    (when screen (raise-screen screen))))
 
 (defun fi::source-buffer-p ()
   (and (fi::connection-open)
@@ -233,7 +241,7 @@
 (defun fi::install-menubar (menu-bar)
   (set-menubar (delete (assoc (car menu-bar) current-menubar)
 		       (copy-sequence current-menubar)))
-  (add-menu nil (car menu-bar) (cdr menu-bar)))
+  (add-menu nil (car menu-bar) (cdr menu-bar) "Help"))
 
 (push '(progn
 	(fi::install-menubar fi:allegro-file-menu)
@@ -258,6 +266,8 @@
 (defun fi:menu-open-lisp-listener ()
   (interactive)
   (fi:open-lisp-listener -1))
+
+(put 'lisp-listener 'instance-limit 0)
 
 (defun fi:menu-open-lisp-listener-new-screen ()
   (interactive)

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.52 1994/08/23 01:46:52 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.53 1994/09/21 22:43:26 smh Exp $
 
 ;;; Misc utilities
 
@@ -362,8 +362,7 @@ at the beginning of the line."
 	(list symbol-at-point)
       (let ((read-symbol
 	     (let ((fi::original-package fi:package))
-	       (if (fboundp 'epoch::mapraised-screen)
-		   (epoch::mapraised-screen (minibuf-screen)))
+	       (fi::ensure-minibuffer-visible)
 	       (completing-read
 		(if symbol-at-point
 		    (format "%s: (default %s) " prompt symbol-at-point)
@@ -550,7 +549,9 @@ at the beginning of the line."
 	((eq 'replace (car fi:pop-up-temp-window-behavior))
 	 (fi::display-pop-up-window-replace buffer hook args))
 	(t (error "bad value for car of fi:pop-up-temp-window-behavior: %s"
-		  (car fi:pop-up-temp-window-behavior)))))
+		  (car fi:pop-up-temp-window-behavior))))
+  (and (fboundp 'fi::ensure-buffer-visible)
+       (fi::ensure-buffer-visible buffer)))
 
 (defun fi::display-pop-up-window-replace (buffer hook args)
   (switch-to-buffer buffer)

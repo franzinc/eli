@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-emacs19.el,v 2.6 1994/08/23 01:46:34 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-emacs19.el,v 2.7 1994/09/21 22:43:14 smh Exp $
 
 
 (unless (string-match "^18." emacs-version) ;Allows compilation on 18.
@@ -29,6 +29,16 @@
       ;; make sure the buffer is visible
       (fi::switch-to-buffer buffer)))
    (t (fi::switch-to-buffer buffer))))
+
+(defun fi::ensure-buffer-visible (buffer)
+  (let ((window (get-buffer-window buffer)))
+    (when window
+      (let ((frame (window-frame window)))
+	(when frame (raise-frame frame))))))
+
+(defun fi::ensure-minibuffer-visible ()
+  (let ((frame (window-frame (minibuffer-window))))
+    (when frame (raise-frame frame))))
 
 (defun fi::source-buffer-p ()
   (and (fi::connection-open)
@@ -242,7 +252,7 @@
 (defun fi::install-menubar (menu-bar)
   (set-menubar (delete (assoc (car menu-bar) current-menubar)
 		       (copy-sequence current-menubar)))
-  (add-menu nil (car menu-bar) (cdr menu-bar)))
+  (add-menu nil (car menu-bar) (cdr menu-bar) "Help"))
 
 (push '(progn
 	(fi::install-menubar fi:allegro-file-menu)

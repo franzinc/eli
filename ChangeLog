@@ -1,3 +1,16 @@
+Wed Sep 21 15:37:08 1994  Steve Haflich  (smh@vapor)
+
+	* fi-site-init.el: Version 2.0.13.
+
+	* fi-indent.el: Add property for pprint=logical-block.
+
+	* fi-leep.el:
+	* fi-emacs19.el:
+	* fi-lemacs.el:
+	Make sure the "Help" menu is last on the menubar.
+	Rearrange and add functions to ensure popup buffers and minibuffers
+	are exposed when the pop up or dneed to do input.
+
 Mon Aug 22 17:44:48 1994  Steve Haflich  (smh@vapor)
 
 	* Makefile: Add gc-mode-line.{cl,c} to rdist.

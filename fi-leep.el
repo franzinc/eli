@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-leep.el,v 1.11 1993/08/31 23:26:06 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-leep.el,v 1.12 1994/09/21 22:43:21 smh Exp $
 
 ;; The epoch side of presentations in a lisp-listener window.
 
@@ -18,6 +18,10 @@
 (defvar fi::highlighted-style nil)
 
 (defvar fi::highlighted-zone-color "slategray")
+
+(defun fi::ensure-minibuffer-visible ()
+  (if (fboundp 'epoch::mapraised-screen)
+      (epoch::mapraised-screen (minibuf-screen))))
 
 (unless fi::epoch-has-zones
   (defun make-style ()

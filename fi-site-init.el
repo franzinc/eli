@@ -1,8 +1,8 @@
-;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.62 1994/08/23 01:46:42 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.63 1994/09/21 22:43:25 smh Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
-(setq fi:emacs-lisp-interface-version "2.0.13")
+(setq fi:emacs-lisp-interface-version "2.0.14")
 (defvar fi::required-ipc-version 1)
 (defvar fi::load-subprocess-files t)
 (defvar fi::build-time nil)
