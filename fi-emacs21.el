@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-emacs21.el,v 3.2 2004/03/21 16:01:00 layer Exp $
+;; $Id: fi-emacs21.el,v 3.2.8.1 2004/10/07 21:32:52 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; emacs specific stuff
@@ -57,6 +57,11 @@
 		  :keys (when keys (key-description keys)))
 	    (when enable (list :enable enable)))))
 
+(defun fi::reinitialize-menu-bar-map ()
+  (interactive)
+  (setq fi::menu-bar-initialized nil)
+  (fi::initialize-menu-bar-map))
+
 (defun fi::initialize-menu-bar-map ()
   (when (not (memq major-mode fi::menu-bar-initialized))
     (let* ((composer (not (on-ms-windows)))
@@ -88,7 +93,30 @@
 	    (cons composer-name composer-map)))
 	(define-key map [menu-bar acl acldebug] (cons debug-name debug-map))
 	(define-key map [menu-bar acl acledit] (cons edit-name edit-map))
-	(define-key map [menu-bar acl aclfile] (cons file-name file-map)))
+	(define-key map [menu-bar acl aclfile] (cons file-name file-map))
+	
+	(define-key map [menu-bar acl listener-new-frame]
+	  (fi::menu "Create New Listener, new frame"
+		    'fi:menu-open-lisp-listener-new-frame
+		    :enable '(fi::connection-open)))
+
+	(define-key map [menu-bar acl listener]
+	  (fi::menu "Create New Listener"
+		    'fi:menu-open-lisp-listener
+		    :enable '(fi::connection-open)))
+
+	(define-key map [menu-bar acl run-new-frame]
+	  (fi::menu "Run/Restart Common Lisp, new frame"
+		    'fi:menu-common-lisp-new-frame
+		    ;; Per rfe6058:
+		    ;; :enable '(fi::connection-not-open)
+		    ))
+    
+	(define-key map [menu-bar acl run]
+	  (fi::menu "Run/Restart Common Lisp" 'fi:menu-common-lisp
+		    ;; Per rfe6058:
+		    ;; :enable '(fi::connection-not-open)
+		    )))
        (t
 	(define-key map [menu-bar aclhelp] (cons help-name help-map))
 	(when composer
@@ -144,27 +172,29 @@
       (define-key map (fi::keys [aclfile compile-form])
 	(fi::menu "Compile form" 'fi:lisp-compile-active-region-or-defun
 		  :enable '(fi::acl-buffer-p)))
+      
+      (when (null fi:menu-bar-single-item)
+	(define-key map (fi::keys [aclfile aclfile-sep1])
+	  (fi::menu "----"))
 
-      (define-key map (fi::keys [aclfile aclfile-sep1])
-	(fi::menu "----"))
+	(define-key map (fi::keys [aclfile listener-new-frame])
+	  (fi::menu "Create New Listener, new frame"
+		    'fi:menu-open-lisp-listener-new-frame
+		    :enable '(fi::connection-open)))
 
-      (define-key map (fi::keys [aclfile listener-new-frame])
-	(fi::menu "Create New Listener, new frame"
-		  'fi:menu-open-lisp-listener-new-frame
-		  :enable '(fi::connection-open)))
+	(define-key map (fi::keys [aclfile listener])
+	  (fi::menu "Create New Listener"
+		    'fi:menu-open-lisp-listener
+		    :enable '(fi::connection-open)))
 
-      (define-key map (fi::keys [aclfile listener])
-	(fi::menu "Create New Listener"
-		  'fi:menu-open-lisp-listener :enable '(fi::connection-open)))
-
-      (define-key map (fi::keys [aclfile run-new-frame])
-	(fi::menu "Run/Restart Common Lisp, new frame"
-		  'fi:menu-common-lisp-new-frame
-		  :enable '(fi::connection-not-open)))
+	(define-key map (fi::keys [aclfile run-new-frame])
+	  (fi::menu "Run/Restart Common Lisp, new frame"
+		    'fi:menu-common-lisp-new-frame
+		    :enable '(fi::connection-not-open)))
     
-      (define-key map (fi::keys [aclfile run])
-	(fi::menu "Run/Restart Common Lisp" 'fi:menu-common-lisp
-		  :enable '(fi::connection-not-open)))
+	(define-key map (fi::keys [aclfile run])
+	  (fi::menu "Run/Restart Common Lisp" 'fi:menu-common-lisp
+		    :enable '(fi::connection-not-open))))
 
 ;;;; ACLFile > Compile other menu:
 

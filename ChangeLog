@@ -1,3 +1,10 @@
+2004-10-07  Kevin Layer  <layer@gemini>
+
+	* fi-emacs21.el: rfe6058: move a few things up one level in menus;
+	  don't gray out "run common lisp", since it can be used to go to
+	  the current active common lisp.
+	* fi-subproc.el: only do mule setup one time
+
 2004-10-04    <layer@HOBART>
 
 	* fi-subproc.el: bug14846: windows startup was incomplete: handle
@@ -5006,4 +5013,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.9.2.9 $
+$Revision: 3.9.2.10 $

@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 3.7.2.6 2004/10/04 20:56:11 layer Exp $
+;; $Id: fi-subproc.el,v 3.7.2.7 2004/10/07 21:32:52 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -301,6 +301,11 @@ connection.")
 machine, which implies that it was started via an `rsh'.  This variable is
 buffer local.")
 (make-variable-buffer-local 'fi::lisp-is-remote)
+
+(defvar fi::setup-for-mule nil)
+(make-variable-buffer-local 'fi::setup-for-mule)
+
+
 
 ;;;;
 ;;; User visible functions
@@ -551,10 +556,12 @@ be a string. Use the 6th argument for image file."))
 	      ;; The resulting *common-lisp* buffer is to Lisp's initial
 	      ;; *terminal-io*, so we set the emacs-mule *terminal-io*
 	      ;; external-format here.
-	      (when (fi::emacs-mule-p)
+	      (when (and (fi::emacs-mule-p)
+			 fi::setup-for-mule)
 		(process-send-string p fi::set-emacs-mule-terminal-io)
 		(process-send-string p "\n")
-		(fi::set-emacs-mule-process-coding p))
+		(fi::set-emacs-mule-process-coding p)
+		(setq fi::setup-for-mule nil))
 	      p)))))
     (setq fi::common-lisp-first-time nil
 	  fi:common-lisp-buffer-name buffer-name
@@ -1145,6 +1152,8 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		     (append (list buffer-name buffer image-file)
 			     image-args))))
 	  (set-process-sentinel process 'fi::subprocess-sentinel)
+	  
+	  (setq fi::setup-for-mule t) ;; new process, must do this
 
 	  ;; do the following after the sentinel is established so we don't get
 	  ;; an ugly message in the subprocess buffer
