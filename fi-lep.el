@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.63 1995/01/10 20:04:48 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.64 1995/02/02 23:18:38 smh Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -302,7 +302,7 @@ return the pathname of temp file."
 
 (defun scm::signal-transaction-file-error (pathname)
   (fi:note "
-Can't find transaction file in %s, which is the directory that
+Can't find transaction file %s in %s, which is the directory that
 Emacs and Lisp use to communicate.  Most likely Emacs and Lisp are running
 on different machines.  Please check the value of the Emacs variable
 fi:emacs-to-lisp-transaction-directory.
@@ -314,7 +314,7 @@ Put something like this form in your ~/.emacs file:
 
 before the load of fi-site-init.  Don't forget to make sure ~/tmp exists,
 since the Emacs-Lisp interface will not create it."
-	    fi:emacs-to-lisp-transaction-directory pathname)
+	    pathname fi:emacs-to-lisp-transaction-directory)
   nil)
 
 (defun lep::buffer-modified-tick ()
@@ -386,11 +386,12 @@ time."
 
 (defun fi:lisp-macroexpand-recursively (arg)
   "Print the full, recursive macroexpansion the form at the point.
-With prefix arg, recursively macroexpand the code as the compiler would.
-fi:package is used to determine from which Common Lisp package the
-operation is done.  In a subprocess buffer, the package is tracked
-automatically.  In source buffer, the package is parsed at file visit
-time."
+With prefix arg, recursively macroexpand the code as the compiler
+would.  (The compiler simulation is approximate only and does not
+preserve the precise semantics of the form.)  fi:package is used to
+determine from which Common Lisp package the operation is done.  In a
+subprocess buffer, the package is tracked automatically.  In source
+buffer, the package is parsed at file visit time."
   (interactive "P")
   (message "Recursively macroexpanding...")
   (fi::lisp-macroexpand-common
@@ -789,14 +790,14 @@ the next definition, if there is one."
 
 (defun lep::list-fspecs-common (fspec function msg &optional what)
   (fi::make-request
-   (lep::list-fspecs-session
-    :function function :fspec (fi::frob-case-to-lisp fspec))
-   ((fspec fi:package what) (the-definitions)
-    (lep:display-some-definitions fi:package
-				  the-definitions
-				  (list 'lep::find-a-definition what fspec)))
-   ((msg) (error)
-    (fi::show-error-text msg error))))
+      ;;fi::frob-case-to-lisp removed - 18jan94 smh
+      (lep::list-fspecs-session :function function :fspec fspec)
+    ((fspec fi:package what) (the-definitions)
+     (lep:display-some-definitions fi:package
+				   the-definitions
+				   (list 'lep::find-a-definition what fspec)))
+    ((msg) (error)
+     (fi::show-error-text msg error))))
 
 (defun lep::find-a-definition (string type list-buffer what from-fspec)
   (fi::lisp-find-definition-common string t what from-fspec))

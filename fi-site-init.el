@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.66 1995/01/10 00:43:39 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.67 1995/02/02 23:18:41 smh Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -110,3 +110,5 @@ function, it is changed to a list of functions."
       (setq fi::build-time top-level)
       (setq top-level '(fi::top-level)))
   (fi::initialize-emacs-lisp-interface))
+
+(provide 'fi-site-init)

@@ -149,8 +149,10 @@ following files:
    /vendor/franz/emacs/clman-4.1-v2-clim2.tar.gz (1306 Kb)
 
 Grab the first file and either the second or third files, as
-appropriate.  The uncompressed clman-4.1-v2.tar.gz is 4280 Kb and
-clman-4.1-v2-clim2.tar.gz is 6110 Kb.
+appropriate.  (Sites updating from 2.0.9 or later need only the eli
+file -- the clman files are unchanged.)  The uncompressed
+clman-4.1-v2.tar.gz is 4280 Kb and clman-4.1-v2-clim2.tar.gz is 6110
+Kb.
 
 Note: the .gz means you need gzip (GNU zip) to uncompress these files.
 You can get gzip from prep.ai.mit.edu (/pub/gnu/gzip-1.2.3.tar, 778240

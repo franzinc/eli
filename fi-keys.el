@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.90 1995/01/13 21:16:28 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.91 1995/02/02 23:18:36 smh Exp $
 
 (cond ((eq fi::emacs-type 'xemacs19)
        (require 'tags "etags"))
@@ -78,7 +78,14 @@ shell, rlogin, sub-lisp or tcp-lisp."
     (define-key map "\C-\\"	'fi:subprocess-quit))
    ((eq mode 'sub-lisp)
     (define-key map "\C-c"	'fi:interrupt-listener)
-    (if fi::lisp-is-remote
+    (if (or fi::lisp-is-remote
+	    (null fi::common-lisp-connection-type)
+	    ;; fi::common-lisp-connection-type might be bound differently at
+	    ;; connection startup time, so we'll just always use the backdoor
+	    ;; approach.  There is no ever need to depend on a pty for eofs.
+	    ;; However, this and probably lots of other things will work only
+	    ;; with Allegro and not franzlisp and other plausible sublisps.
+	    t)
 	(define-key map "\C-d"	'fi:remote-lisp-send-eof)
       (define-key map "\C-d"	'fi:subprocess-send-eof))
     (define-key map "\C-\\"	'fi:subprocess-quit))
@@ -86,7 +93,7 @@ shell, rlogin, sub-lisp or tcp-lisp."
     (define-key map "\C-c"	'fi:interrupt-listener)
     (define-key map "\C-d"	'fi:tcp-lisp-listener-send-eof)
     (define-key map "\C-\\"	'fi:tcp-lisp-listener-kill-process)))
-  
+
   (if (memq mode '(sub-lisp tcp-lisp))
       (progn
 	(define-key map "s" 'fi:scan-stack)))
@@ -121,7 +128,7 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
       (define-key map "\C-c" supermap)
     ;; editing mode
     (define-key map "\C-c" (make-keymap)))
-  
+
   (define-key map "\C-?"	'backward-delete-char-untabify)
   (define-key map "\C-c-"	'fi:log-functional-change)
   (define-key map "\C-c%"	'fi:extract-list)
@@ -129,7 +136,7 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
   (define-key map "\C-c\C-e"	'fi:end-of-defun)
   (define-key map "\C-c]"	'fi:super-paren)
   (define-key map "\C-cl"	'fi:toggle-to-lisp)
-  
+
   (if fi:lisp-do-indentation
       (progn
 	(define-key map ";"		'fi:lisp-semicolon)
@@ -168,14 +175,14 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
 
   (when (eq major-mode 'fi:emacs-lisp-mode)
     (define-key map "\e\C-x"	'eval-defun))
-  
+
   (when (memq major-mode '(fi:common-lisp-mode fi:franz-lisp-mode
 			   fi:lisp-mode))
     (define-key map "\e\C-x"	'fi:lisp-eval-or-compile-defun)
     (define-key map "\C-c\C-b"	'fi:lisp-eval-or-compile-current-buffer)
     (define-key map "\C-c\C-s"	'fi:lisp-eval-or-compile-last-sexp)
     (define-key map "\C-c\C-r"	'fi:lisp-eval-or-compile-region))
-  
+
   map)
 
 (defun fi::lisp-listener-mode-commands (map supermap)
@@ -190,7 +197,7 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
     ;; For now we can't implement raw mode and also work with wnn kanji
     ;; input translation.  Until we figure out a good solution, raw mode
     ;; will be disabled in Mule.
-    (unless (boundp 'mule-version)
+    (unless (or (boundp 'nemacs-version) (boundp 'mule-version))
       (while (< i l)
 	(define-key map (char-to-string i) 'fi:self-insert-command)
 	(setq i (1+ i)))))
@@ -307,7 +314,7 @@ it to the Lisp subprocess."
 		    (fi:inferior-lisp-newline))
 		(fi:subprocess-input-region start end))))
 	(error "couldn't find start of input")))))
-    
+
 (defun fi:subprocess-input-region (start end)
   "Send the region defined by the point and mark to the Lisp subprocess.
 When called from a program give START and END buffer positions."
@@ -533,7 +540,7 @@ subprocess buffer."
   "Interrupt a Lisp listener (send a SIGINT).  Without a prefix argument,
 interrupt the Lisp process tied to the buffer in which this function is
 invoked.  With a prefix argument, the listener in which this is invoked
-asks which Lisp process to interrupt and does a lisp:break on that process." 
+asks which Lisp process to interrupt and does a lisp:break on that process."
   (interactive (list current-prefix-arg))
   (cond (select
 	 (let ((process (get-buffer-process (current-buffer))))
@@ -689,7 +696,7 @@ at the head of the function."
   (newline)
   (funcall indent-line-function)
   (insert-string (concat (format "%s- " (fi::log-comment-start))
-			 (current-time-string) " by " 
+			 (current-time-string) " by "
 			 (user-login-name) " - "))
   (save-excursion
     (forward-line)
@@ -850,7 +857,7 @@ the paragraph as well."
 
 (defun fi:extract-list (arg)
   "Take the list after the point and remove the surrounding list.  With
-argument ARG do it that many times." 
+argument ARG do it that many times."
   (interactive "p")
   (let ((string (progn
 		  (mark-sexp 1)
@@ -886,7 +893,7 @@ positions, and UNCOMMENT."
 	   (let ((count 0)
 		 (len (length comment-start)))
              (while (and (< count len)
-                         (eql (elt comment-start count) ?\;)) 
+                         (eql (elt comment-start count) ?\;))
                (setq count (+ count 1)))
 	     (make-string count (string-to-char ";")))))
       (goto-char end)

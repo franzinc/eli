@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.36 1994/12/21 22:36:09 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.37 1995/02/02 23:18:32 smh Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -74,7 +74,7 @@ printed in the minibuffer can easily be erased.")
       (let ((len (- m start)))
 	(if (> len max-length) (setq max-length len)))
       (setq lines (+ lines 1)
-	    start (1+ m)))  
+	    start (1+ m)))
     (if (not (eq m last)) (setq lines (1+ lines)))
     (let ((len (- length start)))
       (if (> len max-length) (setq max-length len)))
@@ -113,7 +113,7 @@ printed in the minibuffer can easily be erased.")
 
 (defun fi::make-connection (buffer host process)
   (list ':connection
-	process 
+	process
 	nil				; sessions
 	-1				; session id counter
 	host
@@ -138,7 +138,7 @@ printed in the minibuffer can easily be erased.")
        (fi:process-running-p (fi::connection-process fi::*connection*))
        fi::*connection*))
 
-(defun fi::ensure-lep-connection () 
+(defun fi::ensure-lep-connection ()
   (or (fi::lep-open-connection-p)
       (fi::try-and-start-lep-connection)
       (error "no connection")))
@@ -242,7 +242,7 @@ versions of the emacs-lisp interface.
       (goto-char (point-max))
       (insert string))
     (let (form error)
-      (while 
+      (while
 	  (condition-case ignore
 	      (save-excursion
 		(set-buffer buffer)
@@ -254,7 +254,7 @@ versions of the emacs-lisp interface.
 		   (forward-sexp)
 		   (let ((p (point)))
 		     (goto-char (point-min))
-		     (condition-case ignore 
+		     (condition-case ignore
 			 (progn (setq form (read (current-buffer))) t)
 		       (error (setq error t)))
 		     (delete-region (point-min) p))
@@ -305,7 +305,7 @@ versions of the emacs-lisp interface.
 	((eq (car form) ':request)
 	 (condition-case error
 	     (apply (fi::intern-it (second form)) (cddr form))
-	   (error 
+	   (error
 	    (fi::show-error-text "Request error: " (fi::prin1-to-string error)))))
 	(t (error "Funny request received: %s" form))))
 
@@ -342,7 +342,7 @@ versions of the emacs-lisp interface.
 (defun fi::make-new-session (connection oncep continuation-and-arguments
 			     &optional error-continuation)
   (let* ((id (fi::connection-session-id connection))
-	 (session (fi::make-session id 
+	 (session (fi::make-session id
 				oncep
 				(car continuation-and-arguments)
 				(cdr continuation-and-arguments)
@@ -368,28 +368,28 @@ versions of the emacs-lisp interface.
   (lep::send-back-reply session (apply function arguments)))
 
 
-(defun lep::send-request-in-new-session (session-class oncep session-arguments 
+(defun lep::send-request-in-new-session (session-class oncep session-arguments
 					 continuation-and-arguments
 					 &optional error-continuation-and-arguments
 						   ignore-package)
   (unless (fi::lep-open-connection-p)
     (error "There is no connection to Lisp.  See fi:common-lisp documentation."))
-  
+
   (let* ((connection (fi::ensure-lep-connection))
 	 (session (fi::make-new-session connection oncep
 					continuation-and-arguments
 					error-continuation-and-arguments))
 	 (process (fi::connection-process connection)))
-    (send-string process (fi::prin1-to-string 
+    (send-string process (fi::prin1-to-string
 			  (list* nil
-				 'lep::make-session session-class 
+				 'lep::make-session session-class
 				 ':session-id (fi::session-id session)
 				 ':buffer-readtable (fi::string-to-keyword
 						     fi:readtable)
 				 (if (or ignore-package
 					 (fi::member-plist ':buffer-package
 							   session-arguments))
-				     session-arguments 
+				     session-arguments
 				   (list* ':buffer-package
 					  (fi::string-to-keyword fi:package)
 					  session-arguments)))))
@@ -436,7 +436,7 @@ versions of the emacs-lisp interface.
 	       (first error-continuation))))
 
 (defun lep::send-request-in-existing-session (session session-class oncep
-					      session-arguments 
+					      session-arguments
 					      continuation-and-arguments
 					      &optional error-continuation-and-arguments)
   (let* ((connection (fi::session-connection session))
@@ -455,35 +455,35 @@ versions of the emacs-lisp interface.
 				(fi::session-id session))))
     (send-string process "\n")))
 
-(defun lep::send-request-in-session (session session-class session-arguments 
+(defun lep::send-request-in-session (session session-class session-arguments
 				     continuation-and-arguments
 				     &optional error-continuation-and-arguments)
   (let* ((connection (fi::ensure-lep-connection))
 	 (process (fi::connection-process connection )))
-    (fi::modify-session-continuation 
+    (fi::modify-session-continuation
      session continuation-and-arguments error-continuation-and-arguments)
     (send-string process
 		 (fi::prin1-to-string (list* (fi::session-id session)
 					     ':request
-					     session-class 
+					     session-class
 					     session-arguments)))
     (send-string process "\n")))
 
-(defmacro fi::make-request-in-existing-session (session type-and-options 
+(defmacro fi::make-request-in-existing-session (session type-and-options
 						continuation
 						&optional error-continuation)
   (list 'lep::send-request-in-session
 	session
 	(list 'quote (car type-and-options))
 	(cons 'list (fi::quote-every-other-one (cdr type-and-options)))
-	(list* 'list (list 'function 
-			   (list* 'lambda 
+	(list* 'list (list 'function
+			   (list* 'lambda
 				  (append (fi::listify (second continuation))
 					  (fi::listify (first continuation)))
 				  (cddr continuation)))
 	       (first continuation))
 	(list* 'list
-	       (list 'function 
+	       (list 'function
 		     (list* 'lambda (append (fi::listify (second error-continuation))
 					    (fi::listify (first error-continuation)))
 			    (cddr error-continuation)))
@@ -502,25 +502,25 @@ versions of the emacs-lisp interface.
 	      (let* ((done nil)
 		     (result (apply (fi::intern-it function) args)))
 		(when  replyp
-		  (send-string process 
+		  (send-string process
 			       (fi::prin1-to-string (list* (fi::session-id session)
 							   ':reply
 							   result)))
 		  (send-string process "\n")))
-	    (error 
+	    (error
 	     (if replyp
 		 (progn
-		   (send-string process 
+		   (send-string process
 				(fi::prin1-to-string
 				 (list (fi::session-id session)
 				       ':error
 				       (fi::prin1-to-string error))))
-	 
+
 		   (send-string process "\n"))
 	       (fi::show-error-text "Error occurred: " (fi::prin1-to-string error)))))
 	  (setq done t))
       (unless done
-	(send-string process 
+	(send-string process
 		     (fi::prin1-to-string (list (fi::session-id session)
 						':error
 						':aborted))))
@@ -548,13 +548,12 @@ versions of the emacs-lisp interface.
 
 (defun fi:eval-in-lisp-asynchronous (string &rest args)
   "Apply (Emacs Lisp) format to STRING and ARGS and asychronously evaluate
-the result in the Common Lisp to which we are connected.  If a
-lisp-eval-server has not been started, then this function starts it."
+the result in the Common Lisp to which we are connected."
   (fi::eval-in-lisp-wait-for-connection)
   (let ((string (if args (apply 'format string args) string)))
     (fi::make-request
-	(lep::eval-from-emacs-session
-	 :string (fi::frob-case-to-lisp string))
+	;;fi::frob-case-to-lisp removed - 18jan94 smh
+	(lep::eval-from-emacs-session :string string)
       ;; Normal continuation
       (() (value)
        ;; ignore the value...
@@ -571,12 +570,12 @@ be increased.")
 
 (defun fi:eval-in-lisp (string &rest args)
   "Apply (Emacs Lisp) format to STRING and ARGS and sychronously evaluate
-the result in the Common Lisp to which we are connected.  If a
-lisp-eval-server has not been started, then this function starts it."
+the result in the Common Lisp to which we are connected."
   (fi::eval-in-lisp-wait-for-connection)
   (let ((string (if args (apply 'format string args) string)))
+    ;;fi::frob-case-to-lisp removed - 18jan94 smh
     (car (lep::eval-session-in-lisp 'lep::eval-from-emacs-session
-				    ':string (fi::frob-case-to-lisp string)))))
+				    ':string string))))
 
 (defun lep::eval-session-in-lisp (function &rest arguments)
   (let* ((result-cons (list nil nil nil))
@@ -610,7 +609,7 @@ lisp-eval-server has not been started, then this function starts it."
     (let ((count fi:lisp-evalserver-number-reads))
       (while (and (> (setq count (1- count)) 0)
 		  (null (car result-cons)))
-	(accept-process-output 
+	(accept-process-output
 	 (fi::connection-process (fi::ensure-lep-connection)))))
     (when (not (car result-cons)) (error "Eval in lisp timed out"))
     (if (third result-cons)

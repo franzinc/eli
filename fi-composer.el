@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.18 1994/08/01 22:48:10 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.19 1995/02/02 23:18:34 smh Exp $
 
 (defun composer::make-listener (new-screen-p)
   (when (and new-screen-p (fboundp 'create-screen))
@@ -94,8 +94,8 @@ Composer loaded and initialized."
 
 (defun fi::show-calls (function direction msg)
   (fi::make-request
-      (composer::show-calls-session
-       :direction direction :fspec (fi::frob-case-to-lisp function))
+      ;;fi::frob-case-to-lisp removed - 18jan94 smh
+      (composer::show-calls-session :direction direction :fspec function)
     (() () ())
     ((msg) (error)
      (fi::show-error-text msg error))))
@@ -120,11 +120,11 @@ Composer loaded and initialized."
 
 (defun fi::show-subsuper-classes (class direction msg)
   (fi::make-request
-      (composer::show-classes-session 
-       :direction direction :fspec (fi::frob-case-to-lisp class))
+      ;;fi::frob-case-to-lisp removed - 18jan94 smh
+      (composer::show-classes-session :direction direction :fspec class)
     (() () ())
     ((msg) (error)
      (fi::show-error-text msg error))))
-  
+
 ;;; Perhaps with Epoch we should create buttons such that mousing invokes.
 ;;; Should we think about drawing classes.
