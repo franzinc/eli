@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.27 1992/07/23 15:06:57 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.28 1992/09/17 10:48:49 layer Exp $
 ;;
 ;; Code the implements evaluation in via the backdoor
 
@@ -180,6 +180,7 @@ with this buffer."
   (let ((buffer (current-buffer)))
     (fi::make-request
 	(lep::evaluation-request
+	 :transaction-directory fi:emacs-to-lisp-transaction-directory
 	 :text (buffer-substring start end)
 	 :echo fi:echo-evals-from-buffer-in-listener-p
 	 :partialp (not (and (eq (max start end) (point-max))
