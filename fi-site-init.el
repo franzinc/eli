@@ -1,6 +1,5 @@
-(load "cl-indent.elc")
 
-;; our lisp/emacs interface package:
+;; The Franz Inc. Lisp/Emacs interface:
 ;;
 (load "fi/modes.elc")
 (load "fi/subproc.elc")
@@ -8,6 +7,6 @@
 (load "fi/filec.elc")
 (load "fi/sublisp.elc")
 
-;; `shell' and `rlogin' packages:
+;; `shell' and `rlogin' modes:
 (load "fi/shell.elc")
 (load "fi/rlogin.elc")
