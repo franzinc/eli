@@ -31,7 +31,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.25 1991/05/28 16:17:12 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.26 1991/06/19 22:16:03 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If non-nil, semicolons that begin comments are indented as they are
@@ -178,13 +178,20 @@ Called with two arguments, indent-point and `state'.")
 
 (make-variable-buffer-local 'fi::comment-indent-hook-values)
 
-
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun fi:lisp-comment-indent (&optional addr)
   (let* ((begin (if addr addr (point)))
-	 (comment-spec (or fi:lisp-comment-indent-specification
-			   (list comment-column t nil 0)))
+	 (comment-spec
+	  (or (and fi:lisp-comment-indent-specification
+		   (progn
+		     (if (not
+			  (= comment-column
+			     (car fi:lisp-comment-indent-specification)))
+			 (rplaca fi:lisp-comment-indent-specification
+				 comment-column))
+		     fi:lisp-comment-indent-specification))
+	      (list comment-column t nil 0)))
 	 (spec-length (length comment-spec))
 	 spec
 	 count)
