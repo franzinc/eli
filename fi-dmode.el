@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.15 1991/06/20 13:07:34 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.16 1991/06/27 15:25:39 layer Exp $
 ;;
 
 ;; Create a mode in which each line is a definition and . on that
@@ -279,11 +279,12 @@ in definition mode."
 (defun lep:display-some-definitions (package buffer-definitions
 				     fn-and-arguments
 				     &optional buffer-name)
-  (setq lep::definition-mode-saved-window-configuration
-    (current-window-configuration))
   (let* ((bn (or buffer-name "*definitions*"))
-	(bb (get-buffer bn)))
+	 (bb (get-buffer bn)))
     (unless (eq bb (current-buffer))
+      (setq lep::definition-mode-saved-window-configuration
+	(current-window-configuration))  
+      (fi:lisp-push-window-configuration)
       (switch-to-buffer-other-window (or bb bn))))
   (setq buffer-read-only nil)
   (erase-buffer)
@@ -310,11 +311,12 @@ in definition mode."
 (defun lep:display-some-inverse-definitions (package buffer-definitions
 					     fn-and-arguments
 					     &optional buffer-name)
-  (setq lep::inverse-definition-mode-saved-window-configuration
-    (current-window-configuration))
   (let* ((bn (or buffer-name "*inverse-definitions*"))
 	 (bb (get-buffer bn)))
     (unless (eq bb (current-buffer))
+      (setq lep::inverse-definition-mode-saved-window-configuration
+	(current-window-configuration))  
+      (fi:lisp-push-window-configuration)
       (switch-to-buffer-other-window (or bb bn))))
   (setq buffer-read-only nil)
   (erase-buffer)
