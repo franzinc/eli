@@ -1,4 +1,4 @@
-; $Id:
+; $Id: readme.txt,v 1.1.2.2 2004/10/12 17:39:32 layer Exp $
 
 This is the Easy Emacs Installer.
 
