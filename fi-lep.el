@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.42 1991/10/15 11:40:34 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.43 1991/11/01 00:12:31 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -441,9 +441,8 @@ beginning of words in target symbols."
 		   (insert new))
 	       (delete-region beg end)
 	       (insert completion)))
-	   (if (cdr alist)
-	       (message "Complete, but not unique.")
-	     (message "Completion is unique.")))
+	   (if (not (cdr alist))
+	       (message "Completion is unique.")))
 	  (t
 	   (message "Making completion list...")
 	   (with-output-to-temp-buffer "*Help*"
