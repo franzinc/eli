@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.47 1991/03/15 12:43:14 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.48 1991/03/15 21:05:00 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -142,7 +142,7 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
      (define-key map "\e,"	'fi:lisp-tags-loop-continue)
      (define-key map "\e\t"	'fi:lisp-complete-symbol)
      (define-key map "\eA"	'fi:lisp-arglist)
-     (define-key map "\eC"	'fi:lisp-who-calls)
+     (define-key map "\eC"	'fi:list-who-calls)
      (define-key map "\eD"	'fi:describe-symbol)
      (define-key map "\eF"	'fi:lisp-function-documentation)
      (define-key map "\eM"	'fi:lisp-macroexpand)

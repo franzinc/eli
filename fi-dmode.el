@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.6 1991/03/15 12:43:28 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.7 1991/03/15 21:05:13 layer Exp $
 ;;
 
 ;; Create a mode in which each line is a definition and . on that
@@ -52,7 +52,7 @@ The type is one of:
 	:variable	for constants and variables.
 
 Definition mode is used by other tools, such as the changed-definition
-commands, fi:lisp-who-calls, as well as fi:list-buffer-definitions.
+commands, fi:list-who-calls as well as fi:list-buffer-definitions.
 
 The keymap for this mode is bound to fi:definition-mode-map:
 \\{fi:definition-mode-map}
