@@ -2,7 +2,7 @@
 			      User Guide
 			   Release 2.0beta
 
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.17 1991/06/27 15:28:16 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.18 1991/07/30 20:57:54 layer Exp $
 
 			     Introduction
 
@@ -490,6 +490,7 @@ Functions and Variables for Interacting with a Common Lisp subprocess
 %% fi:subprocess-continuously-show-output-in-visible-buffer
 %% fi:subprocess-enable-superkeys
 %% fi:subprocess-env-vars
+%% fi:superkey-shadow-universal-argument
 
 ===============================================================================
 		     Editing Common Lisp Programs
