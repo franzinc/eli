@@ -7,7 +7,7 @@ versions of emacs now supported are:
 
 	- (FSF) GNU Emacs 18.* and 19.*
 	- Epoch 3.2 and 4.2 (not tested with 4.0 or 4.1)
-	- lemacs 19.6
+	- lemacs 19.6 and 19.8
 
 A summary of the new features:
 
