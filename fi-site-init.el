@@ -1,8 +1,8 @@
-;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.30 1992/04/28 14:02:17 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.31 1992/08/19 07:21:07 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
-(setq fi:emacs-lisp-interface-version "2.0.1")
+(setq fi:emacs-lisp-interface-version "2.0.2.internal")
 (defvar fi::required-ipc-version 1)
 
 (require 'cl)
