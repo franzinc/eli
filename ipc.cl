@@ -1,8 +1,8 @@
-;;					-[Wed Oct 18 16:07:06 1989 by layer]-
+;;					-[Sun Sep  2 18:02:34 1990 by layer]-
 ;;
 ;; Allegro CL IPC interface
 ;;
-;; copyright (c) 1987, 1988 Franz Inc, Berkeley, Ca.
+;; copyright (c) 1987, 1988, 1989, 1990 Franz Inc, Berkeley, Ca.
 ;;
 ;; The software, data and information contained herein are proprietary
 ;; to, and comprise valuable trade secrets of, Franz, Inc.  They are
@@ -24,24 +24,28 @@
 #+has-rcsnote
 (si::rcsnote
  "ipc"
- "$Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.27 1990/08/31 23:46:04 layer Exp $")
+ "$Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.28 1990/09/02 18:32:32 layer Exp $")
 
 (provide :ipc)
 
 (in-package :ipc :use '(:lisp :excl :ff :mp))
 
 (export '(start-lisp-listener-daemon open-network-stream
-	  *unix-domain* *inet-port*))
+	  *unix-domain* *inet-port-min* *inet-port-max* *inet-port-used*))
 
 (require :process)
 (require :foreign)
+
+#+allegro-v3.1
+(progn
+  (require :cstructs)
+  (defmacro ff::cstruct-length (x) `(ff::cstruct-len ,x))
+  )
+
+#+allegro-v4.0
 (require :defctype)
 
-(defvar *unix-domain*
-    ;; can't use excl::machine-case because some hosts are not known in
-    ;; all ports
-    (cond ((eq comp::.host. :sgi4d) nil)
-	  (t t))
+(defvar *unix-domain* nil
   "If non-nil then use a UNIX domain socket, otherwise use an internet
 domain port (see *inet-port* variable).")
 
@@ -50,10 +54,26 @@ domain port (see *inet-port* variable).")
 the socket file to use for the communication between GNU Emacs and Allegro
 CL.")
 
-(defparameter *inet-port* 6789
-  "The internet service port number on which Lisp listens for connections.
-The value is this variable is only used when *unix-domain* is non-nil, in
-which case a UNIX domain socket is used.")
+(defparameter *inet-port-min* 1025 
+  "The smallest internet service port number on which Lisp listens for
+  connections.  The value is this variable is only used when
+  *unix-domain* is non-nil, if it is nil a UNIX domain socket is
+  used.")
+
+(defparameter *inet-port-max* 2025
+  "The largest internet service port number on which Lisp listens for
+  connections.  The value is this variable is only used when
+  *unix-domain* is non-nil, if it is nil a UNIX domain socket is
+  used.")
+
+(defvar *inet-port-used* 0
+  "Port actually in use for lisp listeners.")
+
+(defvar *inet-listener-password* 0
+  "A magic number that mnust be supplied to verify that someone trying to 
+  connect to our listener is really the person who started the lisp")
+
+
 
 (defconstant *af-unix* 1
   "The AF_UNIX constant from /usr/include/sys/socket.h.")
@@ -157,13 +177,16 @@ listener ever completes, it makes sure files are closed."
 	  (listen-sockaddr
 	   (if *unix-domain*
 	       (make-cstruct 'sockaddr-un)
-	     (make-cstruct 'sockaddr-in)))
+	     (let ((sin (make-cstruct 'sockaddr-in)))
+	       (bzero sin (ff::cstruct-length 'sockaddr-in))
+	       sin)))
 	  (timeval (make-cstruct 'timeval))
 	  (mask-obj (make-cstruct 'unsigned-long))
 	  (int (make-cstruct 'unsigned-long))
 	  mask
 	  stream
 	  proc-name
+	  password
 	  fd)
     
       (unless *socket-pathname*
@@ -194,18 +217,33 @@ listener ever completes, it makes sure files are closed."
 			       (setf (sockaddr-un-path listen-sockaddr i) 0))
 		      (setf (sockaddr-un-path listen-sockaddr i)
 			(char-int (elt *socket-pathname* i))))
-	       else ;; a crock:
-		    (bzero listen-sockaddr (ff::cstruct-length 'sockaddr-in))
-		    (setf (sockaddr-in-family listen-sockaddr) *af-inet*
-			  (sockaddr-in-port listen-sockaddr) *inet-port*))
-	  
-	    (unless (zerop (bind listen-socket-fd
-				 listen-sockaddr
-				 (if *unix-domain*
-				     (+ (length *socket-pathname*) 2)
-				   (ff::cstruct-length 'sockaddr-in))))
-	      (perror "bind")
-	      (return-from bad-news))
+		    (unless (zerop (bind listen-socket-fd
+					 listen-sockaddr
+					 (+ (length *socket-pathname*) 2)))
+		      (perror "bind")
+		      (return-from bad-news))
+	       else (setf (sockaddr-in-family listen-sockaddr) *af-inet*)
+		    (do ((port *inet-port-min* (1+ port)))
+			((progn
+			   (setf (sockaddr-in-port listen-sockaddr)
+			     (setq *inet-port-used* port))
+			   (zerop (bind listen-socket-fd
+					listen-sockaddr
+					(ff::cstruct-len 'sockaddr-in))))
+			 (finish-output)
+			 (format t "~d ~d ~a"
+				 port
+				 (setq *inet-listener-password* 
+				   (random 1000000 (make-random-state t)))
+				 (case excl::*current-case-mode*
+				   ((:case-insensitive-upper
+				     :case-sensitive-upper) ":upper")
+				   ((:case-insensitive-lower
+				     :case-sensitive-lower) ":lower")))
+			 (finish-output))
+		      (if* (= port *inet-port-max*)
+			 then (perror "bind")
+			      (return-from bad-news))))
 
 	    (unless (zerop (unix-listen listen-socket-fd 5))
 	      (perror "listen")
@@ -229,12 +267,15 @@ listener ever completes, it makes sure files are closed."
 		(perror "accept")
 		(return-from bad-news))
 	    
-	      (setq stream
-		(excl::make-double-buffered-terminal-stream fd fd t t))
+	      (setq stream (make-ipc-terminal-stream fd))
 	   
 	      ;; the first thing that comes over the stream is the name of the
-	      ;; emacs buffer which was created--we name the process the same.
+	      ;; emacs buffer which was created--we name the process the
+	      ;; same.
+	      ;; For internet sockets, the next thing is the password.
 	      (setq proc-name (read stream))
+	      (if (null *unix-domain*)
+		  (setq password (read stream)))
 	   
 	      (if* *unix-domain*
 		 then (process-run-function
@@ -245,12 +286,11 @@ listener ever completes, it makes sure files are closed."
 			     (logand (sockaddr-in-addr listen-sockaddr) #xff)))
 			(format t ";;; starting listener-~d (host ~d)~%" fd
 				hostaddr)
-			(if* (and nil
-				  ;; the next line checks that the connection
-				  ;; is coming from the current machine
-				  (not (eql 1 hostaddr)))
-			   then (format t ";;; access denied for addr ~s~%"
-					hostaddr)
+			(if* (not (and (numberp password)
+				       (= password *inet-listener-password*)))
+			   then (format t "~
+;; access denied for addr ~s (password ~a)~%"
+				 hostaddr password)
 				(refuse-connection fd)
 			   else (process-run-function
 				 proc-name
@@ -263,7 +303,7 @@ listener ever completes, it makes sure files are closed."
   (error "couldn't start listener daemon"))
 
 (defun refuse-connection (fd &aux s)
-  (setq s (excl::make-double-buffered-terminal-stream fd fd t t))
+  (setq s (make-ipc-terminal-stream fd))
   (setf (excl::sm_read-char s) #'mp::stm-bterm-read-string-char-wait)
   (format s "connection refused.~%")
   (force-output s)
@@ -304,8 +344,7 @@ internet domain ports and SOCKET-FILE is for unix domain ports."
 	    (setq socket-fd (socket *af-unix* *sock-stream* 0))
 	    (if (< (connect socket-fd server (+ 2 (length socket-file))) 0)
 		(error "connect failed to ~s" socket-file))
-	    (excl::make-double-buffered-terminal-stream
-	     socket-fd socket-fd t t))
+	    (make-ipc-terminal-stream socket-fd))
      else ;; INTERNET domain
 	  (let (sock server hostaddress)
 	    ;; Open a socket
@@ -337,4 +376,9 @@ internet domain ports and SOCKET-FILE is for unix domain ports."
 	      (unix-close sock)
 	      (error "couldn't connect to socket"))
 	    ;; build and return the stream
-	    (excl::make-double-buffered-terminal-stream sock sock t t))))
+	    (make-ipc-terminal-stream sock))))
+
+(defun make-ipc-terminal-stream (fd)
+  #+allegro-v3.1 (excl::make-buffered-terminal-stream fd fd t t)
+  #+allegro-v4.0 (excl::make-double-buffered-terminal-stream fd fd t t)
+  )
