@@ -1,3 +1,7 @@
+*******************************************************************************
+2.0.7, limited test release
+*******************************************************************************
+
 Tue Aug 31 12:01:14 1993  Kevin Layer  (layer@sole)
 
 	* fi-changes.el: fix remaining problems with numbered backups.
