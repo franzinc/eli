@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 1.81 1999/02/25 08:27:48 layer Exp $
+;; $Id: fi-lep.el,v 1.82 1999/08/25 17:33:29 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -509,9 +509,11 @@ beginning of words in target symbols."
 	 (completion
 	  (when alist
 	    (let* ((xfull-package-name
-		    (when xpackage
-		      (fi:eval-in-lisp "(package-name (find-package %s))"
-				       xpackage)))
+		    (if (string= ":" xpackage)
+			"keyword"
+		      (when xpackage
+			(fi:eval-in-lisp "(package-name (find-package %s))"
+					 xpackage))))
 		   (full-package-name
 		    (when xfull-package-name
 		      (if downcase
