@@ -45,7 +45,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.35 1989/02/17 19:36:18 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.36 1989/05/22 15:48:25 layer Rel $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -292,15 +292,17 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 	(if (and pkg (not fi:echo-evals-from-buffer-in-listener-p))
 	    (insert pkg))
 	(insert text)
-	;; (newline) Unneeded? -smh
 	(write-region (point-min) (point-max) file)
 	(bury-buffer)))
     (let ((load-string
 	   (if compile-file-p
 	       (format
-		"(let ((*record-source-files* nil))
- 		 (excl::compile-file-if-needed \"%s\")
-		 (load \"%s.fasl\"))"
+		"(let ((*record-source-files* nil)
+		       (*package* *package*))
+		   %s
+ 		   (excl::compile-file-if-needed \"%s\")
+		   (load \"%s.fasl\"))"
+		(if pkg pkg "")
 		fi::emacs-to-lisp-transaction-file
 		(fi::file-name-sans-type fi::emacs-to-lisp-transaction-file))
 	     (if fi:echo-evals-from-buffer-in-listener-p
@@ -313,7 +315,11 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 			   (load stm :verbose nil)))"
 			 fi::emacs-to-lisp-transaction-file
 			 (if pkg pkg ""))
-	       (format "(let ((*record-source-files* nil)) (load \"%s\"))"
+	       (format "(let ((*record-source-files* nil)
+			      (*package* *package*))
+			   %s
+			   (load \"%s\"))"
+		       (if pkg pkg "")
 		       fi::emacs-to-lisp-transaction-file)))))
       (fi::send-string-split process load-string nl-to-cr))))
 
