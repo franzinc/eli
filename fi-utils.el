@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.13 1991/02/27 16:21:04 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.14 1991/03/12 20:57:39 layer Exp $
 
 ;;; Misc utilities
 
@@ -200,3 +200,10 @@ from the beginning of filenames that are on automounted filesystems.")
       (substring name (match-beginning 2) (match-end 2))
     (error "discombobulate-automounter-lint: internal error on %s" name)))
 
+(defun fi::canonicalize-filename (file)
+  "If FILE starts with user's home directory, then turn it into a filename
+that starts with ~."
+  (if (string-match (format "^\\(%s\\)\\(.*\\)" (getenv "HOME"))
+		    file)
+      (concat "~" (substring file (match-beginning 2) (match-end 2)))
+    file))
