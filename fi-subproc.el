@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.171 1996/09/04 18:45:15 layer Exp $
+;; $Id: fi-subproc.el,v 1.172 1996/09/23 18:13:55 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -404,6 +404,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		    (i 0)
 		    (process nil))
 		(setq default-directory directory)
+		(fi::set-environment fi:subprocess-env-vars)
 		(while
 		    (condition-case condition
 			(progn
