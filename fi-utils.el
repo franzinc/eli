@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.10 1990/09/11 16:50:34 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.11 1990/12/04 23:11:38 layer Exp $
 
 ;;; Misc utilities
 
@@ -184,74 +184,3 @@ arguments."
 	  (setq found t)
 	(setq index (+ index 1))))
     found))
-
-;;;; diagnostic test
-
-(defun fi:test-tcp-interface ()
-  (interactive)
-  
-  ;; check that EMACSLIBRARY is in the environment
-  (let ((emacs-dir (getenv "EMACSLIBRARY")))
-    (if (null emacs-dir)
-	(error "EMACSLIBRARY is not in the environment.  See clinit.cl."))
-    (if (or (not (file-exists-p emacs-dir))
-	    (not (file-directory-p emacs-dir)))
-	(error "EMACSLIBRARY points to a non-existent directory."))
-
-    ;; check fi:unix-domain-socket
-    (cond
-     (fi:unix-domain
-      (if (null fi:unix-domain-socket)
-	  (error "fi:unix-domain-socket doesn't have a non-nil value"))
-      (let* ((path (expand-file-name fi:unix-domain-socket))
-	     (dir (file-name-directory path)))
-	(if (not (file-exists-p dir))
-	    (error
-	     "The parent directory of fi:unix-domain-socket doesn't exist"))
-	(cond
-	 ((null (fi::background-sublisp-process))
-	  (progn
-	    (with-output-to-temp-buffer "*Help*"
-	      (princ
-	       (format
-		"1. Check that %s is not on an NFS mounted filesystem.\n"
-		path))
-	      (princ
-	       (format
-		"2. Check that your .clinit.cl file has been setup properly,\n"))
-	      (princ
-	       (format
-		"   according to the instructions in %s/clinit.cl.\n" 
-		emacs-dir))
-	      )
-	    (error "couldn't connect to ACL in the UNIX domain."))))))
-     (t
-      (if (null fi:inet-host-name)
-	  (error "fi:inet-host-name doesn't have a non-nil value."))
-      (if (null (fi::background-sublisp-process))
-	  (progn
-	    (with-output-to-temp-buffer "*Help*"
-	      (princ
-	       (format
-		"1. Check that /etc/services has an service named %s.\n"
-		fi:excl-service-name))
-	      (princ
-	       (format
-		"2. Check that ipc:*inet-port* in ipc.cl and /etc/services\n"))
-	      (princ
-	       (format
-		"   agree on the port number.\n"))
-	      (princ
-	       (format
-		"3. Check that fi:inet-host-name (in GNU Emacs) has the correct value.\n"))
-	      (princ
-	       (format
-		"   This is the name of the host on the net to which you want to connect.\n"))
-	      (princ
-	       (format
-		"4. Check that ipc:*unix-domain* is set to nil in your .clinit.cl.\n"))
-	      )
-	    (error "couldn't connect to ACL in the INTERNET domain.")))))
-    
-    (if (not (eq 'nil (fi:eval-in-lisp "nil")))
-	(error "fi:eval-in-lisp not working in the %s domain." type))))
