@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.63 1991/08/22 21:35:25 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.64 1991/09/10 11:19:26 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -188,6 +188,11 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
 			  'tcp-lisp))
 
 (defun fi::inferior-lisp-mode-commands (map supermap)
+  (let ((i (1+ ?\C-z))
+	(l (length map)))
+    (while (< i l)
+      (define-key map (char-to-string i) 'fi:self-insert-command)
+      (setq i (1+ i))))
   (fi::lisp-mode-commands (fi::subprocess-mode-commands map supermap 'sub-lisp)
 			  supermap
 			  'sub-lisp))
@@ -199,6 +204,27 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
 indentation, can redefine this function to indent, newline and indent."
   (interactive)
   (newline))
+
+(defvar fi:raw-mode nil
+  "*If non-nil, then the inferior lisp process gets characters as they are
+typed, not when a complete expressions has been entered.  This means that
+no input editing of expressions can occur.  The intention of this feature
+is that it be used by programs written in Common Lisp that need to read
+characters without newlines after them.  See the example in the Allegro
+User Guide for more information.")
+
+(defvar fi:raw-mode-echo t
+  "*If non-nil, then echo characters in the inferior lisp buffer when
+fi:raw-mode is non-nil.")
+
+(defun fi:self-insert-command (arg)
+  (interactive "P")
+  (cond (fi:raw-mode
+	 (when fi:raw-mode-echo (insert last-input-char))
+	 (let ((process (get-buffer-process (current-buffer))))
+	   (send-string process (char-to-string last-input-char))
+	   (set-marker (process-mark process) (point))))
+	(t (self-insert-command (prefix-numeric-value arg)))))
 
 (defun fi:inferior-lisp-newline ()
   "When at the end of the buffer, insert a newline into a Lisp subprocess
@@ -378,39 +404,46 @@ parsed, the enclosing list is processed."
 ;;;;
 ;;;;
 
-(defun fi::get-symbol-at-point (&optional up-p packagify)
-    (let ((symbol (condition-case ()
-		      (save-excursion
-			(if up-p
-			    (progn
-			      (if (= (following-char) ?\() (forward-char 1))
-			      (if (= (preceding-char) ?\)) (forward-char -1))
-			      (up-list -1)
-			      (forward-char 1)))
-			(while (looking-at "\\sw\\|\\s_")
-			  (forward-char 1))
-			(if (re-search-backward "\\sw\\|\\s_" nil t)
-			    (progn (forward-char 1)
-				   (buffer-substring
-				    (point)
-				    (progn (forward-sexp -1)
-					   (while (looking-at "\\s'")
-					     (forward-char 1))
-					   (point))))
-			  nil))
-		    (error nil))))
-      (if (and fi:package packagify (not (string-match ":?:" symbol nil)))
-	  (format "%s::%s" fi:package symbol)
-	symbol)))
+(defun fi::get-symbol-at-point (&optional up-p
+;;					  packagify
+					  )
+  (let ((symbol (condition-case ()
+		    (save-excursion
+		      (if up-p
+			  (progn
+			    (if (= (following-char) ?\() (forward-char 1))
+			    (if (= (preceding-char) ?\)) (forward-char -1))
+			    (up-list -1)
+			    (forward-char 1)))
+		      (while (looking-at "\\sw\\|\\s_")
+			(forward-char 1))
+		      (if (re-search-backward "\\sw\\|\\s_" nil t)
+			  (progn (forward-char 1)
+				 (buffer-substring
+				  (point)
+				  (progn (forward-sexp -1)
+					 (while (looking-at "\\s'")
+					   (forward-char 1))
+					 (point))))
+			nil))
+		  (error nil))))
+;;    (if (and fi:package packagify (not (string-match ":?:" symbol nil)))
+;;	(format "%s::%s" fi:package symbol)
+    (or symbol
+	(if (and up-p (null symbol))
+	    (fi::get-symbol-at-point)))
+;;      )
+    ))
 
 ;; This is a pretty bad hack but it appears that within completing-read
 ;; fi:package has the wrong value so we bind this variable to get around
 ;; the problem.
 (defvar fi::original-package nil)
 
-(defun fi::get-default-symbol (prompt &optional up-p use-package)
+(defun fi::get-default-symbol (prompt &optional up-p)
   (let* ((symbol-at-point
 	  (fi::get-symbol-at-point up-p))
+;;	 (use-package nil)
 	 (read-symbol
 	  (let ((fi::original-package fi:package))
 	    (if (fboundp 'epoch::mapraised-screen)
@@ -424,8 +457,8 @@ parsed, the enclosing list is processed."
 		     symbol-at-point
 		   read-symbol))
 	 (colonp (string-match ":?:" symbol nil)))
-    (if (and (not colonp) use-package fi:package)
-	(setq symbol (format "%s::%s" fi:package symbol)))
+;;    (if (and (not colonp) use-package fi:package)
+;;	(setq symbol (format "%s::%s" fi:package symbol)))
     (list symbol)))
 
 (defun fi::minibuffer-complete (pattern predicate what)
@@ -813,13 +846,10 @@ If they are not, position the point at the first syntax error found."
 			  ((eq ?# char)
 			   (forward-char 1)
 			   (setq char (char-after (point)))
-			   (cond
-			    ((eq ?| char)
-			     (forward-sexp 1)
-			     (forward-char 1))
-			    ((or (eq ?+ char) (eq ?- char))
-			     (skip-chars-forward "-+a-zA-Z.0-9"))
-			    (t (forward-sexp 1))))
+			   (cond ((eq ?| char) (fi::gobble-comment))
+				 ((or (eq ?+ char) (eq ?- char))
+				  (skip-chars-forward "-+:a-zA-Z.0-9"))
+				 (t (forward-sexp 1))))
 			  (t (setq done t))))
 		  t))
       (let ((char (char-after (point))))
@@ -834,6 +864,21 @@ If they are not, position the point at the first syntax error found."
     (goto-char saved-point))
   (if (interactive-p) (message "All parentheses appear to be balanced."))
   t)
+
+(defun fi::gobble-comment ()
+  ;; called when two chars before point are # and |
+  (while (and (progn
+		(when (and (eq ?# (char-after (point)))
+			   (eq ?| (char-after (1+ (point)))))
+		  (forward-char 2)
+		  (fi::gobble-comment))
+		t)
+	      (not
+	       (and (eq ?| (char-after (point)))
+		    (eq ?# (char-after (1+
+					(point)))))))
+    (forward-char 1))
+  (forward-char 2))
 
 (defun fi:check-unbalanced-parentheses-when-saving ()
   (if (and fi:check-unbalanced-parentheses-when-saving
