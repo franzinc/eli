@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-basic-lep.el,v 1.41 1996/10/29 19:09:05 layer Exp $
+;; $Id: fi-basic-lep.el,v 1.42 1997/01/18 00:12:42 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -229,9 +229,14 @@ versions of the emacs-lisp interface.
 "
 	  ipc-version fi::required-ipc-version))))
 
+(defvar fi::debug-subprocess-filter nil)
+(defvar fi::debug-subprocess-filter-output nil)
+
 (defun fi::lep-connection-filter (process string)
   ;; When a complete sexpression comes back from the lisp, read it and then
   ;; handle it
+  (when fi::debug-subprocess-filter
+    (push string fi::debug-subprocess-filter-output))
   (let ((inhibit-quit t)
 	(buffer (or (process-buffer process)
 		    (get-buffer-create " LEP temp "))))
@@ -565,7 +570,7 @@ the result in the Common Lisp to which we are connected."
       ((string) (error)
        (fi::show-error-text "error evaluating %s: %s" string error)))))
 
-(defvar fi:lisp-evalserver-number-reads 20
+(defvar fi:lisp-evalserver-number-reads 200
   "*The number of times the Lisp eval server tries to read from the
 lisp-evalserver process before giving up.  Without this feature Emacs would
 hang if Lisp got into an infinite loop while printing.  If the size of the
