@@ -1,7 +1,7 @@
 ;;; subprocess.el
 ;;;   subprocess modes and functions
 ;;;
-;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.9 1988/02/20 22:19:55 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.10 1988/02/26 18:38:15 layer Exp $
 
 (provide 'subprocess)
 
@@ -229,13 +229,13 @@ This function always creates a new subprocess and buffer.  See `subprocess'."
 A superkey is treated specially when at the end of a subprocess buffer,
 but has its normal, global, binding when used elsewhere in the buffer.
 At the end of the buffer the key has SPECIAL-BINDING.  If SPECIAL-BINDING
-is not given, the key takes its binding from the `fi:subprocess-mode-map'
+is not given, the key takes its binding from the subprocess-super-key-map
 keymap."
   (interactive)
   (if (eobp)
       (if special-binding
 	  (call-interactively special-binding)
-	(subprocess-reprocess-keys fi:subprocess-mode-map))
+	(subprocess-reprocess-keys subprocess-super-key-map))
     (subprocess-reprocess-keys global-map)))
 
 (defun subprocess-reprocess-keys (&optional map key)
@@ -772,4 +772,5 @@ This function implements continuous output to visible buffers."
 	  shell-cd-regexp
 	  subprocess-map-nl-to-cr
 	  subprocess-continuously-show-output-in-visible-buffer
-	  subprocess-enable-superkeys))
+	  subprocess-enable-superkeys
+	  subprocess-super-key-map))
