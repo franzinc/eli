@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/Attic/clinit.cl,v 1.3 1988/11/17 18:14:23 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/clinit.cl,v 1.4 1988/11/17 18:20:20 layer Exp $
 
 #|
 
@@ -39,6 +39,11 @@
        (load-and-start-ipc-package)))
 
 |#
+
+;;;;; NOTE:
+;; The rest of this file will be loaded when the forms you just added
+;; to your .clinit.cl are evaluated, so there is no need to put it in your
+;; .clinit.cl!!!
 
 (defmacro svalue (package symbol)
   `(let ((p ,package) (s ,symbol))
