@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.24 1990/09/02 18:33:05 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.25 1990/09/02 20:07:31 layer Exp $
 
 ;;;;
 ;;; Key defs
@@ -454,17 +454,20 @@ function defintions are considered.  Otherwise all symbols are considered."
 			(concat
 			 ":" (buffer-substring opoint (match-beginning 0))))))
 		(point)))
-	 (pattern (buffer-substring beg end))
+	 (pattern (fi::case-frob (buffer-substring beg end)))
 	 (functions-only (if (eq (char-after (1- real-beg)) ?\() t nil))
 	 (completions
 	  (progn
 	    ;; first, go into that package
 	    (if (null (fi:eval-in-lisp "(packagep (in-package :%s))"
-				       (or fi:package "user")))
+				       (fi::case-frob
+					(or fi:package "user"))))
 		(error "subprocess is in unknown package: %s" fi:package))
 	    ;; then evaluate our expr
 	    (fi:eval-in-lisp "(excl::list-all-completions \"%s\" %s %s)"
-			     pattern package functions-only)))
+			     pattern
+			     (fi::case-frob package)
+			     (fi::case-frob functions-only))))
 	 (alist
 	  (if (consp completions)
 	      (apply 'list
