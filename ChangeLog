@@ -9,8 +9,15 @@ For more detailed instructions on filling in the ChangeLog form, see
 *******************************************************************************
 post-6.0 release changes:
 
+2001-11-01  Kevin Layer  <layer@crikey>
+
+    from mikel for spr24742
+	* fi-xemacs.el: don't contact lisp over and over again, cache the
+	value used for the first menu item, and uncache it on the last. 
+
 2001-06-20  Kevin Layer  <layer@crikey>
 
+    from cox:
 	* fi-basic-lep.el: spr24414
 
 2001-05-22  Charles A. Cox  <cox@pie>
