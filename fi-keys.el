@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.22 1990/08/31 23:47:20 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.23 1990/09/01 20:15:19 layer Exp $
 
 ;;;;
 ;;; Key defs
@@ -156,25 +156,20 @@ and send to Lisp."
   (if (eobp)
       (let ((start (marker-position
 		    (process-mark (get-buffer-process (current-buffer)))))
-	    (have-list nil))
+	    (send-that-sexp t))
 	(save-excursion
 	  (goto-char start)
-	  (if (looking-at "(") (setq have-list t)))
-	(if have-list
-	    (let ((send-sexp t))
-	      (goto-char start)
-	      (condition-case nil
-		  (forward-sexp 1)
-		(error (setq send-sexp nil)))
-	      (end-of-buffer)
-	      (if send-sexp
-		  (fi:subprocess-send-input)
-		;; not a complete sexp, so newline and indent
-		(progn
-		  (newline)
-		  (funcall indent-line-function))))
-	  ;; a non-list s-exp, so just send it off...
-	  (fi:subprocess-send-input)))
+	  (while (and (not (eobp))
+		      (condition-case ()
+			  (progn (forward-sexp 1) t)
+			(error (setq send-that-sexp nil))))))
+	(end-of-buffer)
+	(if send-that-sexp
+	    (fi:subprocess-send-input)
+	  (progn
+	    (newline)
+	    (funcall indent-line-function))))
+
     ;;NOT AT THE END OF THE BUFFER!
     ;; find the user's input contained around the cursor and send that to
     ;; the inferior lisp
