@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 1.101 1996/10/15 00:24:52 layer Exp $
+;; $Id: fi-keys.el,v 1.102 1996/10/29 20:52:26 layer Exp $
 
 (cond ((eq fi::emacs-type 'xemacs19)
        (require 'tags "etags"))
@@ -39,10 +39,8 @@ is'' if there are too many or few parens--answering no leaves the point at
 the place of error.  If the value is 'warn, then a warning is issued and
 the file is written.")
 
-(defvar fi::muck-with-global-bindings t
-  ;; Internal variable (for now) that says "don't mess with my global
-  ;; bindings".
-  )
+(defvar fi:define-global-lisp-mode-bindings t
+  "*If non-nil, define Lisp mode bindings on the \\e and \\C-x keys.")
 
 ;;;;
 ;;; Key defs
@@ -133,7 +131,7 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
   map)
 
 (defun fi::lisp-mode-commands (map supermap mode)
-  (when fi::muck-with-global-bindings
+  (when fi:define-global-lisp-mode-bindings
     (define-key map "\e" (make-keymap))
     (define-key map "\C-x" (make-keymap)))
 
@@ -153,20 +151,20 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
       (progn
 	(define-key map ";"		'fi:lisp-semicolon)
 	(define-key map "\t"		'fi:lisp-indent-line)
-	(when fi::muck-with-global-bindings
+	(when fi:define-global-lisp-mode-bindings
 	  (define-key map "\e\C-q"	'fi:indent-sexp))
 	(define-key map "\C-c\C-q"	'fi:indent-sexp))
     ;;not sure if the following should be added:
     ;;   (lisp-mode-commands map)
     (define-key map "\t"		'lisp-indent-line)
-    (when fi::muck-with-global-bindings
+    (when fi:define-global-lisp-mode-bindings
       (define-key map "\e\C-q"		'indent-sexp))
     (define-key map "\C-c\C-q"		'indent-sexp))
 
   (if (memq mode '(sub-lisp tcp-lisp))
       (progn
 	(define-key map "\r"		'fi:inferior-lisp-newline)
-	(when fi::muck-with-global-bindings
+	(when fi:define-global-lisp-mode-bindings
 	  (define-key map "\e\r"	'fi:inferior-lisp-input-sexp)
 	  (define-key map "\C-x\r"	'fi:inferior-lisp-input-list)))
     (define-key map "\r"		'fi:lisp-mode-newline)
@@ -181,7 +179,7 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
     (define-key map "\C-c4." 	'fi:lisp-find-definition-other-window)
     (define-key map "\C-c,"	'fi:lisp-find-next-definition)
     (define-key map "\C-ck"	'fi:kill-definition)
-    (when fi::muck-with-global-bindings
+    (when fi:define-global-lisp-mode-bindings
       (define-key map "\e\t"	'fi:lisp-complete-symbol)
       (define-key map "\eA"	'fi:lisp-arglist)
       (define-key map "\eC"	'fi:list-who-calls)
@@ -201,13 +199,13 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
     (define-key map "\C-c "	'fi:lisp-delete-pop-up-window))
 
   (when (eq major-mode 'fi:emacs-lisp-mode)
-    (when fi::muck-with-global-bindings
+    (when fi:define-global-lisp-mode-bindings
       (define-key map "\e\C-x" 'eval-defun))
     (define-key map "\C-c\C-x" 'eval-defun))
 
   (when (memq major-mode '(fi:common-lisp-mode fi:franz-lisp-mode
 			   fi:lisp-mode))
-    (when fi::muck-with-global-bindings
+    (when fi:define-global-lisp-mode-bindings
       (define-key map "\e\C-x"	'fi:lisp-eval-or-compile-defun))
     (define-key map "\C-c\C-x"	'fi:lisp-eval-or-compile-defun)
     (define-key map "\C-c\C-b"  'fi:lisp-eval-or-compile-current-buffer)

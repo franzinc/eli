@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 1.72 1996/10/29 19:09:07 layer Exp $
+;; $Id: fi-lep.el,v 1.73 1996/10/29 20:52:29 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -245,8 +245,9 @@ time."
 				  &optional other-window-p pop-stack)
   (if pathname
       (if (equal pathname "top-level")
-	  (message "%s was defined somewhere at the top-level, %d more definitions"
-		   thing n-more)
+	  (message
+	   "%s was defined somewhere at the top-level, %d more definitions"
+	   thing n-more)
 	(let ((mess "")
 	      (xb nil)
 	      (pathname (fi::ensure-translated-pathname pathname)))
@@ -264,7 +265,10 @@ time."
 			  thing))
 		(beginning-of-buffer))
 	    (progn
-	      (goto-char (1+ point))
+	      (goto-char
+	       (if (on-ms-windows)
+		   (fi::cl-file-position-to-point point)
+		 (1+ point)))
 	      (if (not xb) (set-mark (point)))))
 	  (cond ((eq n-more 0)
 		 (if (lep::meta-dot-from-fspec)
@@ -279,6 +283,25 @@ time."
 			  (or (lep::meta-dot-from-fspec) thing))))
 	  (when pop-stack (fi::pop-metadot-session))))
     (message "cannot find file for %s" thing)))
+
+(defun fi::cl-file-position-to-point (file-position)
+  (save-excursion
+    (let ((p 0)
+	  chars-on-line)
+      (goto-char (point-min))
+      (block done
+	(while (progn
+		 (setq chars-on-line
+		   (- (save-excursion (end-of-line) (point))
+		      (point)))
+		 (setq file-position (- file-position chars-on-line 2))
+		 t)
+	  (cond
+	   ((> file-position 0)
+	    ;; keep going
+	    (goto-char (+ (point) chars-on-line 1)))
+	   (t (return-from done)))))
+      (point))))
 
 (defun scm::return-buffer-status (pathname write-if-modified)
   "This returns information about the status of the buffer: whether it

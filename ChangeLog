@@ -1,5 +1,9 @@
 Tue Oct 29 10:50:01 1996    <layer@HOBART>
 
+>>>	* fi-keys.el: new fi:define-global-lisp-mode-bindings
+	* fi-lep.el: use fi::cl-file-position-to-point to properly locate
+	source definitions
+
 	* fi-basic-lep.el: get rid of compiler warnings
 	* fi-lep.el: completions to *Completions* instead of *Help*
 
