@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.28 1992/04/28 14:02:04 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.29 1992/12/14 17:32:00 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -376,8 +376,8 @@ versions of the emacs-lisp interface.
     session))
 
 (defmacro fi::make-request (type-and-options continuation
-			&optional error-continuation
-				  ignore-package)
+			    &optional error-continuation
+				      ignore-package)
   (list 'lep::send-request-in-new-session
 	(list 'quote (car type-and-options))
 	t
