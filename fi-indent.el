@@ -31,7 +31,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.21 1991/02/27 16:20:47 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.22 1991/02/28 23:06:42 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If `t', semicolons that begin comments are indented as they are typed.")
@@ -1444,14 +1444,12 @@ if matched at the beginning of a line, means don't indent that line."
   (put 'catch tag 1)
   (put 'ccase tag '(like case))
   (put 'check-type tag 2)
-  (put 'compiler-let tag '((1 1 quote) (0 t 1)))
   (put 'concatenate tag 1)
   (put 'ctypecase tag '(like case))
   (put 'defconstant tag '(like defvar))
   (put 'define-modify-macro tag '((1 2 lambda-list) (0 t 2)))
   (put 'define-setf-method tag '((1 2 lambda-list) (0 t 2)))
   (put 'defmacro tag '((1 2 lambda-list) (0 t 2)))
-  (put 'defpackage tag 1)
   (put 'defparameter tag '(like defvar))
   (put 'defsetf tag '((1 2 lambda-list) (0 t 3)))
   (put 'defstruct tag '((1 1 quote) (0 t 1)))
@@ -1474,6 +1472,51 @@ if matched at the beginning of a line, means don't indent that line."
   (put 'lambda tag '((1 1 lambda-list) (0 t 1)))
   (put 'let tag '((1 1 quote) (0 t 1)))
   (put 'let* tag '(like let))
+  (put 'map tag 1)
+  (put 'multiple-value-bind tag '((1 1 quote) (0 t 2)))
+  (put 'multiple-value-call tag 1)
+  (put 'multiple-value-list tag 1)
+  (put 'multiple-value-prog1 tag 1)
+  (put 'multiple-value-setq tag '((1 1 quote) (0 t 1)))
+  (put 'prog tag '((0 1 1) (0 t tagbody)))
+  (put 'prog* tag '(like prog))
+  (put 'prog1 tag 1)
+  (put 'prog2 tag 2)
+  (put 'progn tag 0)
+  (put 'progv tag 2)
+  (put 'psetf tag 1)
+  (put 'psetq tag 1)
+  (put 'return tag 0)
+  (put 'return-from tag 1)
+  (put 'setf tag 1)
+  (put 'setq tag 1)
+  (put 'tagbody tag 'tagbody)
+  (put 'the tag 1)
+  (put 'throw tag 1)
+  (put 'typecase tag '(like case))
+  (put 'unless tag 1)
+  (put 'unwind-protect tag 1)
+  (put 'when tag 1)
+  )
+
+(let ((tag 'fi:common-lisp-indent-hook))
+  
+  ;; generic Common Lisp
+  
+  (put 'compiler-let tag '((1 1 quote) (0 t 1)))
+  (put 'defclass tag '((1 2 quote) (0 t 3)))
+  (put 'defgeneric tag '(like defmethod))
+  (put 'define-condition tag '(like defclass))
+  (put 'defmacro tag '((1 2 (recursive lambda-list)) (0 t 2)))
+  (put 'defmethod tag 
+       (quote (if (fi:lisp-atom-p 2)
+		  ((1 3 lambda-list) (0 t 3))
+		((1 2 lambda-list) (0 t 2)))))
+  (put 'defpackage tag 1)
+  (put 'defsetf tag '(if (fi:lisp-atom-p 2) 2 ((1 2 lambda-list) (0 t 3))))
+  (put 'destructuring-bind tag '(like defmacro))
+  (put 'handler-bind tag '(like let))
+  (put 'handler-case tag '(like restart-case))
   (put 'locally tag '(funcall fi::lisp-indent-predicated-special))
   (put 'loop tag
        '((0 t (fi:lisp-indent-keyword-list
@@ -1491,40 +1534,9 @@ if matched at the beginning of a line, means don't indent that line."
 	       "if" "unless" "with" "for" "as" "repeat" "=" "first" "in"
 	       "on" "from" "downfrom" "upfrom" "below" "to" "being"))))
   (put 'macrolet tag '(like flet))
-  (put 'map tag 1)
-  (put 'multiple-value-bind tag '((1 1 quote) (0 t 2)))
-  (put 'multiple-value-call tag 1)
-  (put 'multiple-value-list tag 1)
-  (put 'multiple-value-prog1 tag 1)
-  (put 'multiple-value-setq tag '((1 1 quote) (0 t 1)))
-  (put 'prog tag '((0 1 1) (0 t tagbody)))
-  (put 'prog* tag '(like prog))
-  (put 'prog1 tag 1)
-  (put 'prog2 tag 2)
-  (put 'progn tag 0)
-  (put 'progv tag 2)
-  (put 'return tag 0)
-  (put 'return-from tag 1)
-  (put 'setf tag 1)
-  (put 'setq tag 1)
-  (put 'tagbody tag 'tagbody)
-  (put 'the tag 1)
-  (put 'throw tag 1)
-  (put 'typecase tag '(like case))
-  (put 'unless tag 1)
-  (put 'unwind-protect tag 1)
-  (put 'when tag 1)
-  (put 'with-input-from-string tag '((1 1 quote) (0 t 1)))
-  (put 'with-open-file tag '((1 1 quote) (0 t 1)))
-  (put 'with-open-stream tag '((1 1 quote) (0 t 1)))
-  (put 'with-output-to-string tag '((1 1 quote) (0 t 1)))
-
-  ;; the condition system (v18)
-
-  (put 'define-condition tag '(like defclass))
-  (put 'handler-bind tag '(like let))
-  (put 'handler-case tag '(like restart-case))
-
+  (put 'make-instance tag 1)
+  (put 'named-lambda tag '(like defun))
+  (put 'print-unreadable-object tag '(like with-open-file))
   (put 'restart-bind tag
        '((2 1 ((0 t (fi:lisp-indent-keyword-list
 		     nil		; quotedp
@@ -1549,54 +1561,54 @@ if matched at the beginning of a line, means don't indent that line."
 			 ;; keywords recognized:
 			 ":report" ":interactive" ":test"))))
 	 (0 t 1)))
-
+  (put 'symbol-macrolet tag '(like flet))
+  (put 'with-accessors tag '(like with-slots))
+  (put 'with-condition-restarts tag 2)
+  (put 'with-input-from-string tag '((1 1 quote) (0 t 1)))
+  (put 'with-open-file tag '((1 1 quote) (0 t 1)))
+  (put 'with-open-stream tag '((1 1 quote) (0 t 1)))
+  (put 'with-output-to-string tag '((1 1 quote) (0 t 1)))
   (put 'with-simple-restart tag '(like when))
-
-  ;; CLOS
-
-  (put 'defclass tag '((1 2 quote) (0 t 3)))
-
-  (put 'defmethod tag 
-       (quote (if (fi:lisp-atom-p 2)
-		  ((1 3 lambda-list) (0 t 3))
-		((1 2 lambda-list) (0 t 2)))))
-  
-  (put 'make-instance tag 1)
-
-  ;; Flavors
-
-  (put 'defflavor tag '((1 2 quote) (1 3 quote) (0 t 3)))
-  ;;(put 'defmethod tag '((1 1 quote) (1 2 lambda-list) (0 t 2)))
-  (put 'defwhopper tag '((1 1 quote) (1 2 lambda-list) (0 t 2)))
-  (put 'defwrapper tag '((1 1 quote) (1 2 lambda-list) (0 t 2)))
-  )
-
-(let ((tag 'fi:common-lisp-indent-hook))
-  
-  ;; generic Common Lisp
-  
-  (put 'defmacro tag '((1 2 (recursive lambda-list)) (0 t 2)))
-  (put 'destructuring-bind tag '(like defmacro))
-  (put 'defsetf tag '(if (fi:lisp-atom-p 2) 2 ((1 2 lambda-list) (0 t 3))))
-  (put 'print-unreadable-object tag '(like with-open-file))
+  (put 'with-slots tag '((1 1 quote) (0 t 2)))
   (put 'with-standard-io-syntax tag '(like progn))
-  
+
   ;; Allegro CL
 
-  (put 'tpl:alias tag 2)
-  (put 'if* tag '(funcall fi:lisp-indent-if*))
-  (put 'with-timeout tag 1)
-  (put 'with-process-lock tag 1)
+  (put 'alias tag 2)
+  (put 'def-c-type tag 1)
+  (put 'def-c-typedef tag 1)
+  (put 'def-format-parser tag '(like defun))
+  (put 'def-format-runtime tag '(like defun))
+  (put 'def-function-spec-handler tag 2)
+  (put 'defadvice tag 2)
+  (put 'defcmacro tag '(like defmacro))
+  (put 'defcstruct tag 1)
+  (put 'defforeign tag 2)
+  (put 'defresource tag 1)
   (put 'defsystem tag '((1 2 quote) (0 t 2)))
+  (put 'defun-c-callable tag '(like defun))
+  (put 'if* tag '(funcall fi:lisp-indent-if*))
+  (put 'setq-default tag 1)
+  (put 'with-process-lock tag 1)
+  (put 'with-profiling tag '((1 1 quote) (0 t 1)))
+  (put 'with-resource tag 1)
+  (put 'with-timeout tag 1)
+  (put 'without-interrupts tag 1)
+  (put 'without-scheduling tag 1)
   )
 
 (let ((tag 'fi:franz-lisp-indent-hook))
-  (put 'caseq tag '(like case))
-  (put 'c-declare tag '((1 t 1) (0 t 0)))
   (put '*catch tag 1)
+  (put '*throw tag 1)
+  (put 'c-declare tag '((1 t 1) (0 t 0)))
+  (put 'caseq tag '(like case))
   (put 'def tag '((1 2 ((1 1 lambda-list) (0 t 1))) (0 t 1)))
   (put 'defcmacro tag '((1 2 lambda-list) (0 t 2)))
+  (put 'defflavor tag '((1 2 quote) (1 3 quote) (0 t 3)))
+  (put 'defmethod tag '((1 1 quote) (1 2 lambda-list) (0 t 2)))
   (put 'defsubst tag '((1 2 lambda-list) (0 t 2)))
+  (put 'defwhopper tag '((1 1 quote) (1 2 lambda-list) (0 t 2)))
+  (put 'defwrapper tag '((1 1 quote) (1 2 lambda-list) (0 t 2)))
   (put 'errset tag 1)
   (put 'fexpr tag '((1 1 lambda-list) (0 t 1)))
   ;;(put 'if tag '(like if*))
@@ -1605,7 +1617,6 @@ if matched at the beginning of a line, means don't indent that line."
   (put 'lexpr tag '((1 1 lambda-list) (0 t 1)))
   (put 'macro tag '((1 1 lambda-list) (0 t 1)))
   (put 'nlambda tag '((1 1 lambda-list) (0 t 1)))
-  (put '*throw tag 1)
   )
 
 (let ((tag 'fi:emacs-lisp-indent-hook))
