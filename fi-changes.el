@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-changes.el,v 1.8 1991/09/30 11:39:16 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-changes.el,v 1.9 1992/08/19 07:14:45 layer Exp $
 ;;
 ;; Support for changed definitions
 
@@ -158,7 +158,7 @@ OLD-FILE."
 	   (t
 	   (if (and (not (eq since ':saved))
 		    buffer-backed-up)
-	       (make-backup-file-name (buffer-file-name))
+	       (car (find-backup-file-name (buffer-file-name)))
 	     (buffer-file-name)))))
 	(new-file (buffer-file-name)))
     (list actual-file old-file new-file)))
