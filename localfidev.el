@@ -1,5 +1,5 @@
 ;; local-fi-developer-hooks.el
-;; $Id: localfidev.el,v 2.2 2000/05/01 21:44:04 layer Exp $
+;; $Id: localfidev.el,v 2.2.12.1 2000/07/29 22:36:30 layer Exp $
 
 ;; This file is not for public distribution.
 ;; It contains extra hooks for fi developers only, things like special
@@ -49,9 +49,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; setup C code edit mode
 
-(require 'cc-mode)
-(require 'cc-styles)
-(add-hook 'c-mode-common-hook (function (lambda () (c-set-style "bsd"))))
+(condition-case ()
+    (progn
+      (require 'cc-mode)
+      (require 'cc-styles)
+      (add-hook 'c-mode-common-hook
+		(function (lambda () (c-set-style "bsd")))))
+  (error nil))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

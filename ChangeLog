@@ -7,6 +7,13 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.1.beta.0
+
+2000-07-29  Kevin Layer  <layer@ultra>
+
+	* localfidev.el: ignore certain build errors
+
+*******************************************************************************
 2.1.pre-beta.7
 
 2000-07-06  Kevin Layer  <layer@ultra>
