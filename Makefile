@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.58 1991/03/16 13:51:56 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.59 1991/03/28 12:56:03 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -15,7 +15,7 @@ elcs = modes.elc indent.elc subproc.elc sublisp.elc filec.elc ring.elc\
 	    su.elc telnet.elc rlogin.elc shell.elc keys.elc tcplisp.elc\
 	    nonlep/ltags.elc nonlep/query.elc utils.elc clman.elc Doc.elc\
 	    lep/basic-lep.elc lep/lep.elc lep/lze.elc lep/db.elc\
-	    lep/dmode.elc lep/stream.elc lep/composer.elc lep/changes.elc
+	    lep/dmode.elc lep/composer.elc lep/changes.elc
 
 compile_time_env = -l cl -l bytecomp -l `pwd`/lep/basic-lep
 
