@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.48 1991/09/30 11:38:51 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.49 1991/10/07 13:34:54 layer Exp $
 
 ;;;; Mode initializations
 
@@ -473,7 +473,7 @@ package."
       ;;  `,.foo
       ;;  #.foo
       ;; but it works better with variables with .'s in them
-      (modify-syntax-entry ?. "w   " fi:emacs-lisp-mode-syntax-table)
+      (modify-syntax-entry ?. "w   " fi:lisp-mode-syntax-table)
       (modify-syntax-entry ?\| "\"   " fi:lisp-mode-syntax-table)
       (modify-syntax-entry ?\[ "_   " fi:lisp-mode-syntax-table)
       (modify-syntax-entry ?\] "_   " fi:lisp-mode-syntax-table)))
