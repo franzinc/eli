@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-stream.el,v 1.16 1996/12/12 18:55:11 layer Exp $
+;; $Id: fi-stream.el,v 1.17 1997/02/27 17:34:32 layer Exp $
 ;;
 
 (defmacro fi::with-keywords (variables rest-arg &rest body)
@@ -22,6 +22,8 @@
     (list* 'let
 	   (reverse let-bindings)
 	   body)))
+
+(defvar session) ;; yuck
 
 (defun lep::create-listener-stream (&optional args)
   ;; This function has problems because it may be invoked asynchronously
@@ -55,17 +57,18 @@
       buffer)))
 
 (defun fi::create-new-mapped-screen-for-stream (parent x y width height)
-  (and (boundp 'epoch::screen-properties)
-       (let ((props epoch::screen-properties))
-	 (when (stringp parent)
-	   (push
-	    (cons 'parent 
-		  (epoch::string-to-resource parent 
-					     (epoch::intern-atom "WINDOW")))
-	    props))
-	 ;; ** Do something with X,Y,WIDTH,HEIGHT
-	 (let ((screen (create-screen "*foo*" props)))
-	   (epoch::map-screen screen)
-	   (epoch::select-screen screen)
-	   screen))))
+;;;  (and (boundp 'epoch::screen-properties)
+;;;       (let ((props epoch::screen-properties))
+;;;	 (when (stringp parent)
+;;;	   (push
+;;;	    (cons 'parent 
+;;;		  (epoch::string-to-resource parent 
+;;;					     (epoch::intern-atom "WINDOW")))
+;;;	    props))
+;;;	 ;; ** Do something with X,Y,WIDTH,HEIGHT
+;;;	 (let ((screen (create-screen "*foo*" props)))
+;;;	   (epoch::map-screen screen)
+;;;	   (epoch::select-screen screen)
+;;;	   screen)))
+  )
 

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-db.el,v 1.30 1996/08/01 22:35:45 layer Exp $
+;; $Id: fi-db.el,v 1.31 1997/02/27 17:33:30 layer Exp $
 
 (defvar fi::ss-help
     "Debugger commands:\\<fi:scan-stack-mode-map>
@@ -428,7 +428,7 @@ buffer."
 		     'lep::list-all-processes-session))))
 	 (completions
 	  (mapcar (function (lambda (x) (list x))) processes)))
-    (if (fboundp 'epoch::mapraised-screen)
-	(epoch::mapraised-screen (minibuf-screen)))
+;;;    (if (fboundp 'epoch::mapraised-screen)
+;;;	(epoch::mapraised-screen (minibuf-screen)))
     (completing-read prompt completions nil t
 		     "Initial Lisp Listener")))

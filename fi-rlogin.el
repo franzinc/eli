@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-rlogin.el,v 1.29 1996/10/30 17:59:54 layer Exp $
+;; $Id: fi-rlogin.el,v 1.30 1997/02/27 17:34:22 layer Exp $
 
 (defvar fi:rlogin-mode-map nil
   "The rlogin major-mode keymap.")
@@ -116,6 +116,6 @@ string bound to fi:rlogin-initial-input, and turn ourself off."
 			(looking-at fi::prompt-pattern))
 	(progn
 	  (set-process-filter process 'fi::subprocess-filter)
-	  (send-string process fi:rlogin-initial-input)))
+	  (process-send-string process fi:rlogin-initial-input)))
     (if old-buffer
 	(set-buffer old-buffer))))

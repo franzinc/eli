@@ -32,7 +32,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-sublisp.el,v 1.63 1996/08/01 22:36:22 layer Exp $
+;; $Id: fi-sublisp.el,v 1.64 1997/02/27 17:34:41 layer Exp $
 
 (defun fi:set-associated-sublisp (buffer-name mode)
   "Use BUFFER-NAME as the name of a buffer which contains a Lisp subprocess
@@ -138,10 +138,10 @@ This is normally called automatically from fi:start-lisp-interface-hook."
 					  (fi::get-buffer-port buffer))))
       (set-process-filter   proc 'fi::show-run-status-filter)
       (set-process-sentinel proc 'fi::show-run-status-sentinel)
-      (send-string proc (format "%s \n" (fi::prin1-to-string fi::listener-protocol)))
-      (send-string proc (format "\"%s\" \n" (process-name proc)))
-      (send-string proc (format "%d \n" (fi::get-buffer-password buffer)))
-      (send-string proc "
+      (process-send-string proc (format "%s \n" (fi::prin1-to-string fi::listener-protocol)))
+      (process-send-string proc (format "\"%s\" \n" (process-name proc)))
+      (process-send-string proc (format "%d \n" (fi::get-buffer-password buffer)))
+      (process-send-string proc "
  (progn (ignore-errors (excl::run-status-process))
         (mp:process-kill mp:*current-process*)) 
 ")

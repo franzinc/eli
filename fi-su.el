@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-su.el,v 1.16 1996/10/30 17:59:55 layer Exp $
+;; $Id: fi-su.el,v 1.17 1997/02/27 17:34:37 layer Exp $
 
 (defvar fi:su-mode-map nil
   "The su major-mode keymap.")
@@ -154,11 +154,11 @@ string bound to fi:su-initial-input, and turn ourself off."
     (set-buffer (process-buffer process))
     (cond ((string-match "assword" output)
 	   (setq fi::su-password (fi::read-password))
-	   (send-string process (concat fi::su-password "\n")))
+	   (process-send-string process (concat fi::su-password "\n")))
 	  (t (if (save-excursion (beginning-of-line)
 				 (looking-at fi::prompt-pattern))
 		 (progn
 		   (set-process-filter process 'fi::subprocess-filter)
 		   (setq fi::su-password nil)
 		   (if fi:su-initial-input
-		       (send-string process fi:su-initial-input))))))))
+		       (process-send-string process fi:su-initial-input))))))))

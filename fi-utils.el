@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 1.63 1997/01/30 19:04:20 layer Exp $
+;; $Id: fi-utils.el,v 1.64 1997/02/27 17:34:58 layer Exp $
 
 ;;; Misc utilities
 
@@ -145,6 +145,8 @@ nil if non-exists.  Yes, a value of nil and no local value are the same."
 	    (setq result temp))
 	(setq dirs (cdr dirs)))
       result)))
+
+(defvar parse-partial-sexp-result)
 
 (defun fi::fast-parse-partial-sexp (from to
 				    &optional targetdepth stopbefore state
@@ -888,7 +890,8 @@ created by fi:common-lisp."
 (defun fi::find-fill-prefix-from-current-line ()
   (save-excursion
     (let ((bol (progn (beginning-of-line) (point)))
-	  eol m0-start m0-end)
+;;;;eol
+	  m0-start m0-end)
       (cond
        ((looking-at adaptive-fill-regexp)
 	(setq m0-start (match-beginning 0))
@@ -899,7 +902,7 @@ created by fi:common-lisp."
 	    (buffer-substring m0-start m0-end)
 	  ;; There is something other than a comment on this line, so we
 	  ;; have to do work to find the real fill-prefix.	  
-	  (setq eol (progn (end-of-line) (point)))
+;;;;(setq eol (progn (end-of-line) (point)))
 	  (goto-char bol)
 	  (condition-case nil
 	      (progn

@@ -4,11 +4,28 @@ For more detailed instructions on filling in the ChangeLog form, see
 <version for this commit, if applicable>
 
 Documentation changes:	<`none' or give pointer to them>
-Tests for new features:	<`no new features', `no tests for new features', or
-			 give pointer to test files>
 
 <standard changelog date stamp>
 	* <changes go here...>
+
+*******************************************************************************
+2.0.21.pre-alpha.6
+
+Documentation changes:	no new features
+
+Thu Feb 27 09:30:39 1997  Kevin Layer  <layer@ultra>
+
+	<pretty much all files changed>: deal with compiler warnings
+
+*******************************************************************************
+2.0.21.pre-alpha.5
+
+Documentation changes:	none
+Tests for new features:	no new features
+
+Thu Jan 30 11:03:29 1997  Kevin Layer  <layer@ultra>
+
+	* fi-utils.el: add if* macro from jkf
 
 *******************************************************************************
 2.0.21.pre-alpha.4
@@ -20,16 +37,6 @@ Mon Jan 27 10:53:11 1997  Kevin Layer  <layer@ultra>
 
 	* fi-subproc.el: set fi:emacs-to-lisp-transaction-directory
 	appropriately on Windows
-
-*******************************************************************************
-2.0.21.pre-alpha.5
-
-Documentation changes:	none
-Tests for new features:	no new features
-
-Thu Jan 30 11:03:29 1997  Kevin Layer  <layer@ultra>
-
-	* fi-utils.el: add if* macro from jkf
 
 *******************************************************************************
 2.0.21.pre-alpha.3

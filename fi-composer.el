@@ -8,14 +8,15 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-composer.el,v 1.20 1996/08/01 22:35:42 layer Exp $
+;; $Id: fi-composer.el,v 1.21 1997/02/27 17:33:26 layer Exp $
 
 (defun composer::make-listener (new-screen-p)
-  (when (and new-screen-p (fboundp 'create-screen))
-    (let ((screen (create-screen "*listener*" epoch::screen-properties)))
-	   (epoch::map-screen screen)
-	   (epoch::select-screen screen)
-	   screen))
+;;;; epoch specific:
+;;;  (when (and new-screen-p (fboundp 'create-screen))
+;;;    (let ((screen (create-screen "*listener*" epoch::screen-properties)))
+;;;	   (epoch::map-screen screen)
+;;;	   (epoch::select-screen screen)
+;;;	   screen))
   (fi:open-lisp-listener -1))
 
 (defun composer::edit-file-in-editor ()

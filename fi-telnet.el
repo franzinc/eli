@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-telnet.el,v 1.14 1996/10/30 18:00:05 layer Exp $
+;; $Id: fi-telnet.el,v 1.15 1997/02/27 17:34:53 layer Exp $
 
 (defvar fi:telnet-mode-map nil
   "The telnet major-mode keymap.")
@@ -116,13 +116,13 @@ string bound to fi:telnet-initial-input, and turn ourself off."
     (cond
      ((string-match "assword" output)
       (setq password (fi::read-password))
-      (send-string process (concat password "\n")))
+      (process-send-string process (concat password "\n")))
      (t
       (if (save-excursion (beginning-of-line)
 			  (looking-at fi::prompt-pattern))
 	  (progn
 	    (set-process-filter process 'fi::subprocess-filter)
-	    (send-string process fi:telnet-initial-input)))
+	    (process-send-string process fi:telnet-initial-input)))
       (if old-buffer (set-buffer old-buffer))))))
 
 (defun fi::telnet-garbage-filter (process output)

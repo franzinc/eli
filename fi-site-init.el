@@ -1,10 +1,10 @@
-;; $Id: fi-site-init.el,v 1.99 1997/01/30 19:04:18 layer Exp $
+;; $Id: fi-site-init.el,v 1.100 1997/02/27 17:34:27 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
 (require 'cl)
 
-(setq fi:emacs-lisp-interface-version "2.0.21.pre-alpha.5")
+(setq fi:emacs-lisp-interface-version "2.0.21.pre-alpha.6")
 (defvar fi::required-ipc-version 1)
 (defvar fi::load-subprocess-files t)
 (defvar fi::install-acl-menubar t)
@@ -225,10 +225,10 @@ exists.")
 
 (when fi::load-subprocess-files
   (cond ((eq fi::emacs-type 'xemacs19)
-       (fi::load "fi-xemacs"))
-      ((eq fi::emacs-type 'emacs19)
-       (fi::load "fi-emacs19"))
-      (t (fi::load "fi-emacs18"))))
+	 (fi::load "fi-xemacs"))
+	((eq fi::emacs-type 'emacs19)
+	 (fi::load "fi-emacs19"))
+	(t (fi::load "fi-emacs18"))))
 
 (defun fi::top-level ()
   (fi::initialize-emacs-lisp-interface)

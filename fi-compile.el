@@ -1,8 +1,12 @@
-;; $Id: fi-compile.el,v 2.2 1996/08/01 20:11:31 layer Exp $
+;; $Id: fi-compile.el,v 2.3 1997/02/27 17:33:22 layer Exp $
 
 (require 'cl)
 
 (setq byte-compile-compatibility t)
+
+(require 'font-lock) ;; makes some compiler warnings go away
+(require 'comint) ;; makes some compiler warnings go away
+(defvar mode-motion-hook) ;; makes xemacs compiler warning go away
 
 (push (expand-file-name ".") load-path)
 
@@ -13,10 +17,10 @@
 (setq fi-files
   '("Doc" "fi-basic-lep" "fi-changes" "fi-clman" "fi-composer" "fi-db"
     "fi-dmode" "fi-emacs18" "fi-emacs19" "fi-filec" "fi-gnu"
-    "fi-indent" "fi-keys" "fi-leep" "fi-leep-xemacs" "fi-leep0"
+    "fi-indent" "fi-keys" "fi-leep0"
     "fi-lep" "fi-lze" "fi-modes" "fi-ring" "fi-rlogin" "fi-shell"
     "fi-stream" "fi-su" "fi-sublisp" "fi-subproc" "fi-telnet" "fi-utils"
-    "fi-xemacs" "makeman"))
+    "makeman"))
 
 (setq fi-developer-files '("local-fi-developer-hooks"))
 

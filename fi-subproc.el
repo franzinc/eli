@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.184 1997/01/27 18:54:26 layer Exp $
+;; $Id: fi-subproc.el,v 1.185 1997/02/27 17:34:47 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -440,7 +440,7 @@ be a string. Use 6th argument for image file."))
 		    (process nil))
 		(fi::set-environment fi:subprocess-env-vars)
 		(while
-		    (condition-case condition
+		    (condition-case nil
 			(progn
 			  (setq process
 			    (let ((fi::muffle-open-network-stream-errors t))
@@ -573,7 +573,10 @@ be a string. Use 6th argument for image file."))
 	    (t (push arg other-args)))
       (setq arguments (cdr arguments)))
     (append (nreverse dlisp-args) (nreverse other-args))))
-	 
+
+;; make xemacs compile warnings go away:
+(defvar win32-quote-process-args)
+(defvar win32-start-process-show-window)
 
 (defun fi::socket-start-lisp (buffer-name process-name image arguments)
   (let ((win32-start-process-show-window t)
@@ -836,8 +839,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 			  (substring output (match-beginning 3)
 				     (match-end 3))))
 	     (command (substring output (match-beginning 2) (match-end 2)))
-	     (xx nil)
-	     (host nil))
+	     (xx nil))
 	(setq fi::lisp-port
 	  (car (setq xx (read-from-string command nil))))
 	(setq fi::lisp-password
@@ -847,12 +849,11 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		 (read-from-string (downcase command) (cdr xx)))))
 	;; the following "argument" is optional in that a previous
 	;; version of the ipc.cl didn't provide it
-	(if (setq host
-	      (condition-case ()
-		  (car (setq xx (read-from-string
-				 (fi::frob-case-from-lisp command)
-				 (cdr xx))))
-		(error nil)))
+	(if (condition-case ()
+		(car (setq xx (read-from-string
+			       (fi::frob-case-from-lisp command)
+			       (cdr xx))))
+	      (error nil))
 	    nil)
 	;; This is optional also
 	(setq fi::lisp-ipc-version
@@ -938,7 +939,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	    (insert-file-contents start-up-feed-name)
 	    (setq start-up-feed-name (buffer-substring (point) (point-max)))
 	    (delete-region (point) (point-max))
-	    (send-string process start-up-feed-name)))
+	    (process-send-string process start-up-feed-name)))
 	  (goto-char (point-max))
 	  (set-marker (process-mark process) (point))
 	  (condition-case ()

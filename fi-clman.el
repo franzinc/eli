@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-clman.el,v 2.16 1996/10/10 21:50:22 layer Exp $
+;; $Id: fi-clman.el,v 2.17 1997/02/27 17:33:18 layer Exp $
 
 (defvar fi::clman-prog)
 (setq fi::clman-prog
@@ -57,7 +57,7 @@ math:).  The buffer that is displayed will be in CLMAN mode."
    ((and fi::clman-data fi::clman-prog)
     (let (exit-status)
       (with-output-to-temp-buffer fi:clman-displaying-buffer
-	(buffer-flush-undo standard-output)
+	(buffer-disable-undo standard-output)
 	(save-excursion
 	  (set-buffer standard-output)
 	  (setq exit-status
@@ -144,7 +144,7 @@ clman buffer, from anywhere in the buffer."
 
 (defun fi::clman-display-file (buf names)
   (with-output-to-temp-buffer buf
-    (buffer-flush-undo standard-output)
+    (buffer-disable-undo standard-output)
     (save-excursion
       (set-buffer buf)
       (let ((first t))

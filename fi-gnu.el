@@ -19,13 +19,13 @@
 ;; along with GNU Emacs; see the file COPYING.  If not, write to
 ;; the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 
-;; $Id: fi-gnu.el,v 2.3 1996/08/01 22:35:55 layer Exp $
+;; $Id: fi-gnu.el,v 2.4 1997/02/27 17:33:41 layer Exp $
 
 (defun fi::find-most-recent-backup-file-name (fn)
   (if (eq version-control 'never)
       (make-backup-file-name fn)
     (let* ((base-versions (concat (file-name-nondirectory fn) ".~"))
-	   (bv-length (length base-versions))
+	   ;;(bv-length (length base-versions))
 	   (possibilities (file-name-all-completions
 			   base-versions
 			   (file-name-directory fn)))

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.128 1997/01/30 19:04:16 layer Exp $
+# $Id: Makefile,v 1.129 1997/02/27 17:33:04 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -7,6 +7,7 @@ CC = gcc
 CFLAGS = -O
 
 emacs = emacs
+xemacs = xemacs
 
 default:	compile test.out clman
 
@@ -14,6 +15,7 @@ all:	compile test.out tags docs
 
 compile:
 	$(emacs) -nw -batch -q -l `pwd`/fi-compile.el -kill
+	$(xemacs) -nw -batch -q -l `pwd`/fi-xcompile.el -kill
 
 docs: UserGuide.doc RefMan.doc RefCard.doc
 

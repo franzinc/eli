@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-modes.el,v 1.68 1997/01/07 01:04:10 layer Exp $
+;; $Id: fi-modes.el,v 1.69 1997/02/27 17:34:13 layer Exp $
 
 ;;;; Mode initializations
 
@@ -361,8 +361,8 @@ any other mode setup."
 	(make-local-variable 'indent-line-function)
 	(setq indent-line-function 'fi:lisp-indent-line)
 
-	(make-local-variable 'comment-indent-hook)
-	(setq comment-indent-hook 'fi:lisp-comment-indent)
+	(make-local-variable 'comment-indent-function)
+	(setq comment-indent-function 'fi:lisp-comment-indent)
 
 	(make-local-variable 'parse-sexp-ignore-comments)
 	;; It used to be true that this variable must be `nil' when

@@ -8,12 +8,14 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-basic-lep.el,v 1.42 1997/01/18 00:12:42 layer Exp $
+;; $Id: fi-basic-lep.el,v 1.43 1997/02/27 17:33:09 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
 (defvar fi::lep-debug nil)		; for debugging
 (defvar fi::trace-lep-filter nil)	; for debugging
+
+(defvar session) ;; yuck
 
 (defun fi::show-error-text (format-string &rest args)
   (if (cdr fi:pop-up-temp-window-behavior)
@@ -41,7 +43,7 @@ printed in the minibuffer can easily be erased.")
   (if (null (cdr fi:pop-up-temp-window-behavior))
       (fi::show-some-text-1 text (or xpackage fi:package))
     (let* ((window (minibuffer-window))
-	   (height (1- (window-height window)))
+	   ;;(height (1- (window-height window)))
 	   (width (window-width window))
 	   (text-try
 	    ;; cond clause commented 18oct94 smh.
@@ -202,13 +204,13 @@ emacs-lisp interface cannot be started.
 	     (set-process-buffer process buffer))
 	   (set-process-filter process 'fi::lep-connection-filter)
 	   ;; new stuff to indicate that we want the lisp editor protocol
-	   (send-string process ":lep\n")
-	   (send-string process (format "\"%s\"\n" proc-name))
-	   (send-string process (format "%d \n" passwd))
+	   (process-send-string process ":lep\n")
+	   (process-send-string process (format "\"%s\"\n" proc-name))
+	   (process-send-string process (format "%d \n" passwd))
 	   ;; Send the class of the editor to the lisp.
 	   ;; This might affect something!
 	   ;; For example, gnu 19 has some good features.
-	   (send-string process (format "\"%s\"\n" (emacs-version)))
+	   (process-send-string process (format "\"%s\"\n" (emacs-version)))
 	   (prog1
 	       (setq fi::*connection*
 		 (fi::make-connection (current-buffer) host process))
@@ -248,7 +250,7 @@ versions of the emacs-lisp interface.
       (insert string))
     (let (form error)
       (while
-	  (condition-case ignore
+	  (condition-case nil
 	      (save-excursion
 		(set-buffer buffer)
 		(and
@@ -259,7 +261,7 @@ versions of the emacs-lisp interface.
 		   (forward-sexp)
 		   (let ((p (point)))
 		     (goto-char (point-min))
-		     (condition-case ignore
+		     (condition-case nil
 			 (progn (setq form (read (current-buffer))) t)
 		       (error (setq error t)))
 		     (delete-region (point-min) p))
@@ -385,7 +387,7 @@ versions of the emacs-lisp interface.
 					continuation-and-arguments
 					error-continuation-and-arguments))
 	 (process (fi::connection-process connection)))
-    (send-string process (fi::prin1-to-string
+    (process-send-string process (fi::prin1-to-string
 			  (list* nil
 				 'lep::make-session session-class
 				 ':session-id (fi::session-id session)
@@ -398,7 +400,7 @@ versions of the emacs-lisp interface.
 				   (list* ':buffer-package
 					  (fi::string-to-keyword fi:package)
 					  session-arguments)))))
-    (send-string process "\n")
+    (process-send-string process "\n")
     session))
 
 (defmacro fi::make-request (type-and-options continuation
@@ -446,19 +448,19 @@ versions of the emacs-lisp interface.
 					      &optional error-continuation-and-arguments)
   (let* ((connection (fi::session-connection session))
 	 (process (fi::connection-process connection)))
-    (send-string process
+    (process-send-string process
 		 (fi::prin1-to-string
 		  (list* (fi::session-id session) session-class session-arguments)))
-    (send-string process "\n")))
+    (process-send-string process "\n")))
 
 (defun lep::kill-session (session)
   (let* ((connection (fi::session-connection session))
 	 (process (fi::connection-process connection)))
     (fi::remove-session connection session)
-    (send-string process (fi::prin1-to-string
+    (process-send-string process (fi::prin1-to-string
 			  (list nil 'lep::terminate-session
 				(fi::session-id session))))
-    (send-string process "\n")))
+    (process-send-string process "\n")))
 
 (defun lep::send-request-in-session (session session-class session-arguments
 				     continuation-and-arguments
@@ -467,12 +469,12 @@ versions of the emacs-lisp interface.
 	 (process (fi::connection-process connection)))
     (fi::modify-session-continuation
      session continuation-and-arguments error-continuation-and-arguments)
-    (send-string process
+    (process-send-string process
 		 (fi::prin1-to-string (list* (fi::session-id session)
 					     ':request
 					     session-class
 					     session-arguments)))
-    (send-string process "\n")))
+    (process-send-string process "\n")))
 
 (defmacro fi::make-request-in-existing-session (session type-and-options
 						continuation
@@ -507,29 +509,29 @@ versions of the emacs-lisp interface.
     (unwind-protect
 	(progn
 	  (condition-case error
-	      (let* ((done nil)
-		     (result (apply (fi::intern-it function) args)))
+	      (let* ((result (apply (fi::intern-it function) args)))
 		(when replyp
-		  (send-string process
-			       (fi::prin1-to-string (list* (fi::session-id session)
-							   ':reply
-							   result)))
-		  (send-string process "\n")))
+		  (process-send-string process
+				       (fi::prin1-to-string
+					(list* (fi::session-id session)
+					       ':reply
+					       result)))
+		  (process-send-string process "\n")))
 	    (error
 	     (if replyp
 		 (progn
-		   (send-string process
+		   (process-send-string process
 				(fi::prin1-to-string
 				 (list (fi::session-id session)
 				       ':error
 				       (fi::prin1-to-string error))))
 
-		   (send-string process "\n"))
+		   (process-send-string process "\n"))
 	       (fi::show-error-text "Error occurred: "
 				    (fi::prin1-to-string error)))))
 	  (setq done t))
       (unless done
-	(send-string process
+	(process-send-string process
 		     (fi::prin1-to-string (list (fi::session-id session)
 						':error
 						':aborted))))
@@ -538,10 +540,10 @@ versions of the emacs-lisp interface.
 (defun fi:send-reply (session string)
   (let* ((connection (fi::session-connection session))
 	 (process (fi::connection-process connection)))
-    (send-string process
+    (process-send-string process
 		 (fi::prin1-to-string
 		  (list (fi::session-id session) ':reply string)))
-    (send-string process "\n")))
+    (process-send-string process "\n")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

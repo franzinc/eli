@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 1.106 1997/01/08 23:54:45 layer Exp $
+;; $Id: fi-keys.el,v 1.107 1997/02/27 17:33:56 layer Exp $
 
 (cond ((eq fi::emacs-type 'xemacs19)
        (require 'tags "etags"))
@@ -271,7 +271,7 @@ fi:raw-mode is non-nil.")
   (cond (fi:raw-mode
 	 (when fi:raw-mode-echo (insert last-input-char))
 	 (let ((process (get-buffer-process (current-buffer))))
-	   (send-string process (char-to-string last-input-char))
+	   (process-send-string process (char-to-string last-input-char))
 	   (set-marker (process-mark process) (point))))
 	(t (self-insert-command (prefix-numeric-value arg)))))
 
@@ -357,7 +357,7 @@ When called from a program give START and END buffer positions."
     (if (not (bolp)) (insert "\n"))
     (setq end (point))
     (setq fi::last-input-end (point))
-    (send-region process start end)
+    (process-send-region process start end)
     (fi::input-ring-save fi::last-input-start (1- fi::last-input-end))
     (set-marker (process-mark process) (point))))
 
@@ -405,8 +405,7 @@ parsed, the enclosing list is processed."
     ;; of the last prompt
     ;;
     (let ((exp-to-resend "")
-	  (start-resend (point))
-	  (end-resend (point)))
+	  (start-resend (point)))
       (if (null arg) (setq arg 1))
       (if (equal type 'sexp)
 	  (setq exp-to-resend
@@ -421,19 +420,18 @@ parsed, the enclosing list is processed."
 		   ((not (memq (char-syntax (preceding-char)) '(?w ?_)))
 		    (point))
 		   (t (scan-sexps (point) (- arg))))))
-	     (setq end-resend
-	       (save-excursion
-		 (cond
-		   ((= (preceding-char) ?\)) (point))
-		   ((= (following-char) ?\() (scan-sexps (point) arg))
-		   ((= (following-char) ?\)) (forward-char 1) (point))
-		   ((not (memq (char-syntax (following-char)) '(?w ?_)))
-		    (point))
-		   (t (scan-sexps (point) arg)))))))
+	     (save-excursion
+	       (cond
+		((= (preceding-char) ?\)) (point))
+		((= (following-char) ?\() (scan-sexps (point) arg))
+		((= (following-char) ?\)) (forward-char 1) (point))
+		((not (memq (char-syntax (following-char)) '(?w ?_)))
+		 (point))
+		(t (scan-sexps (point) arg))))))
 	(setq exp-to-resend
 	  (buffer-substring
 	   (setq start-resend (scan-lists (point) (- arg) 1))
-	   (setq end-resend (scan-lists (point) arg 1)))))
+	   (scan-lists (point) arg 1))))
       (if (eobp)
 	  (progn
 	    (insert "\n")
@@ -447,7 +445,7 @@ parsed, the enclosing list is processed."
 	  (if (not (bolp)) (insert "\n"))
 	  (setq fi::last-input-end (point))))))
   (let ((process (get-buffer-process (current-buffer))))
-    (send-region process fi::last-input-start fi::last-input-end)
+    (process-send-region process fi::last-input-start fi::last-input-end)
     (fi::input-ring-save fi::last-input-start (1- fi::last-input-end))
     (set-marker (process-mark process) (point))))
 
@@ -539,7 +537,7 @@ subprocess mode."
       (setq fi::last-input-end (point))))
   (fi::subprocess-watch-for-special-commands)
   (let ((process (get-buffer-process (current-buffer))))
-    (send-region process fi::last-input-start fi::last-input-end)
+    (process-send-region process fi::last-input-start fi::last-input-end)
     (fi::input-ring-save fi::last-input-start (1- fi::last-input-end))
     (set-marker (process-mark process) (point))))
 
@@ -567,7 +565,7 @@ subprocess mode."
   "Send an interrupt (SIGINT) to the process running as in the current
 subprocess buffer."
   (interactive)
-  (send-string (get-buffer-process (current-buffer)) "\C-c"))
+  (process-send-string (get-buffer-process (current-buffer)) "\C-c"))
 
 (defun fi:interrupt-listener (select)
   "Interrupt a Lisp listener (send a SIGINT).  Without a prefix argument,
@@ -630,7 +628,7 @@ Listener buffer via the backdoor."
   "Send an EOF to the process running as in the remote shell in the current
 subprocess buffer."
   (interactive)
-  (send-string (get-buffer-process (current-buffer)) "\C-d"))
+  (process-send-string (get-buffer-process (current-buffer)) "\C-d"))
 
 (defun fi:subprocess-kill ()
   "Send a kill (SIGKILL) signal to the current subprocess."
@@ -657,7 +655,7 @@ Listener buffer via the backdoor."
   "Send a quit (SIGQUIT) to the process running as in the current
 subprocess buffer."
   (interactive)
-  (send-string (get-buffer-process (current-buffer)) "\C-\\"))
+  (process-send-string (get-buffer-process (current-buffer)) "\C-\\"))
 
 (defun fi:subprocess-suspend ()
   "Suspend the current subprocess."
@@ -668,7 +666,7 @@ subprocess buffer."
   "Send a stop (SIGSTOP) signal to the process running as in the current
 subprocess buffer."
   (interactive)
-  (send-string (get-buffer-process (current-buffer)) "\C-z"))
+  (process-send-string (get-buffer-process (current-buffer)) "\C-z"))
 
 (defun fi:subprocess-kill-output ()
   "Kill all output from the subprocess since the last input.  This is a
@@ -682,7 +680,7 @@ convenient way to delete the output from the last command."
 (defun fi:subprocess-send-flush ()
   "Send the `flush output' character (^O) to current subprocess."
   (interactive)
-  (send-string (get-buffer-process (current-buffer)) "\C-o"))
+  (process-send-string (get-buffer-process (current-buffer)) "\C-o"))
 
 (defun fi:subprocess-show-output ()
   "Display the start of this batch of shell output at top of window.
@@ -701,7 +699,7 @@ Also move the point there."
   "Sychronize the current working directory in Emacs and Lisp, by making
 Lisp conform to the value of default-directory."
   (interactive)
-  (send-string
+  (process-send-string
    (get-buffer-process (current-buffer))
    (format "(excl::chdir \"%s\")\n" default-directory)))
 
@@ -709,7 +707,7 @@ Lisp conform to the value of default-directory."
   "Sychronize the current working directory in Emacs and the shell, by
 making the shell conform to the value of default-directory."
   (interactive)
-  (send-string
+  (process-send-string
    (get-buffer-process (current-buffer))
    (format "cd %s\n" default-directory)))
 
@@ -975,14 +973,10 @@ arguments are START and END."
   "Make the *CL-temp* buffer disappear and restore the window configuration
 as it was before it was made visible."
   (interactive)
-  (if (eq fi::emacs-type 'epoch)
-      (fi::epoch-lisp-delete-pop-up-window)
-    (fi::emacs-lisp-delete-pop-up-window)))
+  (fi::emacs-lisp-delete-pop-up-window))
 
 (defun fi:lisp-push-window-configuration ()
-  (if (eq fi::emacs-type 'epoch)
-      (fi::epoch-lisp-push-window-configuration)
-    (fi::emacs-lisp-push-window-configuration)))
+  (fi::emacs-lisp-push-window-configuration))
 
 (defvar fi::wc-stack nil)
 
@@ -1004,32 +998,32 @@ as it was before it was made visible."
     (when (bufferp (second conf))
       (bury-buffer (second conf)))))
 
-(defun fi::epoch-lisp-push-window-configuration ()
-  (let* ((id (epoch::get-screen-id (current-screen)))
-	 (s (assq id fi::wc-stack)))
-    (if s
-	(let ((stack (cdr s)))
-	  ;; the CAR of AS is ID, the CDR the stack of wc's
-	  (rplacd s (cons (current-window-configuration)
-			   stack))
-	  (if (> (length stack) fi::wc-stack-max)
-	      (setcdr (nthcdr (1- fi::wc-stack-max) stack) nil)))
-      (setq fi::wc-stack
-	(cons (list id (current-window-configuration))
-	      fi::wc-stack))))
-  nil)
+;;;(defun fi::epoch-lisp-push-window-configuration ()
+;;;  (let* ((id (epoch::get-screen-id (current-screen)))
+;;;	 (s (assq id fi::wc-stack)))
+;;;    (if s
+;;;	(let ((stack (cdr s)))
+;;;	  ;; the CAR of AS is ID, the CDR the stack of wc's
+;;;	  (rplacd s (cons (current-window-configuration)
+;;;			   stack))
+;;;	  (if (> (length stack) fi::wc-stack-max)
+;;;	      (setcdr (nthcdr (1- fi::wc-stack-max) stack) nil)))
+;;;      (setq fi::wc-stack
+;;;	(cons (list id (current-window-configuration))
+;;;	      fi::wc-stack))))
+;;;  nil)
 
-(defun fi::epoch-lisp-delete-pop-up-window ()
-  ;; this is the same as the above, except that it keeps the stack for each
-  ;; screen separate.
-  (let* ((id (epoch::get-screen-id (current-screen)))
-	 (s (assq id fi::wc-stack))
-	 (stack (cdr s)))
-    (unless stack
-      (error "The pop-up window stack for this screen is empty."))
-    (let ((conf (car stack)))
-      (rplacd s (cdr stack))
-      (set-window-configuration conf))))
+;;;(defun fi::epoch-lisp-delete-pop-up-window ()
+;;;  ;; this is the same as the above, except that it keeps the stack for each
+;;;  ;; screen separate.
+;;;  (let* ((id (epoch::get-screen-id (current-screen)))
+;;;	 (s (assq id fi::wc-stack))
+;;;	 (stack (cdr s)))
+;;;    (unless stack
+;;;      (error "The pop-up window stack for this screen is empty."))
+;;;    (let ((conf (car stack)))
+;;;      (rplacd s (cdr stack))
+;;;      (set-window-configuration conf))))
 
 (defvar fi::find-tag-lock-state nil)
 

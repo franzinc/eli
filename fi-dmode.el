@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-dmode.el,v 1.27 1996/08/01 22:35:48 layer Exp $
+;; $Id: fi-dmode.el,v 1.28 1997/02/27 17:33:36 layer Exp $
 
 ;; Create a mode in which each line is a definition and . on that
 ;; definition brings up the definition in another window
@@ -81,14 +81,15 @@ Entry to this mode runs the fi:definition-mode-hook."
 
   (use-local-map fi:definition-mode-map)
 
-  (when (fboundp 'create-mouse-map)
-    (if fi:definition-mode-mouse-map
-      nil
-    (setq fi:definition-mode-mouse-map (create-mouse-map))
-    (define-mouse fi:definition-mode-mouse-map mouse-left mouse-down
-  		'lep::dmode-mouse-select)))
-  (when fi:definition-mode-mouse-map
-    (use-local-mouse-map fi:definition-mode-mouse-map))
+;;;; epoch specific:
+;;;  (when (fboundp 'create-mouse-map)
+;;;    (if fi:definition-mode-mouse-map
+;;;      nil
+;;;    (setq fi:definition-mode-mouse-map (create-mouse-map))
+;;;    (define-mouse fi:definition-mode-mouse-map mouse-left mouse-down
+;;;		  'lep::dmode-mouse-select)))
+;;;  (when fi:definition-mode-mouse-map
+;;;    (use-local-mouse-map fi:definition-mode-mouse-map))
 
   (run-hooks 'fi:definition-mode-hook))
 
@@ -143,14 +144,15 @@ Entry to this mode runs the fi:inverse-definition-mode-hook."
 
   (use-local-map fi:inverse-definition-mode-map)
 
-  (when (fboundp 'create-mouse-map)
-    (if fi:inverse-definition-mode-mouse-map
-      nil
-    (setq fi:inverse-definition-mode-mouse-map (create-mouse-map))
-    (define-mouse fi:inverse-definition-mode-mouse-map mouse-left mouse-down
-  		'lep::dmode-mouse-select)))
-  (when fi:inverse-definition-mode-mouse-map
-    (use-local-mouse-map fi:inverse-definition-mode-mouse-map))
+;;;; epoch specific:
+;;;  (when (fboundp 'create-mouse-map)
+;;;    (if fi:inverse-definition-mode-mouse-map
+;;;      nil
+;;;    (setq fi:inverse-definition-mode-mouse-map (create-mouse-map))
+;;;    (define-mouse fi:inverse-definition-mode-mouse-map mouse-left mouse-down
+;;;  		'lep::dmode-mouse-select)))
+;;;  (when fi:inverse-definition-mode-mouse-map
+;;;    (use-local-mouse-map fi:inverse-definition-mode-mouse-map))
 
   (run-hooks 'fi:inverse-definition-mode-hook))
 
@@ -190,11 +192,12 @@ use the current buffer and display all the definitions contained in it."
       (message "Cannot find the definitions of buffer %s: %s"
 	       buffer error)))))
 
-(defun lep::dmode-mouse-select (info)
-  (pop-to-buffer (second info))
-  (goto-char (car info))
-  (beginning-of-line)
-  (fi:definition-mode-goto-definition))
+;;;; epoch specific:
+;;;(defun lep::dmode-mouse-select (info)
+;;;  (pop-to-buffer (second info))
+;;;  (goto-char (car info))
+;;;  (beginning-of-line)
+;;;  (fi:definition-mode-goto-definition))
 
 (defun fi:definition-mode-quit ()
   "Quit definition mode and restore the window configuration as it was

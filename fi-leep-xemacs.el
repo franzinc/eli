@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-leep-xemacs.el,v 2.3 1996/08/01 22:36:05 layer Exp $
+;; $Id: fi-leep-xemacs.el,v 2.4 1997/02/27 17:34:03 layer Exp $
 
 ;; The xemacs side of presentations in a lisp-listener window.
 
@@ -22,13 +22,13 @@
       (force-output)
       (values))\n")
 
+(defvar fi::window-stream-presentation)
+(defvar fi::presentation-stack)
+(defvar fi::incomplete-input)
+(defvar fi::mode-motion-extent)
+
 (defun composer::make-presenting-listener (&optional new-screen-p)
   (interactive)
-  (when (and new-screen-p (fboundp 'create-screen))
-    (let ((screen (create-screen "*listener*" epoch::screen-properties)))
-      (epoch::map-screen screen)
-      (epoch::select-screen screen)
-      screen))
   (let* ((proc (fi:open-lisp-listener
 		-1
 		nil
@@ -76,8 +76,8 @@
   ;;  &ddd>		- end presentation number ddd (arbitrary decimal int)
   (do ((pnt 0)
        (len (length output))
-       level
-       end
+;;;       level
+;;;       end
        index)
       ((or (eq pnt len)
 	   (null (setq index (string-match "&" output pnt))))
@@ -151,7 +151,7 @@
 
 (defun fi::mode-motion-highlight (event)
   (let* ((window (event-window event))
-	 (screen (if window (window-screen window) (selected-screen)))
+	 ;;(screen (if window (window-frame window) (selected-frame)))
 	 (buffer (and window (window-buffer window)))
 	 (point (and buffer (event-point event)))
 	 presentation)
@@ -164,13 +164,13 @@
 	  (let ((start (presentation-start presentation))
 		(end (presentation-end presentation)))
 	    (if (and fi::mode-motion-extent
-		     (extent-buffer fi::mode-motion-extent))
+		     (extent-object fi::mode-motion-extent))
 		(set-extent-endpoints fi::mode-motion-extent start end)
 	      (setq fi::mode-motion-extent (make-extent start end))
-	      (set-extent-attribute fi::mode-motion-extent 'highlight)))
+	      (set-extent-property fi::mode-motion-extent 'highlight)))
 	;; zero the extent
 	(if (and fi::mode-motion-extent
-		 (extent-buffer fi::mode-motion-extent)
+		 (extent-object fi::mode-motion-extent)
 		 (not (eq (extent-start-position fi::mode-motion-extent)
 			  (extent-end-position fi::mode-motion-extent))))
 	    (set-extent-endpoints fi::mode-motion-extent 1 1))))))

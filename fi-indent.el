@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-indent.el,v 1.57 1997/01/08 23:54:42 layer Exp $
+;; $Id: fi-indent.el,v 1.58 1997/02/27 17:33:49 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If non-nil, semicolons that begin comments are indented as they are
@@ -242,6 +242,13 @@ insert.  The default value is 1."
 	(let ((fi::lisp-doing-electric-semicolon t))
 	  (fi::indent-lisp-semicolon)))))
 
+;; I can't prove these don't need to be dynamic, so for now just do this:
+(defvar comment-at)
+(defvar end-sexp)
+(defvar normal-indent)
+(defvar last-depth)
+(defvar innerloop-done)
+
 (defun fi::indent-lisp-semicolon (&optional at last-state)
   "Indent Lisp semicolon at point.
 The optional parameters specify the point at which the last partial
@@ -278,9 +285,8 @@ status of that parse."
       (if (not (or (nth 3 parse-state)
 		   (nth 4 parse-state)
 		   (nth 5 parse-state)))
-	  (if (and (boundp 'comment-indent-hook) comment-indent-hook)
-	      (let ((to-column (funcall comment-indent-hook (point)))
-		    (old-column (current-column)))
+	  (if (and (boundp 'comment-indent-function) comment-indent-function)
+	      (let ((to-column (funcall comment-indent-function (point))))
 		(if (and (second fi::comment-indent-hook-values)
 			 (null fi::lisp-doing-electric-semicolon)
 			 (save-excursion
@@ -302,10 +308,12 @@ status of that parse."
 	    (let (comment-at)
 	      (beginning-of-line)
 	      (if (setq comment-at (fi::find-line-comment))
-		  (if (and (boundp 'comment-indent-hook) comment-indent-hook)
+		  (if (and (boundp 'comment-indent-function)
+			   comment-indent-function)
 		      (let (to-column)
 			(goto-char comment-at)
-			(setq to-column (funcall comment-indent-hook (point)))
+			(setq to-column (funcall comment-indent-function
+						 (point)))
 			;; Function `indent-to' only inserts characters.
 			(delete-horizontal-space)
 			(if (and (= (preceding-char) ?\))
@@ -756,14 +764,12 @@ treated just like a LAMBDA (whose method is '((1 1 lambda-list) (0 t 1)))."
 				   (- depth method-depth)
 				 99999))
 		  inner-count
-		  last-start
 		  (depth 0)
 		  (count 0))
 	      (goto-char (car (cdr state)))
 	      (while (and (< depth inner-depth)
 			  (condition-case nil
 			      (progn
-				(setq last-start (point))
 				(backward-up-list 1)
 				t)
 			    (error nil)))
@@ -901,7 +907,6 @@ beginning with a colon) are recognized."
 			       keywords state indent-point))
 		(last-keyword-began (nth 0 keyword-info))
 		(last-keyword-arg-began (nth 1 keyword-info))
-		(last-sexp-began (nth 2 keyword-info))
 		(keywords-found (nth 3 keyword-info))
 		(nonkeywords-found (nth 4 keyword-info))
 		(special-indent (if (integerp special-count)
@@ -1359,7 +1364,7 @@ distinguished."
   "Indent each line of the list starting just after point."
   (interactive)
   (let ((indent-stack (list nil)) (next-depth 0) bol
-	outer-loop-done inner-loop-done state this-indent
+	outer-loop-done state this-indent
 	(current-parse-result nil)
 	(previous-parse-result nil))
     ;; Get error now if we don't have a complete sexp after point.

@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-xemacs.el,v 2.6 1996/08/01 22:36:43 layer Exp $
+;; $Id: fi-xemacs.el,v 2.7 1997/02/27 17:35:05 layer Exp $
 
 (defun fi-find-buffer-visiting (filename)
   (get-file-buffer filename))
@@ -21,19 +21,19 @@
 (defun fi::switch-to-buffer-new-screen (buffer)
   (cond
    (fi:new-screen-for-common-lisp-buffer
-    (let ((screen (get-screen-for-buffer buffer t)))
-      (select-screen screen)
+    (let ((screen (get-frame-for-buffer buffer t)))
+      (select-frame screen)
       ;; make sure the buffer is visible
       (fi::switch-to-buffer buffer)))
    (t (fi::switch-to-buffer buffer))))
 
 (defun fi::ensure-buffer-visible (buffer)
-  (let ((screen (get-screen-for-buffer buffer)))
-    (when screen (raise-screen screen))))
+  (let ((screen (get-frame-for-buffer buffer)))
+    (when screen (raise-frame screen))))
 
 (defun fi::ensure-minibuffer-visible ()
-  (let ((screen (window-screen (minibuffer-window))))
-    (when screen (raise-screen screen))))
+  (let ((screen (window-frame (minibuffer-window))))
+    (when screen (raise-frame screen))))
 
 (defun fi::defontify-string (str)
   str)
@@ -275,7 +275,7 @@
 
 (defun fi:menu-common-lisp-new-screen ()
   (interactive)
-  (let ((get-screen-for-buffer-default-screen-name 'common-lisp)
+  (let ((get-frame-for-buffer-default-frame-name 'common-lisp)
 	(fi:new-screen-for-common-lisp-buffer t))
     (call-interactively 'fi:common-lisp)))
 
@@ -287,7 +287,7 @@
 
 (defun fi:menu-open-lisp-listener-new-screen ()
   (interactive)
-  (let ((get-screen-for-buffer-default-screen-name 'lisp-listener)
+  (let ((get-frame-for-buffer-default-frame-name 'lisp-listener)
 	(fi:new-screen-for-common-lisp-buffer t))
     (fi:open-lisp-listener -1)))
 
@@ -338,14 +338,14 @@
   (let ((cl-buffer (get-buffer fi:common-lisp-buffer-name)))
     (when (and cl-buffer (get-buffer-window cl-buffer))
       (set-buffer cl-buffer)
-      (let* ((screen (selected-screen)))
+      (let* ((screen (selected-frame)))
 	(if (and (string= (symbol-name (get major-mode 'screen-name))
-			  (screen-name screen))
+			  (frame-name screen))
 		 (one-window-p)
 ;;;; delete-screen causes lemacs to die with a segv:
 		 nil
 		 )
-	    (delete-screen screen)
+	    (delete-frame screen)
 	  (bury-buffer)))))
   (message "Exiting Allegro CL...done."))
 

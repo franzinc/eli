@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.42 1996/10/30 17:59:44 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.43 1997/02/27 17:33:00 layer Exp $
 
 ;; This file is used to assemble documentation files
 ;; It is provided (in distributions) purely for informational purposes,
@@ -12,6 +12,7 @@
 (load "fi-site-init.el")
 (load "fi-clman") ;; autoloaded
 
+(defvar args)
 (setq args (cdr (fi:member-equal "--" command-line-args)))
 (setq command-line-args-left (butlast command-line-args-left 3))
 
@@ -23,6 +24,10 @@
 (message "input-file %s, output-file %s" input-file output-file)
 
 (defvar current-local-map-var)
+
+;; get rid of xemacs compile warnings:
+(defvar xx)
+(defvar yy)
 
 (defun xxx-doc-xxx ()
   (switch-to-buffer "*foo*")
@@ -54,7 +59,7 @@
      ((or (looking-at "^%% ")
 	  (looking-at "^@@ "))
       (let* ((verbose (looking-at "^%% "))
-	     (bol (point))
+	     ;;(bol (point))
 	     (xx (re-search-forward
 		  "^\\(%%\\|@@\\) \\([^ \t]+\\)[ \t]*\\([^ \t]+\\)?$"
 		  (save-excursion (end-of-line) (point))))
@@ -71,7 +76,7 @@
 		(if (string-match "\\(.*\\)-map" mode-string)
 		    (substring mode-string (match-beginning 1)
 			       (match-end 1)))))
-	     (xx (progn (beginning-of-line)
+	     (yy (progn (beginning-of-line)
 			(re-search-forward
 			 "^\\(%%\\|@@\\) \\([^ \t]+\\)[ \t]*\\([^ \t]+\\)?$"
 			 (save-excursion (end-of-line) (point)))
@@ -88,8 +93,7 @@
 					      (car (third xfunc)))))))
 		       " [function]"
 		     " [command]"))
-	     (line-pad 88)
-	     val doc)
+	     (line-pad 88))
 	(cond
 	 ((boundp var)
 	  (let* ((val (symbol-value var))

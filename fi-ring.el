@@ -18,7 +18,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-ring.el,v 1.17 1996/08/01 22:36:13 layer Exp $
+;; $Id: fi-ring.el,v 1.18 1997/02/27 17:34:18 layer Exp $
 
 ;; This code is very similar to the kill-ring implementation
 ;; and implements the fi::subprocess input ring.  Each fi::subprocess buffer
@@ -175,13 +175,10 @@ number ARG.  The list is displayed in reverse order if called from a
 program and the optional second parameter is non-nil."
   (interactive "p")
   (let* ((input-ring-for-list fi::input-ring)
-	 (input-ring-max-for-list fi::input-ring-max)
-	 (input-ring-yank-pointer-for-list fi::input-ring-yank-pointer)
 	 (ring-length (length fi::input-ring))
 	 (yank-ring-length (length fi::input-ring-yank-pointer))
 	 (loops ring-length)
 	 nth
-	 first
 	 count)
 	(if (zerop ring-length) (error "Input ring is empty."))
  	;; We rely on (error) to exit from this function. [HW]
@@ -201,7 +198,6 @@ program and the optional second parameter is non-nil."
 	  (setq count arg)
 	  (setq arg (1- arg))
 	  (setq nth (% (+ arg (- ring-length yank-ring-length)) ring-length))))
-	(setq first nth)
 	(with-output-to-temp-buffer
 	  "*Input Ring*"
 	  (save-excursion

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 1.75 1997/01/15 17:02:17 layer Exp $
+;; $Id: fi-lep.el,v 1.76 1997/02/27 17:34:07 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -152,8 +152,7 @@ at file visit time."
 
 (defun fi::ensure-translated-pathname (pathname)
   (if (position ?: pathname)
-      (or (ignore-errors
-	   (fi::translate-putative-logical-pathname pathname))
+      (or (ignore-errors (fi::translate-putative-logical-pathname pathname))
 	  pathname)
     pathname))
 
@@ -300,7 +299,6 @@ time."
 			    ;; add two because the file-position is just
 			    ;; before the form:
 			    2))
-	  (p 0)
 	  chars-on-line)
       (goto-char (point-min))
       (block done
@@ -1036,10 +1034,10 @@ the Allegro CL variable EXCL:*RECORD-XREF-INFO*."
     (() (filename pid symbol-file)
      (message "%s %d" filename pid)
      (gdb (concat "gdb " filename))	;gdb command changed between Emacs 18 and 19.
-     (send-string (get-buffer-process (current-buffer))
+     (process-send-string (get-buffer-process (current-buffer))
 		  (format "attach %d\n" pid))
      (unless (string= "" symbol-file)
-       (send-string (get-buffer-process (current-buffer))
+       (process-send-string (get-buffer-process (current-buffer))
 		    (format "symbol-file %s\n" symbol-file))))
     ;; Error continuation
     (() (error)

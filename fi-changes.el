@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-changes.el,v 1.17 1996/08/01 22:35:35 layer Exp $
+;; $Id: fi-changes.el,v 1.18 1997/02/27 17:33:14 layer Exp $
 ;;
 ;; Support for changed definitions
 
@@ -122,14 +122,13 @@ OLD-FILE."
 
 ;;; The guts of the problem
 
-(defun fi::do-buffer-changed-definitions (operation since &optional all-buffers)
+(defun fi::do-buffer-changed-definitions (operation since
+					  &optional all-buffers)
   (message "Computing changes...")
-  (let ((buffer (current-buffer))
-	(copy-file-name (and (eq operation ':copy)
+  (let ((copy-file-name (and (eq operation ':copy)
 			     (format "%s/%s.cl"
 				     fi:emacs-to-lisp-transaction-directory
-				     (make-temp-name "EtoL"))))
-	(xpackage fi:package))
+				     (make-temp-name "EtoL")))))
     (if all-buffers
 	(let ((args nil))
 	  (save-excursion
