@@ -313,9 +313,10 @@ with the name `fi:<IMAGE>-prompt-pattern' or from the following:
 %% fi:local-host-name
 %% fi:source-info-not-found-hook
 
-plus the following miscellaneous variable:
+plus the following miscellaneous variables:
 
 %% fi:lisp-evalserver-timeout
+%% fi:lisp-evalserver-number-reads
 
    The following are miscellaneous subprocess variables:
 
