@@ -6,7 +6,7 @@
 emacs = /usr/local/emacs
 
 elc-files = modes.elc subproc.elc sublisp.elc filec.elc ring.elc\
-	    doc.elc rlogin.elc shell.elc
+	    doc.elc rlogin.elc shell.elc keys.elc tcplisp.elc
 
 all:	depend spec.out
 
