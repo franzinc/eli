@@ -1,25 +1,76 @@
 
 	      Franz Inc. GNU Emacs/Common Lisp Interface
 
-$Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.8 1988/04/26 22:25:17 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.9 1988/04/26 23:08:36 layer Exp $
 
 This document is a specification of the Franz Inc. GNU Emacs interface
 to Common Lisp, which is written entirely in GNU Emacs Lisp (for GNU
 Emacs version 18.50).
 
+0. Concepts and Terminology
+
+   People familiar with Emacs and UNIX networking may wish to skip
+this section.
+
+   In Emacs, each buffer has a `mode'.  A mode is a collection of key
+and variable `bindings' which are specialized to a certain task.  When
+the cursor is in a `buffer' and you depress a key, its action is
+determined by the binding found in the `keymap' associated with that
+buffer (the buffer-local keymap).  If there is no binding in the
+buffer-local keymap, then the binding is sought on the `global' keymap.
+Thus, a mode is usually implemented by creating a buffer-local keymap
+and adding bindings to do specific tasks.  The result is that certain
+keys act differently in the buffer but most keys act just as they do
+in all the other buffers.  Usually the mode of a buffer is displayed
+in parenthesis at the bottom of the screen (in what is called the
+`mode line').
+
+   Most machines available today have a `network' interface.  There
+are several `protocols' in use today, of which `TCP/IP' (Transmission
+Control Protocol) is one.  TCP/IP is most commonly used for
+communication between machines using `ethernet'--ethernet is the
+hardward and TCP/IP is the software.  TCP/IP is available on Berkeley
+UNIX and some other UNIX systems, and is a powerful tool for making
+resources from a large number of machines easily available to all
+users on the network.  The X window system, for example, uses TCP/IP
+to communicate between clients and server.
+
+   For the purposes here, there are two types of communication using
+TCP/IP: in the UNIX and internet domains.  The internet domain is a
+global resource maintained by each machine--programs can reserve
+`port' numbers for specific uses.  For example, on Berkeley UNIX
+systems port number 513 (see /etc/services) is reserved for `whod', a
+program which broadcasts information on the number of users logged
+into a machine.  This means on each machine there is a program running
+in the background, called rwhod, which listens on port number 513 for
+broadcasts from other machines telling it who is logged in on what
+machine.  The second type of TCP/IP `channels' are called the UNIX
+domain variety.  It is easy to see that using a global resource might
+be a problem for users writing applications using TCP/IP.  For
+example, `rwhod' cannot be run twice on the same machine, because then
+they would compete for the same port number.  Certainly, restricting
+only one program running at a time is not acceptable for some
+applications.  UNIX domain `sockets', as they are called, communicate
+through special files, called socket files.
+
+   The Emacs/Lisp interface in this document can use both of these
+methods of communication, but the preferrable method uses UNIX domain
+sockets, because more than one person on a machine may use the
+Lisp/Emacs interface.
+
 1. Introduction
 
-   The purpose of this package is to enhance the productivity of the
-Lisp environment.  To this end, GNU Emacs and Lisp have been tightly
-coupled, and in the case of Sun Common Lisp 3.0 (or Allegro CL 3.0)
-the interface uses TCP/IP UNIX or internet domain sockets.
+   The purpose of this package is to enhance the Lisp environment.  To
+this end, GNU Emacs and Lisp have been tightly coupled, and in the
+case of Sun Common Lisp 3.0 (or Allegro CL 3.0) the interface uses
+TCP/IP UNIX or internet domain sockets.
 
    While editing Lisp source code, there are commands that make it
 easy to send expressions to, and receive information from, a Lisp
 process.  For example: a function can be sent to Lisp from a source
-buffer, a form in a Lisp source buffer can be macroexpanded, and
-source for functions defined by loading files into Lisp may be found
-via "ESC ." in Emacs.
+buffer, a form in a source buffer can be macroexpanded, and
+source for functions defined by loading files into Lisp may be located
+automatically.
 
    For the bindings set up in the editing modes to be useful, there must
 be a Lisp to which Emacs can communicate.  In this area the interface
@@ -93,9 +144,9 @@ for the mode.
 
 2.2 Variables
 
-   All local variables are killed when the mode is entered--this is a
-convention to insure that there are no name conflicts with user
-variables.
+   All local variables are killed when Common Lisp mode is
+entered--this is a convention to insure that there are no name
+conflicts with user variables.
 
    To correctly deal with the Common Lisp package system, Emacs must
 know the package for each file, so that it may use this when sending
@@ -131,6 +182,9 @@ There are three ways to automatically set this variable:
      Note that the normal method for setting a variable will not work,
      because `fi:package' contains a `:' and this confuses GNU
      Emacs, hence the use of `eval'.
+
+If Emacs cannot determine the package, then it is assumed to be
+"user" (the initial Common Lisp package).
 
 2.3 Functions
 
@@ -159,9 +213,9 @@ require the TCP/IP communication channel to Lisp:
 2.3 Hooks
 
    The hooks run for Common Lisp mode are fi:lisp-mode-hook and
-fi:common-lisp-mode-hook.  They are done last during mode
-initialization.  For example, the following hook enables auto-fill
-in Common Lisp mode:
+fi:common-lisp-mode-hook.  The function `run-hooks' is used to execute
+the hooks.  They are done last during mode initialization.  For
+example, the following hook enables auto-fill in Common Lisp mode:
 
     (setq fi:lisp-mode-hook
       '(lambda ()
@@ -393,17 +447,15 @@ document:
 The following in your .clinit.cl file will define an alias which will
 start the Lisp Listener Daemon:
 
-    (tpl:alias "ipc" ()
-      (if (or (find-package :ipc)
-	      (errorset (load "ipc.fasl")))
-	  (funcall (find-symbol "start-lisp-listener-daemon"
-				(find-package :ipc)))))
+    (or (find-package :ipc) (errorset (load "ipc.fasl") t))
+    #+ipc (ipc:start-lisp-listener-daemon)
 
 A.2 Remote Lisps
-   To get a remote lisp:
+   To start a remote Common Lisp called `cl' on machine `akbar', put
+the following in ~/.emacs:
 
     (setq explicit-common-lisp-file-name "rsh")
-    (setq explicit-common-lisp-image-arguments '("frozen" "cl"))
+    (setq explicit-common-lisp-image-arguments '("akbar" "cl"))
 
 A.3 X11R2
     ;; toy mouse bindings when using X windows
