@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.36 1991/09/30 11:39:23 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.37 1991/10/01 10:57:31 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -600,7 +600,7 @@ surrounding the point.  fi:package is used to determine from which Common
 Lisp package the operation is done.  In a subprocess buffer, the package is
 tracked automatically.  In source buffer, the package is parsed at file
 visit time."
-  (interactive (fi::get-default-symbol "List who calls" t))
+  (interactive (fi::get-default-symbol "List who calls" nil))
   ;; Since this takes a while, tell the user that it has started.
   (message "Finding callers of %s..." fspec)
   (lep::list-fspecs-common fspec
@@ -643,7 +643,7 @@ package is parsed at file visit time."
 (defun fi:edit-who-calls (fspec)
   "Edit all the callers of the function named by FSPEC.
 Use ``\\<fi:common-lisp-mode-map>\\[fi:lisp-find-next-definition]'' to find the next definition, if there is one."
-  (interactive (fi::get-default-symbol "Edit who calls" t))
+  (interactive (fi::get-default-symbol "Edit who calls" nil))
   (message "Editing callers...")
   (lep::edit-somethings fspec 'lep::who-calls nil "caller"))
 
