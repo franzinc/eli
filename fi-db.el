@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.4 1991/02/15 23:17:56 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.5 1991/02/22 00:44:30 layer Exp $
 ;;
 
 (defconst lep:current-frame-regexp "^ ->")
@@ -61,8 +61,11 @@ Type SPACE to hide this help summary.
 (defvar lep::debugger-from-buffer nil)
 (make-variable-buffer-local 'lep::debugger-from-buffer)
 
+(defvar lep::db-saved-window-configuration nil)
+
 (defun fi:scan-stack (&optional all)
   (interactive "P")
+  (setq lep::db-saved-window-configuration (current-window-configuration))
   (let ((process-name (lep::buffer-process))
 	(from-buffer (when fi:subprocess-mode
 		       (current-buffer))))
@@ -179,14 +182,9 @@ Type SPACE to hide this help summary.
 	    (lep::do-tpl-command-on-process nil "dn" offset ':zoom nil)
 	  (lep::do-tpl-command-on-process nil "up" (- offset) ':zoom nil)))))
 
-(defun lep:ss-quit (&optional buffer)
+(defun lep:ss-quit ()
   (interactive)
-  (let* ((buf (or lep::debugger-from-buffer buffer))
-	 (win (get-buffer-window buf)))
-    (bury-buffer)
-    (if win
-	(select-window win)
-      (switch-to-buffer buf))))
+  (set-window-configuration lep::db-saved-window-configuration))
 
 (defun lep:ss-display-locals-for-frame ()
   (interactive)
@@ -197,7 +195,7 @@ Type SPACE to hide this help summary.
 			 :offset offset)
      ((offset) (text)
       (when offset (lep::make-current offset))
-      (show-some-text text nil))
+      (fi::show-some-text-1 text nil))
      (() (error)
       (message "Cannot find locals: %s" error)))))
 
@@ -211,7 +209,7 @@ Type SPACE to hide this help summary.
      ((offset) (text)
       (when offset (lep::make-current offset))
 ;;;; figure out how to find the package
-      (show-some-text text nil))
+      (fi::show-some-text-1 text nil))
      (() (error)
       (message "Cannot pprint: %s" error)))))
 
@@ -239,8 +237,7 @@ Type SPACE to hide this help summary.
 
 (defun lep::do-tpl-command-on-process (done command &rest args)
   (let ((process-name (lep::buffer-process))
-	(offset (lep::offset-from-current-frame))
-	(buffer lep::debugger-from-buffer))
+	(offset (lep::offset-from-current-frame)))
     (make-request (lep::tpl-command-session
 		   :process-name process-name
 		   :command command
@@ -248,9 +245,9 @@ Type SPACE to hide this help summary.
 		   :done (eq t done)
 		   :offset (when done offset))
 		  ;; Normal continuation
-		  ((buffer offset) (done)
+		  ((offset) (done)
 		   (if (eq t done)
-		       (lep:ss-quit buffer)
+		       (lep:ss-quit)
 		     (when offset (lep::make-current offset))))
 		  ;; Error continuation
 		  ((process-name) (error)
