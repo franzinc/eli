@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.65 1995/04/29 18:34:38 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.66 1995/10/02 14:57:06 smh Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -991,7 +991,7 @@ the Allegro CL variable EXCL:*RECORD-XREF-INFO*."
     ;; Normal continuation
     (() (filename pid symbol-file)
      (message "%s %d" filename pid)
-     (gdb filename)
+     (gdb (concat "gdb " filename))	;gdb command changed between Emacs 18 and 19.
      (send-string (get-buffer-process (current-buffer))
 		  (format "attach %d\n" pid))
      (unless (string= "" symbol-file)

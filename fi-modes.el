@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.61 1995/01/07 00:49:11 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.62 1995/10/02 14:57:09 smh Exp $
 
 ;;;; Mode initializations
 
@@ -315,9 +315,9 @@ any other mode setup."
 (defun fi::lisp-mode-setup-common ()
   ;; not needed for Emacs Lisp mode, but ...
   (setq fi:in-package-regexp fi:default-in-package-regexp)
-  
+
   (setq local-abbrev-table lisp-mode-abbrev-table)
-  
+
   (make-local-variable 'paragraph-start)
   (setq paragraph-start (concat "^$\\|" page-delimiter))
   (make-local-variable 'paragraph-separate)
@@ -328,7 +328,7 @@ any other mode setup."
   (setq comment-start-skip ";+[ \t]*")
   (make-local-variable 'comment-column)
   (setq comment-column 40)
-  
+
   (if fi:lisp-do-indentation
       (progn
 	(make-local-variable 'indent-line-function)
@@ -338,8 +338,10 @@ any other mode setup."
 	(setq comment-indent-hook 'fi:lisp-comment-indent)
 
 	(make-local-variable 'parse-sexp-ignore-comments)
-	;; This variable must be `nil' when comments end in newlines.
-	(setq parse-sexp-ignore-comments nil)
+	;; It used to be true that this variable must be `nil' when comments end
+	;; in newlines.  However, it seems this limitation was removed some time
+	;; around the start of 1994, so now we'll try setting it true. - smh 29jun95
+	(setq parse-sexp-ignore-comments t)
 
 	(setq fi::lisp-most-recent-parse-result (list 0 0 0 0 nil nil nil 0))
 	(setq fi::calculate-lisp-indent-state-temp (list 0 0 0 nil nil nil 0))
@@ -389,7 +391,7 @@ the readtable used for evaluations given to Lisp from emacs."
 	(skip-chars-backward " \t")
 	(setq end (point))
 	(goto-char start)
-		 
+
 	(when (search-forward ":" end t)
 	  (goto-char start)
 	  (when (search-forward search-string end t)
