@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.31 1988/05/12 23:08:49 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.32 1988/05/18 13:36:38 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -282,9 +282,11 @@ are read from the minibuffer."
 					  image-prompt image-file
 					  image-arguments)
   (let* ((buffer (fi::make-process-buffer process-name buffer-number))
+	 (default-dir default-directory)
 	 (buffer-name (buffer-name buffer))
 	 start-up-feed-name process status)
     (switch-to-buffer buffer)
+    (setq default-directory default-dir)
     (setq process (get-buffer-process buffer))
     (setq status (if process (process-status process)))
     (if (memq status '(run stop))
@@ -326,6 +328,7 @@ are read from the minibuffer."
 				    &optional given-host
 					      given-service)
   (let* ((buffer (fi::make-process-buffer buffer-name buffer-number))
+	 (default-dir default-directory)
 	 (buffer-name (buffer-name buffer))
 	 (host (if given-host
 		   (expand-file-name given-host)
@@ -337,6 +340,7 @@ are read from the minibuffer."
 		    (if fi:unix-domain 0 fi:excl-service-name)))
 	 proc status)
     (switch-to-buffer buffer)
+    (setq default-directory default-dir)
     (setq proc (get-buffer-process buffer))
     (setq status (if proc (process-status proc)))
     (if (eq status 'run)
@@ -404,8 +408,7 @@ are read from the minibuffer."
 	 (end (if (markerp end-position)
 		  (marker-position end-position)
 		end-position))
-	 (string (buffer-substring start end))
-	 (size (- end start)))
+	 (string (buffer-substring start end)))
     (fi::send-string-split process string nl-cr)))
 
 (defun fi::send-string-split (process string &optional nl-cr)
