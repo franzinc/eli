@@ -45,7 +45,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.34 1989/02/17 19:03:09 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.35 1989/02/17 19:36:18 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -69,7 +69,7 @@ as an inferior of Emacs in some buffer).  It is used when expressions are
 sent from an Emacs buffer to a Lisp process so that the symbols are read
 into the correct Lisp package.")
 
-(defvar fi:echo-evals-from-buffer-in-listener-p t
+(defvar fi:echo-evals-from-buffer-in-listener-p nil
   "*If non-NIL, forms evalutated directly from a lisp buffer by the
 fi:lisp-eval-* functions will be echoed by the lisp listener.")
 
