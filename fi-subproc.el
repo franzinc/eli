@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.179 1996/12/12 18:55:13 layer Exp $
+;; $Id: fi-subproc.el,v 1.180 1996/12/17 00:46:35 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -426,7 +426,6 @@ be a string. Use 6th argument for image file."))
 	      (let ((start-lisp-after-failed-connection t)
 		    (i 0)
 		    (process nil))
-		(setq default-directory directory)
 		(fi::set-environment fi:subprocess-env-vars)
 		(while
 		    (condition-case condition
@@ -460,6 +459,7 @@ be a string. Use 6th argument for image file."))
 		  (setq i (+ i 1)))
 		(unless process
 		  (error "Couldn't make connection to existing Lisp."))
+		(setq default-directory directory)
 		process)
 	    (let ((local
 		   (or

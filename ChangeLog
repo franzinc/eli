@@ -11,6 +11,17 @@ Tests for new features:	<`no new features', `no tests for new features', or
 	* <changes go here...>
 
 *******************************************************************************
+2.0.20.beta.3
+
+Documentation changes:	none
+Tests for new features:	no new features
+
+Mon Dec 16 11:17:17 1996    <layer@HOBART>
+
+	* fi-subproc.el: for windows, set default-directory at appropriate
+	time
+
+*******************************************************************************
 2.0.20.beta.2
 
 Documentation changes:	none
