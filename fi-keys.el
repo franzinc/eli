@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.9 1988/05/25 10:55:32 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.10 1988/05/25 17:16:13 layer Exp $
 
 ;;;;
 ;;; Key defs
@@ -173,12 +173,17 @@ and send to Lisp."
 		  (funcall indent-line-function))))
 	  ;; a non-list s-exp, so just send it off...
 	  (fi:subprocess-send-input)))
-    
+    ;;NOT AT THE END OF THE BUFFER!
     ;; find the user's input contained around the cursor and send that to
     ;; the inferior lisp
-    (let (start end)
+    (let ((start-of-last-prompt
+	   (save-excursion
+	     (or (and (re-search-backward subprocess-prompt-pattern nil t)
+		      (point))
+		 (point-max))))
+	  start end)
       (if (or (and (bolp) (looking-at "("))
-	      (re-search-backward "^(" nil t)
+	      (re-search-backward "^(" start-of-last-prompt t)
 	      (prog1 (re-search-backward subprocess-prompt-pattern nil t)
 		(goto-char (match-end 0))))
 	  (progn
@@ -188,13 +193,21 @@ and send to Lisp."
 		   (depth (car state)))
 	      (if (zerop depth)
 		  (setq end eol)
-		(setq end (save-excursion
-			    (if (< depth 0)
-				(up-list (- depth))
-			      (goto-char eol)
-			      (up-list depth))
-			    (point))))
-	      (fi:subprocess-input-region start end)))
+		(setq end
+		  (condition-case ()
+		      (save-excursion
+			(if (< depth 0)
+			    (up-list (- depth))
+			  (goto-char eol)
+			  (up-list depth))
+			(point))
+		    (error nil))))
+
+	      (if (or (null end) (= end (point-max)))
+		  (progn
+		    (goto-char (point-max))
+		    (fi:inferior-lisp-newline))
+		(fi:subprocess-input-region start end))))
 	(error "couldn't find start of input")))))
     
 (defun fi:subprocess-input-region (start end)
