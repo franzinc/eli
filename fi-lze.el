@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.18 1991/11/11 14:43:33 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.19 1991/12/09 22:21:36 layer Exp $
 ;;
 ;; Code the implements evaluation in via the backdoor
 
@@ -79,9 +79,8 @@
 (defun fi:lisp-eval-defun (compilep)
   "Send the current top-level (or nearest previous) form to the Lisp
 subprocess associated with this buffer.  A `top-level' form is one that
-starts in column 1.  If a Lisp subprocess has not been started, then one is
-started.  With a prefix argument, the source sent to the subprocess is
-compiled."
+starts in column 1.  With a prefix argument, the source sent to the
+subprocess is compiled."
   (interactive "P")
   (let* ((end (save-excursion (end-of-defun) (point)))
 	 (start (save-excursion
@@ -92,8 +91,7 @@ compiled."
 (defun fi:lisp-eval-region (compilep)
   "Send the text in the region to the Lisp subprocess associated with this
 buffer, one expression at a time if there is more than one complete
-expression.  If a Lisp subprocess has not been started, then one is
-started.  With a prefix argument, the source sent to the subprocess is
+expression.  With a prefix argument, the source sent to the subprocess is
 compiled."
   (interactive "P")
   (fi::eval-region-internal (min (point) (mark))
@@ -102,8 +100,7 @@ compiled."
 
 (defun fi:lisp-eval-last-sexp (compilep)
   "Send the sexp before the point to the Lisp subprocess associated with
-this buffer.  If a Lisp subprocess has not been started, then one is
-started.  With a prefix argument, the source sent to the subprocess is
+this buffer.  With a prefix argument, the source sent to the subprocess is
 compiled."
   (interactive "P")
   (let ((start (save-excursion
@@ -114,7 +111,6 @@ compiled."
 
 (defun fi:lisp-eval-current-buffer (compilep)
   "Send the entire buffer to the Lisp subprocess associated with this
-buffer.  If a Lisp subprocess has not been started, then one is started.
-With a prefix argument, the source sent to the subprocess is compiled."
+buffer."
   (interactive "P")
   (fi::eval-region-internal (point-min) (point-max) compilep t))
