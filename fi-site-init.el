@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.46 1993/08/31 23:26:09 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.47 1993/09/10 15:31:36 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -12,7 +12,7 @@
 
 (require 'cl)
 
-(when (eq fi::emacs-type 'emacs19)
+(when (or (eq fi::emacs-type 'emacs19) (eq fi::emacs-type 'lemacs19))
   ;; needed for setf expanations (on some version 19.xx) when they are
   ;; compiled when non-version 19 
   ;; byte-compilers
