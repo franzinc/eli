@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.82 1993/07/23 07:02:34 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.83 1993/07/23 07:09:57 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -147,6 +147,7 @@ clman_release_files       = $(clman_files_common) \
 			    -C small_manual manual/OBLIST.el \
 			    -C small_manual clman.data
 clman_release_files_clim2 = $(clman_files_common) manual/OBLIST.el clman.data
+clman_data_release	  = $(release_root)/clman.data
 clman_release_gztar       = $(release_root)/clman-$(clman_version).tar.gz
 clman_release_gztar_clim2 = $(release_root)/clman-$(clman_version)-clim2.tar.gz
 clman_release_stats	  = $(release_root)/clman-$(clman_version).stats
@@ -178,10 +179,10 @@ rdist = /usr/ucb/rdist
 
 rdist: all
 	rm -fr DIST
-	rm -f manual
-	ln -s /net/vapor/scm/emacs-lib/clman manual
 	${rdist} -qc Makefile ChangeLog *.doc fi-*.el fi-*.elc \
-		manual "`hostname`:`pwd`/DIST"
+		"`hostname`:`pwd`/DIST"
+	(cd DIST; ln -s $(clman_data_release) .)
+	(cd DIST; ln -s /net/vapor/scm/emacs-lib/clman manual)
 	(cd DIST; ${rdist} -Rc . "{`echo ${hosts} | sed 's/ /,/g'`}:$(to)")
 	rm -fr DIST
 
