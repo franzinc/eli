@@ -1,14 +1,14 @@
-# $Id: makefile.win32,v 2.1 1996/08/30 21:32:07 layer Exp $
+# $Id: makefile.win32,v 2.2 1996/09/04 00:03:06 layer Exp $
 
 !include <ntwin32.mak>
 
-emacs_dir = c:\emacs-19.34\bin
+emacs_dir = $(emacs_dir)
 
 .c{$(BLD)}.obj:
 	$(CC) -c -nologo -DWIN32 $(CFLAGS) -Fo$@ $<
 
 default:
-	$(emacs_dir)\emacs -batch -l fi-compile.el -kill
+	$(emacs_dir)\bin\emacs -batch -l fi-compile.el -kill
 
 clman.exe:	clman.obj clmanaux.obj
 	link -nologo -out:$@ -subsystem:console -entry:mainCRTStartup \

@@ -4,6 +4,8 @@ Tue Sep 03 16:54:08 1996    <layer@HOBART>
 	  doesn't have to be changed.  (load "..../fi-site-init.el") is now
 	  all that is needed.
 	* fi-subproc.el: more misc fixes fi:common-lisp-socket.
+	* make.bat: fix for varying emacs locations
+	* makefile.win32: get emacs_dir from make.bat
 
 Fri Aug 30 11:01:15 1996    <layer@HOBART>
 
