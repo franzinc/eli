@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/Attic/fi-lemacs.el,v 2.11 1993/09/09 18:08:32 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-lemacs.el,v 2.12 1993/09/10 17:34:59 layer Exp $
 
 (defconst fi:allegro-file-menu
     '("ACLFile"
@@ -427,18 +427,18 @@
 
 (defconst fi:inferior-common-lisp-mode-popup-menu
     '("inferior common lisp mode popup menu"
-      ["Zoom" fi:debug-menu-zoom fi::connection-open]
-      ["Down frame" fi:debug-menu-down-frame fi::connection-open]
-      ["Up frame" fi:debug-menu-up-frame fi::connection-open]
-      ["Edit frame" fi:debug-menu-edit-frame fi::connection-open]
-      ["Locals for frame" fi:debug-menu-locals fi::connection-open]
+      ["Zoom" fi:debug-menu-zoom (fi::connection-open)]
+      ["Down frame" fi:debug-menu-down-frame (fi::connection-open)]
+      ["Up frame" fi:debug-menu-up-frame (fi::connection-open)]
+      ["Edit frame" fi:debug-menu-edit-frame (fi::connection-open)]
+      ["Locals for frame" fi:debug-menu-locals (fi::connection-open)]
       "----"
-      ["Continue" fi:debug-menu-continue fi::connection-open]
-      ["Restart" fi:debug-menu-restart fi::connection-open]
-      ["Pop" fi:debug-menu-pop fi::connection-open]
-      ["Reset" fi:debug-menu-reset fi::connection-open]
+      ["Continue" fi:debug-menu-continue (fi::connection-open)]
+      ["Restart" fi:debug-menu-restart (fi::connection-open)]
+      ["Pop" fi:debug-menu-pop (fi::connection-open)]
+      ["Reset" fi:debug-menu-reset (fi::connection-open)]
       "----"
-      ["List processes" fi:debug-menu-processes fi::connection-open]
+      ["List processes" fi:debug-menu-processes (fi::connection-open)]
       ))
 
 (defun fi:debug-menu-reset ()
