@@ -1,4 +1,4 @@
-;;					-[Wed Aug 16 13:38:21 1989 by layer]-
+;;					-[Wed Oct 18 16:07:06 1989 by layer]-
 ;;
 ;; Allegro CL IPC interface
 ;;
@@ -24,9 +24,7 @@
 #+has-rcsnote
 (si::rcsnote
  "ipc"
- "$Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.26 1989/08/16 13:52:26 layer Rel $")
-
-;; $Locker: layer $
+ "$Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.27 1990/08/31 23:46:04 layer Exp $")
 
 (provide :ipc)
 
@@ -37,7 +35,7 @@
 
 (require :process)
 (require :foreign)
-(require :cstructs)
+(require :defctype)
 
 (defvar *unix-domain*
     ;; can't use excl::machine-case because some hosts are not known in
@@ -197,7 +195,7 @@ listener ever completes, it makes sure files are closed."
 		      (setf (sockaddr-un-path listen-sockaddr i)
 			(char-int (elt *socket-pathname* i))))
 	       else ;; a crock:
-		    (bzero listen-sockaddr (ff::cstruct-len 'sockaddr-in))
+		    (bzero listen-sockaddr (ff::cstruct-length 'sockaddr-in))
 		    (setf (sockaddr-in-family listen-sockaddr) *af-inet*
 			  (sockaddr-in-port listen-sockaddr) *inet-port*))
 	  
@@ -205,7 +203,7 @@ listener ever completes, it makes sure files are closed."
 				 listen-sockaddr
 				 (if *unix-domain*
 				     (+ (length *socket-pathname*) 2)
-				   (ff::cstruct-len 'sockaddr-in))))
+				   (ff::cstruct-length 'sockaddr-in))))
 	      (perror "bind")
 	      (return-from bad-news))
 
@@ -222,8 +220,8 @@ listener ever completes, it makes sure files are closed."
 			    mask mask-obj timeval)
 	      (setf (unsigned-long-unsigned-long int)
 		(if *unix-domain*
-		    (ff::cstruct-len 'sockaddr-un)
-		  (ff::cstruct-len 'sockaddr-in)))
+		    (ff::cstruct-length 'sockaddr-un)
+		  (ff::cstruct-length 'sockaddr-in)))
 	      (setq fd (accept listen-socket-fd listen-sockaddr int))
 	      (finish-output *standard-output*)
 	      (finish-output *error-output*)
@@ -231,7 +229,8 @@ listener ever completes, it makes sure files are closed."
 		(perror "accept")
 		(return-from bad-news))
 	    
-	      (setq stream (excl::make-buffered-terminal-stream fd fd t t))
+	      (setq stream
+		(excl::make-double-buffered-terminal-stream fd fd t t))
 	   
 	      ;; the first thing that comes over the stream is the name of the
 	      ;; emacs buffer which was created--we name the process the same.
@@ -264,7 +263,7 @@ listener ever completes, it makes sure files are closed."
   (error "couldn't start listener daemon"))
 
 (defun refuse-connection (fd &aux s)
-  (setq s (excl::make-buffered-terminal-stream fd fd t t))
+  (setq s (excl::make-double-buffered-terminal-stream fd fd t t))
   (setf (excl::sm_read-char s) #'mp::stm-bterm-read-string-char-wait)
   (format s "connection refused.~%")
   (force-output s)
@@ -305,7 +304,8 @@ internet domain ports and SOCKET-FILE is for unix domain ports."
 	    (setq socket-fd (socket *af-unix* *sock-stream* 0))
 	    (if (< (connect socket-fd server (+ 2 (length socket-file))) 0)
 		(error "connect failed to ~s" socket-file))
-	    (excl::make-buffered-terminal-stream socket-fd socket-fd t t))
+	    (excl::make-double-buffered-terminal-stream
+	     socket-fd socket-fd t t))
      else ;; INTERNET domain
 	  (let (sock server hostaddress)
 	    ;; Open a socket
@@ -313,7 +313,7 @@ internet domain ports and SOCKET-FILE is for unix domain ports."
 	      (error "couldn't open socket"))
 	    ;; construct a socket address
 	    (setf server (make-cstruct 'sockaddr-in))
-	    (bzero server (ff::cstruct-len 'sockaddr-in))
+	    (bzero server (ff::cstruct-length 'sockaddr-in))
 	    (when (= (setf hostaddress (gethostbyname host)) 0)
 	      (error "unknown host: ~a" host))
 	    (if (not (= 4 (hostent-length hostaddress)))
@@ -322,8 +322,10 @@ internet domain ports and SOCKET-FILE is for unix domain ports."
 	    (setf (sockaddr-in-addr server)
 	      (si:memref-int (hostent-addr hostaddress) 0 0
 			     :unsigned-long))
-	    ;; If on SunOS 4.0, then need to indirect one more time
-	    (if (probe-file "/lib/ld.so")
+	    (if (or (member comp::.target. '(:sgi4d :sony)
+			    :test #'eq)
+		    ;; only on SunOS 4.0
+		    (probe-file "/lib/ld.so"))
 		(setf (sockaddr-in-addr server)
 		  (si:memref-int (sockaddr-in-addr server)
 				 0 0 :unsigned-long)))
@@ -331,8 +333,8 @@ internet domain ports and SOCKET-FILE is for unix domain ports."
 	    (setf (sockaddr-in-family server) *af-inet*)
 	    (setf (sockaddr-in-port server) port)
 	    ;; open the connection
-	    (when (< (connect sock server (ff::cstruct-len 'sockaddr-in)) 0)
+	    (when (< (connect sock server (ff::cstruct-length 'sockaddr-in)) 0)
 	      (unix-close sock)
 	      (error "couldn't connect to socket"))
 	    ;; build and return the stream
-	    (excl::make-buffered-terminal-stream sock sock t t))))
+	    (excl::make-double-buffered-terminal-stream sock sock t t))))
