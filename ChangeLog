@@ -9,6 +9,11 @@ For more detailed instructions on filling in the ChangeLog form, see
 *******************************************************************************
 post-6.0 release changes:
 
+2001-01-05  Kevin Layer  <layer@ultra>
+
+	* fi-subproc.el: add subprocess filter for tcp buffers, too (so
+	the variable fi:subprocess-max-buffer-lines works).
+
 2001-01-03  Kevin Layer  <layer@ultra>
 
 	* fi-subproc.el: added new fi:subprocess-max-buffer-lines
