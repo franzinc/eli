@@ -1,4 +1,4 @@
-$Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.2 1988/04/04 20:18:04 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.3 1988/04/07 13:58:43 layer Exp $
 
 		 Franz Inc. GNU Emacs/LISP Interface
 
@@ -61,7 +61,6 @@ hooks are run).
 editing Lisp source:
 
 %mode: fi:common-lisp-mode
-%% common-lisp-mode
 %% fi:common-lisp-mode
 %% fi:common-lisp-mode-map
 
@@ -76,19 +75,6 @@ editing Lisp source:
 %mode: fi:emacs-lisp-mode
 %% fi:emacs-lisp-mode
 %% fi:emacs-lisp-mode-map
-
-   Interactively called functions, variables and functions for editing:
-
-%mode: fi:common-lisp-mode
-%% fi:lisp-auto-semicolon-mode
-%% fi:lisp-comment-indent-specification
-%% fi:lisp-indent-line
-%% fi:lisp-reindent-newline-indent
-%% fi:lisp-comment-indent
-%% fi:lisp-semicolon
-%% fi:indent-lisp-semicolon
-%% fi:lisp-do-auto-fill
-%% fi:indent-sexp
 
    Interactively called functions, variables and functions for
 interacting with Lisp:
@@ -144,12 +130,24 @@ following in your .emacs file:
 %% fi:subprocess-enable-superkeys
 %% fi:subprocess-map-nl-to-cr
 %% fi:subprocess-write-quantum
-%% fi:subprocess-backward-kill-word
 
-%% fi:kill-shell-input
-%% fi:subprocess-beginning-of-line
-%% fi:subprocess-send-input
 %% fi:subprocess-superkey
+
+%% fi:subprocess-kill-input
+%% fi:subprocess-beginning-of-line
+%% fi:subprocess-backward-kill-word
+%% fi:subprocess-send-input
+%% fi:subprocess-interrupt
+%% fi:subprocess-kill-output
+%% fi:subprocess-quit
+%% fi:subprocess-send-eof
+%% fi:subprocess-send-flush
+%% fi:subprocess-show-output
+%% fi:subprocess-suspend
+
+%% fi:shell-cd-regexp
+%% fi:shell-popd-regexp
+%% fi:shell-pushd-regexp
 
 3.5 Inferior Lisp Modes
    There are two types of inferior Lisp modes: subprocess and TCP.
@@ -163,10 +161,12 @@ The TCP type
 %% fi:inferior-common-lisp-mode
 %% fi:inferior-common-lisp-mode-map
 %% fi:inferior-common-lisp-mode-super-key-map
+
 %mode: fi:inferior-franz-lisp-mode
 %% fi:inferior-franz-lisp-mode
 %% fi:inferior-franz-lisp-mode-map
 %% fi:inferior-franz-lisp-mode-super-key-map
+
 %mode: fi:inferior-lisp-mode
 %% fi:inferior-lisp-mode
 %% fi:inferior-lisp-mode-map
@@ -227,52 +227,6 @@ The TCP type
 %% fi:tcp-lisp-kill-process
 %% fi:tcp-lisp-mode
 %% fi:tcp-lisp-send-eof
-
-3.6 Shell Mode
-
-%mode: fi:shell-mode
-%% fi:shell
-%% fi:another-shell
-%% fi:shell-mode
-%% fi:shell-mode-map
-%% fi:shell-mode-super-key-map
-
-%% fi:shell-cd-regexp
-%% fi:shell-popd-regexp
-%% fi:shell-pushd-regexp
-%% fi:shell-prompt-pattern
-%% fi:default-shell-file-name
-%% fi:default-shell-image-arguments
-%% fi:explicit-shell-file-name
-%% fi:explicit-shell-image-arguments
-
-%% fi:interrupt-shell-subjob
-%% fi:kill-output-from-shell
-%% fi:kill-shell-subjob
-%% fi:quit-shell-subjob
-%% fi:shell-send-eof
-%% fi:shell-send-flush
-%% fi:show-output-from-shell
-%% fi:stop-shell-subjob
-
-3.7 Rlogin Mode
-
-%mode: fi:rlogin-mode
-%% fi:rlogin
-%% fi:another-rlogin
-%% fi:rlogin-mode
-%% fi:rlogin-mode-map
-%% fi:rlogin-mode-super-key-map
-
-%% fi:default-rlogin-file-name
-%% fi:default-rlogin-image-arguments
-%% fi:explicit-rlogin-file-name
-%% fi:explicit-rlogin-image-arguments
-
-%% fi:rlogin-send-eof
-%% fi:rlogin-send-interrupt
-%% fi:rlogin-send-quit
-%% fi:rlogin-send-stop
 
 4. Getting Started
 
