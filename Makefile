@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.70 1991/10/03 12:50:38 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.71 1991/10/15 11:40:14 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -79,5 +79,7 @@ print:
 	$(enscript) -f Courier8         RefMan.doc
 	$(enscript) -f Courier6 -B -2r  RefCard.doc
 
-tags:
+tags:	TAGS
+
+TAGS:	${elcs}
 	etags *.el
