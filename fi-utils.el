@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.32 1992/01/22 16:39:28 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.33 1992/01/24 18:51:02 layer Exp $
 
 ;;; Misc utilities
 
@@ -297,15 +297,18 @@ refer to the installation guide for further information."))
   (if (interactive-p)
       (message "everything looks fine!")))
 
-(defun fi:error (format-string &rest args)
+(defun fi:note (format-string &rest args)
   (let ((string (apply 'format format-string args)))
     (delete-other-windows)
     (switch-to-buffer "*Help*")
     (erase-buffer)
     (insert string)
-    (beginning-of-buffer)
-    (beep)
-    (signal 'error (list ""))))
+    (beginning-of-buffer)))
+
+(defun fi:error (format-string &rest args)
+  (apply 'fi:note format-string args)
+  (beep)
+  (signal 'error (list "")))
 
 (defun fi:map-lines (function &rest args)
   "Apply FUNCTION to ARGS once for every line in buffer, with point always
