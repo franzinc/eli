@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.25 1988/07/15 18:32:36 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.26 1988/11/03 17:19:24 layer Exp $
 
 ;;;; Mode initializations
 
@@ -55,6 +55,10 @@
 (defvar fi:indent-setup-hook nil
   "Hook called to setup local indentation in Inferior Lisp and Lisp
 modes.")
+
+(defvar fi:common-lisp-file-types '(".cl" ".lisp" ".lsp")
+  "Extensions of files which go into Common Lisp mode.  This should be set
+before this package is loaded.")
 
 ;;;;
 ;;; The Modes
@@ -323,9 +327,13 @@ for the \"mode:\" local variable.  For that, use  hack-local-variables."
       (setq auto-mode-alist
 	(cons (cons string mode) auto-mode-alist)))))
 
-(fi::def-auto-mode "\\.cl$" 'fi:common-lisp-mode)
-(fi::def-auto-mode "\\.lisp$" 'fi:common-lisp-mode)
 (fi::def-auto-mode "\\.l$" 'fi:franz-lisp-mode)
+;;
+(let ((list fi:common-lisp-file-types))
+  (while list
+    (fi::def-auto-mode (concat "\\" (car list) "$")
+	'fi:common-lisp-mode)
+    (setq list (cdr list))))
 
 (setq fi:indent-setup-hook 'fi::indent-setup-hook)
 
