@@ -6,6 +6,13 @@ For more detailed instructions on filling in the ChangeLog form, see
 <standard changelog date stamp>
 	* <changes go here...>
 
+******************************************************************************
+2.2.4
+
+2001-08-23  Kevin Layer  <layer@crikey>
+
+	* fi-lep.el: updated fi:goto-char doc string
+
 *******************************************************************************
 2.2.3
 

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 1.85.6.3 2001/06/15 22:42:29 layer Exp $
+;; $Id: fi-lep.el,v 1.85.6.3.2.1 2001/08/23 22:03:45 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -27,11 +27,14 @@ time."
 
 (defun fi:lisp-apropos (string &optional regexp)
   "In the Common Lisp environment evaluate lisp:apropos on STRING.
-With prefix arg REGEXP, STRING is a regular expression for which matches
-are sought.  fi:package is used to determine from which Common Lisp package
-the operation is done.  In a subprocess buffer, the package is tracked
-automatically.  In source buffer, the package is parsed at file visit
-time."
+With prefix arg REGEXP, STRING is an ACL regular expression for which
+matches are sought.  fi:package is used to determine from which Common Lisp
+package the operation is done.  In a subprocess buffer, the package is
+tracked automatically.  In source buffer, the package is parsed at file
+visit time.
+
+ACL regular expressions differ from those in Emacs.  See the ACL
+documentation for more information."
   (interactive
    (list (car (fi::get-default-symbol
 	       (if current-prefix-arg "Apropos (regexp)" "Apropos")
@@ -294,8 +297,8 @@ the end of line convention. In Emacs, the end of line is a single
 character in the buffer. In Common Lisp on Windows, however, it is
 often two characters.  (Common Lisp compiler warnings that report file
 positions differently from what is expected illustrates the
-difference.) Note that fi:goto-char may not work for external formats
-other than the default."
+difference.)  Note that fi:goto-char may not work multi-byte characters in
+versions of Emacs that support such things."
   (interactive "NGoto CL file-position: ")
   (goto-char
    (if (on-ms-windows)
