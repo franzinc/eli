@@ -377,7 +377,7 @@ post-release patch
 
 2001-11-01  Kevin Layer  <layer@crikey>
 
-    from mikel for spr24742
+    from mikel for spr24742/bug11469
 	* fi-xemacs.el: don't contact lisp over and over again, cache the
 	value used for the first menu item, and uncache it on the last. 
 
