@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.5 1991/02/13 10:20:30 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.6 1991/02/28 23:06:07 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -51,10 +51,13 @@
 
 (defvar lep::*connection* nil)
 
+(defun lep::lep-open-connection-p ()
+  (and lep::*connection*
+       (fi:process-running-p (connection-process lep::*connection*))
+       lep::*connection*))
+
 (defun ensure-lep-connection () 
-  (or (and lep::*connection*
-	   (fi:process-running-p (connection-process lep::*connection*))
-	   lep::*connection*)
+  (or (lep::lep-open-connection-p)
       (try-and-start-lep-connection)
       (error "no connection")))
 
