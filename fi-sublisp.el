@@ -1,4 +1,4 @@
-;;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.13 1988/03/20 16:42:58 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.14 1988/03/22 09:24:35 layer Exp $
 ;;;
 ;;; Interaction with a Lisp subprocess
 
@@ -31,7 +31,7 @@
 socket file, otherwise fi:excl-service-name specifies the /etc/services
 name of the service.")
 
-(defvar fi::unix-domain-socket (expand-file-name "~/.excl_to_emacs")
+(defvar fi::unix-domain-socket "~/.excl_to_emacs"
   "The name of the socket file that lisp and emacs use to communicate.")
 
 (defvar fi:local-host-name "localhost"
@@ -275,8 +275,10 @@ backdoor lisp listener."
 	       (delete-process fi::background-sublisp-process))
 	  (setq fi::background-sublisp-process
 	    (if fi:unix-domain
-		(open-network-stream "sublisp-back" nil
-				     fi::unix-domain-socket 0)
+		(open-network-stream
+		 "sublisp-back" nil
+		 (expand-file-name fi::unix-domain-socket)
+		 0)
 	      (open-network-stream "sublisp-back" nil fi:local-host-name
 				   fi:excl-service-name)))
 	  (setq fi::sublisp-returns-state nil)
