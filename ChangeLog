@@ -7,6 +7,15 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.0
+
+Fri May  8 10:12:08 1998  Kevin Layer  <layer@ultra>
+
+	* Makefile: modify fi-vers.el to save compiling emacs version #.
+	* fi-compile.el: add comments about a failed experiment
+	* fi-site-init.el: guard against problems loading into xemacs 20.x.
+
+*******************************************************************************
 2.0.21.beta.2
 
 Wed Apr 22 16:45:20 1998  Kevin Layer  <layer@ultra>
