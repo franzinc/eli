@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-leep.el,v 1.1 1991/07/10 22:23:53 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-leep.el,v 1.2 1991/08/22 21:30:01 layer Exp $
 
 ;; The epoch side of presentations in a lisp-listener window.
 
@@ -106,19 +106,8 @@ The function should be defined in this way:
 (defun fi:epoch-gesture-describe (x)
   (fi::interrupt-process-for-gesture ':describe))
 
-(defun composer::make-presenting-listener (new-screen-p)
-  (when (and new-screen-p (fboundp 'create-screen))
-    (let ((screen (create-screen "*listener*" epoch::screen-properties)))
-      (epoch::map-screen screen)
-      (epoch::select-screen screen)
-      screen))
-  (let* ((proc (fi:open-lisp-listener -1))
-	 (buffer (process-buffer proc)))
-    (composer::setup-buffer-for-presentations buffer)
-    (set-process-filter proc 'fi::leep-subprocess-filter)
-    (send-string
-     proc
-     "(progn
+(defvar composer::init-presentations
+    "(progn
       (princ \";; Converting *terminal-io* for presentations...\n\")
       (force-output)
       (setq excl::*command-table*
@@ -126,6 +115,21 @@ The function should be defined in this way:
       (lep::mogrify-terminal-io)
       (force-output)
       (values))\n")
+
+(defun composer::make-presenting-listener (new-screen-p)
+  (when (and new-screen-p (fboundp 'create-screen))
+    (let ((screen (create-screen "*listener*" epoch::screen-properties)))
+      (epoch::map-screen screen)
+      (epoch::select-screen screen)
+      screen))
+  (let* ((proc (fi:open-lisp-listener -1 nil
+				      (function
+				       (lambda (proc)
+					 ;; proc is ignored
+					 composer::init-presentations))))
+	 (buffer (process-buffer proc)))
+    (composer::setup-buffer-for-presentations buffer)
+    (set-process-filter proc 'fi::leep-subprocess-filter)
     proc))
 
 ;; The presentation-stack local variable is a stack of presentations opened
