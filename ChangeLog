@@ -12,6 +12,7 @@ For more detailed instructions on filling in the ChangeLog form, see
 Mon Jul 20 19:56:40 1998  Kevin Layer  <layer@ultra>
 
 	* Makefile: add back `all' rule (same as `default')
+	* doc/eli.htm: minor edits
 
 *******************************************************************************
 2.0.21.11

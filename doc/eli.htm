@@ -8,9 +8,9 @@
 
 <h1 align="center">The Emacs-Lisp Interface</h1>
 
-<h1 align="center"><small><small>Version __VERSION__</small></small></h1>
+<h1 align="center"><small><small>ELI Version __VERSION__</small></small></h1>
 
-<h1 align="center"><small><small>$Revision: 1.1.2.1 $</small></small></h1>
+<h1 align="center"><small><small>$Revision: 1.1.2.2 $</small></small></h1>
 
 <hr>
 
@@ -248,7 +248,7 @@ unambiguous fashion even though we cannot know the exact location on your system
 
 <p>Now we discuss the conventions for identifying keyboard keys. The important point is
 that most Emacs commands are effected by entering one or more keystrokes, with each
-keystroke being a single key or a combination of keys press simultaneously. The most
+keystroke being a single key or a combination of keys pressed simultaneously. The most
 common keys used in combination with others are the CONTROL key, the ESCAPE key and the
 META key. (Most keyboards do not have a key labeled META, so another key is usually
 designated as the META key. On Sun keyboards, for example, the LEFT key is used for the
@@ -667,7 +667,7 @@ Emacs-Lisp interface is not loaded, you can load it as follows.</p>
   <pre>M-x load-file RET /usr/acl50/eli/fi-site-init</pre>
 </blockquote>
 
-<h3>Note about running Common Lisp on a different machine that Emacs</h3>
+<h3>Note about running Common Lisp on a different machine than Emacs</h3>
 
 <p>If M-x fi:common-lisp is used to start a Common Lisp process on a remote machine (i.e.
 a different machine than the one running Emacs), and Emacs is exited without first exiting
@@ -824,7 +824,7 @@ documentation. However, what you see will be similar.</p>
 
 <p>The user(N): is the Allegro CL prompt. The comment just before the first prompt
 signifies that an Allegro CL process that communicates with Emacs has started (see <a
-href="../doc/cl/multiprocessing.htm">multiprocessing.htm</a> for a definition of process).
+href="cl/multiprocessing.htm">multiprocessing.htm</a> for a definition of process).
 Meanwhile, in the Emacs minibuffer, you should see</p>
 
 <blockquote>
@@ -1205,7 +1205,7 @@ information.</p>
 
 <h4>Lisp Listeners</h4>
 
-<p>Because Allegro CL has multiprocessing (see <a href="../doc/cl/multiprocessing.htm">multiprocessing.htm</a>
+<p>Because Allegro CL has multiprocessing (see <a href="cl/multiprocessing.htm">multiprocessing.htm</a>
 for more information), multiple threads of control can be created--multiple user
 interactions, or top-levels, can be created within the same UNIX process. Within one
 Common Lisp process, any number of lisp listeners, as these top-levels are called, can be
@@ -1421,8 +1421,8 @@ mode line must be the first line of text in the file and has the following form:
       <tr>
         <td width="100%"><strong>readtable: name</strong><p>name is the name of the readtable for
         this buffer. See the description of excl:named-readtable in <a
-        href="../doc/pages/operators/excl/named-readtable.htm">named-readtable.htm</a> for
-        information on creating and using named readtables.</td>
+        href="pages/operators/excl/named-readtable.htm">named-readtable.htm</a> for information on
+        creating and using named readtables.</td>
       </tr>
     </table>
   </li>
@@ -1573,9 +1573,9 @@ several additional commands:</p>
 		  definitions of objects defined in the Common Lisp
 		  environment.   See the documents
                      <a
-href="../doc/cl/source_file_recording.htm">source_file_recording.htm</a>
+href="cl/source_file_recording.htm">source_file_recording.htm</a>
                      <a
-href="../doc/cl/xref.htm">xref.htm</a>
+href="cl/xref.htm">xref.htm</a>
                   for information on this.  In short, you will need to
 		  set the Common Lisp special variables
 		  *record-source-file-info* and
@@ -1668,7 +1668,7 @@ categories. In Emacs:
 </ul>
 
 <p>In addition to the interface from Emacs to debugging programs, Allegro CL provides a
-rich set of tools to debug programs (see <a href="../doc/cl/debugging.htm">debugging.htm</a>).
+rich set of tools to debug programs (see <a href="cl/debugging.htm">debugging.htm</a>).
 Functions in Allegro CL which are implemented with the help of the Emacs-Lisp interface
 are the top-level command :edit and the function common-lisp:ed - both allow the source
 code for a particular function to be edited. The editing operation is initiated from
@@ -1723,10 +1723,10 @@ Lisp environment, and, if that lookup fails, to use the Emacs tags mechanism.</p
 
 <p>The information that is saved in the Common Lisp environment when files are loaded into
 Common Lisp uses the Source-file recording facility of Allegro CL, which is described in <a
-href="../doc/cl/source_file_recording.htm">source_file_recording.htm</a>. Source-file
-information will be recorded and loaded if the values of the Common Lisp variables <a
-href="../doc/pages/variables/excl/s_record-source-file-information_s">excl:*record-source-file-info*</a>
-and <a href="../doc/pages/variables/excl/s_load-source-file-information_s">excl:*load-source-file-info*</a>
+href="cl/source_file_recording.htm">source_file_recording.htm</a>. Source-file information
+will be recorded and loaded if the values of the Common Lisp variables <a
+href="pages/variables/excl/s_record-source-file-information_s">excl:*record-source-file-info*</a>
+and <a href="pages/variables/excl/s_load-source-file-information_s">excl:*load-source-file-info*</a>
 are non-nil.</p>
 
 <h4>Retrieving information from the Common Lisp environment</h4>
@@ -2000,11 +2000,11 @@ processing in Emacs</a></h3>
 
 <p>Without a window debugger, which presents a graphical view of the runtime stack,
 programmers debugging Common Lisp programs must resort to examining the stack with the
-debugger commands described in <a href="../doc/cl/debugging.htm">debugging.htm</a>. It is
-often the case, however, that much moving up and down the stack must be done to find the
-proper point of error. Scan stack mode allows a snapshot of the Common Lisp runtime stack
-to be taken, and for navigation through the stack to proceed in a Emacs buffer with a host
-of local commands to make this a painless experience.</p>
+debugger commands described in <a href="cl/debugging.htm">debugging.htm</a>. It is often
+the case, however, that much moving up and down the stack must be done to find the proper
+point of error. Scan stack mode allows a snapshot of the Common Lisp runtime stack to be
+taken, and for navigation through the stack to proceed in a Emacs buffer with a host of
+local commands to make this a painless experience.</p>
 
 <p>Consider the following example, typed in the *common-lisp* buffer created by
 fi:common-lisp:</p>
