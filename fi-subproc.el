@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.105 1991/04/23 15:47:03 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.106 1991/04/26 09:32:39 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -172,7 +172,7 @@ line argument.")
 subprocess.  \"localhost\" means use the host on which emacs is running.")
 
 (defvar fi:common-lisp-prompt-pattern
-    "^\\(\\[[0-9]+c?\\] \\|\\[step\\] \\)?\\(<[-A-Za-z]* ?[0-9]*?>\\|[-A-Za-z0-9]+([0-9]+):\\) "
+    "^\\(\\[[0-9]+i?c?\\] \\|\\[step\\] \\)?\\(<[-A-Za-z]* ?[0-9]*?>\\|[-A-Za-z0-9]+([0-9]+):\\) "
   "*The regular expression which matches the Common Lisp prompt.
 Anything from beginning of line up to the end of what this pattern matches
 is deemed to be a prompt.")
