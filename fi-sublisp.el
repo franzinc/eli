@@ -1,6 +1,39 @@
-;;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.17 1988/04/14 12:02:53 layer Exp $
-;;;
-;;; Interaction with a Lisp subprocess
+;;
+;; copyright (C) 1987, 1988 Franz Inc, Berkeley, Ca.
+;;
+;; The software, data and information contained herein are proprietary
+;; to, and comprise valuable trade secrets of, Franz, Inc.  They are
+;; given in confidence by Franz, Inc. pursuant to a written license
+;; agreement, and stored only in accordance with the terms of such license.
+;;
+;; Restricted Rights Legend
+;; ------------------------
+;; Use, duplication, and disclosure by the Government are subject to
+;; restrictions of Restricted Rights for Commercial Software developed
+;; at private expense as specified in DOD FAR 52.227-7013 (c) (1) (ii).
+;;
+;; This file may be distributed without further permission from
+;; Franz Inc. as long as
+;;
+;;	* it is not part of a product for sale,
+;;	* no charge is made for the distribution, and
+;;	* all copyright notices and this notice are preserved.
+;;
+;; If you have any comments or questions on this package, please feel
+;; free to contact Franz Inc. at
+;;
+;;	Franz Inc.
+;;	Attn: Emacs Group Manager
+;;	1995 University Ave
+;;	Suite 275
+;;	Berkeley, CA 94704
+;; or
+;;	emacs-info%franz.uucp@Berkeley.EDU
+;;	ucbvax!franz!emacs-info
+
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.18 1988/04/25 15:23:17 layer Exp $
+
+;; Interaction with a Lisp subprocess
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -27,24 +60,38 @@
 ;;;
 
 (defvar fi:unix-domain t
-  "It non-nil, then `fi::unix-domain-socket' specifies the name of the
-socket file, otherwise fi:excl-service-name specifies the /etc/services
-name of the service.")
+  "If non-nil, then `fi:unix-domain-socket' specifies the name of the
+socket file.  It is recommended that this interface be used, and not
+internet ports.  But, if you really want to use them, here are the steps:
 
-(defvar fi::unix-domain-socket "~/.excl_to_emacs"
-  "The name of the socket file that lisp and emacs use to communicate.")
+1. Set this variable to nil.
+2. Add the following line to /etc/services:
+	excl		1123/tcp
+3. Make sure `fi:local-host-name' is in /etc/hosts and points to the local
+or loopback host.
+4. On the Common Lisp side, put the following in you .clinit.cl file:
+	(setq ipc:*unix-domain* nil)
+
+The problem with this, is that people can then use `telnet' to get a
+listener on your lisp!")
+
+(defvar fi:unix-domain-socket "~/.excl_to_emacs"
+  "The name of the socket file that lisp and emacs use to communicate.
+This is used when fi:unix-domain is non-nil.")
 
 (defvar fi:local-host-name "localhost"
-  "On BSD 4.2 (on SUN) the name of 127.1--usually localhost or loopback.")
+  "On BSD 4.2 (on SUN) the name of 127.1--usually localhost or loopback.
+This is only used when fi:unix-domain is nil.")
 
 (defvar fi:excl-service-name "excl"
-  "The service name from /etc/services (`tcp' type).")
+  "The service name from /etc/services (`tcp' type).  This is only used
+when fi:unix-domain is nil.")
 
 (defvar fi:source-info-not-found-hook 'find-tag
   "The value of this variable is funcalled when source information is not
 present for a symbol.  The function is given one argument, the name for
 which source is desired (a string).  The null string means use the word at
-the dot as the search word.")
+the point as the search word.")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -90,9 +137,9 @@ forms is done while they are entered."
   (fi:inferior-lisp-send-input arg 'lists))
 
 (defun fi:lisp-eval-last-sexp (compile-file-p)
-  "Send sexp before point to the Lisp subprocess fi::sublisp-name.
-If fi::sublisp-name is nil, startup the appropriate Lisp, based on
-the major-mode of the buffer."
+  "Send the sexp before the point to the Lisp subprocess.
+If a Lisp subprocess has not been started, then one is started.  With a
+prefix argument, the source sent to the subprocess is compiled."
   (interactive "P")
   (let ((start (save-excursion
 		 (forward-sexp -1)
@@ -100,9 +147,9 @@ the major-mode of the buffer."
     (fi::eval-send start (point) compile-file-p)))
 
 (defun fi:lisp-eval-defun (compile-file-p)
-  "Send the current `defun' to the Lisp subprocess fi::sublisp-name.
-If fi::sublisp-name is nil, startup an appropriate sublisp, based on
-the major-mode of the buffer."
+  "Send the current `defun' to the Lisp subprocess.  If a Lisp subprocess
+has not been started, then one is started.  With a prefix argument, the
+source sent to the subprocess is compiled."
   (interactive "P")
   (let* ((end (save-excursion (end-of-defun) (point)))
 	 (start (save-excursion
@@ -111,24 +158,25 @@ the major-mode of the buffer."
     (fi::eval-send start end compile-file-p)))
 
 (defun fi:lisp-eval-region (compile-file-p)
-  "Send the region to the Lisp subprocess fi::sublisp-name an sexp at a time.
-If fi::sublisp-name is nil, startup an appropriate sublisp, based on
-the major-mode of the buffer."
+  "Send the text in the region to the Lisp subprocess, one sexp at a time
+if there is more than one complete sexp.  If a Lisp subprocess has not been
+started, then one is started.  With a prefix argument, the source sent to
+the subprocess is compiled."
   (interactive "P")
   (fi::eval-send (min (point) (mark))
 		 (max (point) (mark))
 		 compile-file-p))
 
 (defun fi:lisp-eval-current-buffer (compile-file-p)
-  "Send the entire current buffer to the Lisp subprocess fi::sublisp-name.
-If fi::sublisp-name is nil, startup an appropriate sublisp, based on
-the major-mode of the buffer."
+  "Send the entire buffer to the Lisp subprocess.  If a Lisp subprocess has
+not been started, then one is started.  With a prefix argument, the
+source sent to the subprocess is compiled."
   (interactive "P")
   (fi::eval-send (point-min) (point-max) compile-file-p))
 
 (defun fi:set-associated-sublisp (buffer-name)
-  "Set the sublisp associated with a Lisp source file to BUFFER-NAME, which
- is the name of a buffer."
+  "Set the sublisp associated with a Lisp source file to the prompted
+for BUFFER-NAME, which is the name of a buffer."
   (interactive "bBuffer name containing a Lisp process: ")
   (let ((process (get-buffer-process (get-buffer buffer-name))))
     (if process
@@ -140,7 +188,8 @@ the major-mode of the buffer."
 ;;;
 
 (defun fi:lisp-arglist (&optional symbol)
-  "Asks the sublisp to run arglist on a symbol."
+  "Print the arglist (using excl:arglist) for a symbol, which is read from
+the minibuffer.  The word around the point is used as the default."
   (interactive)
   (setq symbol (fi::add-package-info
 		(fi::get-cl-symbol nil t (interactive-p) "Function")))
@@ -158,7 +207,8 @@ the major-mode of the buffer."
     symbol symbol symbol symbol symbol symbol symbol)))
 
 (defun fi:lisp-describe (&optional symbol)
-  "Asks the sublisp to describe a symbol."
+  "Describe a symbol, which is read from the minibuffer.  The word around
+the point is used as the default."
   (interactive)
   (setq symbol (fi::add-package-info
 		(fi::get-cl-symbol
@@ -168,7 +218,8 @@ the major-mode of the buffer."
    (format "(progn (lisp:describe '%s) (values))\n" symbol)))
 
 (defun fi:lisp-function-documentation (&optional symbol)
-  "Asks the sublisp for function documentation of symbol."
+  "Print the function documentation for a symbol, which is read from the
+minibuffer.  The word around the point is used as the default." 
   (interactive)
   (setq symbol (fi::add-package-info
 		(fi::get-cl-symbol
@@ -178,7 +229,8 @@ the major-mode of the buffer."
    (format "(princ (lisp:documentation '%s 'lisp:function))\n" symbol)))
 
 (defun fi:lisp-find-tag (&optional symbol)
-  "Find the common lisp source for SYMBOL."
+  "Find the Common Lisp source for a symbol, using the characters around
+the point as the default tag."
   (interactive)
   (setq symbol (fi::get-cl-symbol nil nil (interactive-p) "Source for symbol"))
   (let ((s (fi::add-package-info symbol)))
@@ -192,6 +244,7 @@ the major-mode of the buffer."
        (fi::lisp-find-etag (symbol-name symbol))))))
 
 (defun fi:lisp-tags-loop-continue ()
+  "Find the next occurrance of the tag last used by fi:lisp-find-tag."
   (interactive)
   (if (and fi::tag-state (cdr fi::tag-state))
       (let ((symbol (car fi::tag-state))
@@ -211,7 +264,7 @@ the major-mode of the buffer."
     (find-tag nil t)))
 
 (defun fi:tcp-lisp-send-eof ()
-  "Do a debug-pop to the TCP listener."
+  "Do a db:debug-pop on the TCP listener."
   (interactive)
   (fi:backdoor-eval 
    "(db:debug-pop (mp::process-name-to-process \"%s\"))\n"
@@ -259,21 +312,21 @@ backdoor lisp listener."
       (process-send-string
        fi::background-sublisp-process
        (format fi::lisp-macroexpand-command
-	       (if (and (boundp 'fi::package) fi::package)
+	       (if (and (boundp 'fi:package) fi:package)
 		 (format "(or (find-package :%s) (make-package :%s))"
-			 fi::package fi::package)
+			 fi:package fi:package)
 		 "*package*")
 	       filename
 	       handler)))))
 
 (defun fi:lisp-macroexpand ()
-  "Macroexpand the form at the cursor using the backdoor Lisp process."
+  "Print the macroexpansion of the form at the point."
   (interactive)
   (fi::lisp-macroexpand-common "lisp:macroexpand"))
 
 (defun fi:lisp-walk (arg)
-  "Fully macroexpand (via excl:walk) the form at the cursor using the backdoor
-Lisp process.  With an argument, use excl:compiler-walk instead."
+  "Print the full macroexpansion, using excl:walk, the form at the point.
+With an prefix argument, use excl:compiler-walk instead."
   (interactive "P")
   (fi::lisp-macroexpand-common (if arg "excl:compiler-walk" "excl:walk")))
 
@@ -291,10 +344,10 @@ Lisp at the other end of our socket."
 ;;;
 
 (defun fi::add-package-info (symbol)
-  (let ((p (get symbol 'fi::package)))
+  (let ((p (get symbol 'fi:package)))
     (cond (p (format "%s::%s" p symbol))
-	  ((and (boundp 'fi::package) fi::package)
-	   (format "%s::%s" fi::package symbol))
+	  ((and (boundp 'fi:package) fi:package)
+	   (format "%s::%s" fi:package symbol))
 	  (t (symbol-name symbol)))))
 
 (defun fi::remove-package-info (symbol)
@@ -302,11 +355,11 @@ Lisp at the other end of our socket."
     (cond ((string-match ":?:" symbol nil)
 	   (setq p (substring symbol 0 (match-beginning 0)))
 	   (setq s (intern (substring symbol (match-end 0))))
-	   (put s 'fi::package p))
+	   (put s 'fi:package p))
 	  (t
 	   (setq s (intern symbol))
-	   (if (and (boundp 'fi::package) fi::package)
-	       (put s 'fi::package fi::package))))
+	   (if (and (boundp 'fi:package) fi:package)
+	       (put s 'fi:package fi:package))))
     s))
 
 (defun fi::get-cl-symbol (symbol up-p interactive-p interactive)
@@ -365,7 +418,7 @@ Lisp at the other end of our socket."
 	    (if fi:unix-domain
 		(open-network-stream
 		 "sublisp-back" nil
-		 (expand-file-name fi::unix-domain-socket)
+		 (expand-file-name fi:unix-domain-socket)
 		 0)
 	      (open-network-stream "sublisp-back" nil fi:local-host-name
 				   fi:excl-service-name)))
@@ -563,7 +616,7 @@ parsed, the enclosing list is processed."
 
 (defun fi::eval-send (start end compile-file-p)
   "Send the text from START to END over to the sublisp, in the
-correct fi::package, of course."
+correct fi:package, of course."
   (fi::sublisp-select)
   (let* ((stuff (buffer-substring start end))
 	 (sublisp-process (get-process fi::sublisp-name)))
@@ -620,8 +673,8 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 	  (let* ((filename (buffer-file-name (current-buffer))))
 	    (format "/tmp/,%s" (file-name-nondirectory filename))))
 	(setq fi::emacs-to-lisp-package
-	  (if fi::package
-	      (format "(in-package :%s)\n" fi::package)
+	  (if fi:package
+	      (format "(in-package :%s)\n" fi:package)
 	    nil))
 	(setq fi::emacs-to-lisp-transaction-buf
 	  (let ((name (file-name-nondirectory
