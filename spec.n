@@ -1,5 +1,5 @@
 	      Franz Inc. GNU Emacs/Common Lisp Interface
-			     Release 1.2
+			     Release 1.3
 
 This document is a specification of the Franz Inc. GNU Emacs interface
 to Common Lisp, which is written entirely in GNU Emacs Lisp (for GNU
