@@ -30,12 +30,13 @@
 	    (insert-char ?. (- 78 (length "[function]")
 			       (length (symbol-name var))))
 	    (setq current-local-map-var (current-local-map))
-	    (insert
-	     (format "[function]\n   Invoke with: %s in %s mode.\n   %s"
-		     (substitute-command-keys
-		      (format "\\<current-local-map-var>\\[%s]" var))
-		     mode-name
-		     (or (documentation var) "NO DOC"))))
+	    (let ((key (substitute-command-keys
+			(format "\\<current-local-map-var>\\[%s]" var))))
+	      (insert (format "[function]\n   Invoke with: %s" key))
+	      (if (/= 0 (or (string-match "M-x" key) 1))
+		  (insert (format " in %s mode" mode-name)))
+	      (insert (format ".\n   %s")
+		      (or (documentation var) "NO DOC"))))
 	   (t ;; assume a bound variable
 	    (let* ((val (symbol-value var))
 		   (type (cond ((syntax-table-p val) "[syntax-table]")
