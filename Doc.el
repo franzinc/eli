@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.22 1991/03/13 21:41:43 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.23 1991/03/15 12:42:01 layer Exp $
 
 (require 'cl)
 
@@ -17,8 +17,8 @@
 (setq args (cdr (member-equal "--" command-line-args)))
 (setq input-file (car args))
 (setq output-file (car (cdr args)))
-;;(setq input-file "ug.n")
-;;(setq output-file "ug.out")
+;;(setq input-file "spec.n")
+;;(setq output-file "spec.out")
 
 (message "input-file %s, output-file %s" input-file output-file)
 
@@ -33,6 +33,7 @@
   (switch-to-buffer "*foo*")
   (erase-buffer)
 
+  (fi:definition-mode)
   (fi:common-lisp-mode)
   (fi:inferior-common-lisp-mode)
   (fi:franz-lisp-mode)
