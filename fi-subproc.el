@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.44 1988/11/18 21:04:10 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.45 1988/11/21 21:12:01 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -98,6 +98,11 @@ no automatic directory changes will be made.")
   "*The regular expression matching the C shell `cd' command.  If nil,
 no automatic directory changes will be made.")
 
+(defvar fi:common-lisp-package-regexp
+  "(in-package\\>\\|:\\<pa\\>\\|:\\<pac\\>\\|:\\<pack\\>\\|:\\<packa\\>\\|:\\<packag\\>\\|:\\<package\\>"
+  "*The regular expression matching the Common Lisp expression(s) to change
+packages.  If nil, no automatic package tracking will be done.")
+
 (defvar fi:subprocess-map-nl-to-cr nil
   "*If t, then map newline to carriage-return.")
 
@@ -127,6 +132,10 @@ argument, a buffer, to display a subprocess buffer when it is created (ie,
 from `fi:common-lisp').")
 
 ;;;;;;;;;;;;;;;;;;;;;; internal vars
+
+(defvar fi::cl-package-regexp nil
+  "The real Common Lisp package regexp, which is nil in all buffer except
+Inferior Common Lisp buffers.")
 
 (defvar fi::last-input-start nil
   "Marker for start of last input in fi:shell-mode or fi:inferior-lisp-mode
@@ -539,15 +548,30 @@ This function implements continuous output to visible buffers."
       (stay old-buffer)
       (t (set-buffer old-buffer)))))
 
-(defun fi::subprocess-hack-directory ()
-  ;; Even if we get an error trying to hack the working directory,
-  ;; still send the input to the subshell.
+(defun fi::subprocess-watch-for-special-commands ()
+  "Watch for special commands like, for example, `cd' in a shell."
   (if (null fi::shell-directory-stack)
       (setq fi::shell-directory-stack (list default-directory)))
   (condition-case ()
+      ;; "To err is really not nice." -dkl 11/21/88
       (save-excursion
 	(goto-char fi::last-input-start)
 	(cond
+	  ((and fi::cl-package-regexp (looking-at fi::cl-package-regexp))
+	   (goto-char (match-end 0))
+	   (cond
+	     ((or (looking-at "[ \t]*[':]\\(.*\\)[ \t]*)")
+		  (looking-at "[ \t]*\"\\(.*\\)\"[ \t]*)"))
+	      ;; (in-package foo)
+	      (setq fi:package
+		(buffer-substring (match-beginning 1) (match-end 1))))
+	     ((looking-at "[ \t]+\\(.*\\)[ \t]*$")
+	      ;; :pa foo
+	      (setq fi:package
+		(buffer-substring (match-beginning 1) (match-end 1)))))
+	   ;; need to do something here to force the minibuffer to
+	   ;; redisplay:
+	   (set-buffer-modified-p (buffer-modified-p)))
 	  ((and fi:shell-popd-regexp (looking-at fi:shell-popd-regexp))
 	   (goto-char (match-end 0))
 	   (cond
@@ -641,6 +665,7 @@ This function implements continuous output to visible buffers."
 	'(fi:shell-popd-regexp
 	  fi:shell-pushd-regexp 
 	  fi:shell-cd-regexp
+	  fi::cl-package-regexp
 	  fi:package
 	  fi:subprocess-map-nl-to-cr
 	  fi:subprocess-continuously-show-output-in-visible-buffer
