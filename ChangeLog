@@ -1,3 +1,11 @@
+*******************************************************************************
+2.0.8 public release
+*******************************************************************************
+
+Fri Sep 10 08:43:07 1993  Kevin Layer  (layer@sole)
+
+	* fi-site-init.el: lemacs 19.8 needs cl-compat, too.
+
 Thu Sep  9 11:07:53 1993  Kevin Layer  (layer@sole)
 
 	* fi-lemacs.el: 19.8 active-p menu spec change

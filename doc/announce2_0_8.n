@@ -1,9 +1,9 @@
 Subject: new release of emacs-lisp interface to support version 19 emacs
 
 Version 2.0.8 of Franz Inc.'s GNU Emacs-Allegro CL interface is now
-available for limited testing.  This release is mostly to add features
-to support lemacs, named readtables and to fix a few bugs.  The
-versions of emacs now supported are:
+available.  This release is mostly to add features to support lemacs,
+named readtables and to fix a few bugs.  The versions of emacs now
+supported are:
 
 	- (FSF) GNU Emacs 18.* and 19.*
 	- Epoch 3.2 and 4.2 (not tested with 4.0 or 4.1)
