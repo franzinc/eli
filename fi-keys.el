@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.33 1990/12/07 00:32:48 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.34 1990/12/17 14:53:16 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -299,7 +299,7 @@ With a prefix argument, the source sent to the subprocess is compiled."
 
 ;;;;;;;;;;;;;;;;;;;;; TCP lisp mode related functions
 
-(defun fi::get-default-symbol (prompt &optional up-p)
+(defun fi::get-default-symbol (prompt &optional up-p use-package)
   (let* ((symbol-at-point
 	  (condition-case ()
 	      (save-excursion
@@ -330,7 +330,7 @@ With a prefix argument, the source sent to the subprocess is compiled."
 		     symbol-at-point
 		   read-symbol))
 	 (colonp (string-match ":?:" symbol nil)))
-    (if (and (not colonp) fi:package)
+    (if (and (not colonp) use-package fi:package)
 	(setq symbol (format "%s::%s" fi:package symbol)))
     (list symbol)))
 
@@ -339,8 +339,15 @@ With a prefix argument, the source sent to the subprocess is compiled."
 the point as the default tag."
   (interactive (if current-prefix-arg
 		   '(nil t)
-		 (fi::get-default-symbol "Lisp locate source")))
-  (if (fi::background-sublisp-process)
+		 (progn
+		   (if (fi:common-lisp-is-running-p)
+		       ;; try and start backdoor
+		       (fi::background-sublisp-process t))
+		   (fi::get-default-symbol
+		    "Lisp locate source"
+		    nil
+		    (fi:backdoor-is-running-p)))))
+  (if (fi:backdoor-is-running-p)
       (fi::lisp-find-tag-common tag next nil)
     (find-tag tag next)))
 
@@ -349,15 +356,22 @@ the point as the default tag."
 the point as the default tag."
   (interactive (if current-prefix-arg
 		   '(nil t)
-		 (fi::get-default-symbol "Lisp locate source other window")))
-  (if (fi::background-sublisp-process)
+		 (progn
+		   (if (fi:common-lisp-is-running-p)
+		       ;; try and start backdoor
+		       (fi::background-sublisp-process t))
+		   (fi::get-default-symbol
+		    "Lisp locate source other window"
+		    nil
+		    (fi:backdoor-is-running-p)))))
+  (if (fi:backdoor-is-running-p)
       (fi::lisp-find-tag-common tag next t)
     (find-tag-other-window tag next)))
 
 (defun fi:lisp-tags-loop-continue ()
   "Find the next occurrence of the tag last used by fi:lisp-find-tag."
   (interactive)
-  (if (fi::background-sublisp-process)
+  (if (fi:backdoor-is-running-p)
       (fi:lisp-tags-loop-continue-common)
     (tags-loop-continue)))
 
