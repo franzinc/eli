@@ -19,10 +19,8 @@ pr = enscript -Plw -h -2r
 
 print:; ${pr} Makefile *.el
 
-e = /usr/tech/layer/emacs
-
 tags:
-	(cd ${e}; etags ${e}/lisp/fi/*.el ${e}/lisp/local/*.el)
+	(cd ../..; etags lisp/fi/*.el lisp/local/*.el lisp/*.el src/*.[ch])
 
 backup:
 	rdist -Rc . binky:emacs.save/fi
