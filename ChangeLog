@@ -9,6 +9,16 @@ Documentation changes:	<`none' or give pointer to them>
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.pre-alpha.8
+
+Documentation changes:	no new features
+
+Fri Mar 21 13:33:01 1997  Kevin Layer  <layer@ultra>
+
+	* local-fi-developer-hooks.el: make sure C mode indenting is set
+	to "bsd" style
+
+*******************************************************************************
 2.0.21.pre-alpha.7
 
 Documentation changes:	no new features

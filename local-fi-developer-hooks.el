@@ -1,5 +1,5 @@
 ;; local-fi-developer-hooks.el
-;; $Id: local-fi-developer-hooks.el,v 2.8 1997/01/15 17:02:22 layer Exp $
+;; $Id: local-fi-developer-hooks.el,v 2.9 1997/03/21 21:34:16 layer Exp $
 
 ;; This file is not for public distribution.
 ;; It contains extra hooks for fi developers only, things like special
@@ -45,6 +45,21 @@
 	       (sit-for 1))))))
   nil)
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; setup C code edit mode
+
+(require 'cc-mode)
+
+(push '("\\.c$" . c-mode) auto-mode-alist)
+(push '("\\.h$" . c-mode) auto-mode-alist)
+
+(push '("\\.C$"   . c++-mode) auto-mode-alist)
+(push '("\\.cc$"  . c++-mode) auto-mode-alist)
+(push '("\\.cpp$" . c++-mode) auto-mode-alist)
+
+(add-hook 'c-mode-common-hook
+	  (function (lambda () (c-set-style "bsd"))))
+
 (add-hook 'fi:common-lisp-mode-hook
 	  (function
 	   (lambda ()
@@ -59,6 +74,8 @@
 	  (function
 	   (lambda ()
 	     (pushnew 'fi::update-acl-id local-write-file-hooks))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun update-modify-line ()
   (interactive)
@@ -76,19 +93,5 @@
 	    (error (message "error updating modify line...")
 		   (sit-for 1))))))
   nil)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; setup C code edit mode
-
-(require 'cc-mode)
-
-(push '("\\.c$" . c-mode) auto-mode-alist)
-(push '("\\.h$" . c-mode) auto-mode-alist)
-
-(push '("\\.C$"   . c++-mode) auto-mode-alist)
-(push '("\\.cc$"  . c++-mode) auto-mode-alist)
-(push '("\\.cpp$" . c++-mode) auto-mode-alist)
-
-(c-set-style "bsd")
 
 (put 'excl::.primcall 'fi:lisp-indent-hook 1)
