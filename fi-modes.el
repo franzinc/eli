@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.50 1993/03/23 10:13:44 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.51 1993/06/18 20:02:19 layer Exp $
 
 ;;;; Mode initializations
 
@@ -373,15 +373,20 @@ package."
 				 (forward-char -1)
 			       (goto-char end))
 			     (skip-chars-backward " \t")
-			     (let ((package
-				    (if (= (string-to-char "(")
-					   (char-after beg))
-					(buffer-substring (+ 1 beg) (point))
-				      (buffer-substring beg (point)))))
-			       (setq fi:package
-				 (downcase
-				  (symbol-name
-				   (car (read-from-string package))))))))))
+			     (cond
+			      ((>= beg (point))
+			       (setq fi:package "common-lisp-user"))
+			      (t
+			       (let ((package
+				      (if (= (string-to-char "(")
+					     (char-after beg))
+					  (buffer-substring (+ 1 beg) (point))
+					(buffer-substring beg (point)))))
+				 (setq fi:package
+				   (downcase
+				    (symbol-name
+				     (car (read-from-string
+					   package))))))))))))
 		 fi:package))
 	  fi:package
 	(let* ((case-fold-search t)
