@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-stream.el,v 1.4 1991/05/28 16:18:25 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-stream.el,v 1.5 1991/06/19 22:18:19 layer Exp $
 ;;
 
 (defmacro fi::with-keywords (variables rest-arg &rest body)
@@ -40,23 +40,29 @@
 	   body)))
 
 (defun lep::create-listener-stream (&optional args)
+  (fi:lisp-push-window-configuration)
   (fi::with-keywords (parent x y width height splitp) args
-		 (cond ((or parent x y width height)
-			(fi::create-new-mapped-screen-for-stream parent x y width height))
-		       (splitp
-			(split-window-vertically)))
-		 (let ((fi::listener-protocol ':stream))
-		   (send-string (fi:open-lisp-listener -1)
-				(format "%d\n" (fi::session-id session))))))
+    (let* ((fi::listener-protocol ':stream)
+	   (proc (save-window-excursion
+		   (fi:open-lisp-listener -1 "compilation-output"))))
+      (cond ((or parent x y width height)
+	     (fi::create-new-mapped-screen-for-stream parent x y width
+						      height))
+	    ((get-buffer-window (process-buffer proc))
+	     (select-window (get-buffer-window (process-buffer proc))))
+	    (splitp (split-window-vertically)))
+      (send-string proc (format "%d\n" (fi::session-id session)))
+      (switch-to-buffer (process-buffer proc)))))
 
 (defun fi::create-new-mapped-screen-for-stream (parent x y width height)
   (and (boundp 'epoch::screen-properties)
        (let ((props epoch::screen-properties))
 	 (when (stringp parent)
-	   (push (cons 'parent 
-		       (epoch::string-to-resource parent 
-						  (epoch::intern-atom "WINDOW")))
-		 props))
+	   (push
+	    (cons 'parent 
+		  (epoch::string-to-resource parent 
+					     (epoch::intern-atom "WINDOW")))
+	    props))
 	 ;; ** Do something with X,Y,WIDTH,HEIGHT
 	 (let ((screen (create-screen "*foo*" props)))
 	   (epoch::map-screen screen)
