@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.7 1991/02/12 22:51:08 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.8 1991/02/12 22:59:36 layer Exp $
 ;;
 ;;;;;; This LEP file redefines many of the fi:functions in the fi/keys.el file
 
@@ -43,10 +43,11 @@
 		((string) (error)
 		 (message "Cannot get the arglist of %s: %s" string error))))
 
-(defvar *always-in-a-window* t)
+(defvar fi:always-in-a-window t)
+
 (defun show-some-short-text (text &rest args)
   (when args (setq text (apply (function format) text args)))
-  (if *always-in-a-window*
+  (if fi:always-in-a-window
       (show-some-text text fi:package)
   (let* ((window (minibuffer-window))
 	 (height (1- (window-height window)))
@@ -322,7 +323,8 @@ the point is used as the default."
 (defun show-some-text (text package)
   "Display TEXT in a temporary buffer putting that buffer setting that
 buffers package to the package of PACKAGE."
-  (let* ((from-window (selected-window))
+  (let* ((window-min-height 1)
+	 (from-window (selected-window))
 	 (from-window-orig-height (1- (window-height))) ; minus mode line
 	 (buffer (get-buffer-create "*CL-temp*"))
 	 (buffer-window (get-buffer-window buffer))
