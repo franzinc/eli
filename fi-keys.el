@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.53 1991/06/19 22:40:55 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.54 1991/06/19 22:43:29 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -848,6 +848,8 @@ positions, and ARG."
 (defconst fi::wc-stack-max 10)
 
 (defun fi:lisp-delete-pop-up-window ()
+  "Make the *CL-temp* buffer disappear and restore the window configuration
+as it was before it was made visible."
   (interactive)
   (unless fi::wc-stack
     (error "The pop-up window ring is empty."))
