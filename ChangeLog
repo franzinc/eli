@@ -9,6 +9,11 @@ For more detailed instructions on filling in the ChangeLog form, see
 ******************************************************************************
 post-6.2 release changes: 
 
+2002-12-12  Kevin Layer  <layer@crikey>
+
+	* fi-emacs19.el (fi::lisp-font-lock-keywords): bug12862: fix order
+	of regexp parts for better font-locking
+
 2002-10-24  Kevin Layer  <layer@crikey>
 
 	* fu-subproc.el: bug12600: add `.' to lisp prompt regexp

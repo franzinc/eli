@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-emacs19.el,v 2.23.6.4 2002/02/26 16:28:57 layer Exp $
+;; $Id: fi-emacs19.el,v 2.23.6.4.2.1 2002/12/12 23:43:45 layer Exp $
 
 (cond
  ((and (eq fi::emacs-type 'emacs19)
@@ -642,7 +642,7 @@
 (add-hook 'fi:emacs-lisp-mode-hook 'turn-on-font-lock)
 
 (setq fi::lisp-font-lock-keywords
-  '(("^(\\(def\\(\\(const\\(\\|ant\\)\\|ine-key\\(\\|-after\\)\\|var\\)\\|\\(class\\|struct\\|type\\)\\|\\([^ \t\n()]+\\)\\)\\)[ \t'(]*\\([-.a-zA-Z0-9]+\\)?"
+  '(("^(\\(def\\(\\(const\\(ant\\|\\)\\|ine-key\\(\\|-after\\)\\|var\\)\\|\\(class\\|struct\\|type\\)\\|\\([^ \t\n()]+\\)\\)\\)[ \t'(]*\\([-.a-zA-Z0-9]+\\)?"
      (1 font-lock-keyword-face) (8 (cond ((match-beginning 3) font-lock-variable-name-face) ((match-beginning 6) font-lock-type-face) (t font-lock-function-name-face)) nil t))))
 
 (push '(fi:common-lisp-mode
