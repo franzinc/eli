@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.13 1988/07/16 16:25:23 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.14 1988/11/17 12:19:22 layer Exp $
 
 ;;;;
 ;;; Key defs
@@ -98,6 +98,7 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
 			fi:tcp-common-lisp-mode))
      (define-key map "\e."	'fi:lisp-find-tag)
      (define-key map "\e,"	'fi:lisp-tags-loop-continue)
+     (define-key map "\e\t"	'fi:lisp-complete-symbol)
      (define-key map "\eA"	'fi:lisp-arglist)
      (define-key map "\eC"	'fi:lisp-who-calls)
      (define-key map "\eD"	'fi:lisp-describe)
@@ -421,6 +422,44 @@ from the sexp around the point."
     (if (fi::background-sublisp-process)
 	(process-send-string fi::backdoor-process string)
       (fi::eval-string-send string nil t))))
+
+(defun fi:lisp-complete-symbol ()
+  (interactive)
+  (let* ((end (point))
+	 package real-beg
+	 (beg (save-excursion
+		(backward-sexp 1)
+		(while (= (char-syntax (following-char)) ?\')
+		  (forward-char 1))
+		(setq real-beg (point))
+		(let ((opoint (point)))
+		  (if (re-search-forward ":?:" end t)
+		      (setq package
+			(concat
+			 ":" (buffer-substring opoint (match-beginning 0))))))
+		(point)))
+	 (pattern (buffer-substring beg end))
+	 (functions-only (if (eq (char-after (1- real-beg)) ?\() t nil))
+	 (completions
+	  (fi:eval-in-lisp
+	   "(progn(princ(excl::list-all-completions \"%s\" %s %s))(values))\n"
+	   pattern package functions-only))
+	 
+	 (array (apply 'vector completions))
+	 (completion (try-completion pattern array)))
+    (cond ((eq completion t))
+	  ((null completion)
+	   (message "Can't find completion for \"%s\"" pattern)
+	   (ding))
+	  ((not (string= pattern completion))
+	   (delete-region beg end)
+	   (insert completion))
+	  (t
+	   (message "Making completion list...")
+	   (with-output-to-temp-buffer "*Help*"
+	     (display-completion-list
+	      (all-completions pattern array)))
+	   (message "Making completion list...done")))))
 
 (defun fi:tcp-lisp-send-eof ()
   "Simulate an EOF on the tcp-lisp process via a db:debug-pop spoken to the
