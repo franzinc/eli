@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-filec.el,v 1.14 1991/09/30 11:39:01 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-filec.el,v 1.15 1992/07/22 11:34:40 layer Exp $
 
 ;; Command and file name completion
 
@@ -50,12 +50,21 @@ as Common Lisp or rlogin buffers)."
 is displayed when there is more than one completion for a partially
 completed file name."
   (interactive)
-  (let ((shell-expand-string
-	 (substitute-in-file-name
-	  (fi::shell-completion-default-prefix)))
-	(shell-expand-dir nil)
-	(shell-expand-file nil)
-	(shell-expand-completion nil))
+  (let* ((shell-expand-string
+	  (substitute-in-file-name
+	   (fi::shell-completion-default-prefix)))
+	 (shell-expand-abbrev-string
+	  (fi::expand-file-name-abbrevs shell-expand-string))
+	 (shell-expand-dir nil)
+	 (shell-expand-file nil)
+	 (shell-expand-completion nil))
+    ;; replace abbrev, if different than shell-expand-string
+    (if (not (string= shell-expand-string shell-expand-abbrev-string))
+	(progn
+	  (search-backward shell-expand-string)
+	  (replace-match shell-expand-abbrev-string t t)
+	  (setq shell-expand-string shell-expand-abbrev-string)))
+    
     ;; directory part of name
     (setq shell-expand-dir
       (or (file-name-directory shell-expand-string) default-directory))
@@ -84,6 +93,29 @@ completed file name."
  	  ;; put in the expansion
 	  (search-backward shell-expand-file)
 	  (replace-match shell-expand-completion t t))))))
+
+(defun fi::expand-file-name-abbrevs (filename)
+  (let* ((flist (fi::explode filename ?/))
+	 (fl flist)
+	 (fn nil)
+	 ft)
+    (if (string= "" (car flist))
+	(progn
+	  (setq flist (cdr flist))
+	  (setq fl flist)))
+    (while fl
+      (setq ft (concat fn (if fn "/" "") (car fl)))
+      (if (file-exists-p ft)
+	  (setq fn ft)
+	(let ((c (file-name-completion (car fl) (or fn "."))))
+	  (setq fn
+	    (concat (or fn "")
+		    (if fn "/" "")
+		    (if (and c (string-match "\\(.*\\)/$" c))
+			(substring c (match-beginning 1) (match-end 1))
+		      c)))))
+      (setq fl (cdr fl)))
+    fn))
 
 (defun fi:shell-command-completion ()
   "Perform command name completion in subprocess modes.  A completion buffer
