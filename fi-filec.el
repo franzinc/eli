@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-filec.el,v 1.22 1997/01/07 01:03:59 layer Exp $
+;; $Id: fi-filec.el,v 1.22.42.1 2001/05/30 20:10:53 layer Exp $
 
 ;; Command and file name completion
 
@@ -110,8 +110,11 @@ completed file name."
 	(setq ft (concat fn (if fn "/" "") (car fl)))
 	(if (file-exists-p ft)
 	    (setq fn ft)
-	  (let ((c (file-name-completion (car fl) (or fn "."))))
-	    (unless c (throw 'fi::expand-file-name-abbrevs nil))
+	  (let ((c (condition-case ()
+		       (file-name-completion (car fl) (or fn "."))
+		     (error nil))))
+	    (when (null c)
+	      (throw 'fi::expand-file-name-abbrevs nil))
 	    (setq fn
 	      (concat (or fn "")
 		      (if fn "/" "")

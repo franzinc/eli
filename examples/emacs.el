@@ -1,6 +1,6 @@
 ;; A sample ~/.emacs file.
 ;;
-;; $Id: emacs.el,v 1.7 1998/08/06 23:18:37 layer Exp $
+;; $Id: emacs.el,v 1.7.24.1 2001/05/30 20:10:54 layer Exp $
 
 (defvar *eli-directory*)
 (setq *eli-directory* (expand-file-name "~/cl-ultra/src/eli/"))
@@ -22,7 +22,8 @@
 		  fi:common-lisp-directory
 		  fi:common-lisp-image-name
 		  fi:common-lisp-image-arguments
-		  fi:common-lisp-host))
+		  fi:common-lisp-host
+                  fi:common-lisp-image-file))
 
 ;; Set up a keybinding for `run-common-lisp', two possible ways:
 (progn

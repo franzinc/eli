@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.208.6.2 2001/01/05 22:59:09 layer Exp $
+;; $Id: fi-subproc.el,v 1.208.6.3 2001/05/30 20:10:53 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -197,7 +197,7 @@ given, then a default heap image is loaded.")
 which must be a list of strings.  Each element of the list is one command
 line argument.")
 
-(defvar fi:common-lisp-host nil
+(defvar fi:common-lisp-host "localhost"
   "*The host on which fi:common-lisp starts the Common Lisp
 subprocess.  The default is the host on which emacs is running.")
 

@@ -1,3 +1,7 @@
+2001-05-22  Charles A. Cox  <cox@pie>
+
+	* cl/src/eli/fi-basic-lep.el: use emacs-mule encoding.  bug10686
+
 For more detailed instructions on filling in the ChangeLog form, see 
 `/fi/doc/procedures/changelogs.txt'.
 *******************************************************************************
@@ -5,6 +9,17 @@ For more detailed instructions on filling in the ChangeLog form, see
 
 <standard changelog date stamp>
 	* <changes go here...>
+
+*******************************************************************************
+2.1.7
+
+2001-05-29  Kevin Layer  <layer@crikey>
+
+	* Makefile: use abs path to perl on windoze
+	* fi-filec.el: fix filename completion for errors via nfs 
+	* fi-indent.el: astore additions
+	* fi-subproc.el: make localhost be the default lisp host
+	* examples/emacs.el: minor fix
 
 *******************************************************************************
 Wed May 22 12:56:23 PDT 2001  Duane Rettig  <duane@beta>

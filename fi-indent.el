@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-indent.el,v 1.60 1999/08/25 16:35:09 layer Exp $
+;; $Id: fi-indent.el,v 1.60.22.1 2001/05/30 20:10:53 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If non-nil, semicolons that begin comments are indented as they are
@@ -1727,6 +1727,11 @@ if matched at the beginning of a line, means don't indent that line."
   (put 'accept-values-command-button tag 2)
   (put 'changing-space-requirements tag 1)
   (put 'define-application-frame tag '(like defclass))
+
+  ;; for AllegroStore:
+  (put 'for-each tag '(like let))
+  (put 'for-each-class tag 1)
+  (put 'for-each-scratch-list tag '(like dolist))
   )
 
 (let ((tag 'fi:franz-lisp-indent-hook))
