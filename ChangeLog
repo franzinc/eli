@@ -7,6 +7,16 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.1.pre-beta.0
+
+2000-03-22  Kevin Layer  <layer@ultra>
+
+	* Makefile: change way xemacs/emacs compile is done
+	* fi-changes.el,
+	* fi-dmode.el,
+	* fi-lep.el: revert excl.scm change for compatibility
+
+*******************************************************************************
 2.0.21.20
 
 2000-03-12  Kevin Layer  <layer@ultra>

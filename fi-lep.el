@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 1.83 2000/03/13 00:43:09 layer Exp $
+;; $Id: fi-lep.el,v 1.84 2000/03/22 22:27:23 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -132,7 +132,7 @@ at file visit time."
    something
    from-fspec
    (fi::make-complex-request
-    (excl.scm::metadot-session
+    (scm::metadot-session
      :package (fi::string-to-keyword fi:package)
      :type t				; used to be (or type t), but
 					; `type' is not bound in this
@@ -182,7 +182,7 @@ time."
 
 (defvar session) ;; bad name, but changing it is too complicated right now
 
-(defun excl.scm::make-and-initialize-metadot-session
+(defun scm::make-and-initialize-metadot-session
     (something &optional what from-fspec)
   (fi::push-metadot-session (or what "definition") something from-fspec
 			    session)
@@ -318,7 +318,7 @@ time."
 	   (t (return-from done)))))
       (point))))
 
-(defun excl.scm::return-buffer-status (pathname write-if-modified)
+(defun scm::return-buffer-status (pathname write-if-modified)
   "This returns information about the status of the buffer: whether it
 exists, if it is modified, last tick (when implemented), and optionally
 return the pathname of temp file."
@@ -344,7 +344,7 @@ return the pathname of temp file."
 	      (lep::buffer-modified-tick))
       (list ':does-not-exist))))
 
-(defun excl.scm::signal-transaction-file-error (pathname)
+(defun scm::signal-transaction-file-error (pathname)
   (fi:note "
 Can't find transaction file %s in %s, which is the directory that
 Emacs and Lisp use to communicate.  Most likely Emacs and Lisp are running
@@ -888,7 +888,7 @@ package is parsed at file visit time."
   ;; Since this takes a while, tell the user that it has started.
   (message "Finding generic function methods of %s..." fspec)
   (lep::list-fspecs-common fspec
-			   'excl.scm::generic-function-methods-function-specs
+			   'scm::generic-function-methods-function-specs
 			   "Cannot find the generic function methods: %s"
 			   "generic function method"))
 
@@ -914,7 +914,7 @@ the next definition, if there is one."
   (interactive (fi::get-default-symbol "Edit generic function methods of" t t))
   (message "Editing generic function methods...")
   (lep::edit-somethings fspec
-			'excl.scm::generic-function-methods-function-specs
+			'scm::generic-function-methods-function-specs
 			nil
 			"generic function method"))
 
@@ -939,7 +939,7 @@ the next definition, if there is one."
    fspec
    nil
    (fi::make-complex-request
-    (excl.scm::edit-sequence-session
+    (scm::edit-sequence-session
      :generator generator
      :package (fi::string-to-keyword fi:package)
      :fspec fspec)

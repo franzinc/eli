@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-dmode.el,v 1.30 2000/03/13 00:43:09 layer Exp $
+;; $Id: fi-dmode.el,v 1.31 2000/03/22 22:27:23 layer Exp $
 
 ;; Create a mode in which each line is a definition and . on that
 ;; definition brings up the definition in another window
@@ -181,7 +181,7 @@ use the current buffer and display all the definitions contained in it."
   (interactive)
   (let ((buffer (current-buffer)))
     (fi::make-request
-     (excl.scm::file-definitions-session
+     (scm::file-definitions-session
       :pathname (buffer-file-name buffer))
      ;; Normal continuation
      ((buffer fi:package) (the-definitions)
@@ -277,7 +277,7 @@ in definition mode."
 (defun lep::find-buffer-definition (string type list-buffer buffer)
   (unless (bufferp buffer) (setq buffer (find-file-noselect buffer)))
   (fi::make-request
-   (excl.scm::find-buffer-definition-session
+   (scm::find-buffer-definition-session
     :pathname (buffer-file-name buffer) 
     :fspec string
     :type type

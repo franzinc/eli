@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.141 1999/05/04 01:21:31 layer Exp $
+# $Id: Makefile,v 1.142 2000/03/22 22:27:23 layer Exp $
 # This makefile requires GNU make.
 
 include version.mak
@@ -21,9 +21,9 @@ all default:	fi-vers.el compile readme.htm
 
 compile:	fi-vers.el
 	$(emacs) -nw -batch -q -l $(pwd)/fi-compile.el -kill
-ifdef xemacs
-	$(xemacs) -nw -batch -q -l $(pwd)/fi-xcompile.el -kill
-endif
+#ifdef xemacs
+#	$(xemacs) -nw -batch -q -l $(pwd)/fi-xcompile.el -kill
+#endif
 
 fi-vers.el: Makefile version.mak
 	rm -f fi-vers.el
