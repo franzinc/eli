@@ -1,4 +1,4 @@
-;;					-[Fri Jul  7 16:59:38 1989 by layer]-
+;;					-[Tue Jul 18 12:19:58 1989 by layer]-
 ;;
 ;; Allegro CL IPC interface
 ;;
@@ -16,7 +16,7 @@
 ;; at private expense as specified in DOD FAR 52.227-7013 (c) (1) (ii).
 ;;
 ;;
-;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.22 1989/07/11 18:19:23 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.23 1989/07/19 14:02:19 layer Exp $
 ;; $Locker: layer $
 
 (provide :ipc)
@@ -30,7 +30,10 @@
 (require :foreign)
 (require :cstructs)
 
-(defvar *unix-domain* t
+(defvar *unix-domain*
+    (excl::machine-case :host
+      (:sgi4d nil)
+      (t t))
   "If non-nil then use a UNIX domain socket, otherwise use an internet
 domain port (see *inet-port* variable).")
 
