@@ -2,7 +2,7 @@
 			      User Guide
 			     Release 2.0.3
 
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.32 1992/12/14 17:43:22 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.33 1993/03/23 10:13:38 layer Exp $
 
 			     Introduction
 
@@ -1287,20 +1287,28 @@ Miscellaneous programming aids
 				CLMan
 
 
-  %% fi:clman
-  %% fi:clman-mode
-  %% fi:clman-search-forward-see-alsos		fi:clman-mode-map
-  %% fi:clman-flush-doc				fi:clman-mode-map
+%% fi:clman
+%% fi:clman-mode
+%% fi:clman-search-forward-see-alsos		fi:clman-mode-map
+%% fi:clman-flush-doc				fi:clman-mode-map
 
-  %% fi:clman-apropos
-  %% fi:clman-displaying-buffer
-  %% fi:clman-displaying-function
-  %% fi:clman-find-file
-  %% fi:clman-next-entry
-  %% fi:clman-package-help
-  %% fi:clman-package-info
-  %% fi:clman-package-nicknames
-  %% fi:clman-view-file
+%% fi:clman-apropos
+%% fi:clman-displaying-buffer
+%% fi:clman-displaying-function
+%% fi:clman-find-file
+%% fi:clman-next-entry
+%% fi:clman-package-help
+%% fi:clman-package-info
+%% fi:clman-package-nicknames
+%% fi:clman-view-file
+
+===============================================================================
+			   Emacs-Lisp mode
+
+   This package provides a mode for editing Emacs Lisp.  If you do not
+   want to use this new mode, then use the following variable:
+
+%% fi:define-emacs-lisp-mode
 
 ===============================================================================
 			     Shell modes
