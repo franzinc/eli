@@ -19,7 +19,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.141 1992/05/28 15:30:16 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.142 1992/07/20 10:08:54 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -91,7 +91,7 @@ current package.  The two things this must match are the IN-PACKAGE macro
 form and all the possible instances of the :package top-level command.
 If nil, no automatic package tracking will be done.")
 
-(defvar fi:pop-to-sublisp-buffer-after-lisp-eval t
+(defvar fi:pop-to-sublisp-buffer-after-lisp-eval nil
   "*If non-nil, then go to the Lisp subprocess buffer after sending
 expressions to Lisp (via the functions which eval or compile the region, a
 form or the entire buffer).")
