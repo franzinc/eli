@@ -1,9 +1,9 @@
-;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.14 1990/10/19 13:57:23 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.15 1990/12/07 00:33:54 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface:
 ;;
 
-(setq fi:emacs-lisp-interface-version "1.5.1")
+(setq fi:emacs-lisp-interface-version "1.5.2")
 
 (load "fi/modes.elc")
 (if fi:lisp-do-indentation		; default is `t'
