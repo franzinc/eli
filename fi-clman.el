@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 2.1 1993/03/23 11:10:13 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 2.2 1993/04/15 22:31:57 layer Exp $
 
 (defun fi::figure-out-mandir ()
   (do* ((path load-path (cdr path))
@@ -33,18 +33,15 @@
 
 (defvar fi::clman-window-configuration nil)
 
-(defun fi:clman (&optional symbol)
+(defun fi:clman (symbol)
   "Look up SYMBOL in the online CL manual, with completion.  The optional
 argument SYMBOL is prompted for in the minibuffer, if not supplied.   To get
 completion for a symbol in a package other than the :lisp 
 package, use the nickname of that package, followed by a colon (e.g. cw: or
 math:).  The buffer that is displayed will be in CLMAN mode."
-  (interactive)
+  (interactive (list (car (fi::get-default-symbol "CLMAN for Symbol"))))
   (setq fi::clman-window-configuration (current-window-configuration))
-  (let* ((sym (or symbol 
-		  (completing-read "Symbol: " fi::clman-big-oblist nil
-				   'require-match)))
-	 (files (cdr (assoc sym fi::clman-big-oblist))))
+  (let ((files (cdr (assoc symbol fi::clman-big-oblist))))
     (if files
 	(fi::clman-display-file fi:clman-displaying-buffer files))
     (if files
