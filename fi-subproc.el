@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.122 1991/08/23 08:58:04 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.123 1991/09/10 11:19:45 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -256,6 +256,9 @@ buffer local.")
 ;;; User visible functions
 ;;;;
 
+(defvar fi::rsh-command "rsh")
+(defvar fi::rsh-args nil)
+
 (defun fi:start-backdoor-interface (process)
   "Send a string to PROCESS, which should be a Lisp, that starts the
 Emacs-Lisp interface.  This only works in Allegro CL, currently."
@@ -316,7 +319,8 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 					     (fi::buffer-number-to-buffer
 					      name current-prefix-arg)
 					   (get-buffer-create name)))
-				       fi:common-lisp-directory
+				       (or fi:common-lisp-directory
+					   default-directory)
 				       fi:common-lisp-image-name
 				       fi:common-lisp-image-arguments
 				       fi:common-lisp-host))
@@ -355,7 +359,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		directory
 		'fi:inferior-common-lisp-mode
 		fi:common-lisp-prompt-pattern
-		(if local image-name "rsh")
+		(if local image-name fi::rsh-command)
 		(if local
 		    image-args
 		  (fi::remote-lisp-args host image-name image-args
@@ -385,6 +389,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	  fi:common-lisp-image-name image-name
 	  fi:common-lisp-image-arguments image-args
 	  fi:common-lisp-host host)
+    (fi::reset-metadot-session)
     proc))
 
 (defun fi:goto-common-lisp ()
@@ -469,7 +474,8 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 					     (fi::buffer-number-to-buffer
 					      name current-prefix-arg)
 					   (get-buffer-create name)))
-				       fi:franz-lisp-directory
+				       (or fi:franz-lisp-directory
+					   default-directory)
 				       fi:franz-lisp-image-name
 				       fi:franz-lisp-image-arguments
 				       fi:franz-lisp-host))
@@ -497,7 +503,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		directory
 		'fi:inferior-franz-lisp-mode
 		fi:franz-lisp-prompt-pattern
-		(if local image-name "rsh")
+		(if local image-name fi::rsh-command)
 		(if local
 		    image-args
 		  (fi::remote-lisp-args host image-name image-args
@@ -528,14 +534,22 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 ;;;;
 
 (defun fi::remote-lisp-args (host image-name image-args directory)
-  (append (list host
-		(format "sh -c '%s if test -d %s; then cd %s; fi; "
-			(fi::env-vars)
-			directory
-			directory)
-		image-name)
-	  image-args
-	  '("'")))
+  (append
+   fi::rsh-args
+   (list
+    host
+    "sh"
+    "-c"
+    (format "%s%s if test -d %s; then cd %s; fi; %s %s%s"
+	    (if (string= "rsh" (file-name-nondirectory fi::rsh-command))
+		"'" "")
+	    (fi::env-vars)
+	    directory
+	    directory
+	    image-name
+	    (mapconcat (function (lambda (x) (if x x ""))) image-args " ")
+	    (if (string= "rsh" (file-name-nondirectory fi::rsh-command))
+		"'" "")))))
 
 (defun fi::get-lisp-interactive-arguments (first-time buffer-name buffer
 					   directory image-name image-args
@@ -644,7 +658,8 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 				      initial-func
 				      mode-hook
 			    &rest mode-hook-arguments)
-  (let* ((remote (and (stringp image-file) (string= "rsh" image-file)))
+  (let* ((remote (and (stringp image-file)
+		      (string= fi::rsh-command image-file)))
 	 (buffer-name
 	  (cond ((stringp buffer-name) buffer-name)
 		(t (let ((name (concat "*" process-name "*")))
