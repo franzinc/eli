@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.28 1991/03/16 12:34:56 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.29 1991/03/16 12:41:49 layer Exp $
 
 (require 'cl)
 
@@ -113,7 +113,9 @@
 		       (substitute-command-keys
 			(format "\\<current-local-map-var>\\[%s]" var)))))
 	    (insert func)
-	    (insert "\n")
+	    (if verbose
+		(insert "\n")
+	      (forward-line 1))
 	    (if key
 		(progn
 		  (insert (format "   Invoke with \"%s\"" key))
@@ -137,18 +139,28 @@
 	    (insert-char ?. (- line-pad (length type)
 			       (length (symbol-name var))))
 	    (cond ((syntax-table-p val)
-		   (insert (format "%s\n" type))
+		   (insert (format "%s" type))
+		   (if verbose
+		       (insert "\n")
+		     (forward-line 1))
 		   (when verbose
 		     (insert-doc-string doc)))
 		  ((keymapp val)
-		   (insert (format "%s\n" type))
+		   (insert (format "%s" type))
+		   (if verbose
+		       (insert "\n")
+		     (forward-line 1))
 		   (when verbose
 		     (insert-doc-string doc)
 		     (insert
 		      (format "\n%s" (substitute-command-keys
 				      (format "\\{%s}" var))))))
 		  (t
-		   (insert (format "%s\n   Initial value: %s\n" type
+		   (insert type)
+		   (if verbose
+		       (insert "\n")
+		     (forward-line 1))
+		   (insert (format "   Initial value: %s\n"
 				   (frob-newlines (prin1-to-string val))))
 		   (when verbose
 		     (insert-doc-string doc)))))))
