@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 1.117.6.4.8.8 2003/08/14 16:43:59 layer Exp $
+;; $Id: fi-keys.el,v 1.117.6.4.8.9 2003/08/14 22:22:25 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -1115,7 +1115,7 @@ as it was before it was made visible."
 
 (defvar fi::find-tag-lock-state nil)
 
-(defun fi:disabled-once-find-tag (&rest args)
+(defun fi::disabled-once-find-tag (&rest args)
   (interactive)
   (let ((wc (current-window-configuration)))
     (delete-other-windows)
@@ -1170,8 +1170,8 @@ Type `q' to proceed.
 (when fi:find-tag-lock
   (fset 'saved-find-tag (symbol-function 'find-tag))
   (fset 'saved-find-tag-other-window (symbol-function 'find-tag-other-window))
-  (fset 'find-tag (symbol-function 'fi:disabled-once-find-tag))
-  (fset 'find-tag-other-window (symbol-function 'fi:disabled-once-find-tag)))
+  (fset 'find-tag (symbol-function 'fi::disabled-once-find-tag))
+  (fset 'find-tag-other-window (symbol-function 'fi::disabled-once-find-tag)))
 
 (defun fi:center-defun ()
   "Put the first line of the current definition on the first line of the
@@ -1241,15 +1241,15 @@ that, after being enabled it will display the arglist or value of a
 specific symbol after the symbol has been typed in followed by SPC."
   (interactive)
   (if (fi::lep-open-connection-p)
-      (fi:arglist-lisp-space-1)
+      (fi::arglist-lisp-space-1)
     (self-insert-command (prefix-numeric-value current-prefix-arg))))
 
-;; The implementation of fi:arglist-lisp-space-1 is from Bill Clementson
+;; The implementation of fi::arglist-lisp-space-1 is from Bill Clementson
 ;; (Bill_Clementson@jdedwards.com), who says it is an adaptation of ILISP
 ;; code.  The idea for fi:auto-arglist-pop-up-style came from Steve Haflich
 ;; (smh@franz.com).
 
-(defun fi:arglist-lisp-space-1 ()
+(defun fi::arglist-lisp-space-1 ()
   (let* ((old-point (point))
 	 (last-char
 	  (progn (ignore-errors (backward-char))

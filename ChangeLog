@@ -11,6 +11,14 @@ post-6.2 release changes:
 
 2003-08-14  Kevin Layer  <layer@crikey>
 
+	* README: internal info
+	* fi-keys.el,
+	* fi-lep.el,
+	* fi-site-init.el,
+	* fi-vers.el: internalize (fi::) a few external variables (fi:)
+
+2003-08-14  Kevin Layer  <layer@crikey>
+
 	* fi-basic-lep.el: parameterize the *CL-temp* buffer name (not
 	  used by anything yet)
 	* fi-keys.el: fix minor problems with bindings, found while

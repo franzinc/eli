@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 1.85.6.6.2.4 2003/08/12 21:17:39 layer Exp $
+;; $Id: fi-lep.el,v 1.85.6.6.2.5 2003/08/14 22:22:25 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -839,7 +839,7 @@ for tracing methods."
 function defined by the top-level form around the cursor position.  The
 form can be a defun, defgeneric, defmethod, define-compiler-macro, or
 deftype.  The defmethod case is most useful, as the function spec for
-the particular method is extraced from the qualifiers and specializers.
+the particular method is extracted from the qualifiers and specializers.
 If tracing is already turned on, then it will be turned off.  With a
 prefix arg, cause the debugger to be invoked via a call to BREAK when
 the function is called.  fi:package is used to determine from which

@@ -1,0 +1,18 @@
+
+To find items not documented in doc/eli.htm:
+
+(defmacro with-lines-from-file ((var file) &body body)
+  (let ((s (gensym)))
+    `(with-open-file (,s ,file :direction :input)
+       (let (,var)
+	 (loop
+	   (setq ,var (read-line ,s nil ,s))
+	   (when (eq ,var ,s) (return nil))
+	   ,@body)))))
+
+(with-lines-from-file (line "eli/xxx2")
+  (when (/= 0 (run-shell-command
+	       (format nil
+		       "egrep -q '%% ~a' eli/doc/eli.htm"
+		       line)))
+    (format t "~a~%" line)))
