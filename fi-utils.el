@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.27 1991/10/15 11:40:06 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.28 1991/10/29 14:59:37 layer Exp $
 
 ;;; Misc utilities
 
@@ -537,3 +537,23 @@ at the beginning of the line."
     
     (bury-buffer buffer)
     (select-window (or real-from-window from-window))))
+
+(defvar fi::shell-buffer-for-common-lisp-interaction-host-name nil)
+
+(defun fi::setup-shell-buffer-for-common-lisp-interaction (process)
+  "Internal function use to start an emacs-lisp interface in a buffer not
+created by fi:common-lisp."
+  (interactive (list (get-buffer-process (current-buffer))))
+  (when (fi::lep-open-connection-p)
+    (error "an emacs-lisp interface is already running in this emacs."))
+  (save-excursion
+    (set-buffer (process-buffer process))
+    (unless process
+      (error "current buffer doesn't have a process associated with it"))
+    (setq fi::common-lisp-backdoor-main-process-name
+      (setq fi::process-name (buffer-name (current-buffer))))
+    (setq fi::lisp-host
+      (or fi::shell-buffer-for-common-lisp-interaction-host-name
+	  (setq fi::shell-buffer-for-common-lisp-interaction-host-name
+	    (read-string "host on which lisp is running: "))))
+    (set-process-filter process 'fi::common-lisp-subprocess-filter)))
