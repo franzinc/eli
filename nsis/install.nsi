@@ -1,10 +1,12 @@
-; $Id: install.nsi,v 1.1.2.1 2004/10/07 21:15:06 layer Exp $
+; $Id: install.nsi,v 1.1.2.2 2004/10/08 18:06:10 mikel Exp $
 
-!define REGKEY "Software\Franz Inc.\Allegro Emacs Easy Installer"
+!define REGKEY "Software\GNU\Gnu Emacs Easy Installer"
+!define ACLREGKEY "Software\Franz Inc.\Allegro Common Lisp"
 !define VERBOSE_PROD "Gnu Emacs 21.3"
 !define SHORT_PROD "Gnu Emacs"
+!define emacs_dir "emacs-21.3"
 
-SetCompressor bzip2
+SetCompressor lzma
 
 Name "${VERBOSE_PROD}"
 
@@ -18,13 +20,10 @@ InstallDir "$PROGRAMFILES\${VERBOSE_PROD}"
 ; overwrite the old one automatically)
 InstallDirRegKey HKLM "${REGKEY}" "Install_Dir"
 
-LicenseData binary-license.txt
-
 ;--------------------------------
 
 ; Pages
 
-Page license
 Page components
 Page directory
 Page instfiles
@@ -42,12 +41,7 @@ Section "${VERBOSE_PROD}"
   ; Set output path to the installation directory.
   SetOutPath "$INSTDIR"
 
-  File /r "emacs-21.3\*"
-  File "binary-license.txt"
-
-  ; maybe use this for .emacs file?
-  ;IfFileExists "$INSTDIR\nfs.cfg" +2
-	; File /oname=nfs.cfg nfs.cfg.default
+  File /r "$emacs_dir\*"
 
   ; Write the installation path into the registry
   WriteRegStr HKLM "${REGKEY}" "Install_Dir" "$INSTDIR"
@@ -67,8 +61,106 @@ Section "${VERBOSE_PROD}"
 SectionEnd
 
 ; Optional section (can be disabled by the user)
+  var homevar
+  var test
+  var eli_init_file
+  var eli_handle
+  var allegro_dir
+
+Section "Allegro Emacs-Lisp Interface setup"
+
+  ;; check for Allegro installation first.
+  ReadRegStr $allegro_dir HKLM "${ACLREGKEY}" "InstallationDirectory"
+  StrLen $test $allegro_dir
+  IntCmp $test 0 end_eli_section
+
+  ; Check for existing .emacs file.
+  ; if HOME is set, look for .emacs there, else look in 'C:\'
+
+  ReadEnvStr $homevar "HOME"
+
+  ; MessageBox MB_OK|MB_ICONSTOP "HOME dir is '$homevar'"
+
+  StrLen $test $homevar
+  IntCmp $test 0 eli_default
+  ; need to check for trailing slash here. annoying.
+  StrCpy $eli_init_file "$homevar\.emacs"
+  goto check_for_eli
+
+eli_default:
+  StrCpy $eli_init_file "C:\.emacs"
+
+check_for_eli:
+  ;; prompt for modify/create .emacs file.
+  IfFileExists "$homevar\.emacs" prompt_to_append prompt_to_create
+
+prompt_to_append:
+  MessageBox MB_YESNO|MB_ICONQUESTION \
+	"Would you like us to modify $eli_init_file to include sample \
+	code for loading the Allegro Emacs-Lisp interface?" \
+	/SD IDNO \
+	IDNO end_eli_section
+
+  ; append to eli file.
+  FileOpen $eli_handle $eli_init_file "a"
+  FileSeek $eli_handle 0 END
+  FileWriteByte $eli_handle "13"
+  FileWriteByte $eli_handle "10"
+  goto write_to_eli
+
+prompt_to_create:
+  MessageBox MB_YESNO|MB_ICONQUESTION \
+	"Would you like to create $eli_init_file with sample code \
+	for loading the Allegro Emacs-Lisp interface?" \
+	/SD IDNO \
+	IDNO end_eli_section
+
+  ; create eli file.
+  FileOpen $eli_handle $eli_init_file "w"
+
+write_to_eli:
+  FileWrite $eli_handle \
+	"; This is sample code for starting and specifying defaults to the"
+  FileWriteByte $eli_handle "13"
+  FileWriteByte $eli_handle "10"
+  FileWrite $eli_handle \
+	"; Emacs-Lisp interface. Uncomment this code if you want the ELI"
+  FileWriteByte $eli_handle "13"
+  FileWriteByte $eli_handle "10"
+  FileWrite $eli_handle \
+	"; to load automatically when you start emacs."
+  FileWriteByte $eli_handle "13"
+  FileWriteByte $eli_handle "10"
+  FileWrite $eli_handle '; (push "$allegro_dir/eli" load-path)'
+  FileWriteByte $eli_handle "13"
+  FileWriteByte $eli_handle "10"
+  FileWrite $eli_handle '; (load "fi-site-init.el")'
+  FileWriteByte $eli_handle "13"
+  FileWriteByte $eli_handle "10"
+  FileWrite $eli_handle ';'
+  FileWriteByte $eli_handle "13"
+  FileWriteByte $eli_handle "10"
+  FileWrite $eli_handle \
+	'; (setq fi:common-lisp-image-name "$allegro_dir/mlisp.exe")'
+  FileWriteByte $eli_handle "13"
+  FileWriteByte $eli_handle "10"
+  FileWrite $eli_handle \
+	'; (setq fi:common-lisp-image-file "$allegro_dir/mlisp.dxl")'
+  FileWriteByte $eli_handle "13"
+  FileWriteByte $eli_handle "10"
+  FileWrite $eli_handle \
+	'; (setq fi:common-lisp-directory "$allegro_dir")'
+  FileWriteByte $eli_handle "13"
+  FileWriteByte $eli_handle "10"
+  FileClose $eli_handle
+
+end_eli_section:
+
+SectionEnd
+
 Section "Start Menu Shortcuts"
 
+  SetShellVarContext all
 !define SMDIR "$SMPROGRAMS\${SHORT_PROD}"
 
   CreateDirectory "${SMDIR}"
@@ -79,6 +171,7 @@ Section "Run Emacs after install"
 
   MessageBox MB_YESNO|MB_ICONQUESTION|MB_TOPMOST \
 	"Would you like to start Emacs now?" \
+	/SD IDNO \
 	IDNO norun
 
   Exec '"$INSTDIR\bin\runemacs.exe"'
@@ -93,6 +186,8 @@ SectionEnd
 
 Section "Uninstall"
   
+  SetShellVarContext all
+
   ; Remove registry keys
   DeleteRegKey HKLM "${UNINSTKEY}"
   DeleteRegKey HKLM "${REGKEY}"
@@ -107,7 +202,6 @@ Section "Uninstall"
   RMDir /r "${SMDIR}"
   RMDir /rebootok "$INSTDIR"
 
-  SetShellVarContext all
   Rmdir /r "$SMPROGRAMS\Gnu Emacs"
 
 SectionEnd
