@@ -31,7 +31,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.20 1991/02/12 14:55:36 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.21 1991/02/27 16:20:47 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If `t', semicolons that begin comments are indented as they are typed.")
@@ -145,14 +145,14 @@ depth to backtrack.  A reasonable value is 3.")
 
 (make-variable-buffer-local 'fi:lisp-maximum-indent-struct-depth)
 
-(defvar fi:lisp-case-sensitive t
+(defvar fi:indent-methods-case-sensitive t
   "*If non-NIL, the code that is being edited is for a case-sensitive dialect
 of Lisp.  This variable is buffer-local.  If a Lisp is case-insensitive,
 indentation specifications should be placed on the Emacs Lisp symbol that
 corresponds to the lowercase name of the function, macro, or special
 form.")
 
-(make-variable-buffer-local 'fi:lisp-case-sensitive)
+(make-variable-buffer-local 'fi:indent-methods-case-sensitive)
 
 (defvar fi:lisp-package t
   "*This variable may be NIL, T, or a symbol or string.
@@ -586,11 +586,11 @@ little consing as possible.")
 (defun fi::lisp-get-method-aux (name)
   (or (and (boundp 'fi:lisp-indent-hook-property)
 	   fi:lisp-indent-hook-property
-	   (get (intern-soft (if fi:lisp-case-sensitive
+	   (get (intern-soft (if fi:indent-methods-case-sensitive
 				 name
 			       (downcase name)))
 		fi:lisp-indent-hook-property))
-      (get (intern-soft (if fi:lisp-case-sensitive
+      (get (intern-soft (if fi:indent-methods-case-sensitive
 			    name
 			  (downcase name)))
 	   'fi:lisp-indent-hook)))
@@ -902,7 +902,7 @@ beginning with a colon) are recognized."
 	(key nil)
 	(matched nil)
 	(test-function
-	 (if fi:lisp-case-sensitive
+	 (if fi:indent-methods-case-sensitive
 	     'string-equal
 	   'fi::string-equal-nocase)))
     (while (and keys (not matched))
@@ -916,7 +916,7 @@ beginning with a colon) are recognized."
   (let ((keys keywords)
 	(matched nil)
 	(test-function
-	 (if fi:lisp-case-sensitive
+	 (if fi:indent-methods-case-sensitive
 	     'string-equal
 	   'fi::string-equal-nocase)))
     (while (and keys (not matched))
@@ -987,7 +987,7 @@ non-keyword s-expression."
 				    (keys keywords)
 				    (matched nil)
 				    (test-function
-				     (if fi:lisp-case-sensitive
+				     (if fi:indent-methods-case-sensitive
 					 'string-equal
 				       'fi::string-equal-nocase)))
 				(while (and keys (not matched))
@@ -1069,7 +1069,7 @@ keyword."
 			      (let ((keys keywords)
 				    (matched nil)
 				    (test-function
-				     (if fi:lisp-case-sensitive
+				     (if fi:indent-methods-case-sensitive
 					 'string-equal
 				       'fi::string-equal-nocase)))
 				(while (and keys (not matched))
@@ -1221,7 +1221,7 @@ distinguished."
 (defun fi::lisp-form-declare-p (sexp)
   (let ((car (fi::lisp-form-car sexp)))
     (and car
-	 (funcall (if fi:lisp-case-sensitive
+	 (funcall (if fi:indent-methods-case-sensitive
 		      'string-equal
 		    'fi::string-equal-nocase)
 		  "declare"
