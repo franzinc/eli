@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.207 2000/06/22 20:48:54 layer Exp $
+;; $Id: fi-subproc.el,v 1.208 2000/06/26 20:15:34 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -1299,14 +1299,14 @@ This function implements continuous output to visible buffers."
   (if (string-match "^\\(.*\\)<[0-9]+>$" name)
       (setq name (substring name (match-beginning 1) (match-end 1))))
   (let ((buffer-name
-	 (cond ((> number 1) (concat name "<" (format "%d" number) ">"))
+	 (cond ((> number 1) (format "%s<%d>" name number))
 	       ((< number 0)
 		(let (n tmp)
 		  (if (null (fi:process-running-p name name))
 		      name
 		    (setq n 2)
 		    (while (fi:process-running-p
-			    (setq tmp (concat name "<" (format "%d" n) ">")))
+			    (setq tmp (format "%s<%d>" name n)))
 		      (setq n (+ n 1)))
 		    tmp)))
 	       (t name))))
