@@ -19,7 +19,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.41 1992/09/17 10:49:22 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.42 1992/09/24 17:58:27 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If non-nil, semicolons that begin comments are indented as they are
@@ -1612,6 +1612,7 @@ if matched at the beginning of a line, means don't indent that line."
 	       "nodeclare"))))
   (put 'macrolet tag '(like flet))
   (put 'make-instance tag 1)
+  (put 'named-function tag 1)
   (put 'named-lambda tag '(like defun))
   (put 'print-unreadable-object tag '(like with-open-file))
   (put 'restart-bind tag
