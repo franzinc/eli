@@ -1,7 +1,7 @@
 ;;; subprocess-lisp.el
 ;;;   functions to send lisp source code to the sublisp process
 ;;;
-;;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.1 1987/09/07 23:23:55 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.2 1987/09/13 11:57:44 layer Exp $
 
 (defun inferior-lisp-send-sexp-input (arg)
   "Send s-expression(s) to the Lisp subprocess."
@@ -199,7 +199,12 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 
 (defun send-string-load (process text nl-to-cr)
   (if (null emacs-to-lisp-transaction-file)
-      (setq emacs-to-lisp-transaction-file (make-temp-name ".#emacs")
+      (setq emacs-to-lisp-transaction-file (make-temp-name
+					    (format "/tmp/%s"
+						    (user-login-name)))
+	    emacs-to-lisp-package (if package
+				      (format "(in-package :%s)\n" package)
+				    nil)
 	    emacs-to-lisp-transaction-buf (create-file-buffer
 					   emacs-to-lisp-transaction-file)
 	    emacs-to-lisp-load-command (format
@@ -207,11 +212,12 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 					emacs-to-lisp-transaction-file)))
   (save-window-excursion
     (let ((file emacs-to-lisp-transaction-file)
-	  (pkg package))
+	  (pkg emacs-to-lisp-package))
       (pop-to-buffer emacs-to-lisp-transaction-buf)
       (erase-buffer)
-      (if pkg (insert (format "(in-package :%s)\n" pkg)))
+      (if pkg (insert pkg))
       (insert text)
       (newline)
-      (write-region (point-min) (point-max) file)))
+      (write-region (point-min) (point-max) file)
+      (bury-buffer)))
   (send-string-split process emacs-to-lisp-load-command nl-to-cr))
