@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.30 1991/06/19 22:41:25 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.31 1991/06/20 20:02:30 layer Exp $
 ;;
 
 (defvar fi:always-in-a-window nil)
@@ -306,11 +306,16 @@ time."
 
 ;; We need to get hold of something
 
-(defun scm::make-and-initialize-metadot-session (something)
-  "Put the session into the waiting state"
+(defun scm::make-and-initialize-metadot-session (something &optional
+							   what
+							   from-fspec)
+  ;; Put the session into the waiting state
   (if lep::meta-dot-session (lep::kill-session lep::meta-dot-session))
   (setq lep::meta-dot-session session)
-  (setq  lep::meta-dot-string something)
+  (setq lep::meta-dot-string something)
+  (setq lep::meta-dot-what (or what "definition"))
+  (setq lep::meta-dot-from-fspec from-fspec)
+
   (fi::modify-session-continuation
    session
    (list (function (lambda (pathname point n-more)
