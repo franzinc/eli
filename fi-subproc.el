@@ -1,17 +1,13 @@
 ;;; subprocess.el
 ;;;   subprocess modes and functions
 ;;;
-;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.8 1988/02/19 17:53:40 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.9 1988/02/20 22:19:55 layer Exp $
 
 (provide 'subprocess)
 
 ;;;;
 ;;; Variables and Constants
 ;;;;
-
-(defvar fi:shell-mode-map nil "Shell-mode keymap.")
-(defvar fi:inferior-lisp-mode-map nil "Inferior-lisp-mode keymap.")
-(defvar fi:subprocess-mode-map nil "Special subprocess modes keymap.")
 
 (defvar last-input-start nil
   "Marker for start of last input in shell-mode or inferior-lisp-mode buffer.")
@@ -31,17 +27,17 @@
 (defvar shell-directory-stack nil
   "List of directories saved by pushd in this buffer's shell.")
 
-(defvar shell-popd-regexp "popd"
+(defvar shell-popd-regexp ":?popd"
   "*Regexp to match subshell commands equivalent to popd.
 This variable is buffer-local.  If nil, no automatic directory changes
 will be made.")
 
-(defvar shell-pushd-regexp "pushd"
+(defvar shell-pushd-regexp ":?pushd"
   "*Regexp to match subshell commands equivalent to pushd.
 This variable is buffer-local.  If nil, no automatic directory changes
 will be made.")
 
-(defvar shell-cd-regexp "cd"
+(defvar shell-cd-regexp ":?cd"
   "*Regexp to match subshell commands equivalent to cd.
 This variable is buffer-local.  If nil, no automatic directory changes
 will be made.")
@@ -60,7 +56,7 @@ marker, the window is not updated.  This is a buffer-local symbol.")
 (defvar subprocess-enable-superkeys nil
   "*If t, certain keys become `superkeys' in subprocess buffers.
 The superkeys are C-a, C-d, C-o, C-u, C-w, C-z, and C-\\, which will behave
-as they would in the `fi:subprocess-mode-map' keymap when typed at the end
+as they would in the current local keymap when typed at the end
 of a subprocess buffer.  If typed elsewhere, these keys have their
 normal global binding.  This is a buffer-local symbol.")
 
@@ -128,7 +124,7 @@ Anything from beginning of line up to the end of what this pattern matches
 is deemed to be prompt, and is not re-executed.")
 
 (defvar common-lisp-prompt-pattern
-  "^\\(\\[[0-9]+c?\\] \\|\\[step\\] \\)?<?cl> "
+  "^\\(\\[[0-9]+c?\\] \\|\\[step\\] \\)?<[-A-Za-z]* ?[0-9]*> "
   "*Regexp for Newline command in inferior-lisp mode to match Common Lisp prompts.
 Anything from beginning of line up to the end of what this pattern
 matches is deemed to be prompt, and is not re-executed.")
@@ -148,200 +144,6 @@ matches is deemed to be prompt, and is not re-executed.")
 	'(and
 	  (boundp (intern name-of-symbol))
 	  (symbol-value (intern name-of-symbol)))))
-
-;;;;
-;;; Mode definitions
-;;;;
-
-(defun fi:shell-mode (&optional prompt-pattern)
-  "Major mode for interacting with an inferior shell.
-Shell name is same as buffer name, sans the asterisks.
-\\[subprocess-send-input] at end of buffer sends line as input.
-\\[subprocess-send-input] not at end copies rest of line to end and sends it.
-
-An input ring saves input sent to the shell subprocess.
-\\[pop-input] recalls previous input, travelling backward in the ring.
-\\[push-input] recalls previous input, travelling forward in the ring.
-\\[re-search-backward-input] searches backward in the input ring for a
-previous input that contains a regular expression.
-\\[re-search-forward-input] searches forward in the input ring for a
-previous input that contains a regular expression.
-\\[list-input-ring] lists the contents of the input ring.
-
-Here is a complete list of the key bindings in shell-mode:
-\\{fi:shell-mode-map}
-Keys that are shown above bound to `subprocess-superkey' invoke their
-bindings in the inferior key map shown below when at the end of the buffer,
-otherwise they invoke their globally-bound functions.
-\\{fi:subprocess-mode-map}
-
-Entry to this mode applies the values of subprocess-mode-hook and
-shell-mode-hook, in this order and each with no args, if their
-values are names of functions.
-
-cd, pushd and popd commands given to the shell are watched
-by Emacs to keep this buffer's default directory
-the same as the shell's working directory.
-Variables shell-cd-regexp, shell-pushd-regexp and shell-popd-regexp
-are used to match these command names.
-
-You can send text to the shell (or its subjobs) from other buffers
-using the commands \\[send-region], \\[send-string] and \\[fi:eval-defun]."
-  (interactive)
-  (kill-all-local-variables)
-  (setq major-mode 'shell-mode)
-  (setq mode-name "Shell")
-  (setq mode-line-process '(": %s"))
-  (if (null fi:shell-mode-map)
-      (progn
-	(setq fi:shell-mode-map (make-sparse-keymap))
-	(shell-mode-commands fi:shell-mode-map)))
-  (if (null fi:subprocess-mode-map)
-      (progn
-	(setq fi:subprocess-mode-map (make-sparse-keymap))
-	(subprocess-mode-commands fi:subprocess-mode-map)))
-  (use-local-map fi:shell-mode-map)
-  (make-local-variable 'shell-directory-stack)
-  (setq shell-directory-stack nil)
-  (make-local-variable 'last-input-start)
-  (setq last-input-start (make-marker))
-  (make-local-variable 'last-input-end)
-  (setq last-input-end (make-marker))
-  (make-local-variable 'input-ring)
-  (setq input-ring nil)
-  (make-local-variable 'input-ring-max)
-  (setq input-ring-max default-input-ring-max)
-  (make-local-variable 'input-ring-yank-pointer)
-  (setq input-ring-yank-pointer nil)
-  (make-local-variable 'last-input-search-string)
-  (setq last-input-search-string "")
-  (make-local-variable 'subprocess-prompt-pattern)
-  (setq subprocess-prompt-pattern
-	(if prompt-pattern prompt-pattern shell-prompt-pattern))
-  (make-local-variable 'rlogin-subprocess-semaphore)
-  (setq rlogin-subprocess-semaphore nil)
-  (run-hooks 'subprocess-mode-hook 'shell-mode-hook))
-
-(defun fi:inferior-lisp-mode (&optional prompt-pattern)
-  "Major mode for interacting with an inferior Lisp subprocess.
-\\[inferior-lisp-send-list-input] at end of buffer sends all input since last Lisp
-  subprocess output to the Lisp subprocess.
-\\[inferior-lisp-send-list-input] can take numeric argument to specify that
-  s-expressions are to be sent instead.
-\\[inferior-lisp-send-list-input] not at end copies s-expression to end and sends it.
-\\[inferior-lisp-send-list-input] can take numeric argument to specify number of
-  s-expressions to copy and send.
-\\[newline-and-indent] starts a new line at the proper indentation.
-\\[lisp-indent-line] indents the current line.
-\\[self-insert-tab] inserts a real tab.
-\\[indent-sexp] indents the current s-expression.
-\\[backward-delete-char-untabify] converts tabs to spaces while deleting back.
-
-An input ring saves input sent to the Lisp subprocess.
-\\[pop-input] recalls previous input, travelling backward in the ring.
-\\[push-input] recalls previous input, travelling forward in the ring.
-\\[re-search-backward-input] searches backward in the input ring for a
-previous input that contains a regular expression.
-\\[re-search-forward-input] searches forward in the input ring for a
-previous input that contains a regular expression.
-\\[list-input-ring] lists the contents of the input ring.
-
-Here is a complete list of the key bindings in inferior-lisp-mode:
-\\{fi:inferior-lisp-mode-map}
-Keys that are shown above bound to `subprocess-superkey' invoke their
-bindings in the inferior key map shown below when at the end of the buffer,
-otherwise they invoke their globally-bound functions.
-\\{fi:subprocess-mode-map}
-
-Entry to this mode applies the values of subprocess-mode-hook,
-  lisp-mode-hook, and inferior-lisp-mode-hook, in this order and
-  each with no args, if their values are names of functions.
-
-You can send text to the Lisp subprocess from other buffers
-  using the commands \\[send-region], \\[send-string], \\[lisp-send-defun],
-  \\[franz-lisp-send-defun], and \\[common-lisp-send-defun]."
-  (interactive)
-  (lisp-mode)
-  (set-syntax-table lisp-mode-syntax-table)
-  (setq major-mode 'inferior-lisp-mode)
-  (setq mode-name "Inferior Lisp")
-  (setq mode-line-process '(": %s"))
-  (if (null fi:inferior-lisp-mode-map)
-      (progn
-	(setq fi:inferior-lisp-mode-map (make-sparse-keymap))
-	(inferior-lisp-mode-commands fi:inferior-lisp-mode-map)))
-  (if (null fi:subprocess-mode-map)
-      (progn
-	(setq fi:subprocess-mode-map (make-sparse-keymap))
-	(subprocess-mode-commands fi:subprocess-mode-map)))
-  (use-local-map fi:inferior-lisp-mode-map)
-  (setq local-abbrev-table lisp-mode-abbrev-table)
-  (make-local-variable 'last-input-start)
-  (setq last-input-start (make-marker))
-  (make-local-variable 'last-input-end)
-  (setq last-input-end (make-marker))
-  (make-local-variable 'input-ring)
-  (setq input-ring nil)
-  (make-local-variable 'input-ring-max)
-  (setq input-ring-max default-input-ring-max)
-  (make-local-variable 'input-ring-yank-pointer)
-  (setq input-ring-yank-pointer nil)
-  (make-local-variable 'last-input-search-string)
-  (setq last-input-search-string "")
-  (make-local-variable 'subprocess-prompt-pattern)
-  (setq subprocess-prompt-pattern
-	(if prompt-pattern prompt-pattern lisp-prompt-pattern))
-  (make-local-variable 'rlogin-subprocess-semaphore)
-  (setq rlogin-subprocess-semaphore nil)
-  (run-hooks 'subprocess-mode-hook 'lisp-mode-hook 'inferior-lisp-mode-hook))
-
-(defun subprocess-mode-commands (map)
-  "Bind keys in MAP to commands for subprocess modes.
-The subprocess modes are `shell-mode' and `inferior-lisp-mode'.
-This function binds subprocess functions to control and escape bindings
-in the MAP given as argument."
-  (define-key map "\C-a" 'subprocess-beginning-of-line)
-  (define-key map "\C-c" 'fi:interrupt-shell-subjob)
-  (define-key map "\C-d" 'fi:shell-send-eof)
-  (define-key map "\C-k" 'fi:kill-output-from-shell)
-  (define-key map "\C-l" 'list-input-ring)
-  (define-key map "\C-m" 'subprocess-send-input)
-  (define-key map "\C-n" 'push-input)
-  (define-key map "\C-o" 'shell-send-flush)
-  (define-key map "\C-p" 'pop-input)
-  ;;(define-key map "\C-r" 'fi:show-output-from-shell)
-  (define-key map "\C-r" 're-search-backward-input)
-  (define-key map "\C-s" 're-search-forward-input)
-  (define-key map "\C-u" 'fi:kill-shell-input)
-  (define-key map "\C-v" 'fi:show-output-from-shell)
-  (define-key map "\C-w" 'subprocess-backward-kill-word)
-  ;;(define-key map "\C-x" 'input-region)
-  (define-key map "\C-y" 'pop-input)
-  (define-key map "\C-z" 'fi:stop-shell-subjob)
-  (define-key map "\C-\\" 'fi:quit-shell-subjob)
-  (define-key map "\ew" 'push-input)
-  (define-key map "\ex" 'input-ring-save)
-  (fset 'Subprocess-Special-prefix map)
-  map)
-
-(defun inferior-lisp-mode-commands (map)
-  (shell-mode-commands map)
-  (fi:lisp-mode-commands map))
-
-(defun shell-mode-commands (&optional map)
-  (define-key map "\C-m" 'subprocess-send-input)
-  (define-key map "\C-c" 'fi:interrupt-shell-subjob)
-  (define-key map "\C-i" 'shell-file-name-completion)
-  (if subprocess-enable-superkeys
-    (progn
-      (define-key map "\C-a" 'subprocess-superkey)
-      (define-key map "\C-d" 'subprocess-superkey)
-      (define-key map "\C-o" 'subprocess-superkey)
-      (define-key map "\C-u" 'subprocess-superkey)
-      (define-key map "\C-w" 'subprocess-superkey)
-      (define-key map "\C-z" 'subprocess-superkey)
-      (define-key map "\C-\\" 'subprocess-superkey)))
-  map)
 
 ;;;;
 ;;; User visible functions
@@ -428,7 +230,7 @@ A superkey is treated specially when at the end of a subprocess buffer,
 but has its normal, global, binding when used elsewhere in the buffer.
 At the end of the buffer the key has SPECIAL-BINDING.  If SPECIAL-BINDING
 is not given, the key takes its binding from the `fi:subprocess-mode-map'
-key map."
+keymap."
   (interactive)
   (if (eobp)
       (if special-binding
@@ -477,67 +279,6 @@ current subprocess prompt pattern, this function skips over it."
      (marker-position (process-mark (get-buffer-process (current-buffer))))
      (point))
     (backward-kill-word words)))
-
-(defun fi:subprocess-hack-directory ()
-  ;; Even if we get an error trying to hack the working directory,
-  ;; still send the input to the subshell.
-  (condition-case ()
-      (save-excursion
-	(goto-char last-input-start)
-	(cond
-	 ((and (and shell-popd-regexp
-		    (looking-at shell-popd-regexp))
-	       (memq (char-after (match-end 0)) '(?\; ?\n)))
-	  (if shell-directory-stack
-	      (progn
-		(cd (car shell-directory-stack))
-		(setq shell-directory-stack (cdr shell-directory-stack)))))
-	 ((and shell-pushd-regexp
-	       (looking-at shell-pushd-regexp))
-	  (cond
-	   ((memq (char-after (match-end 0)) '(?\; ?\n))
-	    (if shell-directory-stack
-		(let ((old default-directory))
-		  (cd (car shell-directory-stack))
-		  (setq shell-directory-stack
-		    (cons old (cdr shell-directory-stack))))))
-	   ((memq (char-after (match-end 0)) '(?\  ?\t))
-	    (let (dir)
-	      (skip-chars-forward "^ ")
-	      (skip-chars-forward " \t")
-	      (if (file-directory-p
-		   (setq dir
-		     (expand-file-name
-		      (substitute-in-file-name
-		       (buffer-substring
-			(point)
-			(progn
-			  (skip-chars-forward "^\n \t;")
-			  (point)))))))
-		  (progn
-		    (setq shell-directory-stack
-		      (cons default-directory shell-directory-stack))
-		    (cd dir)))))))
-	 ((and shell-cd-regexp
-	       (looking-at shell-cd-regexp))
-	  (cond
-	   ((memq (char-after (match-end 0)) '(?\; ?\n))
-	    (cd (getenv "HOME")))
-	   ((memq (char-after (match-end 0)) '(?\  ?\t))
-	    (let (dir)
-	      (skip-chars-forward "^ ")
-	      (skip-chars-forward " \t")
-	      (if (file-directory-p
-		   (setq dir 
-		     (expand-file-name
-		      (substitute-in-file-name
-		       (buffer-substring
-			(point)
-			(progn
-			  (skip-chars-forward "^\n \t;")
-			  (point)))))))
-		  (cd dir))))))))
-  (error nil)))
 
 (defun subprocess-send-input ()
   "Send input to subshell.
@@ -959,74 +700,67 @@ This function implements continuous output to visible buffers."
 		    (char-to-string char)))
 	       string
 	       nil)))
-
-;;;;
-;;; File name completions
-;;;;
 
-(defvar shell-completions-window nil
-  "If non-nil, completion window requires cleaning up.")
-
-(defvar shell-token-pattern "[ \t\n()<>&|;=]"
-  "*Regexp used by shell name completion to mark path name boundries.")
-
-(defun shell-file-name-completion ()
-  "Preform file name completion in shell mode"
-  (interactive)
-  (let ((shell-expand-string nil)
-	(shell-expand-begin nil)
-	(shell-expand-end nil)
-	(shell-expand-dir nil)
-	(shell-expand-file nil)
-	(shell-expand-completion nil))
-
-    ;; look back
-    (re-search-backward shell-token-pattern nil t)
-    (forward-char)
-    (setq shell-expand-begin (point))
-    ;; look ahead
-    (if (re-search-forward shell-token-pattern nil 0) (backward-char))
-    (setq shell-expand-end (point))
-
-    ;; the name requiring expansion
-    (setq shell-expand-string
-      (buffer-substring shell-expand-begin shell-expand-end))
-    ;; directory part of name
-    (setq shell-expand-dir
-      (or (file-name-directory shell-expand-string) default-directory))
-    ;; file part of name
-    (setq shell-expand-file
-      (file-name-nondirectory shell-expand-string))
-    
-    ;; do the expansion
-    (setq shell-expand-completion
-      (file-name-completion shell-expand-file shell-expand-dir))
-    ;; display the results
-    (if (eq shell-expand-completion t) (message "Sole completion")
-      (if (eq shell-expand-completion nil) (message "No match")
-	(if (equal shell-expand-completion shell-expand-file)
-	    (progn
-	      (if shell-completions-window nil
-		(setq shell-completions-window
-		  (current-window-configuration)))
-	      (message "Making completion list...")
-	      (with-output-to-temp-buffer " *Completions*"
-		(display-completion-list
-		  (sort (file-name-all-completions
-			  shell-expand-completion shell-expand-dir)
-			'string-lessp)))
-	      (message ""))
- 	  ;; put in the expansion
-	  (search-backward shell-expand-file)
-	  (replace-match shell-expand-completion t t))))))
-
-(defun shell-completion-cleanup ()
-  "Clean up windows after shell file name completion."
-  (interactive)
-  (if shell-completions-window
+(defun fi:subprocess-hack-directory ()
+  ;; Even if we get an error trying to hack the working directory,
+  ;; still send the input to the subshell.
+  (condition-case ()
       (save-excursion
-	(set-window-configuration shell-completions-window)
-	(setq shell-completions-window nil))))
+	(goto-char last-input-start)
+	(cond
+	 ((and (and shell-popd-regexp
+		    (looking-at shell-popd-regexp))
+	       (memq (char-after (match-end 0)) '(?\; ?\n)))
+	  (if shell-directory-stack
+	      (progn
+		(cd (car shell-directory-stack))
+		(setq shell-directory-stack (cdr shell-directory-stack)))))
+	 ((and shell-pushd-regexp
+	       (looking-at shell-pushd-regexp))
+	  (cond
+	   ((memq (char-after (match-end 0)) '(?\; ?\n))
+	    (if shell-directory-stack
+		(let ((old default-directory))
+		  (cd (car shell-directory-stack))
+		  (setq shell-directory-stack
+		    (cons old (cdr shell-directory-stack))))))
+	   ((memq (char-after (match-end 0)) '(?\  ?\t))
+	    (let (dir)
+	      (skip-chars-forward "^ ")
+	      (skip-chars-forward " \t")
+	      (if (file-directory-p
+		   (setq dir
+		     (expand-file-name
+		      (substitute-in-file-name
+		       (buffer-substring
+			(point)
+			(progn
+			  (skip-chars-forward "^\n \t;")
+			  (point)))))))
+		  (progn
+		    (setq shell-directory-stack
+		      (cons default-directory shell-directory-stack))
+		    (cd dir)))))))
+	 ((and shell-cd-regexp
+	       (looking-at shell-cd-regexp))
+	  (cond
+	   ((memq (char-after (match-end 0)) '(?\; ?\n))
+	    (cd (getenv "HOME")))
+	   ((memq (char-after (match-end 0)) '(?\  ?\t))
+	    (let (dir)
+	      (skip-chars-forward "^ ")
+	      (skip-chars-forward " \t")
+	      (if (file-directory-p
+		   (setq dir 
+		     (expand-file-name
+		      (substitute-in-file-name
+		       (buffer-substring
+			(point)
+			(progn
+			  (skip-chars-forward "^\n \t;")
+			  (point)))))))
+		  (cd dir))))))))
+  (error nil)))
 
 ;;;;
 ;;; Misc Initializations
