@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.31 1990/10/13 19:37:44 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.32 1990/11/29 14:12:47 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -730,7 +730,7 @@ Also move the point there."
   (interactive)
   (send-string
    (get-buffer-process (current-buffer))
-   (format "(chdir \"%s\")\n" default-directory)))
+   (format "(excl::chdir \"%s\")\n" default-directory)))
 
 (defun fi:shell-sync-current-working-directory ()
   (interactive)
