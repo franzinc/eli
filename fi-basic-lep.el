@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.11 1991/04/20 23:24:49 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.12 1991/04/22 13:40:53 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -455,46 +455,31 @@ handle it"
 					    "aborted"))))
       (if oncep (lep::kill-session session)))))
 
-;;(defun lep::make-session-for-lisp (session-id replyp oncep function &rest args)
-;;  (let ((session (make-session session-id nil)))
-;;    (add-session connection session)
-;;    (condition-case error
-;;	(let* ((done nil)
-;;	       (result (unwind-protect
-;;			   (prog1 (apply (intern-it function) args)
-;;			     (setq done t))
-;;			 ;;
-;;			 (if (not done)
-;;			     (progn
-;;			       (send-string process 
-;;					    (prin1-to-string (list (session-id session)
-;;								   ':error
-;;								   "aborted")))
-;;	 
-;;			       (send-string process "\n"))))))
-;;	  (when  replyp
-;;	    (send-string process 
-;;			 (prin1-to-string (list* (session-id session)
-;;						 ':reply
-;;						 result)))
-;;	    (send-string process "\n")))
-;;      (error 
-;;       (if replyp
-;;	   (progn
-;;	     (send-string process 
-;;			  (prin1-to-string (list (session-id session)
-;;						 ':error
-;;						 (prin1-to-string error))))
-;;	 
-;;	     (send-string process "\n"))
-;;	 (message (concat "Error occurred: " (prin1-to-string error))))))
-;;    (if oncep (lep::kill-session session))))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defconst fi:lisp-evalserver-timeout 5
+  "The time which fi:eval-in-lisp will wait before timing out and
+signalling an error.  Without a timeout Emacs would potentially be locked
+out if Lisp did not `return' a result.")
 
-;;;; There are some situations where we want to wait for the result to
-;;;; comeback from the lisp.  For this we can use ACCEPT-PROCESS-OUTPUT.
+(defconst fi:lisp-evalserver-number-reads 20
+  "The number of times the Lisp eval server tries to read from the
+lisp-evalserver process before giving up.  Without this feature Emacs would
+hang if Lisp got into an infinite loop while printing.  If the size of the
+values returned to Emacs is large, then the value of this variable should
+be increased.")
 
-(defun lep::eval-in-lisp (function &rest arguments)
+(defun fi:eval-in-lisp (string &rest args)
+  "Apply (Emacs Lisp) format to STRING and ARGS and sychronously evaluate
+the result in the Common Lisp to which we are connected.  If a
+lisp-eval-server has not been started, then this function starts it."
+  (let ((string (if args
+		    (apply 'format string args)
+		  string)))
+    (car (lep::eval-session-in-lisp 'lep::eval-from-emacs-session
+				    ':string (fi::frob-case-to-lisp string)))))
+
+(defun lep::eval-session-in-lisp (function &rest arguments)
   (let* ((result-cons (list nil nil nil))
 	 (session (lep::send-request-in-new-session
 		   function
