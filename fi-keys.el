@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 1.112.20.2 1998/08/25 17:25:26 layer Exp $
+;; $Id: fi-keys.el,v 1.112.20.3 1999/01/19 00:17:00 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -1123,3 +1123,28 @@ buffer and the source buffer from which this function was invoked."
     (progn (setq fi::toggle-to-lisp-window-config
 	     (current-window-configuration))
 	   (call-interactively 'fi:common-lisp))))
+
+;; not ready yet:
+(defun fi:new-toggle-to-lisp ()
+  "On each invocation, switch back and forth between the Lisp subprocess
+buffer and the source buffer from which this function was invoked."
+  (interactive)
+  (cond (fi::toggle-to-lisp-window-config
+	 (let ((new fi::toggle-to-lisp-window-config))
+	   (setq fi::toggle-to-lisp-window-config
+	     (current-window-configuration))
+	   (set-window-configuration new)))
+	((memq major-mode
+	       '(fi:inferior-common-lisp-mode fi:lisp-listener-mode))
+	 ;; first time, already in *common-lisp* buffer, do nothing
+	 )
+	((and fi::common-lisp-backdoor-main-process-name
+	      (fi:process-running-p
+	       (get-process fi::common-lisp-backdoor-main-process-name)))
+	 ;; first time, not in the *common-lisp* buffer
+	 (setq fi::toggle-to-lisp-window-config (current-window-configuration))
+	 (funcall
+	  fi:display-buffer-function
+	  (process-buffer
+	   (get-process fi::common-lisp-backdoor-main-process-name))))
+	(t (error "Must start Common Lisp first."))))

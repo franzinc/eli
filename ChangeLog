@@ -1,3 +1,5 @@
+bug7565  30    1 C-cl changes emacs default directory
+
 For more detailed instructions on filling in the ChangeLog form, see 
 `/fi/doc/procedures/changelogs.txt'.
 *******************************************************************************
@@ -5,6 +7,16 @@ For more detailed instructions on filling in the ChangeLog form, see
 
 <standard changelog date stamp>
 	* <changes go here...>
+
+*******************************************************************************
+2.0.21.16.5
+
+1999-01-18    <layer@HOBART>
+
+	* fi-compile.el: turn off byte-compile-compatibility due to
+	problems with new versions of emacs
+	* fi-keys.el: new version of fi:toggle-to-lisp, which isn't quite
+	ready
 
 *******************************************************************************
 2.0.21.16.4
