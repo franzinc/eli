@@ -1,4 +1,4 @@
-;; $Id: fi-compile.el,v 2.10.6.3.18.1 2003/08/07 15:27:23 layer Exp $
+;; $Id: fi-compile.el,v 2.10.6.3.18.2 2003/08/08 17:42:34 layer Exp $
 
 (require 'cl)
 
@@ -23,14 +23,17 @@
 
 (setq fi-files
   '("fi-vers" "fi-basic-lep" "fi-changes" "fi-composer" "fi-db"
-    "fi-dmode" "fi-emacs18" "fi-emacs19" "fi-emacs21" "fi-filec" "fi-gnu"
+    "fi-dmode" "fi-filec" "fi-gnu"
     "fi-indent" "fi-keys" "fi-leep0"
     "fi-lep" "fi-lze" "fi-modes" "fi-ring" "fi-rlogin" "fi-shell"
     "fi-stream" "fi-su" "fi-sublisp" "fi-subproc" "fi-telnet" "fi-utils"))
 
-(when (or (eq fi::emacs-type 'xemacs19)
-	  (eq fi::emacs-type 'xemacs20))
-  (setq fi-files (append fi-files '("fi-xemacs"))))
+(cond ((or (eq fi::emacs-type 'xemacs19)
+	   (eq fi::emacs-type 'xemacs20))
+       (setq fi-files (append fi-files '("fi-xemacs"))))
+      (t
+       (setq fi-files (append fi-files '("fi-emacs18" "fi-emacs19"
+					 "fi-emacs21")))))
 
 (setq fi-developer-files '("localfidev"))
 

@@ -11,6 +11,7 @@ post-6.2 release changes:
 
 2003-08-08  Kevin Layer  <layer@crikey>
 
+	* fi-compile.el: don't compile emacs-only files in xemacs
 	* fi-lep.el: bugs -> support
 	* fi-keys.el: rfe5611: rename fi:extended-keybindings to
 	  fi:legacy-keybindings
