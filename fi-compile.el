@@ -1,4 +1,4 @@
-;; $Id: fi-compile.el,v 2.9 1999/02/25 08:27:48 layer Exp $
+;; $Id: fi-compile.el,v 2.10 2000/06/22 20:48:53 layer Exp $
 
 (require 'cl)
 
@@ -10,7 +10,9 @@
 ;;(setq byte-compile-emacs19-compatibility t) ;; xemacs 20
 
 (require 'font-lock) ;; makes some compiler warnings go away
-(require 'comint) ;; makes some compiler warnings go away
+(condition-case nil
+    (require 'comint) ;; makes some compiler warnings go away
+  (error nil))
 (defvar mode-motion-hook) ;; makes xemacs compiler warning go away
 
 (push (expand-file-name ".") load-path)

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 1.84 2000/03/22 22:27:23 layer Exp $
+;; $Id: fi-lep.el,v 1.85 2000/06/22 20:48:54 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -196,6 +196,8 @@ time."
 		     (when (fi::pop-metadot-session)
 		       (fi::show-error-text "%s: %s" something error))))
 	 (lep::meta-dot-string))))
+(fset 'excl.scm::make-and-initialize-metadot-session
+      (symbol-function 'scm::make-and-initialize-metadot-session))
 
 (defun fi::pop-metadot-session ()
   ;; return `t' if we are `done' (nothing left to do)
@@ -343,6 +345,8 @@ return the pathname of temp file."
 		       file)))
 	      (lep::buffer-modified-tick))
       (list ':does-not-exist))))
+(fset 'excl.scm::return-buffer-status
+      (symbol-function 'scm::return-buffer-status))
 
 (defun scm::signal-transaction-file-error (pathname)
   (fi:note "
@@ -360,6 +364,8 @@ before the load of fi-site-init.  Don't forget to make sure ~/tmp exists,
 since the Emacs-Lisp interface will not create it."
 	    pathname fi:emacs-to-lisp-transaction-directory)
   nil)
+(fset 'excl.scm::signal-transaction-file-error
+      (symbol-function 'scm::signal-transaction-file-error))
 
 (defun lep::buffer-modified-tick ()
   "Get the buffer tick if it is supported"
@@ -444,7 +450,14 @@ buffer, the package is parsed at file visit time."
   (interactive "P")
   (message "Recursively macroexpanding...")
   (fi::lisp-macroexpand-common
-   (if arg 'excl::compiler-walk 'excl::walk-form) "walk"))
+   (if arg
+       'excl::compiler-walk
+     (if (and fi::lisp-version
+	      (consp fi::lisp-version)
+	      (>= (car fi::lisp-version) 6))
+	 'excl::walk-form
+       'clos::walk-form))
+   "walk"))
 
 (defun fi::lisp-macroexpand-common (expander type)
   (fi::make-request

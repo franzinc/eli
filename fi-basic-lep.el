@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-basic-lep.el,v 1.45 1998/01/07 18:43:28 layer Exp $
+;; $Id: fi-basic-lep.el,v 1.46 2000/06/22 20:48:53 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -320,7 +320,8 @@ versions of the emacs-lisp interface.
 	 (condition-case error
 	     (apply (fi::intern-it (second form)) (cddr form))
 	   (error
-	    (fi::show-error-text "Request error: " (fi::prin1-to-string error)))))
+	    (fi::show-error-text "Request error: %s"
+				 (fi::prin1-to-string error)))))
 	(t (error "Funny request received: %s" form))))
 
 
@@ -534,8 +535,12 @@ versions of the emacs-lisp interface.
 				       (fi::prin1-to-string error))))
 
 		   (process-send-string process "\n"))
-	       (fi::show-error-text "Error occurred: "
-				    (fi::prin1-to-string error)))))
+	       (fi::show-error-text
+		"Error occurred: %s"
+		(fi::prin1-to-string
+		 (if (and (consp error) (cdr error))
+		     (cadr error)
+		   error))))))
 	  (setq done t))
       (unless done
 	(process-send-string process

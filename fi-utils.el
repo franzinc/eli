@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 1.70 2000/03/13 00:43:09 layer Exp $
+;; $Id: fi-utils.el,v 1.71 2000/06/22 20:48:54 layer Exp $
 
 ;;; Misc utilities
 
@@ -1048,3 +1048,43 @@ created by fi:common-lisp."
 ;;;
 ;;;(cancel-debug-on-entry 'fi::breakpoint)
 ;;;(debug-on-entry 'fi::breakpoint)
+
+(defun fi::file-contents (filename)
+  (save-excursion
+    (set-buffer (get-buffer-create "  *file-contents-tmp*"))
+    (erase-buffer)
+    (insert-file-contents filename)
+    (buffer-string)))
+
+(defun fi:start-interface-via-file (host buffer connection-file)
+  ;; On the lisp side, you would do something like this:
+  ;;  (sys::start-emacs-lisp-interface t 1 7666 "~/.eli-startup")
+  ;; then, sometime later on the emacs side, do this:
+  ;;  (fi:start-interface-via-file "pie" "*common-lisp*" "~/.eli-startup")
+  (interactive "sHost: \nBBuffer name: \nfConnection data file: ")
+  (save-excursion
+    (set-buffer (get-buffer-create buffer))
+    (setq fi::lisp-host host)
+    (let ((command (fi::file-contents connection-file)))
+      (or (string-match "\\(.*\\)" command)
+	  (error "couldn't parse connection string in %s." file))
+      (fi::set-connection-vars command))
+
+    ;; need to change the name of this one:
+    (setq fi:connect-to-windows t)
+    (let ((host fi::lisp-host)
+	  (port fi::lisp-port)
+	  (pw fi::lisp-password)
+	  (version fi::lisp-ipc-version))
+      (fi::make-tcp-connection buffer 1
+			       'fi:lisp-listener-mode
+			       fi:common-lisp-prompt-pattern
+			       fi::lisp-host fi::lisp-port
+			       fi::lisp-password fi::lisp-ipc-version
+			       'fi::setup-tcp-connection)
+      (setq-default fi::lisp-host host)
+      (setq-default fi::lisp-port port)
+      (setq-default fi::lisp-password pw)
+      (setq-default fi::lisp-ipc-version version))
+    (fi::make-connection-to-lisp
+     fi::lisp-host fi::lisp-port fi::lisp-password fi::lisp-ipc-version)))

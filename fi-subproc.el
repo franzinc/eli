@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.206 2000/05/01 21:44:03 layer Exp $
+;; $Id: fi-subproc.el,v 1.207 2000/06/22 20:48:54 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -275,6 +275,9 @@ connection.")
 
 (defvar fi::lisp-case-mode ':unknown
   "The case in which the Common Lisp we are connected to lives.")
+
+(defvar fi::lisp-version nil
+  "The version of the remote lisp.")
 
 (defvar fi::listener-protocol ':listener)
 
@@ -917,36 +920,14 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	       (fi::fast-search-string 1 output)
 	       (string-match "\\([^\0]*\\)\\(.*\\)\\([^\0]*\\)"
 			     output)) 
-      (let* ((res (concat (substring output (match-beginning 1)
-				     (match-end 1))
-			  (substring output (match-beginning 3)
-				     (match-end 3))))
-	     (command (substring output (match-beginning 2) (match-end 2)))
-	     (xx nil))
-	(setq fi::lisp-port
-	  (car (setq xx (read-from-string command nil))))
-	(setq fi::lisp-password
-	  (car (setq xx (read-from-string command (cdr xx)))))
-	(setq fi::lisp-case-mode
-	  (car (setq xx
-		 (read-from-string (downcase command) (cdr xx)))))
-	;; the following "argument" is optional in that a previous
-	;; version of the ipc.cl didn't provide it
-	(if (condition-case ()
-		(car (setq xx (read-from-string
-			       (fi::frob-case-from-lisp command)
-			       (cdr xx))))
-	      (error nil))
-	    nil)
-	;; This is optional also
-	(setq fi::lisp-ipc-version
-	  (condition-case ()
-	      (if (not (eq (cdr xx) (length command)))
-		  (car (setq xx (read-from-string
-				 (fi::frob-case-from-lisp command)
-				 (cdr xx)))))
-	    (error nil)))
-
+      (let ((res (concat (substring output (match-beginning 1)
+				    (match-end 1))
+			 (substring output (match-beginning 3)
+				    (match-end 3)))))
+	
+	(fi::set-connection-vars 
+	 (substring output (match-beginning 2) (match-end 2)))
+	
 	(condition-case condition
 	    (progn
 	      (cond ((consp fi:start-lisp-interface-hook)
@@ -957,6 +938,30 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		(cons 'normal res)))
 	  (error (throw 'cl-subproc-filter-foo
 		   (cons 'error condition))))))))
+
+(defun fi::set-connection-vars (command)
+  (let ((xx nil))
+    (setq fi::lisp-port (car (setq xx (read-from-string command nil))))
+    (setq fi::lisp-password
+      (car (setq xx (read-from-string command (cdr xx)))))
+    (setq fi::lisp-case-mode
+      (car (setq xx (read-from-string (downcase command) (cdr xx)))))
+    (setq fi::lisp-version
+      ;; Older versions of the protocol didn't provide this, so protect
+      ;; against it not being there:
+      (condition-case ()
+	  (car (setq xx (read-from-string
+			 (fi::frob-case-from-lisp command)
+			 (cdr xx))))
+	(error nil)))
+    ;; This is optional also
+    (setq fi::lisp-ipc-version
+      (condition-case ()
+	  (if (not (eq (cdr xx) (length command)))
+	      (car (setq xx (read-from-string
+			     (fi::frob-case-from-lisp command)
+			     (cdr xx)))))
+	(error nil)))))
 
 (defun fi::make-subprocess (startup-message process-name buffer-name
 			    directory mode-function image-prompt image-file
@@ -1108,6 +1113,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	(save-window-excursion
 	  (switch-to-buffer buffer)
 	  (goto-char (point-max))
+
 	  (setq default-directory default-dir)
 	  (setq proc (fi::open-network-stream buffer-name buffer host service))
 	  (set-process-sentinel proc 'fi::tcp-sentinel)
@@ -1116,6 +1122,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	  ;; of the process.  This is so that the processes are named similarly
 	  ;; in Emacs and Lisp.
 	  ;;
+
 	  (when given-ipc-version
 	    (process-send-string
 	     proc

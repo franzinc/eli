@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.143 2000/05/01 21:44:03 layer Exp $
+# $Id: Makefile,v 1.144 2000/06/22 20:48:53 layer Exp $
 # This makefile requires GNU make.
 
 include version.mak
@@ -13,7 +13,7 @@ ifdef xemacs
 #xemacsdir = $(shell perl.exe xemacsdir.pl)
 #emacs = $(xemacsdir)/XEmacs-21.1.9/i386-pc-win32/xemacs.exe
 #### Cygwin version is just right
-emacs = /usr/local/bin/xemacs
+emacs = /usr/local/bin/i686-pc-cygwin32/xemacs
 pwd = $(shell pwd)
 else
 emacsdir = $(shell perl.exe emacsdir.pl)
@@ -38,7 +38,7 @@ compile:	fi-vers.el
 	$(emacs) -nw -batch -q -l $(pwd)/fi-compile.el -kill
 
 fi-vers.el: Makefile version.mak
-	rm -f fi-vers.el
+#	rm -f fi-vers.el
 	echo ';; automatically generate file--do not edit.' > fi-vers.el
 	echo '(defvar fi:emacs-lisp-interface-version)' >> fi-vers.el
 	echo '(setq fi:emacs-lisp-interface-version "$(VERSION)")' >> fi-vers.el

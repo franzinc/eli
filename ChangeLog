@@ -7,6 +7,37 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.1.pre-beta.3
+
+2000-06-22  Kevin Layer  <layer@ultra>
+
+	* Makefile: fix for location of xemacs on windows
+	* emacsdir.pl: only need read access to registry
+	* fi-compile.el: if an error occurs when loading comint, ignore
+	it
+...	* fi-keys.el: handle prefix in fi:subprocess-superkey
+	* fi-lep.el: add compat for `scm' and `clos' packages (required
+	added version to protocol init)
+	* fi-modes.el: handle in-package with package prefix
+	* fi-stream.el: add :no-select keyword to lep::create-listener-stream
+	* fi-subproc.el: add fi::lisp-version, initialized upon startup;
+	set connection variables in a function, to be used elsewhere
+	* fi-utils.el: new fi:start-interface-via-file
+
+2000-06-19  Kevin Layer  <layer@ultra>
+
+	* fi-modes.el: spr22273: push fi modes onto add-log-lisp-like-modes
+
+2000-06-08  Kevin Layer  <layer@ultra>
+
+	* fi-emacs19.el,
+	* fi-xemacs.el: bug8817
+
+2000-05-11  Kevin Layer  <layer@ultra>
+
+	* fi-basic-lep.el: fix error reporting
+
+*******************************************************************************
 2.1.pre-beta.2
 
 2000-04-27  Kevin Layer  <layer@ultra>

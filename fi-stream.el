@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-stream.el,v 1.17 1997/02/27 17:34:32 layer Exp $
+;; $Id: fi-stream.el,v 1.18 2000/06/22 20:48:54 layer Exp $
 ;;
 
 (defmacro fi::with-keywords (variables rest-arg &rest body)
@@ -31,7 +31,7 @@
   ;; FSF emacs has strange scroll position when a buffer pops up because
   ;; it won't listen to any positioning operations until emacs input quiesces.
   
-  (fi::with-keywords (parent x y width height splitp name) args
+  (fi::with-keywords (parent x y width height splitp name no-select) args
     (let* ((conf (fi:lisp-push-window-configuration))
 	   (fi::listener-protocol ':stream)
 	   (proc
@@ -50,9 +50,11 @@
 	    ((get-buffer-window buffer)
 	     (select-window (get-buffer-window buffer)))
 	    (splitp (split-window-vertically)))
-      (switch-to-buffer buffer)
-      (fi::ensure-buffer-visible buffer)
-      ;;(recenter 0)
+      (when (null no-select)
+	(switch-to-buffer buffer)
+	(fi::ensure-buffer-visible buffer)
+	;;(recenter 0)
+	)
       (setf (second conf) buffer)
       buffer)))
 

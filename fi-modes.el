@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-modes.el,v 1.72 2000/03/13 00:43:09 layer Exp $
+;; $Id: fi-modes.el,v 1.73 2000/06/22 20:48:54 layer Exp $
 
 ;;;; Mode initializations
 
@@ -84,7 +84,7 @@ buffers, but is nil elsewhere.")
 (make-variable-buffer-local 'fi:in-package-regexp)
 
 (defvar fi:default-in-package-regexp
-  "(\\(cl:\\)?in-package\\>\\|:pa\\>\\|:pac\\>\\|:pack\\>\\|:packa\\>\\|:packag\\>\\|:package\\>"
+  "(\\(cl:\\|common-lisp:\\)?in-package\\>\\|:pa\\>\\|:pac\\>\\|:pack\\>\\|:packa\\>\\|:packag\\>\\|:package\\>"
   "*The regular expression matching the Lisp expression to change the
 current package.  The two things this must match are the IN-PACKAGE macro
 form and all the possible instances of the :package top-level command.
@@ -579,3 +579,11 @@ the readtable used for evaluations given to Lisp from emacs."
       (modify-syntax-entry ?\| "\"   " fi:lisp-mode-syntax-table)
       (modify-syntax-entry ?\[ "_   " fi:lisp-mode-syntax-table)
       (modify-syntax-entry ?\] "_   " fi:lisp-mode-syntax-table)))
+
+(condition-case ()
+    (progn
+      (require 'add-log)
+      (pushnew 'fi:common-lisp-mode add-log-lisp-like-modes)
+      (pushnew 'fi:franz-lisp-mode add-log-lisp-like-modes)
+      (pushnew 'fi:emacs-lisp-mode add-log-lisp-like-modes))
+  (error () nil))

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 1.116 2000/03/13 00:43:09 layer Exp $
+;; $Id: fi-keys.el,v 1.117 2000/06/22 20:48:54 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -462,17 +462,21 @@ parsed, the enclosing list is processed."
 
 ;;;;;;;;;;;;;;;;;;;;; general subprocess related functions
 
-(defun fi:subprocess-superkey ()
+(defun fi:subprocess-superkey (prefix)
   "This function implements superkeys in subprocess buffers.  Any key which
 is bound to this function is, by definition, a superkey.  A superkey is
 treated specially when at the end of a subprocess buffer, but has its
 normal, global, binding when used elsewhere in the buffer.
 The key takes its binding from the fi:subprocess-super-key-map keymap,
 which is a buffer local variable."
-  (interactive)
-  (if (eobp)
-      (fi::subprocess-reprocess-keys fi:subprocess-super-key-map)
-    (fi::subprocess-reprocess-keys (current-global-map))))
+  (interactive "P")
+  (let ((key (this-command-keys)))
+    (when prefix
+      ;; Remove prefix digits
+      (setq key (subseq key (+ 1 (length (format "%d" prefix))))))
+    (if (eobp)
+	(fi::subprocess-reprocess-keys fi:subprocess-super-key-map key)
+      (fi::subprocess-reprocess-keys (current-global-map) key))))
 
 (defun fi::subprocess-reprocess-keys (&optional map key)
   "Reprocess KEY or the last key sequence (which may be incomplete) in MAP.

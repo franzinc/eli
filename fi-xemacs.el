@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-xemacs.el,v 2.10 2000/03/13 00:43:09 layer Exp $
+;; $Id: fi-xemacs.el,v 2.11 2000/06/22 20:48:54 layer Exp $
 
 (defun fi-find-buffer-visiting (filename)
   (get-file-buffer filename))
@@ -207,7 +207,9 @@
     (setq fi::connection-open-composer-loaded nil)
     (setq fi::composer-running nil))
   (and (fi::lep-open-connection-p)
-       (or (when (null fi::connection-open-composer-loaded)
+       (or (when (or (null fi::connection-open-composer-loaded)
+		     ;; check again, it might have been require'd
+		     (eq fi::connection-open-composer-loaded 'no))
 	     (if (let ((fi:package nil))
 		   (fi:eval-in-lisp "(when (find-package :wt) t)"))
 		 (setq fi::connection-open-composer-loaded 'yes)
