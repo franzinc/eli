@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.11 1990/12/04 23:11:38 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.12 1991/01/29 19:44:13 layer Exp $
 
 ;;; Misc utilities
 
@@ -102,13 +102,6 @@ nil if non-exists.  Yes, a value of nil and no local value are the same."
 	     string
 	     nil))
 
-(defun fi::process-running (buffer-name)
-  (let (temp)
-    (and (setq temp (get-buffer buffer-name))
-	 (setq temp (get-buffer-process temp))
-	 (setq temp (process-status temp))
-	 (or (eq 'run temp) (eq 'open temp)))))
-
 (defun fi::find-other-end-of-list (&optional arg)
   (if (null arg) (setq arg 1))
   (save-excursion
@@ -184,3 +177,13 @@ arguments."
 	  (setq found t)
 	(setq index (+ index 1))))
     found))
+
+(defun fi:process-running-p (thing)
+  (let ((running-states '(run stop open)) temp)
+    (cond ((processp thing)
+	   (memq (process-status thing) running-states))
+	  ((stringp thing)
+	   (and (setq temp (get-buffer buffer-name))
+		(setq temp (get-buffer-process temp))
+		(memq (process-status temp) running-states)))
+	  (t nil))))

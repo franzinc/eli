@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.2 1991/01/29 17:19:50 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.3 1991/01/29 19:44:20 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -53,7 +53,7 @@
 
 (defun ensure-lep-connection () 
   (or (and lep::*connection*
-	   (eq (process-status (connection-process lep::*connection*)) 'open)
+	   (fi:process-running-p (connection-process lep::*connection*))
 	   lep::*connection*)
       (try-and-start-lep-connection)
       (error "no connection")))
@@ -498,13 +498,14 @@ handle it"
 ;;; This is complicated because we have to wait for output multiple times.
 
 (defun wait-for-reply-to-come-back (result-cons)
-  (let ((count fi:lisp-evalserver-number-reads))
-    (while (and (> (setq count (1- count)) 0)
-		(not (car result-cons)))
-    (accept-process-output 
-     (connection-process (ensure-lep-connection))
-     fi:lisp-evalserver-timeout))
-    (when (not (car result-cons))  (error "Eval in lisp timed out"))
+  (when (not (car result-cons))
+    (let ((count fi:lisp-evalserver-number-reads))
+      (while (and (> (setq count (1- count)) 0)
+		  (null (car result-cons)))
+	(accept-process-output 
+	 (setq layer (connection-process (ensure-lep-connection)))
+	 fi:lisp-evalserver-timeout)))
+    (when (not (car result-cons)) (error "Eval in lisp timed out"))
     (if (third result-cons)
 	(error (second result-cons))
       (second result-cons))))

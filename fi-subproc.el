@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.80 1991/01/29 15:29:14 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.81 1991/01/29 19:44:16 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -491,8 +491,7 @@ are read from the minibuffer."
 	 (default-dir default-directory)
 	 (buffer-name (buffer-name buffer))
 	 (process (get-buffer-process buffer))
-	 (status (if process (process-status process)))
-	 (runningp (memq status '(run stop)))
+	 (runningp (fi:process-running-p process))
 	 start-up-feed-name)
 
     (if (not runningp)
@@ -573,16 +572,11 @@ are read from the minibuffer."
 		      (fi::get-buffer-port fi::freshest-common-sublisp-name)))
 	 (password (or given-password
 		       (fi::get-buffer-password fi::freshest-common-sublisp-name)))
-	 proc status)
+	 (proc (get-buffer-process buffer)))
     
     (funcall fi:display-buffer-function buffer)
     
-    (setq proc (get-buffer-process buffer))
-    (setq status (if proc (process-status proc)))
-    (if (eq status 'run)
-	(error
-	 "can't start a TCP Common Lisp in a buffer which has a subprocess"))
-    (if (eq status 'open)
+    (if (fi:process-running-p proc)
 	(goto-char (point-max))
       (setq default-directory default-dir)
       (setq proc (open-network-stream buffer-name buffer host service))
@@ -618,12 +612,12 @@ are read from the minibuffer."
 	   ((< number 0)
 	    ;; search for the first available buffer
 	    (let (buffer-name n)
-	      (if (not (fi::process-running
+	      (if (not (fi::process-running-p
 			(setq buffer-name (concat "*" name "*"))))
 		  buffer-name
 		(setq n 2)
-		(while (fi::process-running (setq buffer-name
-					      (concat "*" name "*<" n ">")))
+		(while (fi::process-running-p
+			(setq buffer-name (concat "*" name "*<" n ">")))
 		  (setq n (+ n 1)))
 		buffer-name)))
 	   (t (concat "*" name "*")))))
