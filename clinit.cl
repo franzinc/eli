@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/Attic/clinit.cl,v 1.7 1988/11/18 19:02:15 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/clinit.cl,v 1.8 1989/02/14 17:17:05 layer Exp $
 
 #|
 
@@ -63,8 +63,12 @@ setenv EMACSLIBRARY /usr/local/lib/emacs
    (let ((emacs-library
 	  (format nil "~a/lisp/fi/" (si:getenv "EMACSLIBRARY"))))
      (if* emacs-library
-	then (push (make-pathname :directory emacs-library :type "fasl")
-		   si:*require-search-list*)
+	then (let* ((first (car si:*require-search-list*))
+		    (do-pop (atom first)))
+	       (if do-pop (pop si:*require-search-list*))
+	       (push (make-pathname :directory emacs-library :type "fasl")
+		     si:*require-search-list*)
+	       (push first si:*require-search-list*))
 	     (if (find-package :ipc)
 		 (set (svalue :ipc :lisp-listener-daemon-ff-loaded) nil))
 	     (require :ipc)
