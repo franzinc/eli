@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.94 1993/09/10 20:23:13 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.95 1993/09/13 20:57:55 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -153,6 +153,7 @@ fi-dist:	all
 	  (cd $(release_root)/$(fi_release_directory); tar xf -)
 	(cd $(release_root); \
 	 tar cf - $(fi_release_directory)| gzip -9 > $(fi_release_gztar))
+	cvs tag `echo fi_$(version) | sed s/\\\\./_/g'`
 
 clman_version = 4.1-v2
 
