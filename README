@@ -1,0 +1,37 @@
+
+		  Notes on GNU Emacs/Lisp Interface
+
+To use this interface, see the dot.* files.  A guide to the files:
+
+README		this file.
+ChangeLog	a log of all the changes to the source code in this directory.
+spec.out	the spec of this interface (the only documentation available).
+site-init.el	loading this will load and initialize the interface.
+emacs.cl	auxillary functions used by Allegro CL from Emacs.
+ipc.cl		the Allegro CL communication part of the interface.
+clinit.cl	loaded by ~/.clinit.cl (see dot.clinit)
+dot.clinit	additions for ~/.clinit.cl
+dot.emacs	additions for ~/.emacs
+dot.emacs_x11	sample X11 mouse definitions
+dot.login	additions for ~/.login
+
+====================
+
+clman-oblist.el	database for clman.el
+clman.el	online manual for Common Lisp the Reference and
+		windows manuals.
+filec.el	File name completion for subprocess buffers
+keys.el		interactive function definitions
+ltags.el	Lisp `find-tag' facility
+modes.el	mode definitions
+ring.el		Input ring
+rlogin.el	general rlogin package
+shell.el	general shell package
+sublisp.el	Lisp-specific subprocess code
+subproc.el	subprocess primitives
+tcplisp.el	TCP/IP interface functions
+utils.el	misc utility functions
+
+Local Variables: **
+mode: text **
+End: **
