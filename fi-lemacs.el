@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/Attic/fi-lemacs.el,v 2.8 1993/09/02 18:37:05 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-lemacs.el,v 2.9 1993/09/02 19:56:02 layer Exp $
 
 (defconst fi:allegro-file-menu
     '("ACLFile"
@@ -171,16 +171,16 @@
 (defvar fi::composer-cached-connection nil)
 
 (defun fi::connection-open-composer-loaded ()
-  (unless (eq fi::*connection* fi::composer-cached-connection)
+  (when (not (eq fi::*connection* fi::composer-cached-connection))
+    ;; the lisp was (possibly) restarted
     (setq fi::connection-open-composer-loaded nil))
   (and (fi::lep-open-connection-p)
-       (or (unless fi::connection-open-composer-loaded
+       (or (when (null fi::connection-open-composer-loaded)
 	     (if (let ((fi:package nil))
 		   (fi:eval-in-lisp "(when (find-package :wt) t)"))
-		 (progn
-		   (setq fi::connection-open-composer-loaded 'yes)
-		   (setq fi::composer-cached-connection fi::*connection*))
+		 (setq fi::connection-open-composer-loaded 'yes)
 	       (setq fi::connection-open-composer-loaded 'no))
+	     (setq fi::composer-cached-connection fi::*connection*)
 	     nil)
 	   (eq fi::connection-open-composer-loaded 'yes))))
 
