@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-rlogin.el,v 1.28 1996/08/01 22:36:14 layer Exp $
+;; $Id: fi-rlogin.el,v 1.29 1996/10/30 17:59:54 layer Exp $
 
 (defvar fi:rlogin-mode-map nil
   "The rlogin major-mode keymap.")
@@ -113,7 +113,7 @@ Watch for the first shell prompt from the remote login, then send the
 string bound to fi:rlogin-initial-input, and turn ourself off."
   (let ((old-buffer (fi::subprocess-filter process output t)))
     (if (save-excursion (beginning-of-line)
-			(looking-at subprocess-prompt-pattern))
+			(looking-at fi::prompt-pattern))
 	(progn
 	  (set-process-filter process 'fi::subprocess-filter)
 	  (send-string process fi:rlogin-initial-input)))

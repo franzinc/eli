@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 1.102 1996/10/29 20:52:26 layer Exp $
+;; $Id: fi-keys.el,v 1.103 1996/10/30 17:59:51 layer Exp $
 
 (cond ((eq fi::emacs-type 'xemacs19)
        (require 'tags "etags"))
@@ -312,13 +312,13 @@ it to the Lisp subprocess."
     ;; the inferior lisp
     (let ((start-of-last-prompt
 	   (save-excursion
-	     (or (and (re-search-backward subprocess-prompt-pattern nil t)
+	     (or (and (re-search-backward fi::prompt-pattern nil t)
 		      (point))
 		 (point-max))))
 	  start end)
       (if (or (and (bolp) (looking-at "("))
 	      (re-search-backward "^(" start-of-last-prompt t)
-	      (prog1 (re-search-backward subprocess-prompt-pattern nil t)
+	      (prog1 (re-search-backward fi::prompt-pattern nil t)
 		(goto-char (match-end 0))))
 	  (progn
 	    (setq start (point))
@@ -493,8 +493,8 @@ current subprocess prompt pattern, this function skips over it.
 With argument ARG non nil or 1, move forward ARG - 1 lines first."
   (interactive "p")
   (beginning-of-line arg)
-  (if (looking-at subprocess-prompt-pattern)
-      (re-search-forward subprocess-prompt-pattern nil t)))
+  (if (looking-at fi::prompt-pattern)
+      (re-search-forward fi::prompt-pattern nil t)))
 
 (defun fi:subprocess-backward-kill-word (arg)
   "Kill previous word in current subprocess input line.  This function
@@ -513,7 +513,7 @@ last output as input to the subshell, including a newline inserted at the
 end.  When not at end, copy current line to the end of the buffer and
 send it,after first attempting to discard any prompt at the beginning of
 the line by matching the regexp that is the value of
-the buffer-local subprocess-prompt-pattern, which is initialized by each
+the buffer-local fi::prompt-pattern, which is initialized by each
 subprocess mode."
   (interactive)
   (if fi::shell-completions-window (fi::shell-completion-cleanup))
@@ -528,7 +528,7 @@ subprocess mode."
 	(move-marker fi::last-input-end (point)))
     (let ((max (point)))
       (beginning-of-line)
-      (re-search-forward subprocess-prompt-pattern max t))
+      (re-search-forward fi::prompt-pattern max t))
     (let ((copy (buffer-substring (point)
 				  (progn (forward-line 1) (point)))))
       (goto-char (point-max))

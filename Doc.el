@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.41 1996/06/28 00:03:04 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.42 1996/10/30 17:59:44 layer Exp $
 
 ;; This file is used to assemble documentation files
 ;; It is provided (in distributions) purely for informational purposes,
@@ -13,6 +13,8 @@
 (load "fi-clman") ;; autoloaded
 
 (setq args (cdr (fi:member-equal "--" command-line-args)))
+(setq command-line-args-left (butlast command-line-args-left 3))
+
 (defvar input-file)
 (setq input-file (car args))
 (defvar output-file)

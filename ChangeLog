@@ -1,6 +1,20 @@
+Wed Oct 30 09:55:13 1996  Kevin Layer  <layer@freezer>
+
+	* Doc.el: fix error during doc creation
+	* Makefile: `docs' works again
+	* UserGuide.n: various updates
+
+	the rest are to deal with compiler warnings
+	* fi-filec.el: subprocess-prompt-pattern -> fi::prompt-pattern
+	* fi-keys.el: subprocess-prompt-pattern -> fi::prompt-pattern
+	* fi-rlogin.el: subprocess-prompt-pattern -> fi::prompt-pattern
+	* fi-su.el: subprocess-prompt-pattern -> fi::prompt-pattern
+	* fi-subproc.el: subprocess-prompt-pattern -> fi::prompt-pattern
+	* fi-telnet.el: subprocess-prompt-pattern -> fi::prompt-pattern
+
 Tue Oct 29 10:50:01 1996    <layer@HOBART>
 
->>>	* fi-keys.el: new fi:define-global-lisp-mode-bindings
+	* fi-keys.el: new fi:define-global-lisp-mode-bindings
 	* fi-lep.el: use fi::cl-file-position-to-point to properly locate
 	source definitions
 

@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.175 1996/10/29 18:52:10 layer Exp $
+;; $Id: fi-subproc.el,v 1.176 1996/10/30 18:00:00 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -237,7 +237,8 @@ buffer.")
   "List of directories saved by pushd in this buffer's shell.")
 (make-variable-buffer-local 'fi::shell-directory-stack)
 
-(defvar subprocess-prompt-pattern)
+(defvar fi::prompt-pattern)
+(make-variable-buffer-local 'fi::prompt-pattern)
 
 (defvar fi:franz-lisp-directory)
 
@@ -914,8 +915,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		(setq fi::input-ring-yank-pointer
 		  saved-input-ring-yank-pointer))
 	    (error nil))
-	  (make-local-variable 'subprocess-prompt-pattern)
-	  (setq subprocess-prompt-pattern image-prompt)
+	  (setq fi::prompt-pattern image-prompt)
 	  (fi::make-subprocess-variables)
 	  (when initial-func (funcall initial-func process)))))
 
@@ -1007,8 +1007,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	    (funcall mode)
 	    (setq fi::input-ring saved-input-ring)
 	    (setq fi::input-ring-yank-pointer saved-input-ring-yank-pointer))
-	  (make-local-variable 'subprocess-prompt-pattern)
-	  (setq subprocess-prompt-pattern image-prompt)
+	  (setq fi::prompt-pattern image-prompt)
 	  (fi::make-subprocess-variables))))
 
     ;; display last so we can do proper screen creation on xemacs

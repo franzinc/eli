@@ -1,8 +1,8 @@
 		    GNU Emacs-Allegro CL Interface
 			      User Guide
 			     Release 2.0
-
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.53 1993/12/11 00:15:15 georgej Exp $
+				   
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.54 1996/10/30 17:59:47 layer Exp $
 
 			     Introduction
 
@@ -69,10 +69,8 @@ $Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.53 1993/12/11 00:15:15 georgej
 
 Versions of GNU Emacs
 
-   To use this interface the version of GNU Emacs that comes with
-   Allegro CL must be used, otherwise certain features of the
-   interface will not work.  The Allegro CL Installation Guide for
-   information on install GNU Emacs.
+   Any recent versions of Emacs 19.xx or XEmacs 19.xx can be used with
+   this interface.
 
 If you are new to GNU Emacs
 
@@ -96,9 +94,8 @@ Previous versions of the Emacs-Lisp interface
 
 GNU Emacs Documentation
 
-   Available from FSF are two manuals which will help users of GNU
-   Emacs, the "GNU Emacs Lisp Reference Manual" and "GNU Emacs
-   manual".  An FSF order form appears in Appended E.
+   See prep.ai.mit.edu:/pub/gnu/GETTING.GNU.SOFTWARE for more
+   information.
 
 Format of this document
 
@@ -128,7 +125,7 @@ Format of this document
    To startup the Emacs-Lisp interface, all that need be done is to
    add the following form to your $HOME/.emacs file:
 
-	(load "fi-site-init")
+	(load "<path-to-eli>/fi-site-init")
 
    which causes the interface to be loaded from the Emacs Lisp
    library.  In the following sections, many variables will be
@@ -137,15 +134,19 @@ Format of this document
    definitions changing them should be put before the above LOAD form,
    in your $HOME/.emacs.
 
+   In previous versions it was necessary to modify the `load-path'
+   variable.  This is no longer necessary, if you are using a recent
+   version of GNU Emacs (one that implements the variable
+   `load-file-name').
+
 Trouble shooting
 
    There are various problems which can occur during the startup of
    the Emacs-Lisp interface.  Here are some items to check before
    contacting us:
 
-   * Are you running the version of GNU Emacs supplied by Franz Inc.?
-   If not, then you must in order for this interface to work properly.
-   You may evaluate the following
+   * Does the version of GNU Emacs you running support the Emacs-Lisp
+   interface?  You may evaluate the following
 
 	M-x fi:verify-emacs-support
 
@@ -157,15 +158,15 @@ Trouble shooting
    in the minibuffer if it finds there is the required support.
    Otherwise an error is signalled specifying missing feature.
 
-   * Is the Emacs Lisp library accessible.  Check the value of the
-   Emacs variable LOAD-PATH.  The initial value should point to a
-   directory, something like /usr/local/emacs/lisp.  In this
-   directory, there should be another directory, named `fi'.  The `fi'
-   directory is where the Emacs-Lisp interface resides.  If it does
-   not exist, then there was an installation problem, the Franz
-   Inc. version of GNU Emacs is not being used, or the directory is
-   not accessible because of network problems is it is installed on
-   another machine.
+   * If `load-file-name' is an unbound variable, is the Emacs Lisp
+   library accessible.  Check the value of the Emacs variable
+   LOAD-PATH.  The initial value should point to a directory,
+   something like /usr/local/emacs/lisp.  In this directory, there
+   should be another directory, named `fi'.  The `fi' directory is
+   where the Emacs-Lisp interface resides.  If it does not exist, then
+   there was an installation problem, the Franz Inc. version of GNU
+   Emacs is not being used, or the directory is not accessible because
+   of network problems is it is installed on another machine.
 
    * If an error occurs during the loading of your $HOME/.emacs, then
    you should startup emacs with the "-q" command line argument, and
@@ -198,12 +199,14 @@ Trouble shooting
    "*common-lisp*".  After startup, "*common-lisp*" might have
    contents which look similar to this:
 
-	Allegro CL 4.1 [Sun4] (7/1/91)
-	Copyright (C) 1985-1991, Franz Inc., Berkeley, CA, USA
-	user(1): ;; Starting socket daemon
-	user(2): 
+	Allegro CL 4.3 [SPARC; R1] (4/5/96 19:24)
+	Copyright (C) 1985-1996, Franz Inc., Berkeley, CA, USA.  All Rights Reserved.
 
-   The "user(N): " is the ACL prompt, and the comment after the first
+	;; Starting socket daemon and emacs-lisp interface...
+	...
+	USER(1): 
+
+   The "USER(1): " is the ACL prompt, and the comment before the first
    prompt signifies that an ACL "process" (see the "multiprocessing"
    chapter for a definition of "process") was started--Emacs and Lisp
    will be communicating over an network connection established when
@@ -435,6 +438,7 @@ Functions and Variables for Interacting with a Common Lisp subprocess
 %% fi:common-lisp
 %% fi:open-lisp-listener
 
+%% fi:define-global-lisp-mode-bindings
 %% fi:common-lisp-buffer-name
 %% fi:common-lisp-directory
 %% fi:common-lisp-image-name
@@ -1369,183 +1373,3 @@ Miscellaneous programming aids
 %% fi:rlogin-send-interrupt		fi:rlogin-mode-map
 %% fi:rlogin-send-quit			fi:rlogin-mode-map
 %% fi:rlogin-send-stop			fi:rlogin-mode-map
-
-===============================================================================
-		      Appendix E: FSF Order Form
-===============================================================================
-
-		 Free Software Foundation Order Form
-				   
-       This form is effective from Feb 1 1991 through June 1991
-
-Prices and contents are subject to change without notice.
-Please allow six weeks for delivery (though it won't usually take that
-long).
-
-All software and publications are distributed with permission to copy
-and redistribute.
-
-TeX source for each manual is on the appropriate tape; the prices for
-tapes do not include printed manuals.
-
-All software and documentation from the Free Software Foundation is
-provided on an "as is" basis, with no warranty of any kind.
-
-Quantity  Price  Item
-
-For Unix systems, on 1600 bpi 9-track tape in Unix tar format:
-
-________ $200	GNU Emacs source code and other software.
-		The tape includes:
-		* GNU Emacs (the extensible, customizable, self-documenting
-		  real-time display editor)
-		* The GNU Emacs Lisp Reference Manual, as Texinfo source.
-		* MIT Scheme (a dialect of Lisp)
-		* T, Yale's implementation of Scheme
-		* Bison (a free, compatible replacement for yacc)
-		* Nethack (a rogue-like game)
-		* GNU Chess (a chess playing program with an interface to X).
-							
-________ $200	GNU Compiler and related software, for Unix systems.
-		The tape includes:
-		* GCC (the GNU C Compiler, including COFF support)
-		* G++ (the C++ front end to GCC)
-		* lib-g++ (the G++ class library)
-		* NIH Class Library (formerly known as OOPS)
-		* Bash (GNUs' Bourne Again SHell)
-		* Bison (a free, compatible replacement for yacc)
-		* Flex (Vern Paxson fast rewrite of lex)
-		* Ghostscript (a Postscript interpreter)
-		* Gawk (the GNU implementation of the AWK programming language)
-		* Gas (the GNU Assembler)
-		* GDB (The GNU source-level C debugger)
-		* Gnuplot (an interactive mathematical plotting program)
-		* Data compression software
-		* Perl (version 3.0; a programming language interpreter)
-		* RCS (Revision Control System)
-		* CVS (Concurrent Control System)
-		* GNU object file utilities (ar, ld, make, gprof, size, nm,
-		  strip, ranlib, et al.)
-		* other GNU utilities (make, diff, grep, tar, et al.)
-		* GNU GO (the GNU implementation of the game of GO)
-		* the freed files from the 4.3BSD-Tahoe distribution
-
-________ $200	Required MIT X Window System X11R4, core software and
-		documentation, and contributed client software.
-
-________ $200   Optional MIT X Window System X11R4, contributed software
-		including libraries, games, Andrew and toolkits.
-
-For Suns and other Unix Systems, on QIC-24 DC300XLP 1/4 inch cartridge
-tape, Unix tar format:
-
-________ $210   GNU Emacs and other software, as above.
-
-________ $210	GNU compiler tape, for Suns, as above.
-
-________ $210	Required MIT X Window System X11R4, as above.
-
-________ $210   Optional MIT X Window System X11R4, as above.
-
-For IBM RS/6000 Systems, on QIC-24 DC600A 1/4 inch cartridge
-tape, in an AIX distribution format.
-
-________ $215   GNU Emacs and other software, as above.
-		plus executable files of Emacs.
-
-For VMS systems, on 1600 bpi reel-to-reel 9-track tape in VMS BACKUP
-format:
-
-________ $195	GNU Emacs source code and binaries.
-
-________ $195	GNU C compiler source code and binaries.
-		Includes Bison and GAS.
-
-GNU Emacs manual, ~300 pages, phototypeset, offset printed, spiral
-bound, with a reference card.
-
-________  $20	A single GNU Emacs manual.
-
-________  $13	Emacs manuals, unit price for 6 or more.
-
-The following documentation:
-
-________   $1	One GNU Emacs reference card, without the manual.
-
-________   $5   Packet of ten GNU Emacs reference cards.
-
-________  $50   GNU Emacs Lisp Reference Manual, ~550 pages, spiral bound.
-
-________ $200   Box of 5 GNU Emacs Lisp Reference Manuals.
-
-________  $10   GDB Manual, ~70 pages, side stapled.
-
-________  $15	Texinfo Manual, ~200 pages, side stapled.  Texinfo is GNU's
-		structured documentation system, included with GNU Emacs.
-		Texinfo is used to produce both on-line and printed documents.
-		This manual describes how to write Texinfo documents.
-
-________  $10   Termcap Manual, ~60 pages, side stapled.  Documents the
-		termcap library and GNU's extensions to it.  The GNU termcap
-		library is included with GNU Emacs.
-
-________  $10   Bison Manual, ~80 pages, side stapled.
-
-________  $15   Gawk Manual, ~150 pages, side stapled.
-
-________  $15   Make Manual, ~120 pages, side stapled.
---------
-
-________  Sub Total
-
-________   If ordering from Massachusetts: add 5% sales tax
-		or give tax exempt number.
-
-We pay for shipping via ground transportation in the 
-   contiguous 48 states and Canada.
-
-________   In Alaska, Hawaii, or Puerto Rico, for shipping:
-		- For Emacs Lisp Reference manuals, add $5 each,
-		  or $20 per box.  For all other items, add $5 base charge,
-		  then $1 per item except Emacs reference cards.
-	   If outside of U.S., Canada and Puerto Rico, for shipping costs:
-		- for tapes or unboxed manuals, please add $15, and then add
-		  $15 more for each tape or unboxed manual in the order:
-________	  Shipping cost for tapes and unboxed manuals = $15 + $15 * n;
-		- for each box of Emacs manuals,
-________	  please add $70.
-
-________   Optional tax deductible donation.
---------
-
-________   Total paid
-
-Orders are filled upon receipt of check or money order.  We do not have
-the staff to handle the billing of unpaid orders.  Please help keep
-our lives simple by including your payment with your order.
-
-Please make checks payable to Free Software Foundation.  Mail orders to:
-
-   Free Software Foundation, Inc.
-   675 Massachusetts Avenue
-   Cambridge, MA  02139
-
-   +1 617-876-3296
-
-
-
-EFFECTIVE: February 1 1991 to June 1991
-
-
-
-Name: 
-      ----------------------------------------------------------------
-
-Organization:
-              --------------------------------------------------------
-
-Street Address:
-                ------------------------------------------------------
-
-City / State / Zip:
-                    --------------------------------------------------

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.123 1996/10/09 08:18:11 layer Exp $
+# $Id: Makefile,v 1.124 1996/10/30 17:59:46 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -10,7 +10,7 @@ emacs = emacs
 
 default:	compile test.out clman
 
-all:	compile test.out tags # docs
+all:	compile test.out tags docs
 
 compile:
 	$(emacs) -nw -batch -q -l `pwd`/fi-compile.el -kill
