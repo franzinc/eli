@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.11 1988/11/03 17:10:29 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.12 1989/05/19 11:44:19 layer Exp $
 
 (defvar fi:rlogin-mode-map nil
   "The rlogin major-mode keymap.")
@@ -95,15 +95,12 @@ The image file and image arguments are taken from the variables
 
 See fi:explicit-shell."
   (interactive "p\nsRemote login to host: ")
-  (let ((proc
-	 (fi::make-subprocess
-	  buffer-number host 'fi:rlogin-mode
-	  fi:rlogin-prompt-pattern
-	  "env" 
-	  (append (list "TERM=dumb" fi:rlogin-image-name host)
-		  fi:rlogin-image-arguments))))
-    (set-process-filter proc 'fi::rlogin-filter)
-    proc))
+  (fi::make-subprocess buffer-number host 'fi:rlogin-mode
+		       fi:rlogin-prompt-pattern
+		       "env" 
+		       (append (list "TERM=dumb" fi:rlogin-image-name host)
+			       fi:rlogin-image-arguments)
+		       'fi::rlogin-filter))
 
 (defun fi:explicit-rlogin (&optional buffer-number host
 				     image-name image-arguments)
@@ -111,14 +108,12 @@ See fi:explicit-shell."
 are read from the minibuffer."
   (interactive
    "p\nsRemote login to host: \nsImage name: \nxImage arguments (a list): ")
-  (let ((proc
-	 (fi::make-subprocess
-	  buffer-number host 'fi:rlogin-mode
-	  fi:rlogin-prompt-pattern
-	  "env" 
-	  (append (list "TERM=dumb" image-name host) image-arguments))))
-    (set-process-filter proc 'fi::rlogin-filter)
-    proc))
+  (fi::make-subprocess buffer-number host 'fi:rlogin-mode
+		       fi:rlogin-prompt-pattern
+		       "env" 
+		       (append (list "TERM=dumb" image-name host)
+			       image-arguments)
+		       'fi::rlogin-filter))
 
 (defun fi:rlogin-send-eof ()
   "Send eof to process running through remote login subprocess buffer."
