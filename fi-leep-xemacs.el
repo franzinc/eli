@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-leep-xemacs.el,v 2.4 1997/02/27 17:34:03 layer Exp $
+;; $Id: fi-leep-xemacs.el,v 2.5 1997/03/11 20:29:01 layer Exp $
 
 ;; The xemacs side of presentations in a lisp-listener window.
 
@@ -107,10 +107,8 @@
 ;;				   (substring output index pnt))))
 ;;	       (error (setq level nil))))
 ;;	   (when level
-;;	     (push (cons level (length fi::presentation-stack)) layer2)
 ;;	     (while (> (length fi::presentation-stack) (1+ level))
-;;	       (setq layer
-;;		 (pop fi::presentation-stack))))
+;;	       (pop fi::presentation-stack)))
 	   (let* ((pres (make-presentation :start (point) :end 0 :data 0))
 		  (parent (car fi::presentation-stack))
 		  (subs (presentation-subpresentation-vector parent))

@@ -9,6 +9,19 @@ Documentation changes:	<`none' or give pointer to them>
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.pre-alpha.7
+
+Documentation changes:	no new features
+
+Tue Mar 11 12:26:23 1997  Kevin Layer  <layer@ultra>
+
+	* fi-leep-xemacs.el: remove debugging code from comment
+	* fi-lep.el: supply package in call to fi::lisp-complete-2
+	* fi-subproc.el: make UNIX properly handle the list form of
+	fi:common-lisp-image-name.
+	* fi-utils.el: completion fixes when there is a package prefix
+
+*******************************************************************************
 2.0.21.pre-alpha.6
 
 Documentation changes:	no new features

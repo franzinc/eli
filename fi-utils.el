@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 1.64 1997/02/27 17:34:58 layer Exp $
+;; $Id: fi-utils.el,v 1.65 1997/03/11 20:29:12 layer Exp $
 
 ;;; Misc utilities
 
@@ -368,7 +368,7 @@ at the beginning of the line."
   ;; to be able to grab the thing at the point.
   )
 
-(defvar ignore-keywords)
+(defvar ignore-keywords nil)
 
 (defun fi::get-default-symbol (prompt &optional up-p ignore-keywords)
   (let ((symbol-at-point (fi::get-symbol-at-point up-p)))
@@ -428,16 +428,23 @@ at the beginning of the line."
   ;; HACK HACK HACK HACK
   
   (let ((fi:package fi::original-package))
-    (let (xpackage deletion)
-      (if (string-match ":?:" pattern)
-	  (setq xpackage
-	    (concat
-	     ":" (substring pattern 0 (match-beginning 0)))
-	    deletion (substring pattern 0 (match-end 0))
-	    pattern
-	    (substring pattern (match-end 0))))
-      (let* ((alist (fi::lisp-complete-1 pattern xpackage nil ignore-keywords))
-	     (completion (and alist (try-completion pattern alist))))
+    (let ((xpackage nil)
+	  (deletion nil))
+      (when (string-match ":?:" pattern)
+	(setq xpackage (concat ":" (substring pattern 0 (match-beginning 0))))
+	(setq deletion (substring pattern 0 (match-end 0)))
+	(setq pattern (substring pattern (match-end 0))))
+      (let* ((alist
+	      (fi::package-frob-completion-alist
+	       (fi::lisp-complete-1 pattern xpackage nil ignore-keywords)))
+	     (completion
+	      (when alist
+		(if xpackage
+		    (let ((real-package
+			   (reduce 'fi::package-prefix (mapcar #'car alist))))
+		      (try-completion (concat real-package pattern)
+				      alist))
+		  (try-completion pattern alist)))))
 	(ecase what
 	  ((nil) (cond ((eq completion t) t)
 		       ((and (null completion) (null alist))
@@ -452,9 +459,7 @@ at the beginning of the line."
 		       ((null (string= pattern completion))
 			;; we can complete further than pattern
 			(let ((new (cdr (assoc completion alist))))
-			  (if new
-			      new
-			    completion)))
+			  (if new new completion)))
 		       ((and alist (null (cdr alist)))
 			;; one match
 			(if (string-match "::" (cdr (car alist)))
@@ -468,6 +473,65 @@ at the beginning of the line."
 			  (concat deletion completion)))))
 	  ((t) (mapcar (function cdr) alist))
 	  (lambda (eq completion t)))))))
+
+(defun fi::package-frob-completion-alist (alist)
+  (mapcar
+   (function
+    (lambda (item)
+      (cons (fi::make-internal (car item))
+	    (fi::make-internal (cdr item)))))
+   alist))
+
+(defun fi::make-internal (s)
+  (if (string-match "\\([^:]+\\):?:\\([^:]+\\)" s)
+      (concat (substring s (match-beginning 1)
+			 (match-end 1))
+	      "::"
+	      (substring s (match-beginning 2)
+			 (match-end 2)))
+    s))
+
+;;;(defun fi::try-completion (string alist)
+;;;  (let* ((strings (mapcar #'car alist))
+;;;	 (prefix (reduce 'fi::package-prefix strings))
+;;;	 (new-alist
+;;;	  (mapcar (function
+;;;		   (lambda (x)
+;;;		     (let ((s (car x)))
+;;;		       (if (string-match "[^:]+:?:\\(.*\\)" s)
+;;;			   (setq s
+;;;			     (substring s (match-beginning 1) (match-end 1)))
+;;;			 s)
+;;;		       (cons s (cdr x)))))
+;;;		  alist))
+;;;	 (res (try-completion string new-alist)))
+;;;    
+;;;    (cond
+;;;     ((eq nil res) nil)
+;;;     ((eq t res) t)
+;;;     (t
+;;;      (when (not (string-match prefix
+;;;			       (buffer-substring (point-min) (point-max))))
+;;;	(insert prefix))
+;;;      (concat prefix res)))))
+
+(defun fi::package-prefix (s1 s2)
+  (let ((regexp "\\([^:]+\\)\\([:]+\\)")
+	p1 p2 c1 c2)
+    (and s1
+	 s2
+	 (progn
+	   (when (string-match regexp s1)
+	     (setq p1 (substring s1 (match-beginning 1) (match-end 1)))
+	     (setq c1 (substring s1 (match-beginning 2) (match-end 2))))
+	   (when (string-match regexp s2)
+	     (setq p2 (substring s2 (match-beginning 1) (match-end 1)))
+	     (setq c2 (substring s2 (match-beginning 2) (match-end 2))))
+	   (string= p1 p2))
+	 (if (or (= (length c1) 2)
+		 (= (length c2) 2))
+	     (concat p1 "::")
+	   (concat p1 ":")))))
 
 (defun fi::get-symbol-at-point (&optional up-p)
   (let ((symbol
@@ -975,3 +1039,9 @@ created by fi:common-lisp."
 	      (cond ((not (string-equal lookat "elseif"))
 		     (error "if*: missing elseif clause ")))
 	      (setq state ':init)))))
+
+;;;(defun fi::breakpoint (&rest foo)
+;;;  foo)
+;;;
+;;;(cancel-debug-on-entry 'fi::breakpoint)
+;;;(debug-on-entry 'fi::breakpoint)

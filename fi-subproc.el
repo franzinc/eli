@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.185 1997/02/27 17:34:47 layer Exp $
+;; $Id: fi-subproc.el,v 1.186 1997/03/11 20:29:09 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -179,8 +179,8 @@ A CD is done into this directory before the process is started.")
 
 (defvar fi:common-lisp-image-name
     (if (on-ms-windows)
-	(cons "c:/acl432/lisp.exe" "c:/acl432/lisp.dxl")
-      "cl")
+	(cons "c:/acl50/lisp.exe" "c:/acl50/lisp.dxl")
+      "lisp")
   "*Default Common Lisp image used by fi:common-lisp.  The value is a
 string that names the image fi:common-lisp invokes.")
 
@@ -390,13 +390,13 @@ be a string. Use 6th argument for image file."))
 		    (car fi:common-lisp-image-name)
 		  fi:common-lisp-image-name))))
 	 (executable-image-file
-	  (when (on-ms-windows)
-	    (if (interactive-p)
-		executable-image-file
-	      (or executable-image-file
-		  (if (consp fi:common-lisp-image-name)
-		      (cdr fi:common-lisp-image-name)
-		    (error "no image file"))))))
+	  (expand-file-name
+	   (if (interactive-p)
+	       executable-image-file
+	     (or executable-image-file
+		 (if (consp fi:common-lisp-image-name)
+		     (cdr fi:common-lisp-image-name)
+		   fi:common-lisp-image-name)))))
 	 (image-args
 	  (if (interactive-p)
 	      image-args
@@ -428,10 +428,7 @@ be a string. Use 6th argument for image file."))
 			       executable-image-file)
 		      image-args)
 	    image-args))
-	 (real-args
-	  (if (on-ms-windows)
-	      (fi::reorder-arguments real-args)
-	    real-args))
+	 (real-args (fi::reorder-arguments real-args))
 	 (process-connection-type fi::common-lisp-connection-type) ;bug3033
 	 (proc
 	  (if (on-ms-windows)
@@ -550,7 +547,8 @@ be a string. Use 6th argument for image file."))
       (setq fi::common-lisp-first-time nil
 	    fi:common-lisp-buffer-name buffer-name
 	    fi:common-lisp-directory directory
-	    fi:common-lisp-image-name executable-image-name
+	    fi:common-lisp-image-name (cons executable-image-name
+					    executable-image-file)
 	    fi:common-lisp-image-arguments image-args
 	    fi:common-lisp-host host))
     proc))
@@ -793,10 +791,10 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	      (let ((file-name
 		     (read-file-name "Executable image name: "
 				     image-name image-name nil)))
-		(when (on-ms-windows)
-		  (setq image-file
-		    (read-file-name "Lisp image: " image-file image-file
-				    nil)))
+		(setq image-file
+		  (expand-file-name
+		   (read-file-name "Lisp image: " image-file image-file
+				   nil)))
 		(setq file-name
 		  (if (string-match "[\$~]" file-name)
 		      (expand-file-name file-name)
