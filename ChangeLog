@@ -9,6 +9,12 @@ For more detailed instructions on filling in the ChangeLog form, see
 *******************************************************************************
 post release patches:
 
+2000-05-11  Kevin Layer  <layer@ultra>
+
+	* fi-basic-lep.el: fix error reporting
+	* fi-subproc.el: work around xemacs change to concat (doesn't
+	accept numbers anymore
+
 2000-03-17    <layer@HOBART>
 
 	* localfidev.el: fix C mode indentation!

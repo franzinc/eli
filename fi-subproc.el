@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.200.10.13 1999/02/22 21:12:36 layer Exp $
+;; $Id: fi-subproc.el,v 1.200.10.14 2000/05/11 17:38:57 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -1107,6 +1107,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	(save-window-excursion
 	  (switch-to-buffer buffer)
 	  (goto-char (point-max))
+
 	  (setq default-directory default-dir)
 	  (setq proc (fi::open-network-stream buffer-name buffer host service))
 	  (set-process-sentinel proc 'fi::tcp-sentinel)
@@ -1115,6 +1116,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	  ;; of the process.  This is so that the processes are named similarly
 	  ;; in Emacs and Lisp.
 	  ;;
+
 	  (when given-ipc-version
 	    (process-send-string
 	     proc
@@ -1291,14 +1293,14 @@ This function implements continuous output to visible buffers."
   (if (string-match "^\\(.*\\)<[0-9]+>$" name)
       (setq name (substring name (match-beginning 1) (match-end 1))))
   (let ((buffer-name
-	 (cond ((> number 1) (concat name "<" number ">"))
+	 (cond ((> number 1) (concat name "<" (format "%d" number) ">"))
 	       ((< number 0)
 		(let (n tmp)
 		  (if (null (fi:process-running-p name name))
 		      name
 		    (setq n 2)
 		    (while (fi:process-running-p
-			    (setq tmp (concat name "<" n ">")))
+			    (setq tmp (concat name "<" (format "%d" n) ">")))
 		      (setq n (+ n 1)))
 		    tmp)))
 	       (t name))))
