@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.16 1991/10/10 14:32:01 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.17 1991/10/10 18:53:15 layer Exp $
 ;;
 ;; Code the implements evaluation in via the backdoor
 
@@ -36,8 +36,9 @@
       (fi::connection-process fi::*connection*))))
 
 (defun fi::note-background-reply (&optional compiling)
-  (let ((message (if compiling "Compiling" "Evaluating")))
-    (if message (message "%s...done." message))
+  (let ((message (when compiling
+		   (if (car compiling) "Compiling" "Evaluating"))))
+    (if compiling (message "%s...done." message))
     (let ((item (assq 'fi::show-compilation-status minor-mode-alist)))
       (and item (rplacd item (list ""))))
     (setq fi::show-compilation-status nil)))
@@ -65,7 +66,7 @@
 	(set-buffer buffer)
 	(if results
 	    (fi:show-some-text nil results)
-	  (fi::note-background-reply compilep))
+	  (fi::note-background-reply (list compilep)))
 	(if (not (eq save-buffer buffer))
 	    (set-buffer save-buffer))))
      (() (error)
