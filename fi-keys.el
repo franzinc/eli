@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.61 1991/07/30 20:54:26 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.62 1991/08/22 21:29:00 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -80,16 +80,19 @@ shell, rlogin, sub-lisp or tcp-lisp."
     (define-key map "\C-c"	'fi:rlogin-send-interrupt)
     (define-key map "\C-d"	'fi:rlogin-send-eof)
     (define-key map "\C-\\"	'fi:rlogin-send-quit))
-   ((memq mode '(sub-lisp shell))
-    (if (eq mode 'shell)
-	(define-key map "\C-z"	'fi:subprocess-suspend))
+   ((eq mode 'shell)
+    (define-key map "\C-z"	'fi:subprocess-suspend)
     (define-key map "\C-c"	'fi:subprocess-interrupt)
+    (define-key map "\C-d"	'fi:subprocess-send-eof)
+    (define-key map "\C-\\"	'fi:subprocess-quit))
+   ((eq mode 'sub-lisp)
+    (define-key map "\C-c"	'fi:interrupt-listener)
     (if fi::lisp-is-remote
 	(define-key map "\C-d"	'fi:remote-lisp-send-eof)
       (define-key map "\C-d"	'fi:subprocess-send-eof))
     (define-key map "\C-\\"	'fi:subprocess-quit))
    ((eq mode 'tcp-lisp)
-    (define-key map "\C-c"	'fi:tcp-lisp-listener-interrupt-process)
+    (define-key map "\C-c"	'fi:interrupt-listener)
     (define-key map "\C-d"	'fi:tcp-lisp-listener-send-eof)
     (define-key map "\C-\\"	'fi:tcp-lisp-listener-kill-process)))
   
@@ -372,7 +375,8 @@ parsed, the enclosing list is processed."
     (fi::input-ring-save fi::last-input-start (1- fi::last-input-end))
     (set-marker (process-mark process) (point))))
 
-;;;;;;;;;;;;;;;;;;;;; TCP lisp mode related functions
+;;;;
+;;;;
 
 (defun fi::get-symbol-at-point (&optional up-p packagify)
     (let ((symbol (condition-case ()
@@ -446,63 +450,6 @@ parsed, the enclosing list is processed."
 	  ((t)
 	   (mapcar (function cdr) alist))
 	  (lambda (not (not alist))))))))
-	      
-      
-
-
-(defun fi:remote-lisp-send-eof ()
-  "Simulate sending an EOF to a Lisp subprocess that was started on a
-remote machine (with respect to the machine on which emacs is running).
-The remote process was most likely started with `rsh', and sending an EOF
-to a remote process started in this way closes down the pipe.  The fake EOF
-is done by doing a debugger:debug-pop on the \"Initial Lisp Listener\"
-process via the backdoor."
-  (interactive)
-  (fi:eval-in-lisp
-;;;; should send to proper process
-   "(db:debug-pop (mp::process-name-to-process \"Initial Lisp Listener\" t))\n")
-  )
-
-(defun fi:tcp-lisp-listener-send-eof ()
-  "Simulate sending an EOF on the Lisp Listener pseudo-process.  It is not
-a real process because it is a network connection to the Common Lisp
-UNIX process, and EOF has no meaning (out-of-band data is not handled in
-either Emacs or Common Lisp, at this time).  The fake EOF is simulated by
-doing a debugger:debug-pop on the Common Lisp process tied to the Lisp
-Listener buffer via the backdoor."
-  (interactive)
-  (fi:eval-in-lisp 
-   (format "(db:debug-pop (mp::process-name-to-process \"%s\" t))\n"
-	   (buffer-name (current-buffer)))))
-
-(defun fi:tcp-lisp-listener-kill-process ()
-  "Simulate sending a SIGQUIT to the Lisp Listener pseudo-process,
-meaning kill the Common Lisp thread associated with the Lisp Listener
-buffer.  It is not a real process because it is a network connection to the
-Common Lisp UNIX process, and since there is no tty control there is no
-character which is interpreted as `quit'.  The fake `quit' is simulated by
-doing a mp:process-kill on the Common Lisp process tied to the Lisp
-Listener buffer via the backdoor."
-  (interactive)
-  (fi:eval-in-lisp
-   (format "(mp:process-kill (mp::process-name-to-process \"%s\" t))\n"
-	   (buffer-name (current-buffer)))))
-
-(defun fi:tcp-lisp-listener-interrupt-process ()
-  "Simulate sending a SIGINT to the Lisp Listener pseudo-process,
-meaning interrupt the Common Lisp thread associated with the Lisp Listener
-buffer.  It is not a real process because it is a network connection to the
-Common Lisp UNIX process, and since there is no tty control there is no
-character which is interpreted as `interrupt'.  The fake `interrupt' is
-simulated by doing a mp:process-interrupt on the Common Lisp process tied
-to the Lisp Listener buffer via the backdoor."
-  (interactive)
-  (fi:eval-in-lisp
-   (format "(%s (%s \"%s\" t) #'break \"interrupt from emacs\")\n"
-	   "mp:process-interrupt"
-	   "mp::process-name-to-process"
-	   (buffer-name (current-buffer)))))
-
 
 ;;;;;;;;;;;;;;;;;;;;; general subprocess related functions
 
@@ -593,16 +540,129 @@ subprocess mode."
     (fi::input-ring-save fi::last-input-start (1- fi::last-input-end))
     (set-marker (process-mark process) (point))))
 
+;;;;
+;;;;
+
+(defun fi::to-process-group-p ()
+  (memq major-mode '(fi:rlogin-mode fi:shell-mode fi:telnet-mode)))
+
+(defun fi::tcp-simulate-special-char (function)
+  (let* ((proc (get-buffer-process (current-buffer)))
+	 (item (assq proc fi::tcp-listener-table)))
+    (if item
+	(fi:eval-in-lisp
+	 (format "(lep::tcp-simulate-special-char #'%s %d)\n"
+		 function (cdr item)))
+      (error "can't find generation number for %s" (process-name proc)))))
+
+(defun fi:subprocess-interrupt ()
+  "Send a kill (SIGINT) signal to the current subprocess."
+  (interactive)
+  (interrupt-process nil (fi::to-process-group-p)))
+
+(defun fi:rlogin-send-interrupt ()
+  "Send an interrupt (SIGINT) to the process running as in the current
+subprocess buffer."
+  (interactive)
+  (send-string (get-buffer-process (current-buffer)) "\C-c"))
+
+(defun fi:interrupt-listener (select)
+  "Send a kill (SIGINT) signal to the current subprocess."
+  (interactive (list current-prefix-arg))
+  (cond (select
+	 (let ((process (get-buffer-process (current-buffer))))
+	   ;; we use INTERRUPT-PROCESS instead of FI::INTERRUPT-SELECT
+	   ;; because the latter depends on multiprocessing being on and
+	   ;; working--if the lisp is in a wedged state, then the former
+	   ;; has a better chance of getting through.
+	   (if (eq 'run (process-status process))
+	       (interrupt-process nil (fi::to-process-group-p))
+	     (fi::tcp-simulate-special-char "lep::interrupt-select"))))
+	(t (fi::tcp-simulate-special-char "lep::interrupt-tcp-listener"))))
+
+;;(defun fi:tcp-lisp-listener-interrupt-process ()
+;;  "Simulate sending a SIGINT to the Lisp Listener pseudo-process,
+;;meaning interrupt the Common Lisp thread associated with the Lisp Listener
+;;buffer.  It is not a real process because it is a network connection to the
+;;Common Lisp UNIX process, and since there is no tty control there is no
+;;character which is interpreted as `interrupt'.  The fake `interrupt' is
+;;simulated by doing a mp:process-interrupt on the Common Lisp process tied
+;;to the Lisp Listener buffer via the backdoor."
+;;  (interactive)
+;;  (fi::tcp-simulate-special-char "lep::interrupt-tcp-listener"))
+
 (defun fi:subprocess-send-eof ()
   "Send an EOF (end of file) to the current subprocess."
   (interactive)
   (process-send-eof))
+
+(defun fi:remote-lisp-send-eof ()
+  "Simulate sending an EOF to a Lisp subprocess that was started on a
+remote machine (with respect to the machine on which emacs is running).
+The remote process was most likely started with `rsh', and sending an EOF
+to a remote process started in this way closes down the pipe.  The fake EOF
+is done by doing a debugger:debug-pop on the \"Initial Lisp Listener\"
+process via the backdoor."
+  (interactive)
+  (fi:eval-in-lisp
+   ;; we know we can use "Initial Lisp Listener" because this function will
+   ;; only be invoked in the subprocess buffer were the lisp was started
+   "(db:debug-pop
+      (mp::process-name-to-process \"Initial Lisp Listener\"))\n"))
+
+(defun fi:tcp-lisp-listener-send-eof ()
+  "Simulate sending an EOF on the Lisp Listener pseudo-process.  It is not
+a real process because it is a network connection to the Common Lisp
+UNIX process, and EOF has no meaning (out-of-band data is not handled in
+either Emacs or Common Lisp, at this time).  The fake EOF is simulated by
+doing a debugger:debug-pop on the Common Lisp process tied to the Lisp
+Listener buffer via the backdoor."
+  (interactive)
+  (fi::tcp-simulate-special-char "db:debug-pop"))
 
 (defun fi:rlogin-send-eof ()
   "Send an EOF to the process running as in the remote shell in the current
 subprocess buffer."
   (interactive)
   (send-string (get-buffer-process (current-buffer)) "\C-d"))
+
+(defun fi:subprocess-kill ()
+  "Send a kill (SIGKILL) signal to the current subprocess."
+  (interactive)
+  (kill-process nil (fi::to-process-group-p)))
+
+(defun fi:tcp-lisp-listener-kill-process ()
+  "Simulate sending a SIGQUIT to the Lisp Listener pseudo-process,
+meaning kill the Common Lisp thread associated with the Lisp Listener
+buffer.  It is not a real process because it is a network connection to the
+Common Lisp UNIX process, and since there is no tty control there is no
+character which is interpreted as `quit'.  The fake `quit' is simulated by
+doing a mp:process-kill on the Common Lisp process tied to the Lisp
+Listener buffer via the backdoor."
+  (interactive)
+  (fi::tcp-simulate-special-char "mp:process-kill"))
+
+(defun fi:subprocess-quit ()
+  "Send a quit (SIGQUIT) signal to the current subprocess."
+  (interactive)
+  (quit-process nil (fi::to-process-group-p)))
+
+(defun fi:rlogin-send-quit ()
+  "Send a quit (SIGQUIT) to the process running as in the current
+subprocess buffer."
+  (interactive)
+  (send-string (get-buffer-process (current-buffer)) "\C-\\"))
+
+(defun fi:subprocess-suspend ()
+  "Suspend the current subprocess."
+  (interactive)
+  (stop-process nil t))
+
+(defun fi:rlogin-send-stop ()
+  "Send a stop (SIGSTOP) signal to the process running as in the current
+subprocess buffer."
+  (interactive)
+  (send-string (get-buffer-process (current-buffer)) "\C-z"))
 
 (defun fi:subprocess-kill-output ()
   "Kill all output from the subprocess since the last input.  This is a
@@ -624,50 +684,6 @@ Also move the point there."
   (interactive)
   (set-window-start (selected-window) fi::last-input-end)
   (goto-char fi::last-input-end))
-
-(defun fi:subprocess-interrupt ()
-  "Send a kill (SIGINT) signal to the current subprocess."
-  (interactive)
-  (interrupt-process nil
-		     (memq major-mode '(fi:rlogin-mode fi:shell-mode
-					fi:telnet-mode))))
-
-(defun fi:rlogin-send-interrupt ()
-  "Send an interrupt (SIGINT) to the process running as in the current
-subprocess buffer."
-  (interactive)
-  (send-string (get-buffer-process (current-buffer)) "\C-c"))
-
-(defun fi:subprocess-kill ()
-  "Send a kill (SIGKILL) signal to the current subprocess."
-  (interactive)
-  (kill-process nil
-		(memq major-mode '(fi:rlogin-mode fi:shell-mode
-					fi:telnet-mode))))
-
-(defun fi:subprocess-quit ()
-  "Send a quit (SIGQUIT) signal to the current subprocess."
-  (interactive)
-  (quit-process nil
-		(memq major-mode '(fi:rlogin-mode fi:shell-mode
-					fi:telnet-mode))))
-
-(defun fi:rlogin-send-quit ()
-  "Send a quit (SIGQUIT) to the process running as in the current
-subprocess buffer."
-  (interactive)
-  (send-string (get-buffer-process (current-buffer)) "\C-\\"))
-
-(defun fi:subprocess-suspend ()
-  "Suspend the current subprocess."
-  (interactive)
-  (stop-process nil t))
-
-(defun fi:rlogin-send-stop ()
-  "Send a stop (SIGSTOP) signal to the process running as in the current
-subprocess buffer."
-  (interactive)
-  (send-string (get-buffer-process (current-buffer)) "\C-z"))
 
 (defun fi:subprocess-kill-input ()
   "Kill all input since the last output by the current subprocess."
@@ -766,7 +782,9 @@ form.  If there are too many parens delete them.  The form is also indented."
 	(insert ")"))
       (unless (eq p (point)) (delete-region p (point)))))
   (fi:beginning-of-defun)
-  (indent-sexp)
+  (if fi:lisp-do-indentation
+      (fi:indent-sexp)
+    (indent-sexp))
   (forward-sexp 1))
 
 (defun fi:find-unbalanced-parenthesis ()
@@ -790,13 +808,15 @@ If they are not, position the point at the first syntax error found."
 			  ((eq ?\" char)
 			   (forward-sexp 1))
 			  ((eq ?# char)
+			   (forward-char 1)
+			   (setq char (char-after (point)))
 			   (cond
-			    ((eq ?| (char-after (1+ (point))))
-			     (forward-char 1)
+			    ((eq ?| char)
 			     (forward-sexp 1)
 			     (forward-char 1))
-			    (t (forward-char 1)
-			       (forward-sexp 1))))
+			    ((or (eq ?+ char) (eq ?- char))
+			     (skip-chars-forward "-+a-zA-Z.0-9"))
+			    (t (forward-sexp 1))))
 			  (t (setq done t))))
 		  t))
       (let ((char (char-after (point))))
@@ -804,9 +824,9 @@ If they are not, position the point at the first syntax error found."
 		   (eq (char-after (1- (point))) ?\n))
 	       (condition-case ()
 		   (forward-sexp 1)
-		 (error (error "Extra )"))))
+		 (error (error "Missing )"))))
 	      ((eq char rpar)
-	       (error "Extra ("))
+	       (error "Extra )"))
 	      (t (error "foo")))))
     (goto-char saved-point))
   (if (interactive-p) (message "All parentheses appear to be balanced."))
@@ -1002,3 +1022,4 @@ window, leaving the point unchanged"
     (fi:beginning-of-defun)
     (recenter 0)
     (goto-char p)))
+
