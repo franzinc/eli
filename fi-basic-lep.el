@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.15 1991/05/29 09:06:39 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.16 1991/06/19 22:16:37 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -257,12 +257,6 @@ handle it"
 
 (defun lep::handle-query (session function arguments)
   (lep::send-back-reply session (apply function arguments)))
-
-
-;;(defun lep::create-session-for-lisp (session-id type)
-;;  (let ((session (make-session session-id)))
-;;    (funcall (get type 'session-maker) session)
-;;    (push session *sessions*)))
 
 
 (defun lep::send-request-in-new-session (session-class oncep session-arguments 
