@@ -2,7 +2,7 @@
 			      User Guide
 			   Release 2.0beta
 
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.22 1991/09/16 15:21:52 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.23 1991/09/27 00:59:06 layer Exp $
 
 			     Introduction
 
@@ -1142,8 +1142,8 @@ Debugging Common Lisp processing in Emacs
 
 	* motion in the stack:
 
-		n	goto to the next frame, making it `current'
-		p	goto to the previous frame, making it `current'
+		d	goto to the next frame, making it `current'
+		u	goto to the previous frame, making it `current'
 		.	make frame on the line with the point `current'
 
 	  The `current' frame is signified by the "->" indicator.  All
