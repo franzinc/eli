@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.27 1992/02/21 14:36:38 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.28 1992/04/28 14:02:04 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -511,6 +511,14 @@ versions of the emacs-lisp interface.
 					    ':error
 					    ':aborted))))
       (if oncep (lep::kill-session session)))))
+
+(defun fi:send-reply (session string)
+  (let* ((connection (fi::session-connection session))
+	 (process (fi::connection-process connection)))
+    (send-string process
+		 (prin1-to-string
+		  (list (fi::session-id session) ':reply string)))
+    (send-string process "\n")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
