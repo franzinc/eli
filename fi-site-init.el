@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.21 1991/02/27 13:30:52 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.22 1991/03/13 15:03:45 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface:
 ;;
@@ -43,6 +43,7 @@
 	(message "Loading non-LEP version")
 	(load "fi/nonlep/query.elc")
 	(load "fi/nonlep/ltags.elc")
+	(load "fi/keys.elc")
 	(setq fi::lep-loaded nil))
     (message "Loading LEP version")
     (load "fi/lep/lep-init")
