@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 3.1 2004/05/04 21:08:48 layer Exp $
+;; $Id: fi-utils.el,v 3.2 2004/05/04 23:39:12 layer Exp $
 
 ;;; Misc utilities
 
@@ -1202,6 +1202,7 @@ created by fi:common-lisp."
      (format t\
       \"An error (~s) starting older Lisps from Emacs can be ignored.\"\
       \"eof encountered on stream\")\
+     (terpri)\
      (excl:start-emacs-lisp-interface %s)))\n"
 	    use-background-streams use-background-streams)
 	 (format
