@@ -23,6 +23,7 @@ post-6.2 release changes:
 	  value of fi:pop-up-temp-window-behavior
 	* fi-shell.el: remove unused bindings (clean compile in xemacs)
 	* fi-utils.el:
+	- compare-window-configurations not available on xemacs
 	- doc string updates
 	- make fi:pop-up-temp-window-behavior respect value of
 	  '(minibuffer) work as expected

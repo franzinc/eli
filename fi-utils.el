@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 1.72.6.5.8.2 2003/08/12 21:17:39 layer Exp $
+;; $Id: fi-utils.el,v 1.72.6.5.8.3 2003/08/12 21:46:23 layer Exp $
 
 ;;; Misc utilities
 
@@ -710,6 +710,7 @@ If the `style' is `minibuffer', then the `boolean' is ignored.")
 (defun fi::emacs-lisp-pop-redundant-window-configuration ()
   (let ((c (caar  fi::wc-stack)))
     (when (and c
+	       (fboundp 'compare-window-configurations)
 	       (compare-window-configurations c
 					      (current-window-configuration)))
       (pop fi::wc-stack))))
