@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.104 1991/04/22 14:13:39 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.105 1991/04/23 15:47:03 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -108,6 +108,11 @@ into the correct Lisp package.")
 ;;;;
 ;;; Common Lisp Variables and Constants
 ;;;;
+
+(defvar fi:emacs-to-lisp-transaction-directory "/tmp"
+  "*The directory in which files for Emacs/Lisp communication are stored.
+When using Lisp and Emacs on different machines, this directory should be
+accessible on both machine with the same pathname (via the wonders of NFS).")
 
 (defvar fi:source-info-not-found-hook 'fi:find-tag-somewhere
   "*The value of this variable is funcalled when source information is not
