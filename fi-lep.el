@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.11 1991/02/22 00:44:23 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.12 1991/02/27 13:31:00 layer Exp $
 ;;
 
 (defvar fi:always-in-a-window nil)
@@ -38,9 +38,10 @@
     (let* ((window (minibuffer-window))
 	   (height (1- (window-height window)))
 	   (width (window-width window))
+	   (text
+	    (cond (fi:package (format "[package: %s] %s" fi:package text))
+		  (t text)))
 	   (lines/len (fi::frob-string text)))
-      (setq layer (cons lines/len width))
-      (setq layer2 text)
       (if (and (< (car lines/len) 2)
 	       (<= (second lines/len) width))
 	  (message text)
@@ -508,11 +509,16 @@ from the sexp around the point."
 (defun list-fspecs-common (symbol function msg)
   (make-request (lep::list-fspecs-session
 		 :function function :fspec (fi::frob-case-to-lisp symbol))
-		(() (who text)
+		((symbol) (who text)
 		 ;; It might be good to make this list mouse sensitive so that
 		 ;; we can mouse there
 		 ;; dmode should be a minor mode???
-		 (fi:show-some-text fi:package text))
+		 (cond
+		  (text (fi:show-some-text fi:package text))
+		  (t
+		   (beep)
+		   (message "No callers of \"%s\" in package \"%s\""
+			    symbol fi:package))))
 		((msg) (error)
 		 (message msg error))))
 
