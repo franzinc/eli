@@ -8,6 +8,7 @@
 (load "fi/tcplisp.elc")
 (load "fi/ring.elc")
 (load "fi/filec.elc")
+(load "fi/utils.elc")
 
 ;; `shell' and `rlogin' modes:
 (load "fi/shell.elc")
