@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.6 1991/02/12 22:42:16 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.7 1991/02/12 22:51:08 layer Exp $
 ;;
 ;;;;;; This LEP file redefines many of the fi:functions in the fi/keys.el file
 
@@ -323,7 +323,7 @@ the point is used as the default."
   "Display TEXT in a temporary buffer putting that buffer setting that
 buffers package to the package of PACKAGE."
   (let* ((from-window (selected-window))
-	 (from-window-height (1- (window-height))) ; minus mode line
+	 (from-window-orig-height (1- (window-height))) ; minus mode line
 	 (buffer (get-buffer-create "*CL-temp*"))
 	 (buffer-window (get-buffer-window buffer))
 	 (lines nil))
@@ -346,26 +346,29 @@ buffers package to the package of PACKAGE."
 	   ;; in the correct buffer
 	   )
 	  ((one-window-p)
+	   (setq from-window-orig-height (1- (window-height)))
 	   (split-window)
-	   (other-window 1)
+	   (save-window-excursion
+	     (other-window 1)
+	     (setq from-window (selected-window)))
 	   (switch-to-buffer buffer))
 	  (t
 	   (select-window (get-largest-window))
-	   (setq from-window (selected-window))
-	   (setq from-window-height (1- (window-height)))
+	   (setq from-window-orig-height (1- (window-height)))
 	   (split-window)
-	   (other-window 1)
+	   (save-window-excursion
+	     (other-window 1)
+	     (setq from-window (selected-window)))
 	   (switch-to-buffer buffer)))
 
     (unless (one-window-p)
       (let ((target-size
-	     (min (/ from-window-height 2)
+	     (min (/ from-window-orig-height 2)
 		  (max window-min-height lines))))
 	(if (< target-size (window-height))
 	    (shrink-window (- (window-height) target-size 1))
 	  (if (> target-size (window-height))
-	      (enlarge-window (- target-size (window-height))))
-	  )))
+	      (enlarge-window (- target-size (window-height)))))))
     
     (bury-buffer buffer)
     (select-window from-window)))
