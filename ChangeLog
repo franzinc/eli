@@ -1,12 +1,26 @@
 For more detailed instructions on filling in the ChangeLog form, see 
 `/fi/doc/procedures/changelogs.txt'.
 *******************************************************************************
-<version for this commit> (in fi-site-init.el)
-
-Documentation changes:	<`none' or give pointer to them>
+<version for this commit> (in version.mak)
 
 <standard changelog date stamp>
 	* <changes go here...>
+
+*******************************************************************************
+2.0.21.pre-beta.5
+
+Wed Dec 10 16:24:55 1997  Kevin Layer  <layer@ultra>
+
+	* fi-version.el: removed
+	* local.mak: new file with local makefile rules
+	* version.mak: contains version number
+	* relnotes.txt: new file (this is the README in the distribution)
+	* Makefile: reorganized for public consumption
+	* fi-keys.el: *emacs 20.x
+	* fi-site-init.el: reorg to remove fi-version.el; *emacs 20.x
+	* fi-subproc.el: *emacs 20.x
+	* fi-utils.el: *emacs 20.x
+	* examples/emacs.el: fix up some
 
 *******************************************************************************
 2.0.21.pre-beta.4

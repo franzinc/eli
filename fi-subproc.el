@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.192 1997/12/06 19:54:11 layer Exp $
+;; $Id: fi-subproc.el,v 1.193 1997/12/11 00:28:29 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -73,11 +73,7 @@ creating separate screens.  If you redefine fi:display-buffer-function this
 variable will be ignored.")
 
 (defvar fi:display-buffer-function
-    (if (or (eq fi::emacs-type 'xemacs19)
-	    (eq fi::emacs-type 'emacs19)
-	    (eq fi::emacs-type 'emacs20))
-	'fi::switch-to-buffer-new-screen
-      'fi::switch-to-buffer)
+    'fi::switch-to-buffer-new-screen
   "*If non-nil, then the value should be a function taking one argument,
 a buffer, which is used to display a buffer when a subprocess is created.")
 

@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/examples/Package.el,v 1.2 1992/01/13 11:42:55 layer Exp $
+;; $Id: Package.el,v 1.3 1997/12/11 00:28:32 layer Exp $
 
 ;;;; Subprocess mode-line
 

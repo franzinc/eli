@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 1.66 1997/10/01 21:48:29 layer Exp $
+;; $Id: fi-utils.el,v 1.67 1997/12/11 00:28:30 layer Exp $
 
 ;;; Misc utilities
 
@@ -829,7 +829,8 @@ created by fi:common-lisp."
   (let ((print-escape-newlines nil))
     (prin1-to-string form)))
 
-(cond ((eq fi::emacs-type 'xemacs19)
+(cond ((or (eq fi::emacs-type 'xemacs19)
+	   (eq fi::emacs-type 'xemacs20))
        (fset 'fi::mark 'fi::mark-hack)
        (fset 'fi::prin1-to-string 'fi::prin1-to-string-hack))
       ((or (eq fi::emacs-type 'emacs19)

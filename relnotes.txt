@@ -1,0 +1,45 @@
+$Id: relnotes.txt,v 2.1 1997/12/11 00:28:30 layer Exp $
+
+Version %%VERSION%% of the emacs-lisp interface is now ready for use.
+This status of this version working with various versions of emacs is:
+
+* GNU Emacs 19.34
+
+    No known problems.
+
+* GNU Emacs 20.2
+
+    Works, but a bug in the handling of `load-file-name' prevents
+    loading the interface the normal way, by just loading
+    "fi-site-init.el".  You must put the directory which contains
+    fi-site-init.el in your `load-path'.  See examples/emacs.el for an
+    example of how to do this.  The bug should be fixed in GNU Emacs
+    20.3, when it comes out.
+
+* XEmacs 19.16
+
+    No known problems.
+
+* XEmacs 20.3
+
+    No known problems.
+
+You may ftp this new version from:
+
+	ftp://ftp.franz.com/pri/acl/eli/%%TGZFILE%%
+
+then
+
+	gzip -d < %%TGZFILE%% | tar xf -
+
+to create %%DIR%% in the directory where the above command is
+executed.
+
+To use the interface, just load
+
+	%%DIR%%/fi-site-init
+
+in your ~/.emacs.
+
+If you have questions or comments, please direct them to
+bugs@franz.com.  Thank you.

@@ -1,10 +1,31 @@
-;; $Id: fi-site-init.el,v 1.109 1997/12/06 19:54:10 layer Exp $
+;; $Id: fi-site-init.el,v 1.110 1997/12/11 00:28:29 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
 (require 'cl)
 
-(setq fi:emacs-lisp-interface-version "2.0.21.pre-beta.4")
+(defun on-ms-windows ()
+  (memq system-type '(windows-nt ms-windows ms-dos win386)))
+
+(defvar *on-windows-nt*
+    (and (on-ms-windows)
+	 (file-exists-p (format "%s/system32" (getenv "WINDIR")))))
+
+(setq fi::emacs-type
+  (let ((case-fold-search t))
+    (cond ((or (string-match "xemacs" emacs-version)
+	       (string-match "lucid" emacs-version))
+	   (cond ((string-match "^20\." emacs-version) 'xemacs20)
+		 (t 'xemacs19)))
+	  ((string-match "^20\." emacs-version) 'emacs20)
+	  ((string-match "^19\." emacs-version) 'emacs19)
+	  ((string-match "^18\." emacs-version) 'emacs18)
+	  ((boundp 'epoch::version) 'epoch)
+	  (t
+	   (error
+	    "%s is not supported by this version of the emacs-lisp interface."
+	    emacs-version)))))
+
 (defvar fi::required-ipc-version 1)
 (defvar fi::load-subprocess-files t)
 (defvar fi::install-acl-menubar t)
@@ -30,9 +51,10 @@
 (defvar fi::library-directory)
 (cond
  ((or (not (boundp 'load-file-name))
-;;;; emacs 20.2 needs the following line uncommented
-      ;;(null load-file-name)
-      )
+      ;; The following clause is due to Emacs 20.2, where load-file-name is
+      ;; bound but `nil'.  I was told by Erik Naggum that this bug would be
+      ;; fixed in Emacs 20.3.
+      (null load-file-name))
   ;; In this case, load-path must be used to find fi/fi-site-init.el and
   ;; the directory where it is found is used as fi::library-directory.
   (let* ((file "fi-site-init.el")
@@ -65,17 +87,18 @@
      ((and (setq p (format "%s.el" file)) (file-exists-p p)) p)
      (t nil))))
 
-(load (or (fi::locate-library "fi-version.el")
-	  (error "Couldn't find fi-version.el.")))
+;;;(load (or (fi::locate-library "fi-version.el")
+;;;	  (error "Couldn't find fi-version.el.")))
 
 ;; It would be nice to be able to differentiate between NT and 95, but that
 ;; doesn't appear possible right now.  The follow variable should default
 ;; to nil on Windows 95, when that is possible.
 ;;(when (on-ms-windows) (setq fi::load-subprocess-files nil))
 
-(when (and (or (eq fi::emacs-type 'emacs19) (eq fi::emacs-type 'xemacs19))
+(when (and (or (eq fi::emacs-type 'emacs19)
+	       (eq fi::emacs-type 'xemacs19))
 	   (not (on-ms-windows)))
-  ;; needed for setf expanations (on some version 19.xx) when they are
+  ;; needed for setf expansions (on some version 19.xx) when they are
   ;; compiled with non-version 19 byte-compilers.
   (let ((debug-on-error nil))
     (condition-case nil
@@ -175,6 +198,7 @@ exists.")
 	       (byte-compile-file el t)))))
     (load lib-file)))
 
+(fi::load "fi-vers")
 (fi::load "fi-keys")			; load before fi-modes
 (fi::load "fi-modes")
 (when fi:lisp-do-indentation
@@ -204,7 +228,8 @@ exists.")
     (fi::load "fi-leep0")
     (fi::load "fi-leep"))
 
-  (when (eq fi::emacs-type 'xemacs19)
+  (when (or (eq fi::emacs-type 'xemacs19)
+	    (eq fi::emacs-type 'xemacs20))
     (fi::load "fi-leep0")
     (fi::load "fi-leep-xemacs"))
 
@@ -227,7 +252,8 @@ exists.")
 ;; the version of xemacs is 19.* too!
 
 (when fi::load-subprocess-files
-  (cond ((eq fi::emacs-type 'xemacs19)
+  (cond ((or (eq fi::emacs-type 'xemacs19)
+	     (eq fi::emacs-type 'xemacs20))
 	 (fi::load "fi-xemacs"))
 	((or (eq fi::emacs-type 'emacs19)
 	     (eq fi::emacs-type 'emacs20))
