@@ -1,4 +1,4 @@
-;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.14 1988/03/20 01:06:15 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.15 1988/03/22 09:23:43 layer Exp $
 ;;;
 ;;; Low-level subprocess mode guts
 
@@ -234,7 +234,8 @@ function always creates a new subprocess and buffer.  See
 	  (if fi:unix-domain
 	      (setq proc (open-network-stream
 			  (buffer-name buffer) buffer 
-			  fi::unix-domain-socket 0))
+			  (expand-file-name fi::unix-domain-socket)
+			  0))
 	    (setq proc (open-network-stream (buffer-name buffer) buffer
 					    fi:local-host-name
 					    fi:excl-service-name)))
