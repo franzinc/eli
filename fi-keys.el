@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.41 1991/02/15 23:21:34 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.42 1991/02/15 23:37:29 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -270,49 +270,6 @@ numeric prefix argument, send that many sexps."
 prefix argument, send that many lists."
   (interactive "P")
   (fi:inferior-lisp-send-input arg 'lists))
-
-(defun fi:lisp-eval-last-sexp (compile-file-p)
-  "Send the sexp before the point to the Lisp subprocess associated with
-this buffer.  If a Lisp subprocess has not been started, then one is
-started.  With a prefix argument, the source sent to the subprocess is
-compiled."
-  (interactive "P")
-  (let ((start (save-excursion
-		 (forward-sexp -1)
-		 (point))))
-    (fi::eval-send start (point) compile-file-p)))
-
-(defun fi:lisp-eval-defun (compile-file-p)
-  "Send the current top-level (or nearest previous) form to the Lisp
-subprocess associated with this buffer.  A `top-level' form is one that
-starts in column 1.  If a Lisp subprocess has not been started, then one is
-started.  With a prefix argument, the source sent to the subprocess is
-compiled."
-  (interactive "P")
-  (let* ((end (save-excursion (end-of-defun) (point)))
-	 (start (save-excursion
-		  (fi:beginning-of-defun)
-		  (point))))
-    (fi::eval-send start end compile-file-p)))
-
-(defun fi:lisp-eval-region (compile-file-p)
-  "Send the text in the region to the Lisp subprocess associated with this
-buffer, one expression at a time if there is more than one complete
-expression.  If a Lisp subprocess has not been started, then one is
-started.  With a prefix argument, the source sent to the subprocess is
-compiled."
-  (interactive "P")
-  (fi::eval-send (min (point) (mark))
-		 (max (point) (mark))
-		 compile-file-p))
-
-(defun fi:lisp-eval-current-buffer (compile-file-p)
-  "Send the entire buffer to the Lisp subprocess associated with this
-buffer.  If a Lisp subprocess has not been started, then one is started.
-With a prefix argument, the source sent to the subprocess is compiled."
-  (interactive "P")
-  (fi::eval-send (point-min) (point-max) compile-file-p))
-
 
 ;;;;;;;;;;;;;;;;;;;;; TCP lisp mode related functions
 
