@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.37 1990/10/13 19:37:11 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.38 1990/12/04 23:12:16 layer Exp $
 
 ;;;; Mode initializations
 
@@ -214,9 +214,6 @@ value is non-nil."
   (run-hooks 'fi:emacs-lisp-mode-hook))
 
 (defun fi::lisp-edit-mode-setup ()
-  (make-local-variable 'fi::emacs-to-lisp-transaction-file)
-  (make-local-variable 'fi::emacs-to-lisp-transaction-buf)
-  (make-local-variable 'fi::emacs-to-lisp-package)
   (fi::lisp-mode-setup-common))
 
 (defun fi::lisp-subprocess-mode-variables ()
