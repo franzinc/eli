@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.48 1991/03/15 21:05:00 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.49 1991/03/28 12:56:12 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -277,6 +277,83 @@ With prefix arg, ARG, send that many s-expressions."
 With prefix arg, ARG, send that many lists."
   (interactive "p")
   (fi:inferior-lisp-send-input arg 'lists))
+
+(defun fi:inferior-lisp-send-input (arg type)
+  "Send ARG, which is an s-expression, to the Lisp subprocess. TYPE
+must be either 'sexps or 'lists, specifying whether lists or
+s-expressions should be parsed (internally, either `(scan-sexps)' or
+`(scan-lists)' is used). If at the end of buffer, everything typed since
+the last output from the Lisp subprocess is collected and sent to the Lisp
+subprocess.  With an argument, only the specified number of s-expressions
+or lists from the end of the buffer are sent. If in the middle of the
+buffer, the current s-expression(s) or list(s) is(are) copied to the end of
+the buffer and then sent. An argument specifies the number of s-expressions
+or lists to be sent. If s-expressions are being parsed,the cursor
+follows a closing parenthesis, the preceding s-expression(s) is(are)
+processed.  If the cursor is at an opening parenthesis, the following
+s-expression(s) is(are) processed.  If the cursor is at a closing
+parenthesis, the preceding s-expression(s) is(are) processed.  Otherwise,
+the enclosing s-expression(s) is(are) processed.  If lists are being
+parsed, the enclosing list is processed."
+  (if (and (eobp) (null arg))
+      (progn
+	(move-marker fi::last-input-start
+		     (process-mark (get-buffer-process (current-buffer))))
+	(insert "\n")
+	(funcall indent-line-function)
+	(move-marker fi::last-input-end (point)))
+
+    ;; we are in the middle of the buffer somewhere and need to collect
+    ;; and s-exp to re-send
+    ;; we grab everything from the end of the current line back to the end
+    ;; of the last prompt
+    ;;
+    (let ((exp-to-resend "")
+	  (start-resend (point))
+	  (end-resend (point)))
+      (if (null arg) (setq arg 1))
+      (if (equal type 'sexp)
+	  (setq exp-to-resend
+	    (buffer-substring
+	     (setq start-resend
+	       (save-excursion
+		 (cond
+		   ((= (preceding-char) ?\)) (scan-sexps (point) (- arg)))
+		   ((= (following-char) ?\() (point))
+		   ((= (following-char) ?\))
+		    (forward-char 1) (scan-sexps (point) (- arg)))
+		   ((not (memq (char-syntax (preceding-char)) '(?w ?_)))
+		    (point))
+		   (t (scan-sexps (point) (- arg))))))
+	     (setq end-resend
+	       (save-excursion
+		 (cond
+		   ((= (preceding-char) ?\)) (point))
+		   ((= (following-char) ?\() (scan-sexps (point) arg))
+		   ((= (following-char) ?\)) (forward-char 1) (point))
+		   ((not (memq (char-syntax (following-char)) '(?w ?_)))
+		    (point))
+		   (t (scan-sexps (point) arg)))))))
+	(setq exp-to-resend
+	  (buffer-substring
+	   (setq start-resend (scan-lists (point) (- arg) 1))
+	   (setq end-resend (scan-lists (point) arg 1)))))
+      (if (eobp)
+	  (progn
+	    (insert "\n")
+	    (funcall indent-line-function)
+	    (move-marker fi::last-input-start start-resend)
+	    (move-marker fi::last-input-end (point-max)))
+	(progn
+	  (goto-char (point-max))
+	  (move-marker fi::last-input-start (point))
+	  (insert exp-to-resend)
+	  (if (not (bolp)) (insert "\n"))
+	  (move-marker fi::last-input-end (point))))))
+  (let ((process (get-buffer-process (current-buffer))))
+    (send-region process fi::last-input-start fi::last-input-end)
+    (fi::input-ring-save fi::last-input-start (1- fi::last-input-end))
+    (set-marker (process-mark process) (point))))
 
 ;;;;;;;;;;;;;;;;;;;;; TCP lisp mode related functions
 
