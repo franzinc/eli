@@ -3,6 +3,16 @@ Wed Jun 05 13:30:38 1996    <layer@hobart.franz.com>
 	* fi-xemacs.el:
 	* fi-emacs19.el: don't put composer on menubar on Windows
 
+	* fi-modes.el: New function fi::kill-all-local-variables which is
+	used instead of kill-all-local-variables to wipe the slate of
+	local variables in a buffer before using it.  The only thing this
+	function does over the GNU Emacs version is that it preserves the
+	input-ring (previously typed input) in subprocess buffers.
+	* fi-rlogin.el: see fi-modes.el change
+	* fi-shell.el: see fi-modes.el change
+	* fi-su.el: see fi-modes.el change
+	* fi-telnet.el: see fi-modes.el change
+
 Tue Jun  4 13:47:26 1996  Kevin Layer  <layer@freezer>
 
 	* fi-xemacs.el: define find-buffer-visiting, used by fi-changes.el
