@@ -45,7 +45,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.3 1989/03/21 23:13:44 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.4 1989/03/22 00:13:49 layer Exp $
 
 (defvar lisp-electric-semicolon nil
   "*If `t', semicolons that begin comments are indented as they are typed.")
@@ -148,58 +148,19 @@ variable is not NIL, the qualified symbol is first checked for an indentation
 specification, then the unqualified symbol is checked.  This variable is
 buffer-local.")
 
-(defvar lisp-multiline-string-indentation nil
-  "If non-NIL, a Lisp string that is continued over a line will be indented.
-Each continuation line of a multiline string is indented relative to the
-position of the initial string delimiter by a number of characters that is
-the value of this variable.")
-
-(defvar lisp-multiline-comment-indentation nil
-  "If non-NIL, the second and subsequent lines of a multiline Lisp comment
-will be indented relative to the first character of the initial two-character
-sequence that begins the comment by a number of characters that is the value
-of this variable.  It is not possible to distinguish a continued comment
-from a continued quoted symbol if the same character is used as the quoted
-symbol delimiter and as the second character of the begin-comment sequence 
-and as the first character of the end-comment sequence.  The character
-sequence that begins and ends a nestable comment is assumed to be two
-characters.  GNU Emacs does not recognize nested comments.")
-
-(defvar lisp-string-delimiters nil
-  "Buffer-local variable that is a list of characters that delimit strings.")
-
-(defvar lisp-comment-delimiters nil
-  "Buffer-local variable that is a list of characters that can be used as the
-second character of a two-character sequence to begin a nested comment and as
-the first character of a two-character sequence to end a nested comment.")
-
-(defvar lisp-comment-second-delimiters nil
-  "Buffer-local variable that is a list of characters that can be used as the
-first character of a two-character sequence to begin a nested comment and as
-the second character of a two-character sequence to end a nested comment.")
-
 (mapcar 'make-variable-buffer-local
 	'(lisp-electric-semicolon
 	  lisp-comment-indent-specification
 	  lisp-body-indent
-	  lisp-indent-offset
-	  lisp-indent-hook
-	  lisp-indent-hook-property
+	  lisp-indent-offset lisp-indent-hook lisp-indent-hook-property
 	  lisp-case-sensitive
 	  lisp-package
-	  lisp-multiline-string-indentation
-	  lisp-multiline-comment-indentation
-	  lisp-string-delimiters
-	  lisp-comment-delimiters
-	  lisp-comment-second-delimiters
-	  lisp-tag-indentation
-	  lisp-tag-body-indentation
+	  lisp-tag-indentation lisp-tag-body-indentation
 	  lisp-tag-indentation-hook
-	  lisp-keyword-indentation
-	  lisp-keyword-argument-indentation
+	  lisp-keyword-indentation lisp-keyword-argument-indentation
 	  lisp-keyword-indentation-hook
 	  lisp-maximum-indent-struct-depth))
- 
+
 (defun lisp-comment-indent (&optional addr)
   (let* ((begin (if addr addr (point)))
 	 (comment-spec (or lisp-comment-indent-specification
@@ -274,8 +235,8 @@ status of that parse."
 	  (if (= old-point (point))
 	      (setq old-point 1))
 	  (setq parse-state
-		(parse-partial-sexp
-		 old-point (point) nil nil nil parse-state))))
+	    (parse-partial-sexp
+	     old-point (point) nil nil nil parse-state))))
       (if (not (or (nth 3 parse-state)
 		   (nth 4 parse-state)
 		   (nth 5 parse-state)))
@@ -313,7 +274,7 @@ status of that parse."
 			    ;;   column.
 			    (if (not (bobp)) (just-one-space)))
 			(indent-to to-column 0)))
-		(error "sexp parse anomaly: no comment where expected"))))))))
+		(error "sexp parse anomaly: no comment where expected")))))))
  
 (defvar lisp-most-recent-parse-result '(0 0 0 0 nil nil nil 0)
   "Most recent parse result: point at parse end and parse state.
@@ -390,7 +351,9 @@ of the start of the containing expression."
       (rplacd lisp-most-recent-parse-result (copy-sequence state))
       
       ;; Find innermost containing sexp
-      (while (and retry (setq paren-depth (car state)) (> paren-depth 0))
+      (while (and retry
+		  (setq paren-depth (car state))
+		  (> paren-depth 0))
 	(setq retry nil)
 	(setq last-sexp (nth 2 state))
 	(setq containing-sexp (car (cdr state)))
@@ -404,6 +367,7 @@ of the start of the containing expression."
 		  (setq state peek))))
 	(rplaca lisp-most-recent-parse-result (point))
 	(rplacd lisp-most-recent-parse-result (copy-sequence state))
+	
 	(if (not retry)
  	    ;; Innermost containing sexp found
 	    (progn
@@ -467,33 +431,10 @@ of the start of the containing expression."
       ;; Call indentation hook except when overriden by lisp-indent-offset
       ;; or if the desired indentation has already been computed.
       (cond ((nth 3 state)
-	     ;; Inside a string (or nestable comment such as `#| ... |#'
-	     ;;   or a quoted symbol such as `| ... |').
-	     (if (or (and lisp-multiline-string-indentation
-			  (memq (nth 3 state) lisp-string-delimiters))
-		     (and lisp-multiline-comment-indentation
-			  (memq (nth 3 state)
-				lisp-comment-delimiters)))
-		 (let* ((beginning (find-start-of-string-or-comment
-				    state indent-point containing-sexp))
-			(commentp (memq (nth 3 state)
-					lisp-comment-delimiters))
-			(offset
-			 (if commentp
-			     (if (integerp lisp-multiline-comment-indentation)
-				 lisp-multiline-comment-indentation
-			       0)
-			   (if (integerp lisp-multiline-string-indentation)
-			       lisp-multiline-string-indentation
-			     1))))
-		   (if beginning
-		       (goto-char (+ beginning offset))
-		     (goto-char (+ containing-sexp 1)))
-		   (setq desired-indent (current-column)))
-	       (progn
-		 (goto-char indent-point)
-		 (skip-chars-forward " \t")
-		 (setq desired-indent (current-column)))))
+	     ;; Inside a string, don't change indentation.
+	     (goto-char indent-point)
+	     (skip-chars-forward " \t")
+	     (setq desired-indent (current-column)))
 	    ((and (integerp lisp-indent-offset) containing-sexp)
  	     ;; Indent by constant offset
 	     (goto-char containing-sexp)
@@ -507,59 +448,7 @@ of the start of the containing expression."
 					  indent-point state)))))
  	     ;; Use default indentation if not computed yet
 	     (setq desired-indent (current-column))))
-      desired-indent)))
-
-(defvar escape-syntax-characters nil
-  "A per-buffer variable which is setup in the mode specific code in
-modes.el.  It is a list of escape characters in the current syntax table.")
-
-(defun find-start-of-string-or-comment (state indent-point containing-sexp)
-  (let* ((char (nth 3 state))
-	 (commentp (memq char lisp-comment-delimiters))
-	 (stop (max (or (nth 2 state)
-			containing-sexp
-			(if commentp 2 1))
-		    (if commentp 2 1)))
-	 (depth 1)
-	 (point (1- indent-point))
-	 (done nil))
-    ;; This algorithm is not foolproof.  It will only handle `reasonable'
-    ;;   situations.
-    ;; If the `string' delimiter is one of the characters in
-    ;;   `lisp-comment-delimiters', it is assumed that we are within a
-    ;;   multiline comment, not a quoted symbol name that spans multiple
-    ;;   lines.
-    ;; We're assuming a two-character sequence begins and ends a nestable
-    ;;   comment.  Although this algorithm purports to handle nested
-    ;;   comments, GNU Emacs cannot parse them correctly.
-    (while (and (>= point stop) (null done))
-      (if (and (= (char-after point) char)
-	       (not (memq (char-after (- point 1)) escape-syntax-characters)))
-	  (if commentp
-	      (progn (cond ((and (memq (char-after (- point 1))
-				       lisp-comment-second-delimiters)
-				 (not (memq (char-after
-					     (- point 2))
-					    escape-syntax-characters)))
-			    (setq depth (1- depth)))
-			   ((memq (char-after (+ point 1))
-				  lisp-comment-second-delimiters)
-			    (setq depth (1+ depth))))
-		     (if (= depth 0) (setq done (- point 1))))
-	    (setq done point)))
-      (setq point (1- point)))
-    done))
-
-(defun find-syntax-chars (syntax)
-  "Return a list of characters with the specified syntax in the current
-syntax table."
-  (let ((i 0)
-	(list nil))
-    (while (< i 128)
-      (if (= (char-syntax i) syntax)
-	  (setq list (cons i list)))
-      (setq i (1+ i)))
-    list))
+      desired-indent))))
 
 (defvar lisp-indent-state-temp '(nil nil nil nil nil nil nil)
   "Used as the last argument to parse-partial-sexp so we can do as little
@@ -1360,12 +1249,17 @@ distinguished."
 	outer-loop-done inner-loop-done state this-indent
 	(current-parse-result nil)
 	(previous-parse-result nil))
+    ;; Get error now if we don't have a complete sexp after point.
     (save-excursion (forward-sexp 1))
     (save-excursion
       (setq outer-loop-done nil)
       (while (not outer-loop-done)
 	(setq last-depth next-depth
 	      innerloop-done nil)
+	;; Parse this line so we can learn the state
+	;; to indent the next line.
+	;; This inner loop goes through only once
+	;; unless a line ends inside a string.
 	(while (and (not innerloop-done)
 		    (not (setq outer-loop-done (eobp))))
 	  (setq previous-parse-result current-parse-result)
@@ -1387,15 +1281,7 @@ distinguished."
 		(setcar (nthcdr 4 state) nil)))
 	  (if (nth 3 state)
 	      (progn
-		(if (or lisp-multiline-string-indentation
-			lisp-multiline-comment-indentation)
-		    ;; Pretty hokey.
-		    (progn
-		      (lisp-indent-line)
-		      (forward-line 1)
-		      (lisp-indent-line)
-		      (beginning-of-line 1))
-		  (forward-line 1))
+		(forward-line 1)
 		(setcar (nthcdr 5 state) nil))
 	    (setq innerloop-done t)))
 	(if (setq outer-loop-done (<= next-depth 0))
@@ -1406,9 +1292,13 @@ distinguished."
 	  (while (< last-depth next-depth)
 	    (setq indent-stack (cons nil indent-stack)
 		  last-depth (1+ last-depth)))
+	  ;; Now go to the next line and indent it according
+	  ;; to what we learned from parsing the previous one.
 	  (forward-line 1)
 	  (setq bol (point))
 	  (skip-chars-forward " \t")
+	  ;; But not if the line is blank, or just a comment
+	  ;; (except for double-semi comments; indent them as usual).
 	  (if (or (eobp) (looking-at "[;\n]"))
 	      nil
 	    (if (and (car indent-stack)
@@ -1442,17 +1332,11 @@ if matched at the beginning of a line, means don't indent that line."
 	    (parse-partial-sexp (point) (progn (forward-line 1) (point)))))
       (if (null state) (setq state '(nil nil nil nil nil nil nil)))
       (while (< (point) end)
-	(or (and (nth 3 state)
-		 (not (or (and lisp-multiline-string-indentation
-			       (memq (nth 3 state)
-				     lisp-string-delimiters))
-			  (and lisp-multiline-comment-indentation
-			       (memq (nth 3 state)
-				     lisp-comment-delimiters)))))
-	    (nth 4 state)
+	(or (nth 3 state)	; in string?
+	    (nth 4 state)	; in comment?
 	    (and nochange-regexp
 		 (looking-at nochange-regexp))
- 	    ;; If line does not start in string or comment, indent it
+	    ;; If line does not start in string or comment, indent it
 	    (let ((indent (current-indentation)))
 	      (delete-region (point)
 			     (progn (skip-chars-forward " \t") (point)))
