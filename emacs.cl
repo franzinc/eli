@@ -1,4 +1,4 @@
-;;					-[Thu Nov 17 09:51:33 1988 by layer]-
+;;					-[Mon Aug  7 16:55:34 1989 by layer]-
 ;;
 ;; The Allegro CL part of the Emacs/Lisp interface
 ;;
@@ -16,7 +16,16 @@
 ;; restrictions of Restricted Rights for Commercial Software developed
 ;; at private expense as specified in DOD FAR 52.227-7013 (c) (1) (ii).
 ;;
-;; $Header: /repo/cvs.copy/eli/Attic/emacs.cl,v 1.1 1988/11/17 12:15:21 layer Exp $
+
+(eval-when (compile)
+  (if (find-symbol (symbol-name :rcsnote) (find-package :si))
+      (push :has-rcsnote *features*))
+  )
+
+#+has-rcsnote
+(si::rcsnote "emacs" "$Header: /repo/cvs.copy/eli/Attic/emacs.cl,v 1.2 1989/08/07 16:54:38 layer Rel $")
+
+;; $Locker:  $
 
 (provide :emacs)
 
