@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.78 1992/08/04 15:50:03 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.79 1992/09/17 10:49:09 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -177,7 +177,8 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
 
 (defun fi::inferior-lisp-mode-commands (map supermap)
   (let ((i (1+ ?\C-z))
-	(l (length map)))
+	(l 128				; use this instead of (length map)
+	   ))
     (while (< i l)
       (define-key map (char-to-string i) 'fi:self-insert-command)
       (setq i (1+ i))))
