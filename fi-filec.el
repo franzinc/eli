@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-filec.el,v 1.5 1988/05/19 16:23:58 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-filec.el,v 1.6 1988/07/11 23:34:13 layer Exp $
 
 ;; File name completions
 
@@ -29,7 +29,8 @@ boundaries.")
 
     ;; the name requiring expansion
     (setq shell-expand-string
-      (buffer-substring shell-expand-begin shell-expand-end))
+      (substitute-in-file-name
+       (buffer-substring shell-expand-begin shell-expand-end)))
     ;; directory part of name
     (setq shell-expand-dir
       (or (file-name-directory shell-expand-string) default-directory))
