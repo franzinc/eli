@@ -1,3 +1,7 @@
+2004-09-30  Charles A. Cox  <cox@fritter>
+
+	* fi-lep.el: spr29385: Fix for using unix-mode files on windows.
+
 2004-09-02  Charles A. Cox  <cox@gemini>
 
 	* fi-subproc.el: (small change) use new emacs-mule setter.
@@ -4997,4 +5001,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.9.2.7 $
+$Revision: 3.9.2.8 $
