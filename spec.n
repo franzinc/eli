@@ -1,16 +1,12 @@
-				    
 	      Franz Inc. GNU Emacs/Common Lisp Interface
 
-$Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.12 1988/05/12 10:19:36 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.13 1988/05/12 12:44:41 layer Exp $
 
 This document is a specification of the Franz Inc. GNU Emacs interface
 to Common Lisp, which is written entirely in GNU Emacs Lisp (for GNU
 Emacs version 18.50).
 
 0. Concepts and Terminology
-
-   People familiar with GNU Emacs and UNIX networking may wish to skip
-this section.
 
    In Emacs, each buffer has a `mode.'  A mode is a collection of key
 and variable `bindings' which are specialized to a certain task.  When
@@ -78,7 +74,7 @@ down into three modes:
 
 	* Common Lisp,
 	* Inferior Common Lisp, and
-	* TCP Lisp.
+	* TCP Common Lisp.
 
 The first is for editing Lisp programs, the second for starting up a
 Lisp subprocess under Emacs, and the third for TCP/IP communication
@@ -269,7 +265,7 @@ initiate a Lisp listener daemon to which Emacs can connect:
 Then after the above listener daemon is started, the following command
 to Emacs will open a second buffer onto the same Lisp:
 
-	M-x fi:tcp-lisp
+	M-x fi:tcp-common-lisp
 
 The resulting internal Lisp `lightweight' process will be talking to
 Emacs over a TCP/IP socket via a UNIX domain socket (using the file
@@ -292,7 +288,7 @@ and start emacs.  On `akbar', put this in ~/.clinit.cl
 
 and start a Common Lisp.  Now on the local machine, this
 
-	M-x fi:tcp-lisp
+	M-x fi:tcp-common-lisp
 
 will open a connection to the Lisp on `akbar'.  NOTE: this assumes
 that on both the local machine and on `akbar' /etc/services has an
@@ -311,8 +307,8 @@ host `akbar':
 
 %mode: fi:inferior-common-lisp-mode
 %% fi:inferior-common-lisp-mode-map
-
-and for the TCP Lisp mode:
+
+and for the TCP Common Lisp mode:
 
 %mode: fi:tcp-common-lisp-mode
 %% fi:tcp-common-lisp-mode-map
@@ -326,7 +322,7 @@ EOF to the Lisp process at the end of a buffer but invoke delete-char
  
    The values of `fi:inferior-common-lisp-mode-super-key-map' and
 `fi:tcp-common-lisp-mode-super-key-map' are used as superkey maps for
-Inferior Common Lisp and TCP Lisp modes.
+Inferior Common Lisp and TCP Common Lisp modes.
    
    Superkeys are turned off by default.
 
@@ -357,15 +353,15 @@ with the name `fi:<IMAGE>-prompt-pattern' or from the following:
 %% fi:common-lisp-prompt-pattern
 
 %% fi:subprocess-enable-superkeys
-
-   The following variables are used in TCP Lisp mode:
+
+   The following variables are used in TCP Common Lisp mode:
 
 %% fi:unix-domain
 %% fi:unix-domain-socket
 %% fi:excl-service-name
 %% fi:local-host-name
 %% fi:source-info-not-found-hook
-
+
    The following are miscellaneous subprocess variables:
 
 %% fi:default-input-ring-max
@@ -390,7 +386,7 @@ Lisp to emulate the shell commands and for Emacs to track them:
 %% fi:explicit-remote-common-lisp
 %% fi:tcp-common-lisp
 %% fi:explicit-tcp-common-lisp
-
+
 %% fi:inferior-lisp-newline
 %% fi:shell-file-name-completion
 %% fi:subprocess-kill-input
@@ -401,7 +397,7 @@ Lisp to emulate the shell commands and for Emacs to track them:
 %% fi:subprocess-send-flush
 %% fi:subprocess-show-output
 %% fi:subprocess-suspend
-
+
    The following three functions are used in fi:inferior-lisp-mode to
 interrupt, kill or input an end-of-file to the Lisp process:
 
@@ -417,7 +413,7 @@ other end of the TCP/IP socket:
 %% fi:tcp-lisp-interrupt-process
 %% fi:tcp-lisp-kill-process
 %% fi:tcp-lisp-send-eof
-
+
    All input typed to a subprocess buffer is saved in a ring.  The
 following functions retrieve input and manipulate the ring:
 
@@ -437,7 +433,7 @@ initialization are:
 	fi:subprocess-mode-hook
 	fi:inferior-common-lisp-mode-hook
 
-and for TCP Lisp mode are:
+and for TCP Common Lisp mode are:
 
 	fi:lisp-mode-hook
 	fi:subprocess-mode-hook
