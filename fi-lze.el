@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.13 1991/09/16 14:54:53 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.14 1991/09/27 00:57:58 layer Exp $
 ;;
 ;; Code the implements evaluation in via the backdoor
 
@@ -38,9 +38,11 @@
     (or (and item (not (string= "" (car (cdr item)))))
 	(or (and item (rplacd item (list (concat " " message))))
 	    (setq minor-mode-alist
-	      (cons (list 'fi::show-compilation-status message)
+	      (cons (list 'fi::show-compilation-status (concat " " message))
 		    minor-mode-alist)))))
-  (setq fi::show-compilation-status t))
+  (setq fi::show-compilation-status
+    ;; this is so we can tell when lisp has died and been restarted:
+    (fi::connection-process fi::*connection*)))
 
 (defun fi::note-background-reply (&optional message)
   (if message (message "%s...done." message))
@@ -50,6 +52,8 @@
 
 (defun fi::error-if-request-in-progress ()
   (and fi::show-compilation-status
+       (eq (fi::connection-process fi::*connection*)
+	   fi::show-compilation-status)
        (error "A background eval/compile request is pending, please wait...")))
 
 (defun fi::eval-region-internal (start end compilep &optional ignore-package)
