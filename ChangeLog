@@ -1,3 +1,7 @@
+*******************************************************************************
+2.0.20 alpha.4 release for ACL on Windows
+*******************************************************************************
+
 Thu Sep 26 12:26:01 1996  Kevin Layer  <layer@freezer>
 
 	* fi-clman.el: fix the way various things are found (ie, don't use
