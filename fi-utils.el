@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.34 1992/02/20 10:22:02 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.35 1992/05/28 15:29:46 layer Exp $
 
 ;;; Misc utilities
 
@@ -596,3 +596,40 @@ created by fi:common-lisp."
 	  (setq fi::shell-buffer-for-common-lisp-interaction-host-name
 	    (read-string "host on which lisp is running: "))))
     (set-process-filter process 'fi::common-lisp-subprocess-filter)))
+
+(defun fi::explode (string char)
+  (let ((res nil)
+	(s 0)
+	(i 0)
+	(max (length string)))
+    (while (< i max)
+      (if (= char (aref string i))
+	  (progn
+	    (setq res (cons (substring string
+				       (if (zerop s)
+					   0
+					 (1+ s))
+				       i) res))
+	    (setq s i)))
+      (setq i (+ i 1)))
+    (unless (= s max)
+      (setq res (cons (substring string
+				 (if (zerop s)
+				     0
+				   (1+ s))
+				 i) res)))
+    (nreverse res)))
+
+(defun fi::shell-command-output-to-string (buffer program &rest arguments)
+  ;; run COMMAND returning the output as a string
+  (save-excursion
+    (set-buffer buffer)
+    (erase-buffer)
+    (apply 'call-process program nil t nil arguments)
+    (if (> (buffer-size) 0)
+	(progn
+	  (goto-char (point-max))
+	  (if (= ?\n (preceding-char))
+	      (buffer-substring (point-min) (- (point-max) 1))
+	    (buffer-string)))
+      nil)))
