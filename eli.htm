@@ -10,7 +10,7 @@
 
 <h1 align="center"><small><small>Version __VERSION__</small></small></h1>
 
-<h1 align="center"><small><small>$Revision: 1.1.2.4 $</small></small></h1>
+<h1 align="center"><small><small>$Revision: 1.1.2.5 $</small></small></h1>
 
 <hr>
 
@@ -22,7 +22,7 @@ Emacs-Lisp interface</a>
 <ul>
   <li><a href="#If you are new to Emacs">If you are new to Emacs</a></li>
   <li><a href="#Notation conventions used in this chapter">Notation conventions used in this
-    chapter</a></li>
+    document</a></li>
   <li><a href="#Format of this document">Format of this document</a></li>
   <li><a href="#Previous versions of Emacs">Previous versions of Emacs</a></li>
   <li><a href="#Previous versions of the Emacs-Lisp interface">Previous versions of the
@@ -116,7 +116,7 @@ to as the Emacs-Lisp interface. This interface allows the editing and running of
 Lisp programs, and contains enhancements that allow a tight coupling between Emacs and
 Lisp, very similar to those which used to be available only on Lisp machines.</p>
 
-<p>Unless otherwise specified, when we say Emacs in this chapter, we mean Xemacs or GNU
+<p>Unless otherwise specified, when we say Emacs in this document, we mean Xemacs or GNU
 Emacs. Versions of Xemacs and GNU Emacs are distributed with Allegro CL.</p>
 
 <p>We have tried to make the editor seem as if it is implemented in Lisp. However, such an
@@ -141,7 +141,7 @@ fundamentally new design.</p>
 <ol>
   <li>Introduction to the Emacs-Lisp interface, the section you are now reading. This section
     presents an overview of the Emacs-Lisp interface and describes the organization of the
-    whole chapter.</li>
+    whole document.</li>
   <li>Starting the Emacs-Lisp interface. This section discusses starting up the primary
     mechanism for Emacs-Lisp interaction. A troubleshooting guide suggests what may be wrong
     if things do not work as expected.</li>
@@ -162,12 +162,12 @@ fundamentally new design.</p>
 <p>In the remainder of this section we discuss a number of topics related to Emacs and the
 Emacs-Lisp interface. The following headings describe the topics discussed. Each heading
 appears in large type later in this section, followed by one or more paragraphs describing
-the topic. The topics are:
+the topic. The topics are: 
 
 <ul>
   <li><a href="#If you are new to Emacs">If you are new to Emacs</a></li>
   <li><a href="#Notation conventions used in this chapter">Notation conventions used in this
-    chapter</a></li>
+    document</a></li>
   <li><a href="#Format of this document">Format of this document</a></li>
   <li><a href="#Previous versions of Emacs">Previous versions of Emacs</a></li>
   <li><a href="#Previous versions of the Emacs-Lisp interface">Previous versions of the
@@ -194,7 +194,7 @@ address is:</p>
     Cambridge, MA 02139, USA
     +1 617-876-3296</pre>
 
-<p>We assume in this chapter that you are familiar with Emacs although we do provide
+<p>We assume in this document that you are familiar with Emacs although we do provide
 occasional hints for beginners.</p>
 
 <p>Emacs has a few different forms of on-line help. Type Control-h (also called C-h for
@@ -208,7 +208,7 @@ hardcopy, see the Texinfo section of Info. Note that printing the Emacs manual i
 if you have TeX.</p>
 
 <h3><a name="Notation conventions used in this chapter">Notation conventions used in this
-chapter</a></h3>
+document</a></h3>
 
 <p>When discussing an editor, one needs to have a clear convention which identifies
 keyboard keys and combinations of keys. Also, Emacs needs to access certain files whose
@@ -230,7 +230,7 @@ unambiguous fashion even though we cannot know the exact location on your system
 <blockquote>
   <p>This file is an initialization file which is read by Emacs when it starts up. Forms in
   this file customize Emacs to the user's specifications. The Emacs-Lisp interface described
-  in this chapter is typically loaded by forms put in this file.</p>
+  in this document is typically loaded by forms put in this file.</p>
 </blockquote>
 
 <p>fi/xxx</p>
@@ -316,7 +316,7 @@ character; whereas ESCAPE-a and ESCAPE-A are two different characters.</p>
 
 <h3><a name="Format of this document">Format of this document</a></h3>
 
-<p>We loosely follow the format of the Emacs manuals in this chapter. That means that the
+<p>We loosely follow the format of the Emacs manuals in this document. That means that the
 templates for function and variable definitions are different from those used elsewhere in
 this manual. Each section starts with descriptive text describing the features of the
 section. At the end of each section, there is a complete list of the Emacs Lisp commands,
@@ -469,8 +469,8 @@ specifying the missing feature(s).</p>
 Emacs-Lisp interface</a></h3>
 
 <p>Previous versions of the Emacs-Lisp interface have been distributed with Allegro CL and
-also via anonymous FTP. The version at the time this chapter was written was 2.0.7 and
-this chapter describes versions 2.0.7 and (perhaps) later. Versions before 2.0 contain
+also via anonymous FTP. The version at the time this document was written was 2.0.7 and
+this document describes versions 2.0.7 and (perhaps) later. Versions before 2.0 contain
 substantially less functionality than version 2.0.7 and later.</p>
 
 <p>Versions of this interface prior to 2.0 worked (for the most part, at least) on a
@@ -684,7 +684,7 @@ Emacs-Lisp interface</a></h3>
 
 <p>This section gives some hints about what may be wrong if either the Emacs-Lisp
 interface does not seem to be available at all or does not seem to work as described in
-this chapter. The interface is supported by Franz Inc. (although we do not support Emacs
+this document. The interface is supported by Franz Inc. (although we do not support Emacs
 itself), so problems with the interface can be reported to us just like bugs or problems
 with Allegro CL and related products. We do ask, however, that you check out the
 suggestions here before reporting a problem to us. The following problems are discussed in
@@ -820,8 +820,8 @@ changed the linebreaks to prevent wrapping; and the code changes faster than the
 documentation. However, what you see will be similar.</p>
 
 <p>The user(N): is the Allegro CL prompt. The comment just before the first prompt
-signifies that an Allegro CL process that communicates with Emacs has started (see Chapter
-12 Multiprocessing, stack-groups, processes and locks for a definition of process).
+signifies that an Allegro CL process that communicates with Emacs has started (see <a
+href="../doc/cl/multiprocessing.htm">multiprocessing.htm</a> for a definition of process).
 Meanwhile, in the Emacs minibuffer, you should see</p>
 
 <blockquote>
@@ -1230,11 +1230,11 @@ and readtables for more information.</p>
 
 <h4>Lisp Listeners</h4>
 
-<p>Because Allegro CL has multiprocessing (see Chapter 12 Multiprocessing, stack-groups,
-process and locks for more information), multiple threads of control can be
-created--multiple user interactions, or top-levels, can be created within the same UNIX
-process. Within one Common Lisp process, any number of lisp listeners, as these top-levels
-are called, can be created.</p>
+<p>Because Allegro CL has multiprocessing (see <a href="../doc/cl/multiprocessing.htm">multiprocessing.htm</a>
+for more information), multiple threads of control can be created--multiple user
+interactions, or top-levels, can be created within the same UNIX process. Within one
+Common Lisp process, any number of lisp listeners, as these top-levels are called, can be
+created.</p>
 
 <p>The Emacs-Lisp interface has a function for creating a lisp listener onto an existing
 Common Lisp subprocess: fi:open-lisp-listener. This can be used to debug multiprocessing
@@ -1445,8 +1445,9 @@ mode line must be the first line of text in the file and has the following form:
   <li><table border="0" cellpadding="0" cellspacing="0" width="95%">
       <tr>
         <td width="100%"><strong>readtable: name</strong><p>name is the name of the readtable for
-        this buffer. See the description of excl:named-readtable in chapter 3 for information on
-        creating and using named readtables.</td>
+        this buffer. See the description of excl:named-readtable in <a
+        href="../doc/pages/operators/excl/named-readtable.htm">named-readtable.htm</a> for
+        information on creating and using named readtables.</td>
       </tr>
     </table>
   </li>
@@ -1595,10 +1596,14 @@ several additional commands:</p>
       C-c ,		fi:lisp-find-next-definition
 		  The above group of functions are used for finding
 		  definitions of objects defined in the Common Lisp
-		  environment.   See the User Guide chapter on Source
-		  File Recording and Cross Referencing for information
-		  on this.  In short, you will need to set the Common
-		  Lisp special variables *record-source-file-info* and
+		  environment.   See the documents
+                     <a
+href="../doc/cl/source_file_recording.htm">source_file_recording.htm</a>
+                     <a
+href="../doc/cl/xref.htm">xref.htm</a>
+                  for information on this.  In short, you will need to
+		  set the Common Lisp special variables
+		  *record-source-file-info* and
 		  *record-xref-info* to non-nil values before loading
 		  any files into Common Lisp.</pre>
 
@@ -1688,13 +1693,14 @@ categories. In Emacs:
 </ul>
 
 <p>In addition to the interface from Emacs to debugging programs, Allegro CL provides a
-rich set of tools to debug programs (see Chapter 5 The debugger). Functions in Allegro CL
-which are implemented with the help of the Emacs-Lisp interface are the top-level command
-:edit and the function common-lisp:ed - both allow the source code for a particular
-function to be edited. The editing operation is initiated from Emacs, but the action is
-performed by Allegro CL. :edit edits the function associated with the current stack frame
-and common-lisp:ed allow the editing of arbitrary functions or functions associated with
-symbols or function specs. For example, a call to lisp:ed returns a value immediately</p>
+rich set of tools to debug programs (see <a href="../doc/cl/debugging.htm">debugging.htm</a>).
+Functions in Allegro CL which are implemented with the help of the Emacs-Lisp interface
+are the top-level command :edit and the function common-lisp:ed - both allow the source
+code for a particular function to be edited. The editing operation is initiated from
+Emacs, but the action is performed by Allegro CL. :edit edits the function associated with
+the current stack frame and common-lisp:ed allow the editing of arbitrary functions or
+functions associated with symbols or function specs. For example, a call to lisp:ed
+returns a value immediately</p>
 
 <pre>    USER(1): (ed 'frob)</pre>
 
@@ -1741,10 +1747,12 @@ diminishes.</p>
 Lisp environment, and, if that lookup fails, to use the Emacs tags mechanism.</p>
 
 <p>The information that is saved in the Common Lisp environment when files are loaded into
-Common Lisp uses the Source-file recording facility of Allegro CL, which is described in
-Chapter 17. Source-file information will be recorded and loaded if the values of the
-Common Lisp variables excl:*record-source-file-info* and excl:*load-source-file-info* are
-non-nil.</p>
+Common Lisp uses the Source-file recording facility of Allegro CL, which is described in <a
+href="../doc/cl/source_file_recording.htm">source_file_recording.htm</a>. Source-file
+information will be recorded and loaded if the values of the Common Lisp variables <a
+href="../doc/pages/variables/excl/s_record-source-file-information_s">excl:*record-source-file-info*</a>
+and <a href="../doc/pages/variables/excl/s_load-source-file-information_s">excl:*load-source-file-info*</a>
+are non-nil.</p>
 
 <h4>Retrieving information from the Common Lisp environment</h4>
 
@@ -2017,11 +2025,11 @@ processing in Emacs</a></h3>
 
 <p>Without a window debugger, which presents a graphical view of the runtime stack,
 programmers debugging Common Lisp programs must resort to examining the stack with the
-debugger commands described in Chapter 5 The debugger. It is often the case, however, that
-much moving up and down the stack must be done to find the proper point of error. Scan
-stack mode allows a snapshot of the Common Lisp runtime stack to be taken, and for
-navigation through the stack to proceed in a Emacs buffer with a host of local commands to
-make this a painless experience.</p>
+debugger commands described in <a href="../doc/cl/debugging.htm">debugging.htm</a>. It is
+often the case, however, that much moving up and down the stack must be done to find the
+proper point of error. Scan stack mode allows a snapshot of the Common Lisp runtime stack
+to be taken, and for navigation through the stack to proceed in a Emacs buffer with a host
+of local commands to make this a painless experience.</p>
 
 <p>Consider the following example, typed in the *common-lisp* buffer created by
 fi:common-lisp:</p>
@@ -2405,7 +2413,7 @@ fi:shell-do-completion.&nbsp; Note that C-i is also the TAB key.</p>
 <h3><a name="7.2. The Emacs-Lisp interface and excl:dumplisp">7.2. The Emacs-Lisp
 interface and excl:dumplisp</a></h3>
 
-<p>Just about everything we have said so far in this chapter about the Emacs-Lisp
+<p>Just about everything we have said so far in this document about the Emacs-Lisp
 interface has assumed that the Lisp image was created with install_lisp in a relatively
 standard fashion. install_lisp is the program that installs Allegro CL. By `a relatively
 standard fashion', we mean that the restart_function= command line argument to
