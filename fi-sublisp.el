@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.22 1988/04/27 10:29:51 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.23 1988/05/10 19:01:23 layer Exp $
 
 ;; Interaction with a Lisp subprocess
 
@@ -344,6 +344,18 @@ backdoor lisp listener."
   "Print the macroexpansion of the form at the point."
   (interactive)
   (fi::lisp-macroexpand-common "lisp:macroexpand"))
+
+(defun fi:who-calls (&optional symbol)
+  "Asks the sublisp which functions reference a symbol."
+  (interactive)
+  (setq symbol
+    (fi::add-package-info
+     (fi::get-cl-symbol nil nil (interactive-p) "Find references to symbol")))
+  ;; Since this takes a while, tell the user that it has started.
+  (message "searching...")		; Find some way to flush when done...
+  (process-send-string
+   (fi::background-sublisp-process)
+   (format "(progn (excl::who-references '%s) (values))\n" symbol)))
 
 (defun fi:lisp-walk (arg)
   "Print the full macroexpansion the form at the point.
