@@ -3,107 +3,79 @@
 	      Franz Inc. GNU Emacs/Common Lisp Interface
 			   Release 2.0alpha
 
-;; $Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.58 1991/02/28 23:09:25 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.59 1991/03/12 18:31:26 layer Exp $
 
 ****** Common Lisp Mode *******************************************************
 
 %% fi:common-lisp-mode
 
 %% fi:comment-region			fi:common-lisp-mode-map
-%% fi:common-lisp-file-types
 %% fi:end-of-defun			fi:common-lisp-mode-map
 %% fi:extract-list			fi:common-lisp-mode-map
-%% fi:fill-paragraph
-%% fi:find-unbalanced-parenthesis
-%% fi:indent-code-rigidly
-%% fi:indent-methods-case-sensitive
 %% fi:indent-sexp			fi:common-lisp-mode-map
 %% fi:lisp-apropos			fi:common-lisp-mode-map
 %% fi:lisp-arglist			fi:common-lisp-mode-map
-%% fi:lisp-atom-p
-%% fi:lisp-body-indent
-%% fi:lisp-comment-indent
-%% fi:lisp-comment-indent-specification
 %% fi:lisp-complete-symbol 		fi:common-lisp-mode-map
 %% fi:lisp-describe			fi:common-lisp-mode-map
-%% fi:lisp-do-indentation
-%% fi:lisp-electric-semicolon
 %% fi:lisp-eval-current-buffer		fi:common-lisp-mode-map
 %% fi:lisp-eval-defun			fi:common-lisp-mode-map
 %% fi:lisp-eval-last-sexp		fi:common-lisp-mode-map
 %% fi:lisp-eval-region			fi:common-lisp-mode-map
 %% fi:lisp-find-tag			fi:common-lisp-mode-map
 %% fi:lisp-function-documentation	fi:common-lisp-mode-map
-%% fi:lisp-indent-hook
-%% fi:lisp-indent-hook-property
-%% fi:lisp-indent-if*
-%% fi:lisp-indent-keyword-list
 %% fi:lisp-indent-line			fi:common-lisp-mode-map
-%% fi:lisp-indent-offset
-%% fi:lisp-indent-tagbody
-%% fi:lisp-keyword-argument-indentation
-%% fi:lisp-keyword-indentation
-%% fi:lisp-keyword-indentation-hook
 %% fi:lisp-macroexpand			fi:common-lisp-mode-map
-%% fi:lisp-maximum-indent-struct-depth
-%% fi:lisp-mode-hook
-%% fi:lisp-mode-syntax-table
-%% fi:lisp-package
-%% fi:lisp-semicolon
-%% fi:lisp-tag-body-indentation
-%% fi:lisp-tag-indentation
-%% fi:lisp-tag-indentation-hook
-%% fi:lisp-tags-loop-continue		fi:common-lisp-mode-map
 %% fi:lisp-macroexpand-recursively	fi:common-lisp-mode-map
+%% fi:lisp-tags-loop-continue		fi:common-lisp-mode-map
 %% fi:lisp-who-calls			fi:common-lisp-mode-map
 %% fi:log-functional-change		fi:common-lisp-mode-map
-%% fi:package
-%% fi:parse-mode-line-and-package
-%% fi:source-info-not-found-hook
 %% fi:super-paren			fi:common-lisp-mode-map
 %% fi:toggle-trace-definition		fi:common-lisp-mode-map
-
+
+%% fi:common-lisp-file-types
+%% fi:echo-evals-from-buffer-in-listener-p
+%% fi:fill-paragraph
+%% fi:find-unbalanced-parenthesis
+%% fi:indent-code-rigidly
+%% fi:indent-methods-case-sensitive
+%% fi:lisp-do-indentation
+%% fi:lisp-electric-semicolon
+%% fi:lisp-mode-syntax-table
+%% fi:parse-mode-line-and-package
+%% fi:pop-to-sublisp-buffer-after-lisp-eval
+%% fi:set-associated-sublisp
+%% fi:source-info-not-found-hook
+
 ****** Inferior Common Lisp Mode **********************************************
 
-%% fi:inferior-common-lisp-mode
-
 %% fi:common-lisp
-%% fi:common-lisp-image-arguments
+%% fi:open-lisp-listener
+
+%% fi:common-lisp-buffer-name
+%% fi:common-lisp-directory
 %% fi:common-lisp-image-name
-%% fi:common-lisp-package-regexp
+%% fi:common-lisp-image-arguments
+%% fi:common-lisp-host
+%% fi:common-lisp-process-name
 %% fi:common-lisp-prompt-pattern
-%% fi:default-explicit-common-lisp-image-arguments
-%% fi:default-explicit-common-lisp-image-name
-%% fi:default-remote-common-lisp-directory
-%% fi:default-remote-common-lisp-host
-%% fi:echo-evals-from-buffer-in-listener-p
-%% fi:emacs-to-lisp-transaction-directory
-%% fi:eval-in-lisp
-%% fi:explicit-common-lisp
-%% fi:explicit-remote-common-lisp
-%% fi:filename-frobber-hook
-%% fi:inferior-common-lisp-mode-super-key-map
+%% fi:start-lisp-interface-function
+%% fi:start-lisp-interface-hook
+%% fi:in-package-regexp
+%% fi:default-in-package-regexp
+
+%% fi:inferior-common-lisp-mode
 %% fi:inferior-lisp-input-list		fi:inferior-common-lisp-mode-map
 %% fi:inferior-lisp-input-sexp		fi:inferior-common-lisp-mode-map
 %% fi:inferior-lisp-newline		fi:inferior-common-lisp-mode-map
-%% fi:inferior-lisp-send-input
-%% fi:lisp-evalserver-number-reads
-%% fi:lisp-evalserver-timeout
 %% fi:lisp-find-tag-other-window	fi:inferior-common-lisp-mode-map
 %% fi:lisp-mode-newline			fi:inferior-common-lisp-mode-map
 %% fi:lisp-sync-current-working-directory fi:inferior-common-lisp-mode-map
 %% fi:list-input-ring			fi:inferior-common-lisp-mode-map
 %% fi:pop-input				fi:inferior-common-lisp-mode-map
-%% fi:pop-to-sublisp-buffer-after-lisp-eval
 %% fi:push-input			fi:inferior-common-lisp-mode-map
 %% fi:re-search-backward-input		fi:inferior-common-lisp-mode-map
 %% fi:re-search-forward-input		fi:inferior-common-lisp-mode-map
-%% fi:remote-common-lisp
 %% fi:remote-lisp-send-eof		fi:inferior-common-lisp-mode-map
-%% fi:remote-lisp-track-image-name-directory
-%% fi:remove-all-temporary-lisp-transaction-files
-%% fi:set-associated-sublisp
-%% fi:start-lisp-interface-function
 %% fi:subprocess-backward-kill-word	fi:inferior-common-lisp-mode-map
 %% fi:subprocess-beginning-of-line	fi:inferior-common-lisp-mode-map
 %% fi:subprocess-input-region		fi:inferior-common-lisp-mode-map
@@ -116,31 +88,30 @@
 %% fi:subprocess-send-flush		fi:inferior-common-lisp-mode-map
 %% fi:subprocess-show-output		fi:inferior-common-lisp-mode-map
 %% fi:subprocess-suspend		fi:inferior-common-lisp-mode-map
-
-****** TCP Common Lisp Mode ***************************************************
 
-%% fi:tcp-common-lisp-mode
+%% fi:lisp-listener-mode
+%% fi:tcp-lisp-listener-interrupt-process	fi:lisp-listener-mode-map
+%% fi:tcp-lisp-listener-kill-process		fi:lisp-listener-mode-map
+%% fi:tcp-lisp-listener-send-eof		fi:lisp-listener-mode-map
 
-%% fi:explicit-tcp-common-lisp
-%% fi:tcp-common-lisp
-%% fi:tcp-common-lisp-mode-map
-%% fi:tcp-common-lisp-mode-super-key-map
-%% fi:tcp-lisp-interrupt-process		fi:tcp-common-lisp-mode-map
-%% fi:tcp-lisp-kill-process			fi:tcp-common-lisp-mode-map
-%% fi:tcp-lisp-send-eof				fi:tcp-common-lisp-mode-map
-
-****** Franz Lisp Mode ********************************************************
+%% fi:emacs-to-lisp-transaction-directory
+%% fi:filename-frobber-hook
+%% fi:remove-all-temporary-lisp-transaction-files
+%% fi:eval-in-lisp
+%% fi:lisp-evalserver-number-reads
+%% fi:lisp-evalserver-timeout
 
-%% fi:franz-lisp-mode
-%% fi:inferior-franz-lisp-mode
+****** misc subprocess mode variables *****************************************
 
-%% fi:franz-lisp-image-arguments
-%% fi:franz-lisp-image-name
-%% fi:franz-lisp-prompt-pattern
-%% fi:inferior-franz-lisp-mode-super-key-map
-%% fi:explicit-franz-lisp
-%% fi:franz-lisp
-
+%% fi:default-input-ring-max
+%% fi:display-buffer-function
+%% fi:shell-cd-regexp
+%% fi:shell-popd-regexp
+%% fi:shell-pushd-regexp
+%% fi:subprocess-continuously-show-output-in-visible-buffer
+%% fi:subprocess-enable-superkeys
+%% fi:subprocess-env-vars
+
 ****** CLMan Lisp Mode ********************************************************
 
 %% fi:clman-mode
@@ -158,18 +129,12 @@
 %% fi:clman-package-nicknames
 %% fi:clman-search-forward-see-alsos		fi:clman-mode-map
 %% fi:clman-view-file
-
-****** Emacs Lisp Mode ********************************************************
 
-%% fi:emacs-lisp-mode
-%% fi:emacs-lisp-mode-syntax-table
-
 ****** Shell Mode *************************************************************
 
 %% fi:shell-mode
 
 %% fi:shell
-%% fi:explicit-shell
 %% fi:shell-command-completion
 %% fi:shell-do-completion
 %% fi:shell-file-name-completion
@@ -180,7 +145,7 @@
 %% fi:shell-mode-map
 %% fi:shell-mode-super-key-map
 %% fi:shell-prompt-pattern
-
+
 ****** SU Mode ****************************************************************
 
 %% fi:su-mode
@@ -194,7 +159,7 @@
 %% fi:remote-root-login
 %% fi:remote-su-mode
 %% fi:su
-
+
 ****** Telnet Mode ************************************************************
 
 %% fi:telnet-mode
@@ -207,12 +172,11 @@
 %% fi:telnet-mode-map
 %% fi:telnet-mode-super-key-map
 %% fi:telnet-prompt-pattern
-
+
 ****** Rlogin Mode ************************************************************
 
 %% fi:rlogin-mode
 
-%% fi:explicit-rlogin
 %% fi:rlogin
 %% fi:rlogin-image-arguments
 %% fi:rlogin-image-name
@@ -224,29 +188,3 @@
 %% fi:rlogin-send-interrupt		fi:rlogin-mode-map
 %% fi:rlogin-send-quit			fi:rlogin-mode-map
 %% fi:rlogin-send-stop			fi:rlogin-mode-map
-
-****** misc subprocess mode variables *****************************************
-
-%% fi:default-input-ring-max
-%% fi:display-buffer-function
-%% fi:subprocess-continuously-show-output-in-visible-buffer
-%% fi:subprocess-enable-superkeys
-%% fi:subprocess-env-vars
-%% fi:subprocess-mode
-%% fi:subprocess-super-key-map
-%% fi:shell-cd-regexp
-%% fi:shell-popd-regexp
-%% fi:shell-pushd-regexp
-%% fi:subprocess-send-input
-%% fi:subprocess-superkey
-
-****** misc *******************************************************************
-
-%% fi:backdoor-eval
-%% fi:backdoor-is-running-p
-%% fi:beginning-of-defun
-%% fi:common-lisp-is-running-p
-%% fi:emacs-lisp-interface-version
-%% fi:package-loaded
-%% fi:process-running-p
-%% fi:toggle-lep

@@ -31,7 +31,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.53 1991/02/21 22:01:17 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.54 1991/03/12 18:30:57 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -42,11 +42,13 @@
 (defvar fi:emacs-to-lisp-transaction-directory "/tmp"
   "*The directory in which files for Emacs/Lisp communication are stored.
 When using Lisp and Emacs on different machines, this directory should be
-accessible on both machine with the same pathname (via the wonders of NFS).")
+accessible on both machine with the same pathname (via the wonders of NFS).
+The users home directory is often a good place to store these temporary
+files, since it is usually accessible.")
 
 (defvar fi:pop-to-sublisp-buffer-after-lisp-eval t
-  "*If non-nil, then after sending expressions to a Lisp process do pop to
-the buffer which contains the Lisp.")
+  "*If non-nil, then go to the Lisp subprocess buffer after sending
+expressions to Lisp (via fi:lisp-eval-* function).")
 
 (defvar fi:package nil
   "A buffer-local variable whose value should either be nil or a string
@@ -58,8 +60,8 @@ into the correct Lisp package.")
 (make-variable-buffer-local 'fi:package)
 
 (defvar fi:echo-evals-from-buffer-in-listener-p nil
-  "*If non-NIL, forms evalutated directly from a lisp buffer by the
-fi:lisp-eval-* functions will be echoed by the lisp listener.")
+  "*If non-nil, forms evalutated directly in fi:common-lisp-mode by the
+fi:lisp-eval-* functions will be echoed by Common Lisp.")
 
 (defun fi:set-associated-sublisp (buffer-name)
   "When evaluated in a Lisp source buffer causes further `eval'
@@ -84,13 +86,13 @@ future `eval' commands."
 	(let ((buffers (buffer-list))
 	      (proc-name (process-name process)))
 	  (cond ((eq mode 'fi:common-lisp-mode)
-		 (setq fi::freshest-common-sublisp-name proc-name))
+		 (setq fi:common-lisp-process-name proc-name))
 		((eq mode 'fi:franz-lisp-mode)
-		 (setq fi::freshest-franz-sublisp-name proc-name)))
+		 (setq fi:franz-lisp-process-name proc-name)))
 	  (while buffers
 	    (if (eq mode (fi::symbol-value-in-buffer 'major-mode
 						     (car buffers)))
-		(fi::set-in-buffer 'fi::sublisp-name proc-name
+		(fi::set-in-buffer 'fi::process-name proc-name
 				   (car buffers)))
 	    (setq buffers (cdr buffers))))
       (error "There is no process associated with buffer %s!"
@@ -182,7 +184,7 @@ parsed, the enclosing list is processed."
 correct fi:package, of course."
   (fi::sublisp-select)
   (let* ((stuff (buffer-substring start end))
-	 (sublisp-process (get-process fi::sublisp-name)))
+	 (sublisp-process (get-process fi::process-name)))
     (fi::send-string-load sublisp-process stuff compile-file-p)
     (send-string sublisp-process "\n")
     (if fi:pop-to-sublisp-buffer-after-lisp-eval
@@ -194,7 +196,7 @@ correct fi:package, of course."
 (defun fi::eval-string-send (string &optional compile-file-p)
   "Send STRING to the sublisp, in the correct package, of course."
   (fi::sublisp-select)
-  (let ((sublisp-process (get-process fi::sublisp-name)))
+  (let ((sublisp-process (get-process fi::process-name)))
     (fi::send-string-load sublisp-process string compile-file-p)
     (send-string sublisp-process "\n")
     (if fi:pop-to-sublisp-buffer-after-lisp-eval
@@ -205,44 +207,44 @@ correct fi:package, of course."
 
 (defun fi::sublisp-select ()
   "Find a sublisp for eval commands to send code to.  Result stored in
-the variable fi::sublisp-name.  If fi::sublisp-name is set, and there is an
-associated process buffer, thats that. If fi::sublisp-name is nil, or if
+the variable fi::process-name.  If fi::process-name is set, and there is an
+associated process buffer, thats that. If fi::process-name is nil, or if
 there is no process buffer with that name, then try for
 freshest-<franz,common>-sublisp-name, which should contain the name of the
 most recently started sublisp.  If neither of these exist, runs the command
 franz-lisp or common-lisp, depending on the major mode of the buffer."
   ;; see if sublisp is named yet.  if its not, name it intelligently.
-  (cond (fi::sublisp-name)
+  (cond (fi::process-name)
 	((or (eq major-mode 'fi:inferior-common-lisp-mode)
-	     (eq major-mode 'fi:tcp-common-lisp-mode))
-	 (setq fi::sublisp-name fi::freshest-common-sublisp-name))
+	     (eq major-mode 'fi:lisp-listener-mode))
+	 (setq fi::process-name fi:common-lisp-process-name))
 	((eq major-mode 'fi:inferior-franz-lisp-mode)
-	 (setq fi::sublisp-name fi::freshest-franz-sublisp-name))
+	 (setq fi::process-name fi:franz-lisp-process-name))
 	((eq major-mode 'fi:franz-lisp-mode)
-	 (if fi::freshest-franz-sublisp-name
-	     (setq fi::sublisp-name fi::freshest-franz-sublisp-name)))
+	 (if fi:franz-lisp-process-name
+	     (setq fi::process-name fi:franz-lisp-process-name)))
 	((eq major-mode 'fi:common-lisp-mode)
-	 (if fi::freshest-common-sublisp-name
-	     (setq fi::sublisp-name fi::freshest-common-sublisp-name)))
+	 (if fi:common-lisp-process-name
+	     (setq fi::process-name fi:common-lisp-process-name)))
 	(t (error "Cant start a subprocess for Major mode %s." major-mode)))
   ;; start-up the sublisp process if necessary and possible
-  (cond ((and fi::sublisp-name
-	      (let ((p (get-process fi::sublisp-name)))
+  (cond ((and fi::process-name
+	      (let ((p (get-process fi::process-name)))
 		(fi:process-running-p p))))
 	((eq major-mode 'fi:franz-lisp-mode)
-	 (if (and fi::freshest-franz-sublisp-name 
-		  (get-process fi::freshest-franz-sublisp-name))
-	     (setq fi::sublisp-name fi::freshest-franz-sublisp-name)
-	   (setq fi::sublisp-name (save-excursion (fi:franz-lisp)))))
+	 (if (and fi:franz-lisp-process-name 
+		  (get-process fi:franz-lisp-process-name))
+	     (setq fi::process-name fi:franz-lisp-process-name)
+	   (setq fi::process-name (save-excursion (fi:franz-lisp)))))
 	((eq major-mode 'fi:common-lisp-mode)
-	 (if (and fi::freshest-common-sublisp-name 
-		  (get-process fi::freshest-common-sublisp-name))
-	     (setq fi::sublisp-name fi::freshest-common-sublisp-name)
-	   (setq fi::sublisp-name (save-excursion (fi:common-lisp)))))
+	 (if (and fi:common-lisp-process-name 
+		  (get-process fi:common-lisp-process-name))
+	     (setq fi::process-name fi:common-lisp-process-name)
+	   (setq fi::process-name (save-excursion (fi:common-lisp)))))
 	(t (error "Can't start a subprocess for sublisp-name %s."
-		  fi::sublisp-name)))
-  (if (processp fi::sublisp-name)
-      (setq fi::sublisp-name (process-name fi::sublisp-name)))
+		  fi::process-name)))
+  (if (processp fi::process-name)
+      (setq fi::process-name (process-name fi::process-name)))
   nil)
 
 (make-variable-buffer-local 'fi::emacs-to-lisp-transaction-file)
@@ -326,9 +328,10 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 
 
 (defun fi:remove-all-temporary-lisp-transaction-files ()
-  "This function will clean up all the files created for Lisp/Emacs
+  "This function will clean up all the files created for Emacs-Lisp
 communication.  See the variable fi:emacs-to-lisp-transaction-directory for
-the location of the files."
+the location of the files.  A good place to call this function is in the
+kill-emacs-hook."
   (let ((buffers (buffer-list))
 	  file)
       (while buffers
