@@ -16,7 +16,7 @@
 ;; at private expense as specified in DOD FAR 52.227-7013 (c) (1) (ii).
 ;;
 ;;
-;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.18 1988/05/24 13:21:06 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.19 1988/06/03 09:39:10 layer Exp $
 ;; $Locker: layer $
 ;;
 ;; This code is a preliminary IPC interface for ExCL. The functionality
@@ -58,15 +58,14 @@ which case a UNIX domain socket is used.")
 
 (eval-when (load eval)
   (unless lisp-listener-daemon-ff-loaded
-    (unless (load (if (eql (excl::machine-code) '#.comp::machine-code-tek4300)
-		      "/lib/libc.a"
-		      "")
-		  :verbose nil
-		  :unreferenced-lib-names
-		  (mapcar #'convert-to-lang
-			  '("socket" "bind" "listen" "accept" "getsockname"
-			    "bcopy" "bcmp" "bzero")))
-      (error "foreign load failed"))
+    (unless (eql (excl::machine-code) '#.comp::machine-code-tek4300)
+      (unless (load ""
+		    :verbose nil
+		    :unreferenced-lib-names
+		    (mapcar #'convert-to-lang
+			    '("socket" "bind" "listen" "accept" "getsockname"
+			      "bcopy" "bcmp" "bzero")))
+	(error "foreign load failed")))
     (setq lisp-listener-daemon-ff-loaded t)
     (defforeign-list '((getuid)
 		       (socket)
