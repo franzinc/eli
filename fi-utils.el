@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.26 1991/10/10 19:51:43 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.27 1991/10/15 11:40:06 layer Exp $
 
 ;;; Misc utilities
 
@@ -455,3 +455,85 @@ at the beginning of the line."
       (setq i (+ i 1)))
 
     res))
+
+;;;;
+
+(defun fi::display-pop-up-window (buffer &optional hook args)
+  (fi:lisp-push-window-configuration)
+  (cond ((eq 'split (car fi:pop-up-temp-window-behavior))
+	 (fi::display-pop-up-window-split buffer hook args))
+	((eq 'other (car fi:pop-up-temp-window-behavior))
+	 (fi::display-pop-up-window-other buffer hook args))
+	((eq 'replace (car fi:pop-up-temp-window-behavior))
+	 (fi::display-pop-up-window-replace buffer hook args))
+	(t (error "bad value for car of fi:pop-up-temp-window-behavior: %s"
+		  (car fi:pop-up-temp-window-behavior)))))
+
+(defun fi::display-pop-up-window-replace (buffer hook args)
+  (switch-to-buffer buffer)
+  (when hook (apply hook args)))
+
+(defun fi::display-pop-up-window-other (buffer hook args)
+  (cond ((one-window-p)
+	 (split-window)
+	 (other-window 1)
+	 (switch-to-buffer buffer))
+	((eq (current-buffer) buffer))
+	(t
+	 (other-window 1)
+	 (switch-to-buffer buffer)))
+
+  (when hook (apply hook args))
+    
+  (bury-buffer buffer)
+  (other-window 1))
+
+(defun fi::display-pop-up-window-split (buffer hook args)
+  (let* ((from-window (selected-window))
+	 (real-from-window nil)
+	 (from-window-orig-height (1- (window-height))) ; minus mode line
+	 (buffer-window (get-buffer-window buffer))
+	 (lines nil))
+    
+    (save-excursion
+      (set-buffer buffer)
+      (setq lines (count-lines (point-min) (point-max))))
+
+    ;; get to the proper window
+    (cond (buffer-window
+	   (when (not (eq (selected-window) buffer-window))
+	     (select-window buffer-window)))
+	  ((eq (current-buffer) buffer))
+	  ((one-window-p)
+	   (setq from-window-orig-height (1- (window-height)))
+	   (split-window)
+	   (save-window-excursion
+	     (other-window 1)
+	     (setq from-window (selected-window)))
+	   (switch-to-buffer buffer))
+	  (t
+	   (setq real-from-window (selected-window))
+	   (select-window (get-largest-window))
+	   (if (eq real-from-window (selected-window))
+	       (setq real-from-window nil))
+	   (setq from-window-orig-height (1- (window-height)))
+	   (split-window)
+	   (save-window-excursion
+	     (other-window 1)
+	     (setq from-window (selected-window)))
+	   (switch-to-buffer buffer)))
+
+    (unless (one-window-p)
+      (let* ((window-min-height 2)
+	     (target-size
+	      (max window-min-height
+		   (min lines (/ from-window-orig-height 2)))))
+	(if (< target-size (window-height))
+	    (shrink-window (- (window-height) target-size 1))
+	  (if (> target-size (window-height))
+	      (enlarge-window (- target-size (window-height) -1))))))
+    
+    (when hook (apply hook args))
+    
+    (bury-buffer buffer)
+    (select-window (or real-from-window from-window))))
