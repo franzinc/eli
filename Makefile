@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.18 1988/05/25 10:59:02 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.19 1988/05/25 10:59:58 layer Exp $
 
 .SUFFIXES:
 .SUFFIXES: .el .elc
@@ -26,4 +26,4 @@ tags:
 	(cd ../..; etags lisp/fi/*.el lisp/local/*.el lisp/*.el src/*.[ch])
 
 verify:
-	verify *.el spec.n Makefile examples/*
+	@verify *.el spec.n Makefile examples/*
