@@ -31,7 +31,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.48 1990/12/28 14:27:38 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.49 1991/01/29 15:28:57 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -231,8 +231,7 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
   ;; start-up the sublisp process if necessary and possible
   (cond ((and fi::sublisp-name
 	      (let ((p (get-process fi::sublisp-name)))
-		(and p (eq (process-status p) 'run))
-		p)))
+		(and p (eq (process-status p) 'run)))))
 	((eq major-mode 'fi:franz-lisp-mode)
 	 (if (and fi::freshest-franz-sublisp-name 
 		  (get-process fi::freshest-franz-sublisp-name))
@@ -258,7 +257,7 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 (setq-default fi::emacs-to-lisp-transaction-buf nil)
 
 (defun fi::send-string-load (process text nl-to-cr compile-file-p)
-  (let (pkg)
+  (let (pkg (source-file (buffer-file-name)))
     (if (or (null fi::emacs-to-lisp-transaction-file)
 	    (null fi::emacs-to-lisp-transaction-buf))
 	(progn
@@ -288,23 +287,26 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 	(erase-buffer)
 	(if (and pkg (not fi:echo-evals-from-buffer-in-listener-p))
 	    (insert pkg))
+	(insert (format "#+(version >= 4 1) (setq excl::*partial-source-file-p* t excl::*source-pathname* #P\"%s\")
+" source-file))
 	(insert text)
 	(write-region (point-min) (point-max) file nil 'nomessage)
 	(bury-buffer)))
     (let ((load-string
 	   (if compile-file-p
 	       (format
-		"(let ((excl::*record-source-files* nil)
+		"(let (#-(version >= 4 1) (excl::*record-source-files* nil)
 		       (*package* *package*))
 		   %s
  		   (excl::compile-file-if-needed \"%s\")
-		   (load (format nil \"%s.~a\" sys::*fasl-default-type*)))"
+		   (load (format nil \"%s.~a\" sys::*fasl-default-type*) :verbose nil)
+                   (values))"
 		(if pkg pkg "")
 		fi::emacs-to-lisp-transaction-file
 		(fi::file-name-sans-type fi::emacs-to-lisp-transaction-file))
 	     (if fi:echo-evals-from-buffer-in-listener-p
 		 (format "(with-open-file (istm \"%s\")
-			 (let ((*record-source-files* nil)
+			 (let (#-(version >= 4 1) (excl::*record-source-files* nil)
 			       (*package* *package*)
 			       (stm (make-echo-stream istm *terminal-io*)))
 			   %s
@@ -313,13 +315,16 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 			   (values)))"
 			 fi::emacs-to-lisp-transaction-file
 			 (if pkg pkg ""))
-	       (format "(let ((*record-source-files* nil)
+	       (format "(let (#-(version >= 4 1) (excl::*record-source-files* nil)
 			      (*package* *package*))
 			   %s
-			   (load \"%s\"))"
+			   (load \"%s\" :verbose nil)
+                           (values))"
 		       (if pkg pkg "")
 		       fi::emacs-to-lisp-transaction-file)))))
       (fi::send-string-split process load-string nl-to-cr))))
+
+
 
 (defun fi:remove-all-temporary-lisp-transaction-files ()
   "This function will clean up all the files created for Lisp/Emacs
