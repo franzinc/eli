@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.117 1996/03/25 23:38:33 smh Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.118 1996/03/26 02:16:33 smh Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -213,7 +213,7 @@ hosts = sparky akbar sole fridge freezer girls louie hefty romeo vapor
 elib_root = /usr/fi/emacs-lib
 to = $(elib_root)/fi
 
-rdist = /usr/ucb/rdist
+rdist = /usr/local/rdist
 
 rdist: all local-fi-*.elc
 	rm -fr DIST

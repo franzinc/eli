@@ -1,3 +1,7 @@
+Mon Mar 25 18:14:51 1996  Steve Haflich  <smh@vapor>
+
+	* Change /usr/ucb/rdist to /usr/local/rdist, which sa maintains.
+
 Mon Mar 25 15:36:35 1996  Steve Haflich  <smh@vapor>
 
 	* Makefile: Updated the rdist list.
