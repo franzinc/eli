@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.26 1991/04/24 10:06:28 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.27 1991/04/26 13:01:32 layer Exp $
 ;;
 
 (defvar fi:always-in-a-window nil)
@@ -821,7 +821,7 @@ environment."
   (fi::compile-or-load-file file ':compile-and-load))
 
 (defun fi::compile-or-load-file (file operation)
-  (make-request (lep::compile-or-load-file-request :pathname file
+  (make-request (lep::compile/load-file-request :pathname file
 						:operation operation)
 		(() ())
 		(() (error)
