@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.47 1989/05/19 11:42:32 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.48 1989/05/24 00:11:07 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -414,7 +414,7 @@ are read from the minibuffer."
 	    (concat "*" name "*"))
 	   ((> number 1)
 	    ;; just return the buffer name
-	    (concat "*" name "-" number "*"))
+	    (concat "*" name "*<" number ">"))
 	   ((< number 0)
 	    ;; search for the first available buffer
 	    (let (buffer-name n)
@@ -423,7 +423,7 @@ are read from the minibuffer."
 		  buffer-name
 		(setq n 2)
 		(while (fi::process-running (setq buffer-name
-					      (concat "*" name "-" n "*")))
+					      (concat "*" name "*<" n ">")))
 		  (setq n (+ n 1)))
 		buffer-name)))
 	   (t (concat "*" name "*")))))
