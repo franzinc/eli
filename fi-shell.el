@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-shell.el,v 1.16 1991/09/30 11:38:59 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-shell.el,v 1.17 1992/08/19 07:16:05 layer Exp $
 
 (defvar fi:shell-mode-map nil
   "The shell major-mode keymap.")
@@ -58,13 +58,26 @@ any other mode setup."
 	(fi::subprocess-mode-super-keys fi:shell-mode-super-key-map 'shell)))
 
   (if (null fi:shell-mode-map)
-      (setq fi:shell-mode-map
-	(fi::subprocess-mode-commands (make-keymap)
-				      fi:shell-mode-super-key-map
-				      'shell)))
+      (progn
+	(setq fi:shell-mode-map
+	  (fi::subprocess-mode-commands (make-keymap)
+					fi:shell-mode-super-key-map
+					'shell))
+	(define-key fi:shell-mode-map "!" 'fi:shell-mode-bang)))
   (use-local-map fi:shell-mode-map)
   (setq fi:subprocess-super-key-map fi:shell-mode-super-key-map)
   (run-hooks 'fi:subprocess-mode-hook 'fi:shell-mode-hook))
+
+(defun fi:shell-mode-bang (&optional arg)
+  (interactive "*p")
+  (message "!-")
+  (let ((c (read-char)))
+    (cond
+     ;;((= c ?!) (fi:pop-input arg))
+     ((= c ?$) (fi:pop-input-last-word arg))
+     (t (insert "!")
+	;;(setq unread-command-char c)
+	(insert-char c 1)))))
 
 (defun fi:shell (&optional buffer-number)
   "Start a shell in a buffer whose name is determined from the optional
