@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-changes.el,v 1.4 1991/03/15 21:05:27 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-changes.el,v 1.5 1991/04/20 23:26:42 layer Exp $
 
 ;;; Support for changed definitions
 
@@ -154,6 +154,8 @@ OLD-FILE."
   (and (eq major-mode 'fi:common-lisp-mode)
        (buffer-file-name)
        (ecase since
+	 (:comma-zero
+	  (file-exists-p (concat (buffer-file-name) unlock-file-suffix)))
 	 (:read
 	  (or (buffer-modified-p)
 	      buffer-backed-up))
@@ -174,12 +176,16 @@ OLD-FILE."
 
 (defun compute-file-changed-values-for-current-buffer ()
   (let ((actual-file (buffer-file-name))
-	  (old-file 
+	(old-file 
+	 (case since
+	   (:comma-zero
+	    (concat (buffer-file-name) unlock-file-suffix))
+	   (t
 	   (if (and (not (eq since ':saved))
 		    buffer-backed-up)
 	       (make-backup-file-name (buffer-file-name))
-	     (buffer-file-name)))
-	  (new-file (buffer-file-name)))
+	     (buffer-file-name)))))
+	(new-file (buffer-file-name)))
     (list actual-file old-file new-file)))
 
 (defun do-buffer-changed-definitions-1 (copy-file-name actual-file old-file new-file)
@@ -218,11 +224,12 @@ OLD-FILE."
 (defun show-changes (changes &optional buffer-name package)
   (lep:display-some-definitions (or package fi:package)
 				changes
-				(list 'find-buffer-definition)
+				(list 'lep::find-buffer-definition)
 				(or buffer-name "*changes*")))
 
 (defun convert-since-prefix (since)
   (ecase since
     (1 ':read)
     (2 ':saved)
-    (3 ':eval)))
+    (3 ':eval)
+    (4 ':comma-zero)))
