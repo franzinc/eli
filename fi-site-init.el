@@ -1,19 +1,21 @@
-;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.16 1991/01/29 14:21:08 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.17 1991/01/29 17:18:29 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface:
 ;;
 
-(setq fi:emacs-lisp-interface-version "1.5.2")
+(setq fi:emacs-lisp-interface-version "2.0alpha")
+
+(require 'cl)
 
 (load "fi/modes.elc")
 (if fi:lisp-do-indentation		; default is `t'
     (load "fi/indent.elc"))
 (load "fi/keys.elc")
-(load "fi/query.elc")
 (load "fi/subproc.elc")
 (load "fi/sublisp.elc")
 (load "fi/tcplisp.elc")
-(load "fi/ltags.elc")
+(load "fi/query.elc")			; non-lep only
+(load "fi/ltags.elc")			; non-lep only
 (load "fi/ring.elc")
 (load "fi/filec.elc")
 (load "fi/utils.elc")
@@ -29,3 +31,15 @@
 (autoload 'fi:clman-apropos "fi/clman" nil t)
 
 (setq fi:package-loaded t)
+
+(defvar fi::lep-loaded)
+
+(setq fi::lep-loaded nil)
+
+(defun fi:toggle-lep ()
+  (interactive)
+  (if fi::lep-loaded
+      (progn
+	(load "fi/query.elc")
+	(load "fi/ltags.elc"))
+    (load "fi/lep/lep-init")))
