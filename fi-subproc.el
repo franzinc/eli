@@ -19,7 +19,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.132 1991/10/29 14:59:29 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.133 1991/11/21 18:29:56 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -578,18 +578,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		    (if (= ?/ (aref dir (- (length dir) 1)))
 			dir
 		      (concat dir "/")))))
-	      (let ((image
-		     (fi::canonicalize-filename
-		      (expand-file-name
-		       (if (stringp image-name)
-			   (if (= ?/ (aref image-name 0))
-			       image-name
-			     (format "%s%s" directory image-name))
-			 directory)))))
-		(setq image-name
-		  (expand-file-name
-		   (read-file-name (format "Image name [%s]: " image)
-				   directory image local))))
+	      (read-file-name "Image name: " image-name image-name nil)
 	      (setq image-args
 		(fi::listify-string
 		 (read-from-minibuffer
