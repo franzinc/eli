@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.9 1988/07/15 18:32:38 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.10 1988/08/11 21:25:34 layer Exp $
 
 (defvar fi:rlogin-mode-map nil
   "The rlogin major-mode keymap.")
@@ -94,8 +94,10 @@ See fi:explicit-shell."
   (let ((proc
 	 (fi::make-subprocess
 	  buffer-number host 'fi:rlogin-mode
-	  fi:rlogin-prompt-pattern fi:rlogin-image-name
-	  (append (list host) fi:rlogin-image-arguments))))
+	  fi:rlogin-prompt-pattern
+	  "env" 
+	  (append (list "TERM=dumb" fi:rlogin-image-name host)
+		  fi:rlogin-image-arguments))))
     (set-process-filter proc 'fi::rlogin-filter)
     proc))
 
@@ -108,8 +110,9 @@ are read from the minibuffer."
   (let ((proc
 	 (fi::make-subprocess
 	  buffer-number host 'fi:rlogin-mode
-	  fi:rlogin-prompt-pattern image-name
-	  (append (list host) image-arguments))))
+	  fi:rlogin-prompt-pattern
+	  "env" 
+	  (append (list "TERM=dumb" image-name host) image-arguments))))
     (set-process-filter proc 'fi::rlogin-filter)
     proc))
 
