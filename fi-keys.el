@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.34 1990/12/17 14:53:16 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.35 1990/12/27 13:06:42 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -379,7 +379,7 @@ the point as the default tag."
   "Print the arglist (using excl:arglist) for a symbol, which is read from
 the minibuffer.  The word around the point is used as the default."
   (interactive (fi::get-default-symbol "Function" t))
-  (let* ((symbol (fi::case-frob symbol))
+  (let* ((symbol (fi::frob-case-to-lisp symbol))
 	 (string
 	  (format "(progn
                     (format t  \"~:[()~;~:*~{~a~^ ~}~]\"
@@ -397,7 +397,7 @@ the minibuffer.  The word around the point is used as the default."
 the point is used as the default."
   (interactive (fi::get-default-symbol "Describe symbol"))
   (let ((string (format "(progn (lisp:describe '%s) (values))\n"
-			(fi::case-frob symbol))))
+			(fi::frob-case-to-lisp symbol))))
     (if (fi::background-sublisp-process)
 	(process-send-string fi::backdoor-process string)
       (fi::eval-string-send string))))
@@ -408,7 +408,7 @@ minibuffer.  The word around the point is used as the default."
   (interactive
    (fi::get-default-symbol "Function documentation for symbol"))
   (let ((string (format "(princ (lisp:documentation '%s 'lisp:function))\n"
-			(fi::case-frob symbol))))
+			(fi::frob-case-to-lisp symbol))))
     (if (fi::background-sublisp-process)
 	(process-send-string fi::backdoor-process string)
       (fi::eval-string-send string))))
@@ -455,7 +455,7 @@ which will do the macroexpansion.")
 			      fi:package fi:package)
 		    "*package*")
 		  filename
-		  (fi::case-frob handler))))
+		  (fi::frob-case-to-lisp handler))))
     (if start
 	(write-region start (point) filename nil 'nomessage)
       (let ((form (read-string (format "form to %s: " type)))
@@ -478,7 +478,7 @@ from the sexp around the point."
   (message "finding callers of %s..." symbol)
   (let ((string (format
 		 "(progn (excl::who-references '%s) (values))\n"
-		 (fi::case-frob symbol))))
+		 (fi::frob-case-to-lisp symbol))))
     (if (fi::background-sublisp-process)
 	(process-send-string fi::backdoor-process string)
       (fi::eval-string-send string))))
@@ -503,20 +503,17 @@ function defintions are considered.  Otherwise all symbols are considered."
 			(concat
 			 ":" (buffer-substring opoint (match-beginning 0))))))
 		(point)))
-	 (pattern (fi::case-frob (buffer-substring beg end)))
+	 (pattern (buffer-substring beg end))
 	 (functions-only (if (eq (char-after (1- real-beg)) ?\() t nil))
 	 (completions
 	  (progn
 	    ;; first, go into that package
 	    (if (null (fi:eval-in-lisp "(packagep (in-package :%s))"
-				       (fi::case-frob
-					(or fi:package "user"))))
+				       (or fi:package "user")))
 		(error "subprocess is in unknown package: %s" fi:package))
 	    ;; then evaluate our expr
 	    (fi:eval-in-lisp "(excl::list-all-completions \"%s\" %s %s)"
-			     pattern
-			     (fi::case-frob package)
-			     (fi::case-frob functions-only))))
+			     pattern package functions-only)))
 	 (alist
 	  (if (consp completions)
 	      (apply 'list

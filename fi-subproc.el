@@ -10,7 +10,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.78 1990/12/17 17:48:29 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.79 1990/12/27 13:06:35 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -781,13 +781,14 @@ This function implements continuous output to visible buffers."
 	(setq fi::remote-password
 	  (car (setq xx (read-from-string command (cdr xx)))))
 	(setq fi::lisp-case-mode
-	  (car (setq xx (read-from-string command (cdr xx)))))
+	  (car (setq xx (read-from-string (downcase command) (cdr xx)))))
 	;; the following "argument" is optional in that a previous version
 	;; of the ipc.cl didn't provide it
 	(if (setq host
 	      (condition-case ()
-		  (car (setq xx
-			 (fi::case-frob (read-from-string command (cdr xx)))))
+		  (car (setq xx (read-from-string
+				 (fi::frob-case-from-lisp command)
+				 (cdr xx))))
 		(error nil)))
 	    (setq fi:unix-domain-socket (setq fi::remote-host host)))
 	res)
