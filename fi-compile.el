@@ -1,8 +1,10 @@
-;; $Id: fi-compile.el,v 2.6 1997/12/18 18:38:48 layer Exp $
+;; $Id: fi-compile.el,v 2.7 1998/05/19 18:52:17 layer Exp $
 
 (require 'cl)
 
-(setq byte-compile-compatibility t)
+(setq byte-compile-compatibility t) ;; emacs 19
+;; doesn't work:
+;;(setq byte-compile-emacs19-compatibility t) ;; xemacs 20
 
 (require 'font-lock) ;; makes some compiler warnings go away
 (require 'comint) ;; makes some compiler warnings go away

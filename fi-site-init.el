@@ -1,4 +1,4 @@
-;; $Id: fi-site-init.el,v 1.111 1997/12/18 18:38:49 layer Exp $
+;; $Id: fi-site-init.el,v 1.112 1998/05/19 18:52:17 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -199,6 +199,26 @@ exists.")
     (load lib-file)))
 
 (fi::load "fi-vers")
+(when (and (= 19 (car fi:compiled-with-version))
+	   (= 20 emacs-major-version)
+	   (eq 'xemacs20 fi::emacs-type))
+  (delete-other-windows)
+  (switch-to-buffer "*Help*")
+  (erase-buffer)
+  (insert "
+You must byte-recompile the .el files for XEmacs 20.x since there are
+incompatibilities between FSF GNU Emacs version 19.x and XEmacs 20.x.
+
+You can do this by running the following commands in your eli/ directory:
+
+  make clean
+  make emacs=<xemacs20> xemacs=<xemacs20>
+
+where <xemacs20> is the name of your XEmacs 20.x binary.")
+  (beginning-of-buffer)
+  (beep)
+  (error "You must byte-recompile the .el files for XEmacs 20.x."))
+
 (fi::load "fi-keys")			; load before fi-modes
 (fi::load "fi-modes")
 (when fi:lisp-do-indentation

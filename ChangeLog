@@ -7,6 +7,42 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.1 -- join from acl50 branch (versions 2.0.21.beta.0 to 2.0.21.0)
+next merge tag: acl50_merge1
+
+*******************************************************************************
+2.0.21.0
+
+Fri May  8 10:12:08 1998  Kevin Layer  <layer@ultra>
+
+	* Makefile: modify fi-vers.el to save compiling emacs version #.
+	* fi-compile.el: add comments about a failed experiment
+	* fi-site-init.el: guard against problems loading into xemacs 20.x.
+
+*******************************************************************************
+2.0.21.beta.2
+
+Wed Apr 22 16:45:20 1998  Kevin Layer  <layer@ultra>
+
+	* fi-subproc.el: another fix for image file reading in
+	fi::get-lisp-interactive-arguments
+
+*******************************************************************************
+2.0.21.beta.1
+
+Wed Apr 22 11:12:05 1998  Kevin Layer  <layer@ultra>
+
+	* fi-subproc.el: yet more fixes to
+	fi::get-lisp-interactive-arguments
+
+*******************************************************************************
+2.0.21.beta.0
+
+Mon Apr 20 13:16:16 1998  Kevin Layer  <layer@ultra>
+
+	* version.mak: bump version to beta
+
+*******************************************************************************
 2.0.21.pre-beta.21
 
 Tue Mar 31 17:25:35 1998  Kevin Layer  <layer@ultra>
