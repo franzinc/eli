@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.35 1992/08/19 07:20:02 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.36 1993/03/23 10:20:48 layer Exp $
 
 (require 'cl)
 
@@ -8,6 +8,7 @@
 
 (setq fi:lisp-do-indentation t)
 (load "fi/site-init.el")
+(load "fi/clman") ;; autoloaded
 
 (setq args (cdr (fi:member-equal "--" command-line-args)))
 (setq input-file (car args))
