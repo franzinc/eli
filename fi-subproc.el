@@ -19,7 +19,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.140 1992/05/19 08:23:01 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.141 1992/05/28 15:30:16 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -1069,9 +1069,8 @@ to your `.cshrc' after the `set cdpath=(...)' in the same file."
 			 (cons directory fi::shell-directory-stack)))
 		      ((eq 'replace directory-stack)
 		       (rplaca fi::shell-directory-stack directory))))
-	    ;; check CDPATH
-	    (unless fi::cdpath
-	      (setq fi::cdpath (fi::listify-cdpath)))
+	    ;; check $cdpath
+	    (unless fi::cdpath (setq fi::cdpath (fi::listify-cdpath)))
 	    (let ((cdpath fi::cdpath)
 		  (done nil)
 		  (dir nil))
@@ -1089,30 +1088,11 @@ to your `.cshrc' after the `set cdpath=(...)' in the same file."
     (error nil)))
 
 (defun fi::listify-cdpath ()
-  (fi::explode (getenv "CDPATH") ?:))
-
-(defun fi::explode (string char)
-  (let ((res nil)
-	(s 0)
-	(i 0)
-	(max (length string)))
-    (while (< i max)
-      (if (= char (aref string i))
-	  (progn
-	    (setq res (cons (substring string
-				       (if (zerop s)
-					   0
-					 (1+ s))
-				       i) res))
-	    (setq s i)))
-      (setq i (+ i 1)))
-    (unless (= s max)
-      (setq res (cons (substring string
-				 (if (zerop s)
-				     0
-				   (1+ s))
-				 i) res)))
-    (nreverse res)))
+  (let ((cdpath (fi::shell-command-output-to-string
+		 (get-buffer-create " *cdpath parsing*")
+		 "csh"
+		 "-c" "echo $cdpath")))
+    (fi::explode cdpath ? )))
 
 (defun fi::get-buffer-host (buffer)
   "Given BUFFER return the value in this buffer of fi::lisp-host."
