@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.41 1989/08/16 13:52:41 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.42 1989/08/17 20:47:22 layer Rel $
 
 emacs = /usr/local/emacs
 
@@ -18,7 +18,9 @@ elcs = modes.elc indent.elc subproc.elc sublisp.elc filec.elc ring.elc\
 .el.elc: 
 	$(emacs) -nw -batch -q -l bytecomp -f batch-byte-compile $*.el
 
-all:	elcs fasls spec.out
+default:	elcs spec.out
+
+all:	default fasls
 
 fasls:	emacs.fasl ipc.fasl
 
