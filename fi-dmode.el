@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.17 1991/08/22 21:29:22 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.18 1991/09/27 00:58:12 layer Exp $
 ;;
 
 ;; Create a mode in which each line is a definition and . on that
@@ -66,6 +66,10 @@ Entry to this mode runs the fi:definition-mode-hook."
   (kill-all-local-variables)
   (setq major-mode 'fi:definition-mode)
   (setq mode-name "Definition Mode")
+
+  (make-local-variable 'truncate-lines)
+  (setq truncate-lines t)
+  (fi::definition-mode-fix-buffer)
 
   (make-local-variable 'lep::definitions)
   (make-local-variable 'lep::definition-types)
@@ -124,6 +128,10 @@ Entry to this mode runs the fi:inverse-definition-mode-hook."
   (setq major-mode 'fi:inverse-definition-mode)
   (setq mode-name "Inverse Definition Mode")
 
+  (make-local-variable 'truncate-lines)
+  (setq truncate-lines t)
+  (fi::definition-mode-fix-buffer)
+
   (make-local-variable 'lep::definitions)
   (make-local-variable 'lep::definition-types)
   (make-local-variable 'lep::definition-other-args)
@@ -155,6 +163,16 @@ Entry to this mode runs the fi:inverse-definition-mode-hook."
     (use-local-mouse-map fi:inverse-definition-mode-mouse-map))
 
   (run-hooks 'fi:inverse-definition-mode-hook))
+
+(defun fi::definition-mode-fix-buffer ()
+  (let ((buffer-read-only nil))
+    (fi:map-lines
+     (function
+      (lambda ()
+	(when (looking-at "[ \t]")
+	  (delete-char -1)
+	  (delete-horizontal-space)
+	  (insert " ")))))))
 
 (defun fi:definition-mode-undo ()
   "Perform the undo in the dmode buffer.  This has the effect of pop'ing
