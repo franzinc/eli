@@ -7,6 +7,13 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.12
+
+Mon Jul 20 19:56:40 1998  Kevin Layer  <layer@ultra>
+
+	* Makefile: add back `all' rule (same as `default')
+
+*******************************************************************************
 2.0.21.11
 
 Thu Jul 16 09:48:30 1998  Kevin Layer  <layer@ultra>
