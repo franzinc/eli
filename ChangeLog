@@ -1,3 +1,9 @@
+Wed Aug  7 20:36:01 1996  Kevin Layer  <layer@freezer>
+
+	* fi-subproc.el: fix fi::buffer-number-to-buffer, which was
+	responsible for "Error occurred:" in the minibuffer when a
+	compile/eval issued a warning.
+
 Wed Aug  7 15:00:13 1996  Kevin Layer  <layer@freezer>
 
 	* fi-modes.el: handle the # in (in-package #:foo), which

@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.164 1996/08/02 04:40:00 layer Exp $
+;; $Id: fi-subproc.el,v 1.165 1996/08/08 03:36:34 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -1029,13 +1029,13 @@ This function implements continuous output to visible buffers."
   (let ((buffer-name
 	 (cond ((> number 1) (concat name "<" number ">"))
 	       ((< number 0)
-		(let (buffer-name n)
+		(let (n)
 		  (if (not (fi:process-running-p name name))
-		      buffer-name
+		      name
 		    (setq n 2)
 		    (while (fi:process-running-p (concat name "<" n ">"))
 		      (setq n (+ n 1)))
-		    buffer-name)))
+		    name)))
 	       (t name))))
     (or (get-buffer buffer-name)
 	(get-buffer-create buffer-name))))
