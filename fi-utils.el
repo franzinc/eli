@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.37 1992/12/14 17:32:07 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.38 1993/03/23 10:14:08 layer Exp $
 
 ;;; Misc utilities
 
@@ -612,25 +612,23 @@ created by fi:common-lisp."
 
 (defun fi::explode (string char)
   (let ((res nil)
-	(s 0)
+	(s -1)
 	(i 0)
 	(max (length string)))
     (while (< i max)
       (if (= char (aref string i))
 	  (progn
 	    (setq res (cons (substring string
-				       (if (zerop s)
-					   0
-					 (1+ s))
-				       i) res))
+				       (if (= s -1) 0 (1+ s))
+				       i)
+			    res))
 	    (setq s i)))
       (setq i (+ i 1)))
     (unless (= s max)
       (setq res (cons (substring string
-				 (if (zerop s)
-				     0
-				   (1+ s))
-				 i) res)))
+				 (if (= s -1) 0 (1+ s))
+				 i)
+		      res)))
     (nreverse res)))
 
 (defun fi::shell-command-output-to-string (buffer program &rest arguments)
