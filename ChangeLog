@@ -1,3 +1,9 @@
+Thu Aug 29 10:03:23 1996    <layer@HOBART>
+
+	* fi-site-init.el: version -> 2.0.20 alpha 1
+	* fi-subproc.el: first pass at full working interface on windows
+	* fi-utils.el: preserve condition when open-network-stream fails
+
 Mon Aug 19 15:43:57 1996    <layer@HOBART>
 
 	* fi-subproc.el: fixes on the way to this working on Windows

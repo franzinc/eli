@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.166 1996/08/19 22:46:00 layer Exp $
+;; $Id: fi-subproc.el,v 1.167 1996/08/29 17:05:28 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -129,13 +129,12 @@ fit, or otherwise in a popup buffer.")
 
 (defvar fi:start-lisp-interface-arguments
     (function
-     (lambda (use-background-streams)
-       (if (on-ms-windows)
-;;;; this is temporary, while we get the emacs-lisp interface to work on NT
-	   nil ;; (list "-I" "dcl.img")
-	 (list "-e"
-	       (format "(excl:start-emacs-lisp-interface %s)"
-		       use-background-streams)))))
+     (lambda (use-background-streams &optional lisp-image-name)
+       (let ((args (list "-e" (format "(excl:start-emacs-lisp-interface %s)"
+				      use-background-streams))))
+	 (when lisp-image-name
+	   (setq args (append (list "-I" lisp-image-name) args)))
+	 args)))
   "*This value of this variable determines whether or not the emacs-lisp
 interface is started automatically when fi:common-lisp is used to run
 Common Lisp images.   If non-nil, then a the value of this variable should
@@ -171,7 +170,11 @@ fi:common-lisp when a new buffer name is used.")
   "*Default directory in which the process started by fi:common-lisp uses.
 A CD is done into this directory before the process is started.")
 
-(defvar fi:common-lisp-image-name "cl"
+(defvar fi:common-lisp-image-name
+    (if (on-ms-windows)
+	;;(cons "d:/cl/src/dlisp.exe" "d:/cl/src/dcl.svl")
+	(cons "e:/home/cl/src/dlisp.exe" "e:/home/cl/src/dcl.svl")
+      "cl")
   "*Default Common Lisp image used by fi:common-lisp.  The value is a
 string that names the image fi:common-lisp invokes.")
 
@@ -283,6 +286,13 @@ connection.")
 machine, which implies that it was started via an `rsh'.  This variable is
 buffer local.")
 (make-variable-buffer-local 'fi::lisp-is-remote)
+
+(when (on-ms-windows)
+  (unless fi:common-lisp-host (setq fi:common-lisp-host "localhost"))
+  (unless fi::lisp-host (setq-default fi::lisp-host "localhost"))
+  (unless fi::lisp-port (setq-default fi::lisp-port 9666))
+  (unless fi::lisp-password (setq-default fi::lisp-password 0))
+  (unless fi::lisp-ipc-version (setq-default fi::lisp-ipc-version 1)))
 
 ;;;;
 ;;; User visible functions
@@ -300,10 +310,10 @@ buffer local.")
   "When creating an inferior cl process, the value to bind
 process-connection-type (q.v.).")
 
-(defun fi:common-lisp (&optional buffer-name directory image-name
+(defun fi:common-lisp (&optional buffer-name directory executable-image-name
 				 image-args host)
   "Create a Common Lisp subprocess and put it in buffer named by
-BUFFER-NAME, with default-directory of DIRECTORY, using IMAGE-NAME
+BUFFER-NAME, with default-directory of DIRECTORY, using EXECUTABLE-IMAGE-NAME
 and IMAGE-ARGS as the binary image pathname and command line
 arguments, doing the appropriate magic to execute the process on HOST.
 
@@ -352,9 +362,10 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	 (directory (if (interactive-p)
 			(expand-file-name directory)
 		      (or directory fi:common-lisp-directory)))
-	 (image-name (if (interactive-p)
-			 image-name
-		       (or image-name fi:common-lisp-image-name)))
+	 (executable-image-name
+	  (if (interactive-p)
+	      executable-image-name
+	    (or executable-image-name fi:common-lisp-image-name)))
 	 (image-args (if (interactive-p)
 			 image-args
 		       (or image-args fi:common-lisp-image-arguments)))
@@ -391,14 +402,14 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	 (startup-message
 	  (concat
 	   "\n==============================================================\n"
-	   (format "Starting image `%s'\n" image-name)
+	   (format "Starting image `%s'\n" executable-image-name)
 	   (if image-args
 	       (format "  with arguments `%s'\n" image-args)
 	     "  with no arguments\n")
 	   (format "  in directory `%s'\n" directory)
 	   (format "  on machine `%s'.\n" host)
 	   "\n"))
-	 (process-connection-type fi::common-lisp-connection-type)	;bug3033
+	 (process-connection-type fi::common-lisp-connection-type) ;bug3033
 	 (proc
 	  (progn
 	    (when (and (not local) (on-ms-windows))
@@ -410,10 +421,10 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	     directory
 	     'fi:inferior-common-lisp-mode
 	     fi:common-lisp-prompt-pattern
-	     (if local image-name fi::rsh-command)
+	     (if local executable-image-name fi::rsh-command)
 	     (if local
 		 real-args
-	       (fi::remote-lisp-args host image-name real-args
+	       (fi::remote-lisp-args host executable-image-name real-args
 				     directory))
 	     'fi::common-lisp-subprocess-filter
 	     'fi::start-backdoor-interface
@@ -440,12 +451,136 @@ the first \"free\" buffer name and start a subprocess in that buffer."
     (setq fi::common-lisp-first-time nil
 	  fi:common-lisp-buffer-name buffer-name
 	  fi:common-lisp-directory directory
-	  fi:common-lisp-image-name image-name
+	  fi:common-lisp-image-name executable-image-name
 	  fi:common-lisp-image-arguments image-args
 	  fi:common-lisp-host host)
     proc))
 
-(defun fi:open-lisp-listener (&optional buffer-number buffer-name setup-function)
+(defun fi:common-lisp-socket (&optional buffer-name directory
+					executable-image-name image-args
+					host)
+  "..."
+  (interactive
+   (fi::get-lisp-interactive-arguments fi::common-lisp-first-time
+				       fi:common-lisp-buffer-name
+				       (let ((name fi:common-lisp-buffer-name))
+					 (if (numberp current-prefix-arg)
+					     (fi::buffer-number-to-buffer
+					      name current-prefix-arg)
+					   (get-buffer-create name)))
+				       (or fi:common-lisp-directory
+					   default-directory)
+				       fi:common-lisp-image-name
+				       fi:common-lisp-image-arguments
+				       (or fi:common-lisp-host (system-name))))
+
+  (let* ((buffer-name (if (interactive-p)
+			  buffer-name
+			(or buffer-name fi:common-lisp-buffer-name)))
+	 (directory (if (interactive-p)
+			(expand-file-name directory)
+		      (or directory fi:common-lisp-directory)))
+	 (executable-image-name
+	  (if (interactive-p)
+	      executable-image-name
+	    (or executable-image-name fi:common-lisp-image-name)))
+	 (image-args (if (interactive-p)
+			 image-args
+		       (or image-args fi:common-lisp-image-arguments)))
+	 (host (if (interactive-p)
+		   host
+		 (or host fi:common-lisp-host (system-name))))
+	 (real-args
+	  (if (and fi:start-lisp-interface-arguments
+		   ;; can't do this:
+		   ;;  (not (fi::lep-open-connection-p))
+		   ;; because there is a race condition implied here: the
+		   ;; network connection may take longer to die than the
+		   ;; process, so we might not startup the interface
+		   ;; correctly (it seems to happen to some users more than
+		   ;; others, but it still happens).
+		   ;;
+		   ;; What we really just want to prevent is multiple
+		   ;; connections.
+		   (let* ((buffer-name (fi::calc-buffer-name buffer-name
+							     "common-lisp"))
+			  (buffer (get-buffer buffer-name)))
+		     (or (not (fi::lep-open-connection-p))
+			 (and buffer
+			      (eq buffer (fi::connection-buffer
+					  fi::*connection*))))))
+	      (setq layer executable-image-name)
+	      (append (funcall fi:start-lisp-interface-arguments
+			       fi:use-background-streams
+			       (when (on-ms-windows)
+				 (if (consp executable-image-name)
+				     (cdr executable-image-name)
+				   (error "No lisp image file given."))))
+		      image-args)
+	    image-args))
+	 (startup-message
+	  (concat
+	   "\n==============================================================\n"
+	   (format "Starting image `%s'\n" executable-image-name)
+	   (if image-args
+	       (format "  with arguments `%s'\n" image-args)
+	     "  with no arguments\n")
+	   (format "  in directory `%s'\n" directory)
+	   (format "  on machine `%s'.\n" host)
+	   "\n"))
+	 (process-connection-type fi::common-lisp-connection-type) ;bug3033
+	 (proc
+	  (let ((i 0) (process nil))
+	    (while
+		(condition-case condition
+		    (progn
+		      (setq process
+			(fi::make-tcp-connection "common-lisp"
+						 1
+						 'fi:lisp-listener-mode
+						 fi:common-lisp-prompt-pattern
+						 fi::lisp-host
+						 fi::lisp-port
+						 fi::lisp-password
+						 fi::lisp-ipc-version
+						 'fi::setup-tcp-connection))
+		      nil)
+		  (error
+		   (and nil ;; start-process doesn't work for me
+			fi::last-network-condition
+			(consp fi::last-network-condition)
+			(eq 'file-error (first fi::last-network-condition))
+			(equal "connection failed"
+			       (second fi::last-network-condition)))))
+	      (when (> i 2)
+		(error "Couldn't make connection to existing Lisp."))
+	      (fi::socket-start-lisp
+	       "common-lisp"
+	       (get-buffer-create "common-lisp-background")
+	       executable-image-name
+	       real-args)
+	      (sleep-for 4)
+	      (setq i (+ i 1)))
+	    (unless process
+	      (error "Couldn't make connection to existing Lisp."))
+	    process)))
+    (fi::start-backdoor-interface proc)
+    (fi::ensure-lep-connection)
+    (setq ;;fi::common-lisp-first-time nil
+	  fi:common-lisp-buffer-name buffer-name
+	  fi:common-lisp-directory directory
+	  fi:common-lisp-image-name executable-image-name
+	  fi:common-lisp-image-arguments image-args
+	  fi:common-lisp-host host)
+    proc))
+
+(defun fi::socket-start-lisp (process-name buffer image-name
+			      image-arguments)
+  (apply (function start-process) process-name
+	 buffer image-name image-arguments))
+
+(defun fi:open-lisp-listener (&optional buffer-number buffer-name
+					setup-function)
   "Open a connection to an existing Common Lisp process, started with the
 function fi:common-lisp, and create a Lisp Listener (a top-level
 interaction).  The Common Lisp can be either local or remote.  The name of
@@ -454,22 +589,34 @@ prefix arguments > 1.  If a negative prefix argument is given, then the
 first \"free\" buffer name is found and used.  When called from a program,
 the buffer name is the second optional argument."
   (interactive "p")
-  (if (or (null fi::common-lisp-backdoor-main-process-name)
-	  (not (fi:process-running-p
-		(get-process fi::common-lisp-backdoor-main-process-name)
-		buffer-name)))
-      (error "Common Lisp must be running to open a lisp listener."))
-  (let* ((buffer (process-buffer
-		  (get-process fi::common-lisp-backdoor-main-process-name))))
-    (fi::make-tcp-connection (or buffer-name "lisp-listener")
-			     buffer-number
-			     'fi:lisp-listener-mode
-			     fi:common-lisp-prompt-pattern
-			     (fi::get-buffer-host buffer)
-			     (fi::get-buffer-port buffer)
-			     (fi::get-buffer-password buffer)
-			     (fi::get-buffer-ipc-version buffer)
-			     (or setup-function 'fi::setup-tcp-connection))))
+  (if (on-ms-windows)
+      (fi::ensure-lep-connection)
+    (if (or (null fi::common-lisp-backdoor-main-process-name)
+	    (not (fi:process-running-p
+		  (get-process fi::common-lisp-backdoor-main-process-name)
+		  buffer-name)))
+	(error "Common Lisp must be running to open a lisp listener.")))
+  (if (on-ms-windows)
+      (fi::make-tcp-connection (or buffer-name "lisp-listener")
+			       buffer-number
+			       'fi:lisp-listener-mode
+			       fi:common-lisp-prompt-pattern
+			       fi::lisp-host
+			       fi::lisp-port
+			       fi::lisp-password
+			       fi::lisp-ipc-version
+			       (or setup-function 'fi::setup-tcp-connection))
+    (let* ((buffer (process-buffer
+		    (get-process fi::common-lisp-backdoor-main-process-name))))
+      (fi::make-tcp-connection (or buffer-name "lisp-listener")
+			       buffer-number
+			       'fi:lisp-listener-mode
+			       fi:common-lisp-prompt-pattern
+			       (fi::get-buffer-host buffer)
+			       (fi::get-buffer-port buffer)
+			       (fi::get-buffer-password buffer)
+			       (fi::get-buffer-ipc-version buffer)
+			       (or setup-function 'fi::setup-tcp-connection)))))
 
 (defun fi::setup-tcp-connection (proc)
   (format
@@ -478,10 +625,10 @@ the buffer name is the second optional argument."
       (values))\n"
    (fi::tcp-listener-generation proc)))
 
-(defun fi:franz-lisp (&optional buffer-name directory image-name
+(defun fi:franz-lisp (&optional buffer-name directory executable-image-name
 				image-args host)
   "Create a Franz Lisp subprocess and put it in buffer named by
-BUFFER-NAME, with default-directory of DIRECTORY, using IMAGE-NAME
+BUFFER-NAME, with default-directory of DIRECTORY, using EXECUTABLE-IMAGE-NAME
 and IMAGE-ARGS as the binary image pathname and command line
 arguments, doing the appropriate magic to execute the process on HOST.
 
@@ -526,9 +673,10 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	 (directory (if (interactive-p)
 			(expand-file-name directory)
 		      (or directory fi:franz-lisp-directory)))
-	 (image-name (if (interactive-p)
-			 image-name
-		       (or image-name fi:franz-lisp-image-name)))
+	 (executable-image-name
+	  (if (interactive-p)
+	      executable-image-name
+	    (or executable-image-name fi:franz-lisp-image-name)))
 	 (image-args (if (interactive-p)
 			 image-args
 		       (or image-args fi:franz-lisp-image-arguments)))
@@ -544,10 +692,10 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		directory
 		'fi:inferior-franz-lisp-mode
 		fi:franz-lisp-prompt-pattern
-		(if local image-name fi::rsh-command)
+		(if local executable-image-name fi::rsh-command)
 		(if local
 		    image-args
-		  (fi::remote-lisp-args host image-name image-args
+		  (fi::remote-lisp-args host executable-image-name image-args
 					directory))
 		nil			; use default filter
 		nil			; no interface to franz-lisp
@@ -565,7 +713,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
     (setq fi::franz-lisp-first-time nil
 	  fi:franz-lisp-buffer-name buffer-name
 	  fi:franz-lisp-directory directory
-	  fi:franz-lisp-image-name image-name
+	  fi:franz-lisp-image-name executable-image-name
 	  fi:franz-lisp-image-arguments image-args
 	  fi:franz-lisp-host host)
     proc))
@@ -574,7 +722,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 ;;; Internal functions
 ;;;;
 
-(defun fi::remote-lisp-args (host image-name image-args directory)
+(defun fi::remote-lisp-args (host executable-image-name image-args directory)
   (append
    fi::rsh-args
    (list
@@ -590,7 +738,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	    (fi::env-vars)
 	    directory
 	    directory
-	    image-name
+	    executable-image-name
 	    (mapconcat (function
 			(lambda (x)
 			  (if x
@@ -603,10 +751,16 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		"'" "")))))
 
 (defun fi::get-lisp-interactive-arguments (first-time buffer-name buffer
-					   directory image-name image-args
-					   host)
+					   directory executable-image-name
+					   image-args host)
   (let ((buffer-name (or (and buffer (buffer-name buffer))
 			 buffer-name))
+	(image-name (if (consp executable-image-name)
+			(car executable-image-name)
+		      executable-image-name))
+	(lisp-image-name (if (consp executable-image-name)
+			     (cdr executable-image-name)
+			   nil))
 	local)
     (if (or first-time
 	    (and current-prefix-arg
@@ -632,10 +786,14 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 			dir
 		      (concat dir "/")))))
 	      (let ((file-name
-		     (read-file-name "Image name: " image-name
-				     image-name nil)))
-		(if (string-match "[\$~]" file-name)
-		    (expand-file-name file-name)
+		     (read-file-name "Executable image name: "
+				     image-name image-name nil)))
+		(setq file-name
+		  (if (string-match "[\$~]" file-name)
+		      (expand-file-name file-name)
+		    file-name))
+		(if lisp-image-name
+		    (cons file-name lisp-image-name)
 		  file-name))
 	      (setq image-args
 		(fi::listify-string
@@ -643,7 +801,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		  "Image arguments (separate by spaces): "
 		  (mapconcat 'concat image-args " "))))
 	      host)
-      (list buffer-name directory image-name image-args host))))
+      (list buffer-name directory executable-image-name image-args host))))
 
 (defun fi::common-lisp-subprocess-filter (process output &optional stay
 								   cruft)
@@ -825,7 +983,8 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 					  given-password
 					  given-ipc-version
 					  setup-function)
-  (if (not fi::common-lisp-backdoor-main-process-name)
+  (if (and (not (on-ms-windows))
+	   (not fi::common-lisp-backdoor-main-process-name))
       (error "A Common Lisp subprocess has not yet been started."))
   (let* ((buffer-name (fi::buffer-number-to-buffer (concat "*" buffer-name "*")
 						   buffer-number))

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 1.57 1996/08/01 22:36:36 layer Exp $
+;; $Id: fi-utils.el,v 1.58 1996/08/29 17:05:31 layer Exp $
 
 ;;; Misc utilities
 
@@ -310,20 +310,26 @@ for the emacs-lisp interface to function properly."
       (message "everything looks fine!")
     t))
 
+(defvar fi::last-network-condition nil)
+
 (defun fi::open-network-stream (name buffer host service)
   (condition-case condition
       (open-network-stream name buffer host service)
     (error
-     (if (not (file-readable-p "/etc/hosts"))
-	 (fi:error "
+     (setq fi::last-network-condition condition)
+     (cond
+      ((and (not (on-ms-windows))
+	    (not (file-readable-p "/etc/hosts")))
+       (fi:error "
 Can't connect to host %s.  This is probably due to /etc/hosts not being
 readable.  The error from open-network-stream was:
   %s"
-		   host (car (cdr condition)))
+		 host (car (cdr condition))))
+      (t
        (fi:error "
 Can't connect to host %s.  The error from open-network-stream was:
   %s"
-		 host (car (cdr condition))))
+		 host (car (cdr condition)))))
      nil)))
 
 (defun fi:note (format-string &rest args)
