@@ -1,5 +1,5 @@
 ;; local-fi-developer-hooks.el
-;; $Id: local-fi-developer-hooks.el,v 2.7 1997/01/08 23:54:54 layer Exp $
+;; $Id: local-fi-developer-hooks.el,v 2.8 1997/01/15 17:02:22 layer Exp $
 
 ;; This file is not for public distribution.
 ;; It contains extra hooks for fi developers only, things like special
@@ -90,3 +90,5 @@
 (push '("\\.cpp$" . c++-mode) auto-mode-alist)
 
 (c-set-style "bsd")
+
+(put 'excl::.primcall 'fi:lisp-indent-hook 1)

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 1.74 1997/01/07 01:04:08 layer Exp $
+;; $Id: fi-lep.el,v 1.75 1997/01/15 17:02:17 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -860,7 +860,7 @@ the next definition, if there is one."
 				:fspec fspec)
     ((other-window-p fspec what) (pathname point n-more)
      (fi::show-found-definition fspec pathname point n-more other-window-p)
-     (if (= 0 n-more) (fi::pop-metadot-session)))
+     (if (or (null n-more) (= 0 n-more)) (fi::pop-metadot-session)))
     ((fspec) (error)
      (when (fi::pop-metadot-session)
        (error "Cannot edit %s: %s" fspec error))))))
