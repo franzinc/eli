@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 2.3 1993/04/22 14:44:50 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 2.4 1993/04/29 18:53:59 layer Exp $
 
 (defun fi::figure-out-mandir ()
   (do* ((path load-path (cdr path))
@@ -113,28 +113,27 @@ clman buffer, from anywhere in the buffer."
   (kill-buffer (current-buffer))
   (set-window-configuration fi::clman-window-configuration))
 
-
-
 (defun fi::clman-display-file (buf names)
-  (get-buffer-create buf)
-  (switch-to-buffer buf)
-  (erase-buffer)
-  (buffer-flush-undo (current-buffer))
-  (fi:clman-mode)
+  (with-output-to-temp-buffer buf
+    (let ((first t))
+      (dolist (name names)
+	(when (not first)
+	  (princ
+	   "===============================================================================\n"))
+	(princ (fi::file-contents (concat fi::manual-dir name)))
+	(setq first nil))))
+  (save-excursion
+    (set-buffer buf)
+    (fi:clman-mode))
   (message "%d additional clman pages at end of buffer"
-	   (- (length names) 1))
-  (dolist (name names)
-    (fi:clman-find-file (concat fi::manual-dir name)))
-  (widen)
-  (beginning-of-buffer))
+	   (- (length names) 1)))
 
-
-(defun fi:clman-find-file (name)
-  (goto-char (point-max))
-  (if (not (bobp))
-      (insert "===============================================================================\n"))
-  (narrow-to-region (point) (point))
-  (insert-file (concat fi::manual-dir name)))
+(defun fi::file-contents (file)
+  (let ((buffer (find-file-noselect file)))
+    (save-excursion
+      (set-buffer buffer)
+      (prog1 (buffer-string)
+	(kill-buffer buffer)))))
 
 (if fi:clman-mode-map
     nil
