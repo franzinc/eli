@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.51 1989/07/12 09:49:20 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.52 1989/07/19 14:05:38 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -187,7 +187,12 @@ See fi:explicit-common-lisp."
 					  image-name image-arguments)
   "The same as fi:common-lisp, except that the image and image arguments
 are read from the minibuffer."
-  (interactive "p\nsImage name: \nxImage arguments (a list): ")
+  (interactive
+   (list 
+    current-prefix-arg
+    (expand-file-name (read-file-name "Image name: " nil nil t))
+    (fi::listify-string
+     (read-from-minibuffer "Image arguments (separate by spaces): "))))
   (let ((proc (fi::make-subprocess
 	       buffer-number "common-lisp" 
 	       'fi:inferior-common-lisp-mode
@@ -227,7 +232,12 @@ See fi:explicit-remote-common-lisp."
   "The same as fi:remote-common-lisp, except that the image and image
 arguments are read from the minibuffer."
   (interactive
-   "p\nsRemote host name: \nsImage name: \nxImage arguments (a list): ")
+   (list 
+    current-prefix-arg
+    (read-from-minibuffer "Remote host name: ")
+    (read-from-minibuffer "Image name (relative to home directory): ")
+    (fi::listify-string
+     (read-from-minibuffer "Image arguments (separate by spaces): "))))
   (let ((proc (fi::make-subprocess
 	       buffer-number "common-lisp" 
 	       'fi:inferior-common-lisp-mode
@@ -293,7 +303,12 @@ See fi:explicit-franz-lisp."
 					 image-name image-arguments)
   "The same as fi:franz-lisp, except that the image and image arguments
 are read from the minibuffer."
-  (interactive "p\nsImage name: \nxImage arguments (a list): ")
+  (interactive
+   (list 
+    current-prefix-arg
+    (expand-file-name (read-file-name "Image name: " nil nil t))
+    (fi::listify-string
+     (read-from-minibuffer "Image arguments (separate by spaces): "))))
   (let ((proc (fi::make-subprocess
 	       buffer-number "franz-lisp" 
 	       'fi:inferior-franz-lisp-mode
