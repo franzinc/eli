@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.54 1995/01/07 00:49:14 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.55 1995/01/10 00:43:45 smh Exp $
 
 ;;; Misc utilities
 
@@ -352,7 +352,7 @@ at the beginning of the line."
 (defvar fi::original-package nil)
 
 (defvar fi::use-symbol-at-point nil
-  ;; fi-lemacs.el uses this to cause the fi:common-lisp-mode specific menu
+  ;; fi-xemacs.el uses this to cause the fi:common-lisp-mode specific menu
   ;; to be able to grab the thing at the point.
   )
 
@@ -717,7 +717,7 @@ created by fi:common-lisp."
   (let ((print-escape-newlines nil))
     (prin1-to-string form)))
 
-(cond ((eq fi::emacs-type 'lemacs19)
+(cond ((eq fi::emacs-type 'xemacs19)
        (fset 'fi::mark 'fi::mark-hack)
        (fset 'fi::prin1-to-string 'fi::prin1-to-string-hack))
       ((eq fi::emacs-type 'emacs19)

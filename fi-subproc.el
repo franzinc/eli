@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.157 1994/08/23 01:46:49 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.158 1995/01/10 00:43:41 smh Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -73,7 +73,7 @@ creating separate screens.  If you redefine fi:display-buffer-function this
 variable will be ignored.")
 
 (defvar fi:display-buffer-function
-    (if (or (eq fi::emacs-type 'lemacs19)
+    (if (or (eq fi::emacs-type 'xemacs19)
 	    (eq fi::emacs-type 'emacs19))
 	'fi::switch-to-buffer-new-screen
       'fi::switch-to-buffer)
@@ -782,7 +782,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	  (fi::make-subprocess-variables)
 	  (when initial-func (funcall initial-func process)))))
 
-    ;; display last so we can do proper screen creation on lemacs
+    ;; display last so we can do proper screen creation on xemacs
     (condition-case nil
 	(funcall fi:display-buffer-function buffer)
       (error (fi::switch-to-buffer buffer)))
@@ -865,7 +865,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	  (setq subprocess-prompt-pattern image-prompt)
 	  (fi::make-subprocess-variables))))
 
-    ;; display last so we can do proper screen creation on lemacs
+    ;; display last so we can do proper screen creation on xemacs
     (condition-case nil
 	(funcall fi:display-buffer-function buffer)
       (error (fi::switch-to-buffer buffer)))

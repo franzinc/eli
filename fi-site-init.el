@@ -1,8 +1,8 @@
-;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.65 1994/12/21 22:36:24 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.66 1995/01/10 00:43:39 smh Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
-(setq fi:emacs-lisp-interface-version "2.0.14")
+(setq fi:emacs-lisp-interface-version "2.0.16")
 (defvar fi::required-ipc-version 1)
 (defvar fi::load-subprocess-files t)
 (defvar fi::build-time nil)
@@ -12,7 +12,7 @@
 
 (require 'cl)
 
-(when (or (eq fi::emacs-type 'emacs19) (eq fi::emacs-type 'lemacs19))
+(when (or (eq fi::emacs-type 'emacs19) (eq fi::emacs-type 'xemacs19))
   ;; needed for setf expanations (on some version 19.xx) when they are
   ;; compiled with non-version 19 byte-compilers.
   (condition-case nil
@@ -73,9 +73,9 @@ function, it is changed to a list of functions."
     (load "fi-leep0.elc")
     (load "fi-leep.elc"))
 
-  (when (eq fi::emacs-type 'lemacs19)
+  (when (eq fi::emacs-type 'xemacs19)
     (load "fi-leep0.elc")
-    (load "fi-leep-lemacs.elc"))
+    (load "fi-leep-xemacs.elc"))
 
   (load "fi-ring.elc")
   (load "fi-filec.elc")
@@ -92,11 +92,11 @@ function, it is changed to a list of functions."
 
 (setq fi:package-loaded t)
 
-;; the test for GNU Emacs 19 has to be after that for lemacs, because
-;; the version of lemacs is 19.* too!
+;; the test for GNU Emacs 19 has to be after that for xemacs, because
+;; the version of xemacs is 19.* too!
 
-(cond ((eq fi::emacs-type 'lemacs19)
-       (load "fi-lemacs"))
+(cond ((eq fi::emacs-type 'xemacs19)
+       (load "fi-xemacs"))
       ((eq fi::emacs-type 'emacs19)
        (load "fi-emacs19"))
       (t (load "fi-emacs18")))

@@ -8,9 +8,9 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.88 1994/08/23 01:46:37 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.89 1995/01/10 00:43:35 smh Exp $
 
-(cond ((eq fi::emacs-type 'lemacs19)
+(cond ((eq fi::emacs-type 'xemacs19)
        (require 'tags "etags"))
       ((eq fi::emacs-type 'emacs19)
        (require 'etags "etags"))

@@ -1,3 +1,38 @@
+Mon Jan  9 15:45:28 1995  Steve Haflich  <smh@vapor>
+
+*******************************************************************************
+2.0.16
+*******************************************************************************
+
+	Changed references from "lemacs" to "xemacs" in both file names and
+	in the variable fi::emacs-type, which now takes one of the values
+	{emacs18, emacs19, xemacs19, epoch}.  Epoch presumably still works but
+	is little tested recently.
+
+	* fi-lemacs.el renamed fi-xemacs.el
+	* fi-leep-lemacs.el renamed fi-leep-xemacs.el
+
+	* Makefile
+	Filename changes.
+
+	* fi-site-init.el
+	Filename changes.
+	fi::emacs-type changes.
+	Version 2.0.16
+
+	* fi-emacs19.el
+	* fi-xemacs.el
+	Added missing fi:comment-form and fi:uncomment-form.
+	Removed useless customizations on fi::emacs-type which is already
+	implicit in the selection of these files.
+
+	* fi-version.el
+	* fi-subproc.el
+	* fi-keys.el
+	* fi-subproc.el
+	* fi-utils.el
+	fi::emacs-type changes.
+
 Fri Jan  6 16:40:48 1995  Steve Haflich  <smh@vapor>
 
 	* Makefile
@@ -2885,4 +2920,3 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 
 	* lisp-mode and common-lisp-mode are the same as
 	fi:common-lisp-mode (this is for -*- mode defs)
-

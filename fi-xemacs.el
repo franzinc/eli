@@ -1,4 +1,4 @@
-;; gnu emacs v19 specific hacks for the Franz Inc. emacs-lisp interface
+;; xemacs specific hacks for the Franz Inc. emacs-lisp interface
 ;;
 ;; Copyright (c) 1993-1994 Franz Inc, Berkeley, Ca.
 ;;
@@ -10,38 +10,27 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-emacs19.el,v 2.10 1995/01/10 00:43:32 smh Exp $
-
-
-(unless (string-match "^18." emacs-version) ;Allows compilation on 18.
-  (require (if (and (boundp 'emacs-minor-version)
-		    (> emacs-minor-version 22))
-	       ;; change happened between 19.22 and 19.23
-	       'lmenu 'menubar)
-	   "lmenu"))
+;; $Header: /repo/cvs.copy/eli/fi-xemacs.el,v 2.1 1995/01/10 00:43:49 smh Exp $
 
 (defun fi::switch-to-buffer-new-screen (buffer)
   (cond
    (fi:new-screen-for-common-lisp-buffer
-    ;; There should be some parameters for the make-frame call.
-    (let ((screen (make-frame)))
-      (select-frame screen)
+    (let ((screen (get-screen-for-buffer buffer t)))
+      (select-screen screen)
       ;; make sure the buffer is visible
       (fi::switch-to-buffer buffer)))
    (t (fi::switch-to-buffer buffer))))
 
 (defun fi::ensure-buffer-visible (buffer)
-  (let ((window (get-buffer-window buffer)))
-    (when window
-      (let ((frame (window-frame window)))
-	(when frame (raise-frame frame))))))
+  (let ((screen (get-screen-for-buffer buffer)))
+    (when screen (raise-screen screen))))
 
 (defun fi::ensure-minibuffer-visible ()
-  (let ((frame (window-frame (minibuffer-window))))
-    (when frame (raise-frame frame))))
+  (let ((screen (window-screen (minibuffer-window))))
+    (when screen (raise-screen screen))))
 
 (defun fi::defontify-string (str)
-  (format "%s" str))
+  str)
 
 (defun fi::source-buffer-p ()
   (and (fi::connection-open)
@@ -64,7 +53,7 @@
       "----"
       ;; Unfortunately, the region-or-form versions only work reasonably if the user is
       ;; known to use zmacs-style regions, and we can't customize the menus for that.
-      ;; But a user who always runs in transient-mark-mode might want to customize this.
+      ;; But a user who always runs with zmacs-regions true might want to customize this.
       ;;["Compile region or form" fi:lisp-compile-active-region-or-defun (fi::acl-buffer-p)]
       ["Compile form" fi:lisp-compile-active-region-or-defun (fi::acl-buffer-p)]
       ("Compile other"
@@ -108,7 +97,7 @@
       ["Close all parens" fi:super-paren (fi::acl-buffer-p)]
       ;; Unfortunately, the region-or-form versions only work reasonably if the user is
       ;; known to use zmacs-style regions, and we can't customize the menus for that.
-      ;; But a user who always runs in transient-mark-mode might want to customize this.
+      ;; But a user who always runs with zmacs-regions true might want to customize this.
       ;;["Comment region or form" fi:comment-region-or-form (fi::source-buffer-p)]
       ;;["Uncomment region or form" fi:uncomment-region-or-form (fi::source-buffer-p)]
       ["Comment form" fi:comment-form (fi::source-buffer-p)]
@@ -176,7 +165,7 @@
        )
       ["Options" fi:composer-other-options (fi::composer-connection-open)]
       ("Other"
-;      ["Presenting Listener" composer::make-presenting-listener (fi::composer-connection-open)]
+       ["Presenting Listener" composer::make-presenting-listener (fi::composer-connection-open)]
        ["Process Browser" fi:composer-process-browser (fi::composer-connection-open)]
        ["System Browser" fi:composer-defsys-browser (fi::composer-connection-open)]
        ["Reinitialize Composer resources" fi:composer-reinitialize-resources
@@ -220,6 +209,7 @@
 		 (setq fi::connection-open-composer-loaded 'yes)
 	       (setq fi::connection-open-composer-loaded 'no))
 	     (setq fi::composer-cached-connection fi::*connection*)
+	     (set-menubar-dirty-flag)	;smh 31oct94
 	     nil)
 	   (eq fi::connection-open-composer-loaded 'yes))))
 
@@ -234,6 +224,7 @@
                        t)"))
 		 (setq fi::composer-running 'yes)
 	       (setq fi::composer-running 'no))
+	     (set-menubar-dirty-flag)	;smh 31oct94
 	     nil)
 	   (eq fi::composer-running 'no))))
 
@@ -247,18 +238,31 @@
 			      (connected-to-server-p))"))
 		 (setq fi::composer-connection-open 'yes)
 	       (setq fi::composer-connection-open 'no))
+	     (set-menubar-dirty-flag)	;smh 31oct94
 	     nil)
 	   (eq fi::composer-connection-open 'yes))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;(defun fi::install-menubar (menu-bar)
-;  (set-menubar (delete (assoc (car menu-bar) current-menubar)
-;		       (copy-sequence current-menubar)))
-;  (add-menu nil (car menu-bar) (cdr menu-bar) "Help"))
+;  (when current-menubar
+;    ;; (set-menubar (delete (assoc (car menu-bar) current-menubar)
+;    ;; (copy-sequence current-menubar)))
+;    (add-menu nil (car menu-bar) (cdr menu-bar) "Help")
+;    ))
 
 (defun fi::install-menubar (menu-bar)
-  (add-menu nil (car menu-bar) (cdr menu-bar) "Help"))
+  (add-menu nil (car menu-bar) (cdr menu-bar) nil))
+
+;(defun fi::install-menubar (menu-bar)
+;  (let ((old (copy-tree current-menubar))
+;	(new nil))
+;    (while (and (consp old) (not (equalp (caar old) "Help")))
+;      (push (pop old) new))
+;    (set-menubar (nconc (nreverse new) (list (copy-tree menu-bar)) old))))
+
+;(defun fi::install-menubar (menu-bar)
+;  (set-menubar (append (copy-list current-menubar) (list menu-bar))))
 
 (push '(progn
 	(fi::install-menubar fi:allegro-file-menu)
@@ -284,6 +288,8 @@
   (interactive)
   (fi:open-lisp-listener -1))
 
+(put 'lisp-listener 'instance-limit 0)
+
 (defun fi:menu-open-lisp-listener-new-screen ()
   (interactive)
   (let ((get-screen-for-buffer-default-screen-name 'lisp-listener)
@@ -291,7 +297,7 @@
     (fi:open-lisp-listener -1)))
 
 (defun fi::region-active ()
-  (and transient-mark-mode mark-active))
+  (and zmacs-regions (mark-marker)))
 
 (defun fi:lisp-compile-active-region-or-defun ()
   (interactive)
@@ -313,11 +319,7 @@
   (interactive)
   (if (fi::region-active)
       (fi:comment-region (point) (mark) t)
-    (let* ((end (save-excursion (end-of-defun) (point)))
-	   (start (save-excursion
-		    (fi:beginning-of-defun)
-		    (point))))
-      (fi:comment-region start end t))))
+    (fi:comment-form)))
 
 (defun fi:comment-form (&optional uncomment)
   (interactive)
@@ -341,7 +343,15 @@
   (let ((cl-buffer (get-buffer fi:common-lisp-buffer-name)))
     (when (and cl-buffer (get-buffer-window cl-buffer))
       (set-buffer cl-buffer)
-      (bury-buffer)))
+      (let* ((screen (selected-screen)))
+	(if (and (string= (symbol-name (get major-mode 'screen-name))
+			  (screen-name screen))
+		 (one-window-p)
+;;;; delete-screen causes lemacs to die with a segv:
+		 nil
+		 )
+	    (delete-screen screen)
+	  (bury-buffer)))))
   (message "Exiting Allegro CL...done."))
 
 (defun fi:start-composer ()
@@ -454,7 +464,7 @@
     '("common lisp mode popup menu"
       ;; Unfortunately, the region-or-form versions only work reasonably if the user is
       ;; known to use zmacs-style regions, and we can't customize the menus for that.
-      ;; But a user who always runs in transient-mark-mode might want to customize this.
+      ;; But a user who always runs with zmacs-regions true might want to customize this.
       ;;["Compile region or form" fi:lisp-compile-active-region-or-defun (fi::connection-open)]
       ["Compile form" fi:lisp-compile-active-region-or-defun (fi::acl-buffer-p)]
       ["Compile region" fi:lisp-compile-region (fi::acl-buffer-p)]
@@ -578,21 +588,12 @@
 (defun fi::install-mode-menus ()
   (cond
    ((eq major-mode 'fi:common-lisp-mode)
-    (define-key fi:common-lisp-mode-map [down-mouse-3]
+    (define-key fi:common-lisp-mode-map 'button3
       'fi:common-lisp-mode-popup-menu))
    ((eq major-mode 'fi:inferior-common-lisp-mode)
-    (define-key fi:inferior-common-lisp-mode-map [down-mouse-3]
+    (define-key fi:inferior-common-lisp-mode-map 'button3
       'fi:inferior-common-lisp-mode-popup-menu))))
 
 (add-hook 'fi:inferior-common-lisp-mode-hook 'fi::install-mode-menus)
 (add-hook 'fi:common-lisp-mode-hook 'fi::install-mode-menus)
-(add-hook 'fi:common-lisp-mode-hook
-	  (function
-	   (lambda ()
-	     (when window-system	;Is fontification possible?
-	       (require 'font-lock)
-	       (when (boundp 'lisp-font-lock-keywords-2)
-		 (setq font-lock-keywords lisp-font-lock-keywords-2))))))
-
-(defun set-menubar-dirty-flag ()	;smh 31oct94
-  (setq lucid-menu-bar-dirty-flag t))
+(put 'fi:common-lisp-mode 'font-lock-keywords 'lisp-font-lock-keywords-2)
