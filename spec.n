@@ -426,32 +426,54 @@ the "Lisp listener daemon" which lies dormant until Emacs tries to
 communicate with it.  When Emacs "connects" an interactive top level
 is started (called a "read-eval-print" loop) to which Emacs can send
 expressions for evaluation and from which Emacs receives the results
-of evaluation (see fi:eval-in-lisp).  The preferred method to start
-this daemon is to put the following in your .login file:
+of evaluation (see fi:eval-in-lisp).
 
-	setenv EMACSLIBRARY /usr/local/lib/emacs
+   The preferred method to start this daemon is to put one of the
+following group of forms in your .clinit.cl (in your home directory):
 
-and to put the following in your .clinit.cl file in your home directory:
+    ;;;;;;; Method 1
+    ;;
+    ;; this will merely load the ipc package and start it up
+    ;;
+    (require :ipc)
+    (require :emacs)
+    (ipc:start-lisp-listener-daemon)
 
-	(defparameter *emacs-library*
-	  (let ((emacs-lib (si:getenv "EMACSLIBRARY")))
-	    (if emacs-lib (format nil "~a/lisp/fi/" emacs-lib))))
+    ;;;;;;; Method 2
+    ;;
+    ;; this will load the ipc package and start it up when `+ipc' is given on
+    ;; the Allegro CL command line.  For example, if you put the following in
+    ;; your .emacs file:
+    ;;
+    ;;     (setq fi:common-lisp-image-arguments '("+ipc"))
+    ;;
+    ;; then when you startup Allegro CL from within emacs (using
+    ;; fi:common-lisp) you will automatically load and start the
+    ;; emacs/lisp interface. 
+    ;;
+    (cond
+     ((find "+ipc" (system:command-line-arguments) :test #'string=)
+      (require :ipc)
+      (require :emacs)
+      (funcall (find-symbol (symbol-name :start-lisp-listener-daemon)
+			    (find-package :ipc)))))
 
-	(and *emacs-library*
-	     (find "+ipc" (system:command-line-arguments) :test #'string=)
-	     (load (merge-pathnames "clinit.cl" *emacs-library*))
-	     (load-and-start-ipc-package))
+    ;;;;;;; Method 3
+    ;;
+    ;; this will load the ipc package and require you to start it manually
+    ;; with the top-level command `:listen'.
+    ;;
+    (tpl:alias "listen" ()
+      (require :ipc)
+      (require :emacs)
+      (funcall (find-symbol (symbol-name :start-lisp-listener-daemon)
+			    (find-package :ipc))))
 
 and to put the following in your .emacs file in your home directory:
 
 	(load "fi/site-init.el")
 
-	(setq fi:common-lisp-image-arguments '("+ipc"))
-
-	(setq fi:unix-domain-socket
-	  (format "/tmp/%s_emacs_to_acl" (user-login-name)))
-
-Now consider the following typed to Emacs:
+Assuming method 2 was chosen, consider the following typed to Emacs:
 
 	M-x fi:common-lisp RET
 
