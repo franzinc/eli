@@ -9,6 +9,18 @@ For more detailed instructions on filling in the ChangeLog form, see
 ******************************************************************************
 post-6.2 release changes: 
 
+2003-08-28  Kevin Layer  <layer@crikey>
+
+	* fi-sublisp.el,
+	* fi-subproc.el,
+	* fi-utils.el: bug13275: new variable fi::started-via-file which
+	  is set to `t' in fi:start-interface-via-file.  This was
+	  separated from fi:connect-to-windows since it's reaelly a
+	  different thing.
+
+	* fi-keys.el (fi:super-paren): bug13181: fi:super-paren: at end of
+	  comment, would loop infinitely (until ^G)
+
 2003-08-19  Kevin Layer  <layer@crikey>
 
 	* Makefile: fi-vers.el change not put into makefile!

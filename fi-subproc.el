@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.208.6.6.8.2 2003/01/28 17:50:49 layer Exp $
+;; $Id: fi-subproc.el,v 1.208.6.6.8.3 2003/08/29 02:14:17 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -115,6 +115,10 @@ readtable.")
   "*If non-nil, then connect to Lisp running on a Windows machine.  Since
 we connect in a fundamentally different way, the default value of this is
 non-nil only on Windows.")
+
+(defvar fi::started-via-file nil
+  "If non-nil, then ELI started via fi:start-interface-via-file.")
+
  
 ;;;;
 ;;; Common Lisp Variables and Constants
@@ -409,7 +413,9 @@ completions read in the minibuffer.  Use this combination at your own
 risk.")
       (when (null (y-or-n-p "Run Lisp anyway? "))
 	(error "fi:common-lisp aborted by user."))))
-  (unless (or fi::rsh-command fi:connect-to-windows)
+  (when fi::started-via-file
+    (error "Emacs-Lisp interface already started via a file."))
+  (when (not (or fi::rsh-command fi:connect-to-windows))
     (setq fi::rsh-command
       (cond ((fi::command-exists-p "remsh") "remsh")
 	    ((fi::command-exists-p "rsh") "rsh")
@@ -674,14 +680,14 @@ prefix arguments > 1.  If a negative prefix argument is given, then the
 first \"free\" buffer name is found and used.  When called from a program,
 the buffer name is the second optional argument."
   (interactive "p")
-  (if fi:connect-to-windows
+  (if (or fi:connect-to-windows fi::started-via-file)
       (fi::ensure-lep-connection)
     (if (or (null fi::common-lisp-backdoor-main-process-name)
 	    (not (fi:process-running-p
 		  (get-process fi::common-lisp-backdoor-main-process-name)
 		  buffer-name)))
 	(error "Common Lisp must be running to open a lisp listener.")))
-  (if fi:connect-to-windows
+  (if (or fi:connect-to-windows fi::started-via-file)
       (fi::make-tcp-connection (or buffer-name "lisp-listener")
 			       buffer-number
 			       'fi:lisp-listener-mode
@@ -1085,8 +1091,9 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 					  given-password
 					  given-ipc-version
 					  setup-function)
-  (if (and (not fi:connect-to-windows)
-	   (not fi::common-lisp-backdoor-main-process-name))
+  (or fi:connect-to-windows
+      fi::started-via-file
+      fi::common-lisp-backdoor-main-process-name
       (error "A Common Lisp subprocess has not yet been started."))
   (let* ((buffer-name
 	  (fi::buffer-number-to-buffer
@@ -1099,21 +1106,27 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	 (default-dir default-directory)
 	 (buffer-name (buffer-name buffer))
 	 (process-buffer
-	  (unless fi:connect-to-windows
+	  (when (not fi:connect-to-windows)
 	    (and (get-process fi::common-lisp-backdoor-main-process-name)
 		 (process-buffer
 		  (get-process fi::common-lisp-backdoor-main-process-name)))))
 	 (host (or given-host
 		   (and fi:connect-to-windows
 			(error "Windows mode, need to specify host."))
+		   (and fi::started-via-file
+			(error "Via file mode, need to specify host."))
 		   (fi::get-buffer-host process-buffer)))
 	 (service (or given-service
 		      (and fi:connect-to-windows
 			   (error "Windows mode, need to specify service."))
+		      (and fi::started-via-file
+			   (error "Via file mode, need to specify service."))
 		      (fi::get-buffer-port process-buffer)))
 	 (password (or given-password
 		       (and fi:connect-to-windows
 			    (error "Windows mode, need to specify passwd."))
+		       (and fi::started-via-file
+			    (error "Via file mode, need to specify passwd."))
 		       (fi::get-buffer-password process-buffer)))
 	 (proc (get-buffer-process buffer)))
 

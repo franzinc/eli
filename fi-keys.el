@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 1.117.6.4.8.10 2003/08/14 23:53:38 layer Exp $
+;; $Id: fi-keys.el,v 1.117.6.4.8.11 2003/08/29 02:14:17 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -872,6 +872,10 @@ target."
   "Insert a sufficient number of parenthesis to complete the enclosing
 form.  If there are too many parens delete them.  The form is also indented."
   (interactive)
+  (when (save-excursion
+	  (beginning-of-line)
+	  (when (looking-at "[ \t]*;") t))
+    (insert "\n"))
   (save-restriction
     (narrow-to-region (point) (save-excursion (fi:beginning-of-defun) (point)))
     (when (nth 3 (parse-partial-sexp (point-min) (point)))
