@@ -1,3 +1,7 @@
+Thu Oct 10 17:31:59 1996    <layer@HOBART>
+
+	* fi-keys.el: fix last rev
+
 Thu Oct 10 14:49:10 1996  Kevin Layer  <layer@freezer>
 
 	* fi-clman.el: use fi::library-directory
