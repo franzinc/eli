@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.5 1991/02/22 00:44:30 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.6 1991/02/22 00:49:53 layer Exp $
 ;;
 
 (defconst lep:current-frame-regexp "^ ->")
@@ -184,7 +184,8 @@ Type SPACE to hide this help summary.
 
 (defun lep:ss-quit ()
   (interactive)
-  (set-window-configuration lep::db-saved-window-configuration))
+  (set-window-configuration lep::db-saved-window-configuration)
+  (end-of-buffer))
 
 (defun lep:ss-display-locals-for-frame ()
   (interactive)
