@@ -1,7 +1,7 @@
 ;;; subprocess-lisp.el
 ;;;   functions to send lisp source code to the sublisp process
 ;;;
-;;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.6 1988/02/20 22:20:13 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.7 1988/02/21 21:26:55 layer Exp $
 
 (defun inferior-lisp-newline ()
   (interactive)
@@ -364,11 +364,72 @@ Does not yet have provision for signals (e.g. ^C)."
 			    (progn (string-match "\n*" sublisp-returns)
 				   (match-end 0))
 			    -2))
-	       (if (or (> (length sublisp-returns) 78) ; should be mbuf width
-		       (string-match "\n" sublisp-returns nil))
-		 (with-output-to-temp-buffer "*Help*" (princ sublisp-returns))
-		 (message sublisp-returns))
-	       (setq sublisp-returns ""))))))
+	       (let ((first-char (elt sublisp-returns 0)))
+		 (cond
+		   ((= first-char 2)	; display source-file
+		    (let* ((temp (get-buffer-create " *lisp temp*"))
+			   (form (substring sublisp-returns 1)))
+		      ;; first remove all #p's
+		      (save-excursion
+			(set-buffer temp)
+			(erase-buffer)
+			(princ form temp)
+			(beginning-of-buffer)
+			(replace-string "#p" "")
+			(setq form (car (read-from-string (buffer-string))))
+			(kill-buffer temp))
+		      (setq sublisp-returns "")
+		      (if (cdr form)
+			  (find-source-from-info (car form) (cdr form))
+			(message "The source location of `%s' is unknown."
+				 (car form)))))
+		   (t  
+		    (if (or (> (length sublisp-returns) 78)
+			    ;; should be mbuf width
+			    (string-match "\n" sublisp-returns nil))
+			(with-output-to-temp-buffer "*Help*"
+			  (princ sublisp-returns))
+		      (message sublisp-returns))
+		    (setq sublisp-returns "")))))))))
+
+(defun find-source-from-info (xname info)
+  ;; info is an alist of (type . filename)
+  (if (= 1 (length info))
+      (setq info (car info))
+    (let ((completion-ignore-case t)
+	  (string-info (mapcar '(lambda (x)
+				 (rplaca x (symbol-name (car x)))
+				 x)
+			       (copy-alist info))))
+      (setq info
+	(assoc (intern-soft
+		(completing-read (format "Find `%s' of what type? " xname)
+				 string-info
+				 nil t nil))
+	       info))))
+  (let* ((type (car info))
+	 (file (cdr info))
+	 (name (symbol-name xname))
+	 (search-form nil))
+    (if (not (file-exists-p file))
+	(error "can't file source file `%s'" file))
+    (find-file-other-window file)
+    (beginning-of-buffer)
+    (cond ((eq ':function type) (setq search-form "un"))
+	  ((eq ':macro type) (setq search-form "macro"))
+	  (t (setq search-form "\\(\\w\\)*")))
+    (let ((start (string-match "::?" name))
+	  (end (match-end 0)))
+      (if start
+	  (setq name
+	    (format "\\(%s\\)*[:]*%s"
+		    (substring name 0 start)
+		    (substring name end))))
+      (if (re-search-forward
+	   (format "^(def%s %s" search-form name)
+	   nil t)
+	  (beginning-of-line)
+	(message "couldn't find form in file")))))
 
 (defun get-cl-symbol (symbol up-p &optional interactive)
   ;; Ask the user for a CL symbol to be investigated.
@@ -428,6 +489,15 @@ Does not yet have provision for signals (e.g. ^C)."
   (process-send-string
    (background-sublisp-process)
    (format "(princ (lisp:documentation '%s 'lisp:function))\n" symbol)))
+
+(defun sublisp-display-source (&optional symbol)
+  "Find the common lisp source for SYMBOL."
+  (interactive (get-cl-symbol nil nil "Source for symbol: "))
+  (setq symbol (get-cl-symbol symbol nil))
+  (process-send-string
+   (background-sublisp-process)
+   (format "(format t \"\2~s\" (cons '%s (source-file '%s t)))\n"
+	   symbol symbol)))
 
 (defvar sublisp-macroexpand-command
  "(progn
