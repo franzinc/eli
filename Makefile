@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.51 1991/02/15 23:37:23 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.52 1991/03/12 18:31:08 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -24,7 +24,7 @@ compile_time_env = -l cl -l bytecomp -l `pwd`/lep/basic-lep
 .el.elc: 
 	$(emacs) -nw -batch -q $(compile_time_env) -f batch-byte-compile $*.el
 
-default:	elcs spec.out
+default:	elcs ug.out spec.out
 
 all:	default fasls
 
@@ -41,7 +41,10 @@ elcs: ${elcs}
 ###############################################################################
 
 spec.out:	spec.n ${elcs}
-	$(emacs) -batch -q -l doc.elc
+	$(emacs) -batch -q -l doc.elc -- spec.n spec.out
+
+ug.out:	ug.n ${elcs}
+	$(emacs) -batch -q -l doc.elc -- ug.n ug.out
 
 
 install:
