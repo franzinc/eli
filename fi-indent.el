@@ -1,7 +1,7 @@
 ;; This file has its (distant) roots in lisp/lisp-mode.el, so:
 ;;
 ;; Copyright (C) 1985, 1986, 1987 Free Software Foundation, Inc.
-;; Copyright (c) 1987-1993 Franz Inc, Berkeley, Ca.
+;; Copyright (c) 1987-2002 Franz Inc, Berkeley, Ca.
 ;;
 ;; This file is derived from part of GNU Emacs.
 ;;
@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-indent.el,v 1.60 1999/08/25 16:35:09 layer Exp $
+;; $Id: fi-indent.el,v 1.61 2002/07/09 22:15:31 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If non-nil, semicolons that begin comments are indented as they are
@@ -1684,6 +1684,7 @@ if matched at the beginning of a line, means don't indent that line."
   (put 'defsystem tag '((1 2 quote) (0 t 2)))
   (put 'defun-c-callable tag '(like defun))
   (put 'if* tag '(funcall fi:lisp-indent-if*))
+  (put 'process-run-function tag 1)
   (put 'setq-default tag 1)
   (put 'with-process-lock tag 1)
   (put 'with-profiling tag '((1 1 quote) (0 t 1)))
@@ -1727,7 +1728,11 @@ if matched at the beginning of a line, means don't indent that line."
   (put 'accept-values-command-button tag 2)
   (put 'changing-space-requirements tag 1)
   (put 'define-application-frame tag '(like defclass))
-  )
+
+  ;; for AllegroStore:
+  (put 'for-each tag '(like let))
+  (put 'for-each-class tag 1)
+  (put 'for-each-scratch-list tag '(like dolist)))
 
 (let ((tag 'fi:franz-lisp-indent-hook))
   (put '*catch tag 1)

@@ -1,14 +1,14 @@
-;; Copyright (c) 1987-1993 Franz Inc, Berkeley, Ca.
+;; Copyright (c) 1987-2002 Franz Inc, Berkeley, Ca.
 ;;
 ;; Permission is granted to any individual or institution to use, copy,
-;; modify, and distribute this software, provided that this complete
-;; copyright and permission notice is maintained, intact, in all copies and
-;; supporting documentation.
+;; modify, and distribute this software, and to distribute modified
+;; versions, provided that this complete copyright and permission notice is
+;; maintained, intact, in all copies and supporting documentation.
 ;;
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 1.72 2000/06/27 21:52:38 layer Exp $
+;; $Id: fi-utils.el,v 1.73 2002/07/09 22:15:31 layer Exp $
 
 ;;; Misc utilities
 
@@ -954,6 +954,8 @@ created by fi:common-lisp."
 ;;;; ...end fi changes.
     t))
 
+(defvar fi::auto-fill-hyphen-special t)
+
 (defun fi::find-fill-prefix-from-current-line ()
   (save-excursion
     (let ((bol (progn (beginning-of-line) (point)))
@@ -966,7 +968,18 @@ created by fi:common-lisp."
 	(if (match-beginning 1)
 	    ;; there is only a comment on this line, so determining the
 	    ;; fill-prefix is simple, just the entire match:
-	    (buffer-substring m0-start m0-end)
+	    (let ((prefix (buffer-substring m0-start m0-end)))
+	      (cond
+	       ((null fi::auto-fill-hyphen-special)
+		(buffer-substring m0-start m0-end))
+	       ((string-match "\\(.*\\)\\( [-0-9]+\\.? \\)" prefix)
+		(concat
+		 (substring prefix (match-beginning 1) (match-end 1))
+		 (make-string (length
+			       (substring prefix
+					  (match-beginning 2) (match-end 2)))
+			      ? )))
+	       (t prefix)))
 	  ;; There is something other than a comment on this line, so we
 	  ;; have to do work to find the real fill-prefix.	  
 ;;;;(setq eol (progn (end-of-line) (point)))
@@ -1070,9 +1083,9 @@ created by fi:common-lisp."
 	  (error "couldn't parse connection string in %s." file))
       (fi::set-connection-vars command))
 
-    ;; need to change the name of this one:
-    (setq fi:connect-to-windows t)
-    (let ((host fi::lisp-host)
+    (let (;; need to change the name of this one:
+	  (fi:connect-to-windows t)
+	  (host fi::lisp-host)
 	  (port fi::lisp-port)
 	  (pw fi::lisp-password)
 	  (version fi::lisp-ipc-version))
@@ -1086,5 +1099,7 @@ created by fi:common-lisp."
       (setq-default fi::lisp-port port)
       (setq-default fi::lisp-password pw)
       (setq-default fi::lisp-ipc-version version))
-    (fi::make-connection-to-lisp
-     fi::lisp-host fi::lisp-port fi::lisp-password fi::lisp-ipc-version)))
+    ;; Make the backdoor connection, too:
+    (fi::make-connection-to-lisp fi::lisp-host fi::lisp-port
+				 fi::lisp-password fi::lisp-ipc-version)
+    (fi:show-run-status)))

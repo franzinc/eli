@@ -7,6 +7,263 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+join from acl62 to trunk on 7/9/02
+
+******************************************************************************
+2.3.5
+
+2002-04-11  Kevin Layer  <layer@crikey>
+
+	* fi-keys.el (fi:super-paren): bug12029
+
+******************************************************************************
+2.3.4
+
+join from acl61 to acl6 branch on 02Mar2002
+command: join.sh acl61 acl61_to_acl6_merge2 acl61_to_acl6_02Mar2002 eli
+
+******************************************************************************
+2.3.3
+
+2002-02-26  Kevin Layer  <layer@crikey>
+
+	* fi-emacs19.el: from mikel: bug11469: more fixes for same bug
+
+******************************************************************************
+2.3.2
+
+2002-02-13  Kevin Layer  <layer@crikey>
+
+	* fi-lep.el: bug11676: convert a couple of hidden defontifications
+	to use fi::defontify-string
+
+******************************************************************************
+2.3.1
+
+2002-01-28  Kevin Layer  <layer@crikey>
+
+	* fi-sublisp.el (fi:show-run-status),
+	* fi-utils.el (fi:start-interface-via-file): bug11616: show run
+	bar, too
+
+	* fi-subproc.el (fi:common-lisp-image-name): rfe5015: change
+	default image name to `alisp'.
+
+******************************************************************************
+join from acl61 to acl6 branch
+command: ../../join.sh acl61 acl61_to_acl6_merge1 acl61_to_acl6_merge2 eli
+
+******************************************************************************
+2.3.0
+
+2001-12-10  Kevin Layer  <layer@crikey>
+
+	* fi-keys.el (fi:subprocess-input-region): bug10814: in-package
+	not recognized when reevaluated from middle of buffer (from Bob
+	Rogers, ESS Tech).
+
+******************************************************************************
+join from acl61 to acl6 branch
+command: ../../join.sh acl61 acl61 acl61_to_acl6_merge1 eli
+
+******************************************************************************
+post-release patch
+
+2002-02-12  Kevin Layer  <layer@crikey>
+
+	* fi-emacs19.el: from mikel: bug11469: more fixes for same bug
+	* fi-stream.el (lep::create-listener-stream): put in theoretical
+	fix for a problem that Ahmon might have seen.  The change seems
+	safe, in any case.
+
+2001-11-29  Kevin Layer  <layer@crikey>
+
+	* fi-basic-lep.el: fi::lep-debug is history, as it is now needed
+	all the time because of a change I made to
+	lep::make-session-for-lisp (to fix another bug).
+	* fi-utils.el: fi:start-interface-via-file: bind do not set
+	fi:connect-to-windows to `t'.
+
+2001-11-14  Kevin Layer  <layer@crikey>
+
+	* fi-site-init.el: bug11469: for emacs 21
+	* fi-emacs19.el: bug11469: for emacs 21
+
+2001-11-13  Kevin Layer  <layer@crikey>
+
+	* fi-xemacs.el: fix for fix below
+
+2001-11-12  Kevin Layer  <layer@crikey>
+
+	* fi-basic-lep.el: bug10572: killing buffer can sometimes lead to
+	an error in emacs.  It's a timing thing that only happens on some
+	emacs and operating system combos.
+	* fi-compile.el: make sure fi-xemacs.el is byte compiled!
+
+2001-11-01  Kevin Layer  <layer@crikey>
+
+    from mikel for spr24742
+	* fi-xemacs.el: don't contact lisp over and over again, cache the
+	value used for the first menu item, and uncache it on the last. 
+
+******************************************************************************
+2.2.6
+
+2001-09-18  Kevin Layer  <layer@crikey>
+
+	* emacsdir.pl,
+	* Makefile: use /cygdrive/x instead of //x, since the latter
+	doesn't work in the newest cygwin
+
+******************************************************************************
+2.2.5
+
+2001-09-10  Kevin Layer  <layer@crikey>
+
+    from smh:
+	* fi-modes.el (fi::find-tag-common-lisp): raise the intelligence
+	of the default tag in find-tag by removing explicit package
+	qualifiers.
+
+******************************************************************************
+2.2.4
+
+2001-08-23  Kevin Layer  <layer@crikey>
+
+	* fi-lep.el: updated fi:goto-char doc string
+
+*******************************************************************************
+2.2.3
+
+2001-06-20  Kevin Layer  <layer@crikey>
+
+    from cox:
+	* fi-basic-lep.el: spr24414: fix to fix for bug10686 (see below)
+
+*******************************************************************************
+2.2.2
+
+2001-06-13  Kevin Layer  <layer@crikey>
+
+	* fi-lep.el: added fi:goto-char
+
+*******************************************************************************
+2.2.1
+
+2001-06-05  Kevin Layer  <layer@crikey>
+
+	* fi-modes.el: new variable fi::do-parse-mode-line-and-package,
+	which can turn off parsing package/mode line
+
+2001-06-05  Kevin Layer  <layer@crikey>
+
+	* *.el:
+	- fix copyright
+	- fix "permission to modify" to clarify intent (for the semanticly
+	impaired) per discussion with rms
+
+*******************************************************************************
+2.2.0
+
+2001-05-22  Charles A. Cox  <cox@pie>
+
+	* fi-basic-lep.el: use emacs-mule encoding.  bug10686
+
+*******************************************************************************
+2.1.7
+
+2001-05-29  Kevin Layer  <layer@crikey>
+
+	* Makefile: use abs path to perl on windoze
+	* fi-filec.el: fix filename completion for errors via nfs 
+	* fi-indent.el: astore additions
+	* fi-subproc.el: make localhost be the default lisp host
+	* examples/emacs.el: minor fix
+
+*******************************************************************************
+Wed May 22 12:56:23 PDT 2001  Duane Rettig  <duane@beta>
+	
+	* fi-vers.cl: (from cox): increment version to 2.1.6
+
+*******************************************************************************
+2.1.6
+	
+2001-05-14  Charles A. Cox  <cox@freezer>
+
+	* fi-basic-lep.cl: Use emacs-mule coding system when communicating
+	with lisp.
+
+*******************************************************************************
+2.1.5
+
+2001-01-05  Kevin Layer  <layer@ultra>
+
+	* fi-subproc.el: add subprocess filter for tcp buffers, too (so
+	the variable fi:subprocess-max-buffer-lines works).
+
+*******************************************************************************
+2.1.4
+
+2001-01-03  Kevin Layer  <layer@ultra>
+
+	* fi-subproc.el: added new fi:subprocess-max-buffer-lines
+
+*******************************************************************************
+2.1.3
+
+2000-10-21  Kevin Layer  <layer@ultra>
+
+	* fi-compile.el: finish removing Doc0 reference
+	* fi-site-init.el: fix "you must byte-recompile" message [bug9697]
+
+2000-10-21  Kevin Layer  <layer@ultra>
+
+	* Makefile: remove readme.htm depend
+	* fi-compile.el: don't build readme0.htm anymore
+	* local.mak: don't distribute Doc0.el
+
+*******************************************************************************
+<no version change>
+
+2000-10-03  Kevin Layer  <layer@ultra>
+
+	* move RELNOTES entries to RELNOTES.60, since I filed an rfe on
+	them
+
+*******************************************************************************
+2.1.2
+
+2000-09-26  Kevin Layer  <layer@ultra>
+
+	* Makefile: fix xemacs location
+
+*******************************************************************************
+2.1.1
+
+2000-09-18  Kevin Layer  <layer@ultra>
+
+	* fi-keys.el: make fill-paragraph handle more than one space
+	beyond the ;;.
+	* fi-utils.el: make auto-fill of comments handle ";; - " special:
+	don't fill to ";; - " but rather ";;   ".  The variable
+	fi::auto-fill-hyphen-special controls this, in case someone
+	doesn't like it.
+
+*******************************************************************************
+2.1.0
+
+2000-09-05  Kevin Layer  <layer@ultra>
+
+	* local.mak: remove html files from release_files
+
+*******************************************************************************
+2.1.beta.0
+
+2000-07-29  Kevin Layer  <layer@ultra>
+
+	* localfidev.el: ignore certain build errors
+
+*******************************************************************************
 2.1.pre-beta.7
 
 2000-07-06  Kevin Layer  <layer@ultra>

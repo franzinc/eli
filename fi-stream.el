@@ -1,15 +1,14 @@
-;; Copyright (c) 1987-1993 Franz Inc, Berkeley, Ca.
+;; Copyright (c) 1987-2002 Franz Inc, Berkeley, Ca.
 ;;
 ;; Permission is granted to any individual or institution to use, copy,
-;; modify, and distribute this software, provided that this complete
-;; copyright and permission notice is maintained, intact, in all copies and
-;; supporting documentation.
+;; modify, and distribute this software, and to distribute modified
+;; versions, provided that this complete copyright and permission notice is
+;; maintained, intact, in all copies and supporting documentation.
 ;;
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
-
-;; $Id: fi-stream.el,v 1.18 2000/06/22 20:48:54 layer Exp $
 ;;
+;; $Id: fi-stream.el,v 1.19 2002/07/09 22:15:31 layer Exp $
 
 (defmacro fi::with-keywords (variables rest-arg &rest body)
   (let ((let-bindings nil))
@@ -50,12 +49,13 @@
 	    ((get-buffer-window buffer)
 	     (select-window (get-buffer-window buffer)))
 	    (splitp (split-window-vertically)))
-      (when (null no-select)
-	(switch-to-buffer buffer)
-	(fi::ensure-buffer-visible buffer)
-	;;(recenter 0)
-	)
-      (setf (second conf) buffer)
+      (when (get-buffer (buffer-name buffer))
+	(when (null no-select)
+	  (switch-to-buffer buffer)
+	  (fi::ensure-buffer-visible buffer)
+	  ;;(recenter 0)
+	  )
+	(setf (second conf) buffer))
       buffer)))
 
 (defun fi::create-new-mapped-screen-for-stream (parent x y width height)

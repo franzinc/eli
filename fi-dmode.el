@@ -1,14 +1,14 @@
-;; Copyright (c) 1987-1993 Franz Inc, Berkeley, Ca.
+;; Copyright (c) 1987-2002 Franz Inc, Berkeley, Ca.
 ;;
 ;; Permission is granted to any individual or institution to use, copy,
-;; modify, and distribute this software, provided that this complete
-;; copyright and permission notice is maintained, intact, in all copies and
-;; supporting documentation.
+;; modify, and distribute this software, and to distribute modified
+;; versions, provided that this complete copyright and permission notice is
+;; maintained, intact, in all copies and supporting documentation.
 ;;
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-dmode.el,v 1.31 2000/03/22 22:27:23 layer Exp $
+;; $Id: fi-dmode.el,v 1.32 2002/07/09 22:15:31 layer Exp $
 
 ;; Create a mode in which each line is a definition and . on that
 ;; definition brings up the definition in another window

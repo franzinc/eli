@@ -1,4 +1,4 @@
-;; $Id: fi-site-init.el,v 1.116 2000/03/13 00:43:09 layer Exp $
+;; $Id: fi-site-init.el,v 1.117 2002/07/09 22:15:31 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -15,11 +15,12 @@
   (let ((case-fold-search t))
     (cond ((or (string-match "xemacs" emacs-version)
 	       (string-match "lucid" emacs-version))
-	   (cond ((string-match "^2[01]\." emacs-version) 'xemacs20)
+	   (cond ((string-match "^2[01]\\." emacs-version) 'xemacs20)
 		 (t 'xemacs19)))
-	  ((string-match "^20\." emacs-version) 'emacs20)
-	  ((string-match "^19\." emacs-version) 'emacs19)
-	  ((string-match "^18\." emacs-version) 'emacs18)
+	  ((string-match "^20\\." emacs-version) 'emacs20)
+	  ((string-match "^21\\." emacs-version) 'emacs20)
+	  ((string-match "^19\\." emacs-version) 'emacs19)
+	  ((string-match "^18\\." emacs-version) 'emacs18)
 	  ((boundp 'epoch::version) 'epoch)
 	  (t
 	   (error
@@ -204,12 +205,13 @@ exists.")
 You must byte-recompile the .el files for GNU Emacs 19.x since there are
 incompatibilities between FSF GNU Emacs going from version 20 to 19.
 
-You can do this by running the following commands in your eli/ directory:
+On UNIX, you can do this by running the following commands in the
+<acldir>/eli/ directory:
 
   make clean
   make
 
-in the <acldir>/eli/ directory.")
+On Windows, just remove all .elc files and restart emacs.")
   (beginning-of-buffer)
   (beep)
   (error "You must byte-recompile the .el files for GNU Emacs 19.x."))
@@ -225,12 +227,15 @@ in the <acldir>/eli/ directory.")
 You must byte-recompile the .el files for XEmacs 20.x since there are
 incompatibilities between FSF GNU Emacs version 19.x and XEmacs 20.x.
 
-You can do this by running the following commands in your eli/ directory:
+On UNIX, you can do this by running the following commands in the
+<acldir>/eli/ directory:
 
   make clean
   make emacs=<xemacs20> xemacs=<xemacs20>
 
-where <xemacs20> is the name of your XEmacs 20.x binary.")
+where <xemacs20> is the name of your XEmacs 20.x binary.
+
+On Windows, just remove all .elc files and restart xemacs.")
   (beginning-of-buffer)
   (beep)
   (error "You must byte-recompile the .el files for XEmacs 20.x."))

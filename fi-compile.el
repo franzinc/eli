@@ -1,4 +1,4 @@
-;; $Id: fi-compile.el,v 2.10 2000/06/22 20:48:53 layer Exp $
+;; $Id: fi-compile.el,v 2.11 2002/07/09 22:15:31 layer Exp $
 
 (require 'cl)
 
@@ -22,11 +22,15 @@
 (load "fi-leep0.el")
 
 (setq fi-files
-  '("Doc0" "fi-vers" "fi-basic-lep" "fi-changes" "fi-composer" "fi-db"
+  '("fi-vers" "fi-basic-lep" "fi-changes" "fi-composer" "fi-db"
     "fi-dmode" "fi-emacs18" "fi-emacs19" "fi-filec" "fi-gnu"
     "fi-indent" "fi-keys" "fi-leep0"
     "fi-lep" "fi-lze" "fi-modes" "fi-ring" "fi-rlogin" "fi-shell"
     "fi-stream" "fi-su" "fi-sublisp" "fi-subproc" "fi-telnet" "fi-utils"))
+
+(when (or (eq fi::emacs-type 'xemacs19)
+	  (eq fi::emacs-type 'xemacs20))
+  (setq fi-files (append fi-files '("fi-xemacs"))))
 
 (setq fi-developer-files '("localfidev"))
 
@@ -45,9 +49,7 @@
 	(message "--------------------------------------------------------")
 	(byte-compile-file el)))))
 
-(message "--------------------------------------------------------")
-(message "doing readme.htm...")
-
-(load "Doc0.elc")
-
-(generate-eli-documentation "doc/eli.htm" "readme0.htm")
+;;(message "--------------------------------------------------------")
+;;(message "doing readme.htm...")
+;;(load "Doc0.elc")
+;;(generate-eli-documentation "doc/eli.htm" "readme0.htm")

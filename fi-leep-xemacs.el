@@ -1,14 +1,14 @@
-;; Copyright (c) 1993 Franz Inc, Berkeley, Ca.
+;; Copyright (c) 1993-2002 Franz Inc, Berkeley, Ca.
 ;;
 ;; Permission is granted to any individual or institution to use, copy,
-;; modify, and distribute this software, provided that this complete
-;; copyright and permission notice is maintained, intact, in all copies and
-;; supporting documentation.
+;; modify, and distribute this software, and to distribute modified
+;; versions, provided that this complete copyright and permission notice is
+;; maintained, intact, in all copies and supporting documentation.
 ;;
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-leep-xemacs.el,v 2.5 1997/03/11 20:29:01 layer Exp $
+;; $Id: fi-leep-xemacs.el,v 2.6 2002/07/09 22:15:31 layer Exp $
 
 ;; The xemacs side of presentations in a lisp-listener window.
 

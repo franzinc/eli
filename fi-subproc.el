@@ -1,7 +1,7 @@
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
 ;; Copyright (C) 1985, 1986, 1987 Free Software Foundation, Inc.
-;; Copyright (c) 1987-1993 Franz Inc, Berkeley, Ca.
+;; Copyright (c) 1987-2002 Franz Inc, Berkeley, Ca.
 ;;
 ;; This file is derived from part of GNU Emacs.
 ;;
@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.208 2000/06/26 20:15:34 layer Exp $
+;; $Id: fi-subproc.el,v 1.209 2002/07/09 22:15:31 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -183,7 +183,7 @@ fi:common-lisp when a new buffer name is used.")
 (defvar fi:common-lisp-directory nil
   "*Default directory in which the process started by fi:common-lisp uses.")
 
-(defvar fi:common-lisp-image-name "lisp"
+(defvar fi:common-lisp-image-name "alisp"
   "*Default Common Lisp executable image used by fi:common-lisp.  The value
 is a string that names the executable image fi:common-lisp invokes.")
 
@@ -197,7 +197,7 @@ given, then a default heap image is loaded.")
 which must be a list of strings.  Each element of the list is one command
 line argument.")
 
-(defvar fi:common-lisp-host nil
+(defvar fi:common-lisp-host "localhost"
   "*The host on which fi:common-lisp starts the Common Lisp
 subprocess.  The default is the host on which emacs is running.")
 
@@ -256,6 +256,10 @@ buffer.")
 (make-variable-buffer-local 'fi::prompt-pattern)
 
 (defvar fi:franz-lisp-directory)
+
+(defconst fi:subprocess-max-buffer-lines nil
+  "*If non-nil, keep buffers created by fi:common-lisp, et al to a maximum
+of this number of lines when inserting new output.")
 
 ;;;;;;;;;;;;;;;;;;;;;; lisp mode specific internal variables
 
@@ -1116,6 +1120,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 
 	  (setq default-directory default-dir)
 	  (setq proc (fi::open-network-stream buffer-name buffer host service))
+	  (set-process-filter proc 'fi::subprocess-filter)
 	  (set-process-sentinel proc 'fi::tcp-sentinel)
 	  ;;
 	  ;; The first input the new (Common Lisp) process is sent is the name
@@ -1291,9 +1296,20 @@ This function implements continuous output to visible buffers."
 	      (set-window-point window-of-buffer old-point)))
 	(goto-char new-point))
       (cond
-       (in-buffer nil)
+       (in-buffer
+	(when fi:subprocess-max-buffer-lines (fi:truncate-buffer))      
+	nil)
        (stay old-buffer)
        (t (set-buffer old-buffer))))))
+
+(defun fi:truncate-buffer ()
+  "Truncate the buffer to `fi:subprocess-max-buffer-lines'."
+  (interactive)
+  (save-excursion
+    (goto-char (process-mark (get-buffer-process (current-buffer))))
+    (forward-line (- fi:subprocess-max-buffer-lines))
+    (beginning-of-line)
+    (delete-region (point-min) (point))))
 
 (defun fi::buffer-number-to-buffer (name number)
   (if (string-match "^\\(.*\\)<[0-9]+>$" name)

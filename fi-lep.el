@@ -1,14 +1,14 @@
-;; Copyright (c) 1987-1993 Franz Inc, Berkeley, Ca.
+;; Copyright (c) 1987-2002 Franz Inc, Berkeley, Ca.
 ;;
 ;; Permission is granted to any individual or institution to use, copy,
-;; modify, and distribute this software, provided that this complete
-;; copyright and permission notice is maintained, intact, in all copies and
-;; supporting documentation.
+;; modify, and distribute this software, and to distribute modified
+;; versions, provided that this complete copyright and permission notice is
+;; maintained, intact, in all copies and supporting documentation.
 ;;
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 1.85 2000/06/22 20:48:54 layer Exp $
+;; $Id: fi-lep.el,v 1.86 2002/07/09 22:15:31 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -27,11 +27,14 @@ time."
 
 (defun fi:lisp-apropos (string &optional regexp)
   "In the Common Lisp environment evaluate lisp:apropos on STRING.
-With prefix arg REGEXP, STRING is a regular expression for which matches
-are sought.  fi:package is used to determine from which Common Lisp package
-the operation is done.  In a subprocess buffer, the package is tracked
-automatically.  In source buffer, the package is parsed at file visit
-time."
+With prefix arg REGEXP, STRING is an ACL regular expression for which
+matches are sought.  fi:package is used to determine from which Common Lisp
+package the operation is done.  In a subprocess buffer, the package is
+tracked automatically.  In source buffer, the package is parsed at file
+visit time.
+
+ACL regular expressions differ from those in Emacs.  See the ACL
+documentation for more information."
   (interactive
    (list (car (fi::get-default-symbol
 	       (if current-prefix-arg "Apropos (regexp)" "Apropos")
@@ -286,6 +289,22 @@ time."
 	  (when pop-stack (fi::pop-metadot-session))))
     (message "cannot find file for %s" thing)))
 
+(defun fi:goto-char (file-position)
+  "Given a Common Lisp file-position, which counts octets, go to the
+desired buffer position. This function is designed to work around the
+problem that on Windows, Emacs and Common Lisp have different views of
+the end of line convention. In Emacs, the end of line is a single
+character in the buffer. In Common Lisp on Windows, however, it is
+often two characters.  (Common Lisp compiler warnings that report file
+positions differently from what is expected illustrates the
+difference.)  Note that fi:goto-char may not work multi-byte characters in
+versions of Emacs that support such things."
+  (interactive "NGoto CL file-position: ")
+  (goto-char
+   (if (on-ms-windows)
+       (fi::cl-file-position-to-point file-position)
+     file-position)))
+
 (defun fi::cl-file-position-to-point (real-file-position)
   ;; This function is only called on Windows.
 
@@ -466,10 +485,10 @@ buffer, the package is parsed at file visit time."
        :form (let ((start (condition-case ()
 			      (fi::find-other-end-of-list)
 			    (error nil))))
-	       (format "%s"
-		       (if start
-			   (buffer-substring start (point))
-			 (read-string (format "form to %s: " type))))))
+	       (fi::defontify-string
+		   (if start
+		       (buffer-substring start (point))
+		     (read-string (format "form to %s: " type))))))
     (() (expansion)
      (fi:show-some-text fi:package expansion))
     (() (error)
@@ -508,7 +527,7 @@ beginning of words in target symbols."
 				(buffer-substring opoint
 						  (match-beginning 0))))))
 		(point)))
-	 (pattern (format "%s" (buffer-substring beg end)))
+	 (pattern (fi::defontify-string (buffer-substring beg end)))
 	 (functions-only (if (eq (char-after (1- real-beg)) ?\() t nil))
 	 (downcase (not (fi::all-upper-case-p pattern)))
 	 (xxalist (fi::lisp-complete-1 pattern xpackage functions-only))

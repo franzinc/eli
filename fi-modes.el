@@ -1,14 +1,14 @@
-;; Copyright (c) 1987-1993 Franz Inc, Berkeley, Ca.
+;; Copyright (c) 1987-2002 Franz Inc, Berkeley, Ca.
 ;;
 ;; Permission is granted to any individual or institution to use, copy,
-;; modify, and distribute this software, provided that this complete
-;; copyright and permission notice is maintained, intact, in all copies and
-;; supporting documentation.
+;; modify, and distribute this software, and to distribute modified
+;; versions, provided that this complete copyright and permission notice is
+;; maintained, intact, in all copies and supporting documentation.
 ;;
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-modes.el,v 1.74 2000/07/17 20:01:36 layer Exp $
+;; $Id: fi-modes.el,v 1.75 2002/07/09 22:15:31 layer Exp $
 
 ;;;; Mode initializations
 
@@ -395,6 +395,8 @@ any other mode setup."
 package specification in the mode line.  See fi:parse-mode-line-and-package
 for more information.")
 
+(defvar fi::do-parse-mode-line-and-package t)
+
 (defun fi:parse-mode-line-and-package ()
   "Determine the current package in which the buffer is defined.
 The buffer's IN-PACKAGE form and the -*- mode line are parsed for this
@@ -405,10 +407,11 @@ package.
 When using Allegro CL 4.2 or later, the ``Readtable: '' can be used to name
 the readtable used for evaluations given to Lisp from emacs."
   (interactive)
-  (setq fi:readtable (fi::parse-mode-line "readtable"))
-  (setq fi:package
-    (fi::parse-mode-line "package" fi:default-package t
-			 'fi::parse-package-from-buffer t)))
+  (when fi::do-parse-mode-line-and-package
+    (setq fi:readtable (fi::parse-mode-line "readtable"))
+    (setq fi:package
+      (fi::parse-mode-line "package" fi:default-package t
+			   'fi::parse-package-from-buffer t))))
 
 (defun fi::parse-mode-line (key
 			    &optional default-value messagep fail-hook
@@ -497,6 +500,20 @@ the readtable used for evaluations given to Lisp from emacs."
 		     name)))
 		((stringp p) p)))))
     value))
+
+(defun fi::find-tag-common-lisp ()
+  ;; This raises the intelligence of the default tag in find-tag by
+  ;; removing explicit package qualifiers, rarely found in the target
+  ;; source file.  See find-tag-tag in lisp/progmodes/etags.el for
+  ;; the defaulting mechanism.  From smh, 8/14/2000.
+  (let ((default (find-tag-default)))
+    (when default
+      (let ((n (position ?: default :from-end t)))
+	(if n
+	    (subseq default (1+ n))
+	  default)))))
+
+(put 'fi:common-lisp-mode 'find-tag-default-function 'fi::find-tag-common-lisp)
 
 ;;;;
 ;;; Initializations

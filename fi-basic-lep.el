@@ -1,18 +1,17 @@
-;; Copyright (c) 1987-1993 Franz Inc, Berkeley, Ca.
+;; Copyright (c) 1987-2002 Franz Inc, Berkeley, Ca.
 ;;
 ;; Permission is granted to any individual or institution to use, copy,
-;; modify, and distribute this software, provided that this complete
-;; copyright and permission notice is maintained, intact, in all copies and
-;; supporting documentation.
+;; modify, and distribute this software, and to distribute modified
+;; versions, provided that this complete copyright and permission notice is
+;; maintained, intact, in all copies and supporting documentation.
 ;;
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-basic-lep.el,v 1.47 2000/06/26 16:39:49 layer Exp $
+;; $Id: fi-basic-lep.el,v 1.48 2002/07/09 22:15:31 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
-(defvar fi::lep-debug nil)		; for debugging
 (defvar fi::trace-lep-filter nil)	; for debugging
 
 (defvar session) ;; yuck
@@ -194,7 +193,11 @@ emacs-lisp interface cannot be started.
 (defun fi::make-connection-to-lisp (host port passwd ipc-version)
   (cond ((eq ipc-version fi::required-ipc-version)
 	 (let* ((proc-name (format "*LEP %s %d %d*" host port passwd))
-		(buffer-name (if fi::lep-debug proc-name))
+		;; buffer-name used to be non-nil only when fi::lep-debug
+		;; was non-nil, but changes to lep::make-session-for-lisp
+		;; depend on there being a buffer associated with the
+		;; process.  So, we now do this in all cases.
+		(buffer-name proc-name)
 		(buffer (when buffer-name
 			  (get-buffer-create buffer-name)))
 		(process (fi::open-network-stream proc-name nil host port)))
@@ -202,6 +205,11 @@ emacs-lisp interface cannot be started.
 	     (bury-buffer buffer)
 	     (save-excursion (set-buffer buffer) (erase-buffer))
 	     (set-process-buffer process buffer))
+	   ;; cac 20dec00
+	   (when (and (fboundp 'set-process-coding-system)
+		      ;; spr24414
+		      (member 'emacs-mule (coding-system-list)))
+	     (set-process-coding-system process 'emacs-mule 'emacs-mule))
 	   (set-process-filter process 'fi::lep-connection-filter)
 	   ;; new stuff to indicate that we want the lisp editor protocol
 	   (process-send-string process ":lep\n")
@@ -313,7 +321,7 @@ versions of the emacs-lisp interface.
      (delq session (fi::connection-sessions connection)))))
 
 (defun fi::handle-sessionless-reply (form)
-  "A session less reply is either (:error message) or (nil fn . args)"
+  ;; A session-less reply is either (:error message) or (:request fn . args)
   (cond ((eq (car form) ':error)
 	 (error (second form)))
 	((eq (car form) ':request)
@@ -508,14 +516,19 @@ versions of the emacs-lisp interface.
   (if (stringp s) (intern s) s))
 
 (defvar connection) ;; ugly, but necessary
-(defvar process) ;; this, too
+(defvar process) ;; this, too...  crikey, this is grossssss!!!!!
 
 (defun lep::make-session-for-lisp (session-id replyp oncep function &rest args)
   (let ((session (fi::make-session session-id nil))
-	(done nil))
+	(done nil)
+	(dead (or (eq 'closed (process-status process))
+		  ;; The following test relies on
+		  ;; fi::make-connection-to-lisp associating the process
+		  ;; with a buffer IN ALL CASES, not just for debugging.
+		  (null (process-buffer process)))))
     (fi::add-session connection session)
     (unwind-protect
-	(progn
+	(when (not dead)
 	  (condition-case error
 	      (let* ((result (apply (fi::intern-it function) args)))
 		(when replyp
@@ -536,20 +549,23 @@ versions of the emacs-lisp interface.
 
 		   (process-send-string process "\n"))
 	       (fi::show-error-text
-		"Error %s in %s with args %s"
+		"Error %s in %s\nwith args: %s\nstack dump:\n%s"
 		(fi::prin1-to-string
 		 (if (and (consp error) (cdr error))
 		     (cdr error)
 		   error))
 		function
-		args))))
+		args
+		(when (fboundp 'backtrace)
+		  (with-output-to-string (backtrace)))))))
 	  (setq done t))
-      (unless done
+      (when (and (not dead) (not done))
 	(process-send-string process
 		     (fi::prin1-to-string (list (fi::session-id session)
 						':error
 						':aborted))))
-      (if oncep (lep::kill-session session)))))
+      (when (or dead oncep)
+	(lep::kill-session session)))))
 
 (defun fi:send-reply (session string)
   (let* ((connection (fi::session-connection session))

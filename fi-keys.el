@@ -1,14 +1,14 @@
-;; Copyright (c) 1987-1993 Franz Inc, Berkeley, Ca.
+;; Copyright (c) 1987-2002 Franz Inc, Berkeley, Ca.
 ;;
 ;; Permission is granted to any individual or institution to use, copy,
-;; modify, and distribute this software, provided that this complete
-;; copyright and permission notice is maintained, intact, in all copies and
-;; supporting documentation.
+;; modify, and distribute this software, and to distribute modified
+;; versions, provided that this complete copyright and permission notice is
+;; maintained, intact, in all copies and supporting documentation.
 ;;
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 1.117 2000/06/22 20:48:54 layer Exp $
+;; $Id: fi-keys.el,v 1.118 2002/07/09 22:15:31 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -368,6 +368,8 @@ When called from a program give START and END buffer positions."
     (if (not (bolp)) (insert "\n"))
     (setq end (point))
     (setq fi::last-input-end (point))
+    ;; bug10814: behave like fi:subprocess-send-input; from rgr, 29-May-01.
+    (fi::subprocess-watch-for-special-commands)
     (process-send-region process start end)
     (fi::input-ring-save fi::last-input-start (1- fi::last-input-end))
     (set-marker (process-mark process) (point))))
@@ -805,6 +807,8 @@ form.  If there are too many parens delete them.  The form is also indented."
   (interactive)
   (save-restriction
     (narrow-to-region (point) (save-excursion (fi:beginning-of-defun) (point)))
+    (when (nth 3 (parse-partial-sexp (point-min) (point)))
+      (error "Inside a string!"))
     (let (p)
       (while (progn (setq p (point))
 		    (fi:beginning-of-defun)
@@ -909,7 +913,7 @@ the paragraph as well."
   (interactive "P")
   (save-excursion
     (beginning-of-line 0)
-    (if (re-search-forward "\\(^[ \t]*[;]+ \\)" nil t)
+    (if (re-search-forward "\\(^[ \t]*[;]+[ ]+\\)" nil t)
 	(let ((fill-prefix (buffer-substring (match-beginning 1)
 					     (match-end 1))))
 	  (fill-paragraph arg))
