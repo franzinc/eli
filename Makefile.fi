@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Attic/Makefile.fi,v 2.2 1993/06/30 00:10:46 layer Exp $
+# $Header: /repo/cvs.copy/eli/Attic/Makefile.fi,v 2.3 1993/06/30 04:29:50 layer Exp $
 
 # removed: girls biggie fax
 hosts = ox akbar clay hyper sole fridge
@@ -16,9 +16,37 @@ rdist: all
 	${rdist} -qc Makefile Makefile.fi ChangeLog *.n *.doc *.el *.elc \
 		 "`hostname`:`pwd`/DIST"
 	(cd DIST; ${rdist} -Rc . "{`echo ${hosts} | sed 's/ /,/g'`}:$(to)")
+	rm -fr DIST
 
-save_dist:
+save_version:
 	@if test -z "$(version)"; then echo version= is null; exit 1; fi
 	@for host in ${hosts}; do\
 		echo rsh $$host -n mv $(eli)/master $(eli)/fi-$(version);\
 	done
+
+###############################################################################
+
+release_files = ChangeLog [a-z]*.el [a-z]*.elc Makefile *.doc *.n \
+		examples/*.el TAGS
+release_root = /net/vapor/scm/emacs/eli/Dists
+release_directory = $(release_root)/dist-$(version)
+release_tar = $(release_root)/eli-$(version).tar
+
+release:	all
+	@if test -z "$(version)"; then\
+	  echo Make variable version is null; exit 1;\
+	fi
+	@if test -d "$(release_directory)"; then\
+	  echo $(release_directory) exists; exit 1;\
+	fi
+	@if grep -s "Release $(version)" UserGuide.n; then\
+	  foo=;\
+	else\
+	  echo The version in fi-site-init.el and UserGuide.n do not agree;\
+	  exit 1;\
+	fi
+	mkdir $(release_directory)
+	tar cf - $(release_files) | (cd $(release_directory); tar xf -)
+	cp /dev/null $(release_directory)/Makefile.fi
+	(cd $(release_directory); tar cf - . > $(release_tar))
+	compress $(release_tar) 

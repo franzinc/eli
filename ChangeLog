@@ -1,4 +1,11 @@
+===============================================================================
+2.0.6 public release
+===============================================================================
+
 Tue Jun 29 16:04:48 1993  Kevin Layer  (layer@sole)
+
+	* Makefile.fi: release rules
+	* UserGuide.n: change version number.
 
 	* Doc.el: *.el -> fi-*.el
 	* Makefile: *.el -> fi-*.el, can't use lemacs to compile .el
