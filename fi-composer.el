@@ -24,9 +24,14 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.8 1991/03/15 21:05:06 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.9 1991/04/20 23:25:00 layer Exp $
 
-(defun composer::make-listener ()
+(defun composer::make-listener (new-screen-p)
+  (when (and new-screen-p (fboundp 'create-screen))
+    (let ((screen (create-screen "*listener*" epoch::screen-properties)))
+	   (epoch::map-screen screen)
+	   (epoch::select-screen screen)
+	   screen))
   (fi:open-lisp-listener -1))
 
 (defun composer::edit-file-in-editor ()
@@ -85,11 +90,11 @@
 
 ;;;
 
-(defun show-subclasses (class)
+(defun fi:show-subclasses (class)
   (interactive (fi::get-default-symbol "Class"))
   (show-subsuper-classes class ':kid "Could not show subclasses: %s"))
 
-(defun show-superclasses (class)
+(defun fi:show-superclasses (class)
   (interactive (fi::get-default-symbol "Class"))
   (show-subsuper-classes class ':parent "Could not show superclasses: %s"))
 
@@ -102,10 +107,4 @@
   
 ;;; Perhaps with Epoch we should create buttons such that mousing invokes.
 ;;; Should we think about drawing classes.
-
-
-
-
-
-
 
