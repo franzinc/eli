@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.83 1991/02/12 14:55:48 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.84 1991/02/12 17:16:56 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -778,6 +778,10 @@ This function implements continuous output to visible buffers."
        (stay old-buffer)
        (t (set-buffer old-buffer))))))
 
+(defvar fi::frammis-hook nil
+  "A function or a list of functions to call when we get the rendezvous
+info from Lisp in the Lisp subprocess buffer.")
+
 (defun fi::subprocess-control-a-frammis (string)
   (if (and (fi::fast-search-string 1 string)
 	   (string-match "\\(.*\\)\\(.*\\)\\(.*\\)" string))
@@ -807,9 +811,14 @@ This function implements continuous output to visible buffers."
 	(setq fi::ipc-version
 	  (condition-case ()
 	      (if (not (eq (cdr xx) (length command))) 
-		  (car (setq xx (read-from-string command (cdr xx)))))
+		  (car (setq xx (read-from-string
+				 (fi::frob-case-from-lisp command)
+				 (cdr xx)))))
 	  (error nil)))
-	(if (eq fi::ipc-version 'NIL) (setq fi::ipc-version nil))
+	(cond ((consp fi::frammis-hook)
+	       (mapcar 'funcall fi::frammis-hook))
+	      (fi::frammis-hook
+	       (funcall fi::frammis-hook)))
 	res)
     string))
 
