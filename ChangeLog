@@ -7,6 +7,16 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.16.4
+
+1999-01-07  Kevin Layer  <layer@ultra>
+
+	* fi-lep.el: [bug7266] fi::lisp-complete-symbol doesn't do
+	defontification
+	* fi-site-init.el: let users set fi::library-directory before they
+	load us
+
+*******************************************************************************
 2.0.21.16.3
 
 Thu Dec  3 11:31:45 1998  Kevin Layer  <layer@ultra>

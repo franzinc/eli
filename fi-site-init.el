@@ -1,4 +1,4 @@
-;; $Id: fi-site-init.el,v 1.111.20.2 1998/10/12 22:48:25 layer Exp $
+;; $Id: fi-site-init.el,v 1.111.20.3 1999/01/08 02:09:39 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -48,7 +48,7 @@
       (setq path (cdr path)))
     res))
 
-(defvar fi::library-directory)
+(defvar fi::library-directory nil)
 (cond
  ((or (not (boundp 'load-file-name))
       ;; The following clause is due to Emacs 20.2, where load-file-name is
@@ -63,11 +63,12 @@
 	      (fi::find-path load-path file))))
     (when (not path)
       (error "Can't find fi/%s or %s in your load-path." file file))
-    (setq fi::library-directory (file-name-directory path)))
+    (unless fi::library-directory
+      (setq fi::library-directory (file-name-directory path))))
   ;; Toss this version of fi::find-path, since it is redefined later
   ;; (compiled, too).
   (fset 'fi::find-path nil))
- (t 
+ ((null fi::library-directory) 
   (setq fi::library-directory (file-name-directory load-file-name))))
 
 (defun fi::locate-library (file)
