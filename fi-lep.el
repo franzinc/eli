@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 1.85.6.5 2002/02/07 16:41:34 layer Exp $
+;; $Id: fi-lep.el,v 1.85.6.6 2002/02/24 02:28:58 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -485,10 +485,10 @@ buffer, the package is parsed at file visit time."
        :form (let ((start (condition-case ()
 			      (fi::find-other-end-of-list)
 			    (error nil))))
-	       (format "%s"
-		       (if start
-			   (buffer-substring start (point))
-			 (read-string (format "form to %s: " type))))))
+	       (fi::defontify-string
+		   (if start
+		       (buffer-substring start (point))
+		     (read-string (format "form to %s: " type))))))
     (() (expansion)
      (fi:show-some-text fi:package expansion))
     (() (error)
@@ -527,7 +527,7 @@ beginning of words in target symbols."
 				(buffer-substring opoint
 						  (match-beginning 0))))))
 		(point)))
-	 (pattern (format "%s" (buffer-substring beg end)))
+	 (pattern (fi::defontify-string (buffer-substring beg end)))
 	 (functions-only (if (eq (char-after (1- real-beg)) ?\() t nil))
 	 (downcase (not (fi::all-upper-case-p pattern)))
 	 (xxalist (fi::lisp-complete-1 pattern xpackage functions-only))
