@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.139 1998/05/19 18:52:17 layer Exp $
+# $Id: Makefile,v 1.140 1998/08/06 23:18:31 layer Exp $
 # This makefile requires GNU make.
 
 include version.mak
@@ -17,9 +17,7 @@ emacs = emacs
 pwd = $(shell pwd)
 endif
 
-default:	fi-vers.el compile
-
-all:	fi-vers.el compile test.out tags docs
+all default:	fi-vers.el compile readme.htm
 
 compile:	fi-vers.el
 	$(emacs) -nw -batch -q -l $(pwd)/fi-compile.el -kill
@@ -35,31 +33,15 @@ fi-vers.el: Makefile version.mak
 	echo '(defvar fi:compiled-with-version)' >> fi-vers.el
 	echo '(setq fi:compiled-with-version (eval-when-compile (cons emacs-major-version emacs-minor-version)))' >> fi-vers.el
 
-docs: UserGuide.doc RefMan.doc RefCard.doc
-
-RefMan.n:	UserGuide.n
-	rm -f RefMan.n
-	egrep '^%%' UserGuide.n > RefMan.n
-
-RefCard.n:	UserGuide.n
-	rm -f RefCard.n
-	egrep '^%%' UserGuide.n | sed 's/%%/@@/' > RefCard.n
-
-RefMan.doc:	RefMan.n $(elcs)
-	$(emacs) -batch -q -l Doc.elc -- RefMan.n RefMan.doc
-
-RefCard.doc:	RefCard.n $(elcs)
-	$(emacs) -batch -q -l Doc.elc -- RefCard.n RefCard.doc
-
-UserGuide.doc:	UserGuide.n $(elcs)
-	$(emacs) -batch -q -l Doc.elc -- UserGuide.n UserGuide.doc
+readme.htm: readme0.htm
+	sed -e 's/__VERSION__/$(VERSION)/g' < readme0.htm > readme.htm
 
 test.out:	$(elcs) fi-test.el
 	$(emacs) -nw -batch -q -l fi-test.el
 	@date > test.out
 
 clean:	FORCE
-	rm -f *.elc *.doc test.out
+	rm -f *.elc *.doc readme*.htm test.out
 
 tags:	FORCE
 	etags *.el

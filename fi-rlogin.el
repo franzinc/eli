@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-rlogin.el,v 1.30 1997/02/27 17:34:22 layer Exp $
+;; $Id: fi-rlogin.el,v 1.31 1998/08/06 23:18:32 layer Exp $
 
 (defvar fi:rlogin-mode-map nil
   "The rlogin major-mode keymap.")
@@ -39,7 +39,8 @@ is seen.")
 (defun fi:rlogin-mode (&optional mode-hook)
   "Major mode for interacting with an inferior rlogin.
 The keymap for this mode is bound to fi:rlogin-mode-map:
-\\{fi:rlogin-mode-map}
+
+<font face=\"Courier New\">\\{fi:rlogin-mode-map}</font>
 Entry to this mode runs the following hooks:
 
 	fi:subprocess-mode-hook

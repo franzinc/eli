@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-emacs19.el,v 2.20 1998/03/06 19:05:33 layer Exp $
+;; $Id: fi-emacs19.el,v 2.21 1998/08/06 23:18:31 layer Exp $
 
 (cond
  ((and (eq fi::emacs-type 'emacs19)
@@ -147,8 +147,8 @@
 (defconst fi:composer-menu
     '("Composer"
       ["Start Composer" fi:start-composer (fi::connection-open-composer-loaded-and-stopped)]
-      ["Start Composer with Podium" fi:start-composer-mouse-line
-       (fi::connection-open-composer-loaded-and-stopped)]
+;;;      ["Start Composer with Podium" fi:start-composer-mouse-line
+;;;       (fi::connection-open-composer-loaded-and-stopped)]
       "----"
       ["Inspect" fi:inspect-value (fi::composer-connection-open)]
       ("CLOS"

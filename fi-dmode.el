@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-dmode.el,v 1.28 1997/02/27 17:33:36 layer Exp $
+;; $Id: fi-dmode.el,v 1.29 1998/08/06 23:18:31 layer Exp $
 
 ;; Create a mode in which each line is a definition and . on that
 ;; definition brings up the definition in another window
@@ -49,7 +49,8 @@ Definition mode is used by other tools, such as the changed-definition
 commands, fi:list-who-calls as well as fi:list-buffer-definitions.
 
 The keymap for this mode is bound to fi:definition-mode-map:
-\\{fi:definition-mode-map}
+
+<font face=\"Courier New\">\\{fi:definition-mode-map}</font>
 Entry to this mode runs the fi:definition-mode-hook."
   (interactive)
   (kill-all-local-variables)
@@ -113,7 +114,8 @@ Inverse definition mode is used by other tools, such as
 fi:list-undefined-functions.
 
 The keymap for this mode is bound to fi:inverse-definition-mode-map:
-\\{fi:inverse-definition-mode-map}
+
+<font face=\"Courier New\">\\{fi:inverse-definition-mode-map}</font>
 Entry to this mode runs the fi:inverse-definition-mode-hook."
   (interactive)
   (kill-all-local-variables)

@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.201 1998/05/19 18:52:17 layer Exp $
+;; $Id: fi-subproc.el,v 1.202 1998/08/06 23:18:32 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -174,8 +174,7 @@ time the hooks are run.")
 fi:common-lisp when a new buffer name is used.")
 
 (defvar fi:common-lisp-directory nil
-  "*Default directory in which the process started by fi:common-lisp uses.
-A CD is done into this directory before the process is started.")
+  "*Default directory in which the process started by fi:common-lisp uses.")
 
 (defvar fi:common-lisp-image-name "lisp"
   "*Default Common Lisp executable image used by fi:common-lisp.  The value
@@ -324,9 +323,11 @@ process-connection-type (q.v.).")
 in seconds, that Emacs will wait for Lisp to startup, when no connection
 can be made in fi:common-lisp.")
 
+(defvar minibuffer-confirm-incomplete)
+
 (defun fi:common-lisp (&optional buffer-name directory executable-image-name
 				 image-args host image-file)
-  "Create a Common Lisp subprocess and put it in buffer named by
+  "Create a Common Lisp subprocess and put it in the buffer named by
 BUFFER-NAME, with default-directory of DIRECTORY, using EXECUTABLE-IMAGE-NAME
 and IMAGE-ARGS as the binary image pathname and command line
 arguments, doing the appropriate magic to execute the process on HOST.
@@ -342,14 +343,21 @@ from the variables:
 	fi:common-lisp-image-arguments
 	fi:common-lisp-host
 	fi:common-lisp-image-file
-and the values read are saved in these variables for later use as defaults.
+and the values read are saved in these variables for later use as defaults,
+except that the directory argument does not side-effect the variable
+fi:common-lisp-directory.
+
 After the first time or when no prefix argument is given, the defaults are
 used and no information is read from the minibuffer.
 
 For backward compatibility, BUFFER-NAME can be a number, when called
 programmatically, which means look for, and use if found, numbered buffers
 of the form \"*common-lisp*<N>\" for N > 2.  If BUFFER-NAME < 0, then find
-the first \"free\" buffer name and start a subprocess in that buffer."
+the first \"free\" buffer name and start a subprocess in that buffer.
+
+Each Emacs may have at most one Emacs-Lisp connection. If a connection
+already exists when fi:common-lisp is called, then the *common-lisp* buffer
+will be made the current buffer, and all arguments will be ignored."
   (interactive
    (fi::get-lisp-interactive-arguments
     fi::common-lisp-first-time
@@ -367,6 +375,20 @@ be a string. Use the 6th argument for image file."))
     fi:common-lisp-image-arguments
     (or fi:common-lisp-host (system-name))
     fi:common-lisp-image-file))
+  (when (and (boundp 'minibuffer-confirm-incomplete)
+	     minibuffer-confirm-incomplete
+	     (eq 'xemacs20 fi::emacs-type))
+    (save-excursion
+      (delete-other-windows)
+      (switch-to-buffer "*Help*")
+      (erase-buffer)
+      (insert "
+It is known that XEmacs 20 and a non-nil value of the variable
+`minibuffer-confirm-incomplete' are incompatible with Lisp symbol
+completions read in the minibuffer.  Use this combination at your own
+risk.")
+      (when (null (y-or-n-p "Run Lisp anyway? "))
+	(error "fi:common-lisp aborted by user."))))
   (unless (or fi::rsh-command (on-ms-windows))
     (setq fi::rsh-command
       (cond ((fi::command-exists-p "remsh") "remsh")
@@ -381,7 +403,7 @@ be a string. Use the 6th argument for image file."))
 			  buffer-name
 			(or buffer-name fi:common-lisp-buffer-name)))
 	 (directory (if (interactive-p)
-			(expand-file-name directory)
+			(and directory (expand-file-name directory))
 		      (or directory fi:common-lisp-directory)))
 	 (executable-image-name
 	  (if (interactive-p)
@@ -774,70 +796,66 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		"'" "")))))
 
 (defun fi::get-lisp-interactive-arguments (first-time buffer-name buffer
-					   directory image-name image-args host
-					   &optional image-file)
-  (let ((buffer-name (or (and buffer (buffer-name buffer))
-			 buffer-name))
-	local)
-    (when (or first-time
-	      (and current-prefix-arg
-		   (or (null buffer)
-		       (not (get-buffer-process buffer))
-		       (not (fi:process-running-p
-			     (get-buffer-process buffer)
-			     buffer-name)))))
+					   directory exe image-args host
+					   &optional dxl)
+  (setq buffer-name (or (and buffer (buffer-name buffer))
+			buffer-name))
 
-      (setq buffer-name (read-buffer "Buffer: " buffer-name))
-      
-      (if (on-ms-windows)
-	  (setq host "localhost")
-	(setq host (read-string "Host: " host)))
-      
-      (setq local (or (string= "localhost" host)
-		      (string= host (system-name))))
-      
-      (let ((temp (expand-file-name
-		   (read-file-name "Process directory: "
-				   (or directory default-directory)
-				   (or directory default-directory)
-				   local))))
-	;; make sure it ends in a slash:
-	(setq directory
-	  (if (= ?/ (aref temp (- (length temp) 1)))
-	      temp
-	    (concat temp "/"))))
+  (when (or first-time
+	    (and current-prefix-arg
+		 (or (null buffer)
+		     (not (get-buffer-process buffer))
+		     (not (fi:process-running-p
+			   (get-buffer-process buffer)
+			   buffer-name)))))
 
-      (let ((exe (read-file-name "Lisp executable program: "
-				 image-name image-name nil))
-	    (temp (read-file-name "Lisp image (dxl) file: "
-				  directory image-file nil image-file)))
-	
-	(if (or (string= temp "")
-		(and (null image-file)
-		     (string= temp default-directory))
-		(and image-file
-		     (string= temp image-file)))
-	    ;; the null answer:
-	    (setq image-file nil)
-	  (setq image-file temp))
-	
-	(when (and image-file
-		   (or (string-match "\\$" image-file)
-		       (string-match "^~" image-file)))
-	  (setq image-file (expand-file-name image-file)))
+    (setq buffer-name (read-buffer "Buffer: " buffer-name))
+      
+    (if (on-ms-windows)
+	(setq host "localhost")
+      (setq host (read-string "Host: " host)))
+      
+    ;; make sure it ends in a slash:
+    (setq directory
+      (let ((temp (fi::read-file-name "Process directory: "
+				      (or directory default-directory)
+				      (or directory default-directory)
+				      ;; must match only if local:
+				      (or (string= "localhost" host)
+					  (string= host (system-name))))))
+	(if (= ?/ (aref temp (- (length temp) 1)))
+	    temp
+	  (concat temp "/"))))
 
-	(setq image-name
-	  (if (string-match "[\$~]" exe)
-	      (expand-file-name exe)
-	    exe)))
-      
-      (setq image-args
-	(fi::listify-string
-	 (read-from-minibuffer
-	  "Image arguments (separate by spaces): "
-	  (mapconcat 'concat image-args " ")))))
-      
-    (list buffer-name directory image-name image-args host image-file)))
+    (setq exe (fi::read-file-name "Lisp executable program: " exe exe))
+    (setq dxl
+      (fi::read-file-name "Lisp image (dxl) file: " directory dxl nil dxl))
+
+    (setq image-args
+      (fi::listify-string
+       (read-from-minibuffer "Image arguments (separate by spaces): "
+			     (mapconcat 'concat image-args " ")))))
+
+  (list buffer-name directory exe image-args host dxl))
+
+(defun fi::read-file-name (prompt
+			   &optional directory default mustmatch initial)
+  (let ((temp (read-file-name prompt directory
+			      (if (null default) "" default)
+			      mustmatch initial)))
+    (setq temp
+      (cond ((string= temp "")
+	     ;; user deleted `initial' text or just hit RET
+	     nil)
+	    ((or (string-match "\\$" temp)
+		 (string-match "^~" temp))
+	     ;; expand it, since `directory' will have been expanded
+	     (expand-file-name temp))
+	    (t temp)))
+    (cond ((and temp (string= temp directory))
+	   ;; user typed RET only, return default answer:
+	   default)
+	  (t temp))))
 
 (defun fi::common-lisp-subprocess-filter (process output &optional stay
 								   cruft)
@@ -1236,13 +1254,14 @@ This function implements continuous output to visible buffers."
   (let ((buffer-name
 	 (cond ((> number 1) (concat name "<" number ">"))
 	       ((< number 0)
-		(let (n)
-		  (if (not (fi:process-running-p name name))
+		(let (n tmp)
+		  (if (null (fi:process-running-p name name))
 		      name
 		    (setq n 2)
-		    (while (fi:process-running-p (concat name "<" n ">"))
+		    (while (fi:process-running-p
+			    (setq tmp (concat name "<" n ">")))
 		      (setq n (+ n 1)))
-		    name)))
+		    tmp)))
 	       (t name))))
     (or (get-buffer buffer-name)
 	(get-buffer-create buffer-name))))

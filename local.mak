@@ -1,12 +1,12 @@
-# $Id: local.mak,v 2.7 1998/04/22 18:13:56 layer Exp $
+# $Id: local.mak,v 2.8 1998/08/06 23:18:32 layer Exp $
 
 TGZFILE = eli-$(VERSION).tar.gz
 DISTDIR = eli-$(VERSION)
 README_HTM = readme.htm
 README_TXT = readme.txt
 
-release_files = Makefile version.mak Doc.el Doc.elc fi-*.el fi-*.elc *.doc \
-	examples/emacs.el
+release_files = Makefile version.mak Doc0.el fi-*.el fi-*.elc \
+	examples/emacs.el doc/eli.htm
 
 echo_release_files:
 	@echo $(release_files)
@@ -32,19 +32,22 @@ dist:	FORCE
 
 ###############################################################################
 
-hosts = news fooey beast romeo beta tiger freezer \
-	sole sparky akbar fridge louie \
-	hefty killer biggie boys high baby
+hosts = news corba beast romeo beta tiger freezer \
+	sole sparky akbar louie hefty \
+	killer biggie boys high baby
 
 elib_root = /usr/fi/emacs-lib
 to = $(elib_root)/fi
 rdist = rdist
 
-FILES_TO_RDIST = ChangeLog fi-*.el fi-*.elc \
-		local*.el local*.elc Makefile 
+FILES_TO_RDIST = $(release_files) local*.el local*.elc 
 
-rdist:
-	rm -fr DIST
-	$(rdist) -hwqc $(FILES_TO_RDIST) "`hostname`:$(pwd)/DIST"
+rdist:	DIST
 	(cd DIST; $(rdist) -Rc . "{`echo $(hosts) | sed 's/ /,/g'`}:$(to)")
 	rm -fr DIST
+
+DIST:	FORCE
+	rm -fr DIST
+	mkdir DIST
+	cp /dev/null DIST/local.mak
+	$(rdist) -hwqc $(FILES_TO_RDIST) "`hostname`:$(pwd)/DIST"

@@ -1,0 +1,2524 @@
+<html>
+
+<head>
+<title>The Emacs-Lisp Interface</title>
+</head>
+
+<body>
+
+<h1 align="center">The Emacs-Lisp Interface</h1>
+
+<h1 align="center"><small><small>ELI Version __VERSION__</small></small></h1>
+
+<h1 align="center"><small><small>$Revision: 1.2 $</small></small></h1>
+
+<hr>
+
+<h2>Table of Contents</h2>
+
+<p><a href="#1. Introduction to the Emacs-Lisp interface">1. Introduction to the
+Emacs-Lisp interface</a> 
+
+<ul>
+  <li><a href="#If you are new to Emacs">If you are new to Emacs</a></li>
+  <li><a href="#Notation conventions used in this chapter">Notation conventions used in this
+    document</a></li>
+  <li><a href="#Format of this document">Format of this document</a></li>
+  <li><a href="#Previous versions of Emacs">Previous versions of Emacs</a></li>
+  <li><a href="#Previous versions of the Emacs-Lisp interface">Previous versions of the
+    Emacs-Lisp interface</a></li>
+  <li><a href="#What should be in your .emacs file">What should be in your .emacs file</a></li>
+  <li><a href="#Emacs Documentation">Emacs Documentation</a></li>
+  <li><a href="#Licensing issues and The Free Software Foundation">Licensing issues and The
+    Free Software Foundation</a></li>
+  <li><a href="#Quirks of the Emacs-Lisp Interface">Quirks of the Emacs-Lisp Interface</a></li>
+  <li><a href="#Recent changes to the Emacs-Lisp Interface">Recent changes to the Emacs-Lisp
+    Interface</a></li>
+  <li><a href="#Bug reports and fixes">Bug reports and fixes</a></li>
+</ul>
+
+<p><a href="#2. Starting the Emacs-Lisp interface">2. Starting the Emacs-Lisp interface</a></p>
+
+<blockquote>
+  <p><a href="#2.1. Troubleshooting the Emacs-Lisp interface">2.1. Troubleshooting the
+  Emacs-Lisp interface</a><ul>
+    <li><a href="#Emacs reports that a function defined in the interface is undefined">Emacs
+      reports that a function defined in the interface is undefined</a></li>
+    <li><a href="#Emacs reports that it cannot find a file to load">Emacs reports that it cannot
+      find a file to load</a></li>
+    <li><a href="#Emacs reports that it encountered an error when loading .emacs">Emacs reports
+      that it encountered an error when loading .emacs</a></li>
+    <li><a href="#Checking your setup">Checking your setup</a></li>
+    <li><a href="#Other strange or unexplained behavior">Other strange or unexplained behavior</a></li>
+  </ul>
+</blockquote>
+
+<p><a href="#3. Running Common Lisp">3. Running Common Lisp</a></p>
+
+<blockquote>
+  <p><a href="#3.1. Key bindings in Common Lisp subprocess mode">3.1. Key bindings in Common
+  Lisp subprocess mode</a><br>
+  <a href="#3.2. Typing input to Common Lisp">3.2. Typing input to Common Lisp</a><br>
+  <a href="#3.3. Functions and variables for Interacting with a CL subprocess">3.3.
+  Functions and variables for Interacting with a CL subprocess</a></p>
+</blockquote>
+
+<p><a href="#4. Editing Common Lisp Programs">4. Editing Common Lisp Programs</a></p>
+
+<blockquote>
+  <p><a href="#4.1. Indentation">4.1. Indentation</a><br>
+  <a href="#4.2. Packages and readtables">4.2. Packages and readtables</a><br>
+  <a href="#4.3. Syntactic modification of Common Lisp source code">4.3. Syntactic
+  modification of Common Lisp source code</a><br>
+  <a href="#4.4. Information sharing between Common Lisp and Emacs">4.4. Information sharing
+  between Common Lisp and Emacs</a><br>
+  <a href="#4.5. common-lisp-mode functions and variables">4.5. common-lisp-mode functions
+  and variables</a><br>
+  <a href="#4.6. definition-mode functions and variables">4.6. definition-mode functions and
+  variables</a></p>
+</blockquote>
+
+<p><a href="#5. Writing and Debugging Common Lisp Programs">5. Writing and Debugging
+Common Lisp Programs</a></p>
+
+<blockquote>
+  <p><a href="#5.1. Finding the definitions of functions">5.1. Finding the definitions of
+  functions</a><br>
+  <a href="#5.2. Interaction with Allegro Composer">5.2. Interaction with Allegro Composer</a><br>
+  <a href="#5.3. Modifying the state of the Common Lisp environment">5.3. Modifying the
+  state of the Common Lisp environment</a><br>
+  <a href="#5.4. Debugging Common Lisp processing in Emacs">5.4. Debugging Common Lisp
+  processing in Emacs</a><br>
+  <a href="#5.5. Lisp Listeners">5.5. Lisp Listeners</a><br>
+  <a href="#5.6. Miscellaneous programming aids">5.6. Miscellaneous programming aids</a><br>
+  <a href="#5.7. Bug reports">5.7. Bug reports</a></p>
+</blockquote>
+
+<p><a href="#6. Shell modes">6. Shell modes</a></p>
+
+<p><a href="#7. Advanced miscellaneous features">7. Advanced miscellaneous features</a></p>
+
+<blockquote>
+  <p><a href="#7.1. Emacs hooks">7.1. Emacs hooks</a><br>
+  <a href="#7.2. The Emacs-Lisp interface and excl:dumplisp">7.2. The Emacs-Lisp interface
+  and excl:dumplisp</a><br>
+  <a href="#7.3. Raw mode">7.3. Raw mode</a></p>
+</blockquote>
+
+<hr>
+
+<h2><a name="1. Introduction to the Emacs-Lisp interface">1. Introduction to the
+Emacs-Lisp interface</a></h2>
+
+<p>An integral part of the Allegro CL programming environment is the interface between
+various implementations of Emacs (Xemacs or GNU Emacs) and Allegro CL, hereafter referred
+to as the Emacs-Lisp interface. This interface allows the editing and running of Common
+Lisp programs, and contains enhancements that allow a tight coupling between Emacs and
+Lisp, very similar to those which used to be available only on Lisp machines.</p>
+
+<p>Unless otherwise specified, when we say Emacs in this document, we mean Xemacs or GNU
+Emacs. Versions of Xemacs and GNU Emacs are distributed with Allegro CL.</p>
+
+<p>We have tried to make the editor seem as if it is implemented in Lisp. However, such an
+editor would be able to manipulate objects not as text but as first-class Lisp objects and
+would then be able to know more about programs and be able easily to extract information
+from them. Emacs with the Emacs-Lisp interface cannot do all that.</p>
+
+<p>Because the Emacs-Lisp interface uses Emacs, which runs as a separate UNIX process from
+Lisp, a protocol, called the Lisp-Editor protocol, was designed and implemented to make
+the communication of information between Emacs and Lisp easier and more natural. A strong
+requirement of this communication and information exchange is that the user not be aware
+of it--it must happen in the background. This hidden communication is accomplished by
+using multiprocessing (commonly called `threads') in Allegro CL and process filters in
+Emacs. The latter is necessary because Emacs does not have multiprocessing.</p>
+
+<p>The Lisp-Editor protocol is not documented in this release of Allegro CL. We expect
+that it will be documented in the future, after we have had more experience with the
+fundamentally new design.</p>
+
+<p>This document is broken into several sections: 
+
+<ol>
+  <li>Introduction to the Emacs-Lisp interface, the section you are now reading. This section
+    presents an overview of the Emacs-Lisp interface and describes the organization of the
+    whole document.</li>
+  <li>Starting the Emacs-Lisp interface. This section discusses starting up the primary
+    mechanism for Emacs-Lisp interaction. A troubleshooting guide suggests what may be wrong
+    if things do not work as expected.</li>
+  <li>Running Common Lisp. This section describes how Common Lisp can be started as a
+    subprocess of Emacs.</li>
+  <li>Editing Common Lisp Programs. This section discusses the facilities for editing of Lisp
+    programs.</li>
+  <li>Writing and Debugging Common Lisp Programs. This section discusses the finer points of
+    debugging programs written in Lisp. In this section, many of the features associated with
+    Lisp machines are discussed in detail.</li>
+  <li>Shell modes. This section discusses other useful modes for creating shells, rlogins,
+    telnets, etc. It is here for completeness and because many of the features in the Lisp
+    subprocess modes are also available in these subprocess modes.</li>
+  <li>Advanced miscellaneous features. This section discusses when Emacs Lisp hooks are
+    called.</li>
+</ol>
+
+<p>In the remainder of this section we discuss a number of topics related to Emacs and the
+Emacs-Lisp interface. The following headings describe the topics discussed. Each heading
+appears in large type later in this section, followed by one or more paragraphs describing
+the topic. The topics are: 
+
+<ul>
+  <li><a href="#If you are new to Emacs">If you are new to Emacs</a></li>
+  <li><a href="#Notation conventions used in this chapter">Notation conventions used in this
+    document</a></li>
+  <li><a href="#Format of this document">Format of this document</a></li>
+  <li><a href="#Previous versions of Emacs">Previous versions of Emacs</a></li>
+  <li><a href="#Previous versions of the Emacs-Lisp interface">Previous versions of the
+    Emacs-Lisp interface</a></li>
+  <li><a href="#What should be in your .emacs file">What should be in your .emacs file</a></li>
+  <li><a href="#Emacs Documentation">Emacs Documentation</a></li>
+  <li><a href="#Licensing issues and The Free Software Foundation">Licensing issues and The
+    Free Software Foundation</a></li>
+  <li><a href="#Quirks of the Emacs-Lisp Interface">Quirks of the Emacs-Lisp Interface</a></li>
+  <li><a href="#Recent changes to the Emacs-Lisp Interface">Recent changes to the Emacs-Lisp
+    Interface</a></li>
+  <li><a href="#Bug reports and fixes">Bug reports and fixes</a></li>
+</ul>
+
+<h3><a name="If you are new to Emacs">If you are new to Emacs</a></h3>
+
+<p>If you have never used Emacs before, then you should obtain an Emacs manual. A good one
+that describes GNU Emacs specifically but is generally applicable to all three supported
+versions is the GNU Emacs Manual. It is available from the Free Software Foundation. Their
+address is:</p>
+
+<pre>    Free Software Foundation, Inc.
+    675 Massachusetts Avenue
+    Cambridge, MA 02139, USA
+    +1 617-876-3296</pre>
+
+<p>We assume in this document that you are familiar with Emacs although we do provide
+occasional hints for beginners.</p>
+
+<p>Emacs has a few different forms of on-line help. Type Control-h (also called C-h for
+short) three times to find out about the on-line Emacs help facilities. To start the Emacs
+tutorial, type Control-h t.</p>
+
+<p>The entire Emacs manual is available on-line through the Emacs Info program. Type
+Control-h i to start up the Info program. To run the Info tutorial, type h after starting
+the Info program. All of the documentation available in the Info program may be printed on
+hardcopy, see the Texinfo section of Info. Note that printing the Emacs manual is easiest
+if you have TeX.</p>
+
+<h3><a name="Notation conventions used in this chapter">Notation conventions used in this
+document</a></h3>
+
+<p>When discussing an editor, one needs to have a clear convention which identifies
+keyboard keys and combinations of keys. Also, Emacs needs to access certain files whose
+location depends on how Emacs was installed; we have to refer to these files in an
+unambiguous fashion even though we cannot know the exact location on your system.</p>
+
+<p>We start with the conventions for files.</p>
+
+<p>$HOME</p>
+
+<blockquote>
+  <p>This refers to the value of the $HOME shell environment variable in the shell where
+  Emacs is running. The value of this variable is typically the home directory of the user
+  running Emacs.</p>
+</blockquote>
+
+<p>$HOME/.emacs</p>
+
+<blockquote>
+  <p>This file is an initialization file which is read by Emacs when it starts up. Forms in
+  this file customize Emacs to the user's specifications. The Emacs-Lisp interface described
+  in this document is typically loaded by forms put in this file.</p>
+</blockquote>
+
+<p>fi/xxx</p>
+
+<blockquote>
+  <p>Files in the fi directory implement the Emacs-Lisp interface. This directory must be
+  accessible while Emacs is running. When the interface is installed, the fi directory is
+  placed in a directory associated with Emacs. To find the exact path of this directory,
+  within Emacs evaluate the variable load-path (the value will be one or more directories).
+  If installed correctly, the fi directory will be a subdirectory of the first directory
+  which ends in .../lisp/. If the fi directory is not a subdirectory of the first .../lisp/
+  directory then certain features, such as the on-line manual may not work. This pathname
+  can be used to find the file xxx in the .../lisp/fi directory.</p>
+</blockquote>
+
+<p>Now we discuss the conventions for identifying keyboard keys. The important point is
+that most Emacs commands are effected by entering one or more keystrokes, with each
+keystroke being a single key or a combination of keys pressed simultaneously. The most
+common keys used in combination with others are the CONTROL key, the ESCAPE key and the
+META key. (Most keyboards do not have a key labeled META, so another key is usually
+designated as the META key. On Sun keyboards, for example, the LEFT key is used for the
+META key. Note also that in most cases, pressing LEFT and another key simultaneously has
+the same effect as pressing ESCAPE and the other key sequentially. Of the keys mentioned,
+only ESCAPE is pressed prior to rather than simultaneously with another key.)</p>
+
+<p>Some more points about designating keys. First (as you have noticed) we say `press' to
+mean enter or depress a keyboard key. Second, CONTROL-a and CONTROL-A are the same
+character; whereas ESCAPE-a and ESCAPE-A are two different characters.</p>
+
+<p>ESC</p>
+
+<blockquote>
+  <p>This symbol stands for the ESCAPE key. It can be used alone or in conjunction with
+  another key. If used in conjunction with another key, the ESCAPE is pressed first and the
+  other key immediately after. ESC-v, therefore, means press ESCAPE and then press v
+  (without pressing SHIFT, note!). Some keyboards do not have a META key. You may type META
+  characters by using two character keystrokes starting with ESCAPE.</p>
+</blockquote>
+
+<p>M-</p>
+
+<blockquote>
+  <p>This symbol stands for the META key (usually called something else, e.g. LEFT on Sun
+  keyboards). The META key only has an effect when pressed simultaneously with another key
+  (hence the - following the M). M-a means depress META and press a while META is down.
+  M-Sh-a means depress META and SHIFT, then press a while META and SHIFT are down. Note that
+  M-a and M-Sh-a are two distinct keystrokes. Note too that Emacs online documentation
+  typically says M-A instead of M-Sh-a (that is, the case of the letter is important when
+  M-&lt;letter&gt; appears in Emacs online documentation).</p>
+</blockquote>
+
+<p>C-</p>
+
+<blockquote>
+  <p>This symbol stands for the CONTROL key. The CONTROL key only has an effect when pressed
+  simultaneously with another key (hence the - following the C). C-a means depress CONTROL
+  and press a while CONTROL is down.</p>
+</blockquote>
+
+<p>RET</p>
+
+<blockquote>
+  <p>This symbol stands for the RETURN key, also called a carriage return. This key is not
+  ever pressed in conjunction with another. Note that most Emacs commands are effected
+  without a RETURN being necessary.</p>
+</blockquote>
+
+<p>LF</p>
+
+<blockquote>
+  <p>This symbol stands for the LINE FEED key. This key is not ever pressed in conjunction
+  with another. Note that this key is different from (and has a different effect than) the
+  RETURN key.</p>
+</blockquote>
+
+<p>DEL</p>
+
+<blockquote>
+  <p>This symbol stands for the DELETE key. This key is not ever pressed in conjunction with
+  another. This key, rather than BACKSPACE deletes the character before the cursor.
+  BACKSPACE (C-h) is the initial default help key and has no effect on typed-in text.</p>
+</blockquote>
+
+<h3><a name="Format of this document">Format of this document</a></h3>
+
+<p>We loosely follow the format of the Emacs manuals in this document. That means that the
+templates for function and variable definitions are different from those used elsewhere in
+this manual. Each section starts with descriptive text describing the features of the
+section. At the end of each section, there is a complete list of the Emacs Lisp commands,
+functions, user options, and variables that apply to the general discussion in that
+section. The format of the function and variable descriptions follows the accepted
+documentation conventions in the GNU Emacs Lisp Reference Manual. Four types of objects
+are defined: interactive commands, program callable functions, user-settable options and
+variables. Here is how the definitions for each look.</p>
+
+<table border="0" width="95%" cellpadding="0" cellspacing="0">
+  <tr>
+    <td width="50%"><em><strong><font face="Courier New">command-name</font></strong></em></td>
+    <td width="20%"><strong>[Emacs command]</strong></td>
+  </tr>
+  <tr>
+    <td width="70%" colspan="2"><strong>Arguments</strong>: <em>formal arglist</em></td>
+  </tr>
+</table>
+
+<ul>
+  <li>A description of how to invoke the command (commands are also called interactive
+    functions) followed by a description. Commands often have preassigned key bindings that
+    will invoke them while functions do not have preassigned key bindings. In the
+    documentation string, arguments appear in Courier-Italic and are described in the order in
+    which they appear in the formal arglist.</li>
+  <li>The key binding that invokes a command may have a prefix argument. The GNU Emacs Lisp
+    Manual defines a prefix argument as follows: &nbsp;&nbsp; [...] a number before the
+    command itself. (Don't confuse prefix &nbsp;&nbsp; arguments with prefix keys.) The prefix
+    argument is represented by &nbsp;&nbsp; a value that is always available (though it may be
+    nil, meaning &nbsp;&nbsp; there is no prefix argument). Each command may use the prefix
+    &nbsp;&nbsp; argument or ignore it. One way of specifying a prefix argument is to use the
+    C-u command followed by a numeric argument just before typing the command.</li>
+</ul>
+
+<table border="0" width="95%" cellpadding="0" cellspacing="0">
+  <tr>
+    <td width="50%"><strong><font face="Courier New"><em>function-name</em></font></strong></td>
+    <td width="20%"><strong>[Emacs function]</strong></td>
+  </tr>
+  <tr>
+    <td width="70%" colspan="2"><strong>Arguments</strong>: <em>formal arglist</em></td>
+  </tr>
+</table>
+
+<ul>
+  <li>A description of how to call the function followed by a description. Functions do not
+    have preassigned key bindings while commands do have preassigned key bindings. The user
+    may assign key bindings to functions. In the description, arguments appear in
+    Courier-Italic and are described in the order in which they appear in the formal arglist.</li>
+</ul>
+
+<table border="0" width="95%" cellpadding="0" cellspacing="0">
+  <tr>
+    <td width="50%"><font face="Courier New"><strong><em>user-option-name</em></strong></font></td>
+    <td width="20%"><strong>[Emacs user option]</strong></td>
+  </tr>
+  <tr>
+    <td width="70%" colspan="2"><strong>Initial value</strong>: <em>value</em></td>
+  </tr>
+</table>
+
+<ul>
+  <li>The initial value of the user option followed by a description. Note that user options
+    are user-settable and variables are set by the system and should only be examined but not
+    set by users. The Emacs function describe-variable will return the documentation string of
+    a user-option or variable. User-options are identified with a * appearing at the beginning
+    of the documentation string. Note that descriptions in this document are not the same as
+    the documentation strings (displayed by describe-variable), hence the * will not appear at
+    the beginning of descriptions in this document.</li>
+</ul>
+
+<table border="0" width="95%" cellpadding="0" cellspacing="0">
+  <tr>
+    <td width="50%"><font face="Courier New"><strong><em>variable-name</em></strong></font></td>
+    <td width="20%"><strong>[Emacs variable]</strong></td>
+  </tr>
+  <tr>
+    <td width="70%" colspan="2"><strong>Initial value</strong>: <em>value</em></td>
+  </tr>
+</table>
+
+<ul>
+  <li>The initial value of the variable followed by a description. Note that user options are
+    user-settable and variables are set by the system and should only be examined but not set
+    by users.</li>
+</ul>
+
+<h3><a name="Previous versions of Emacs">Previous versions of Emacs</a></h3>
+
+<p>The Emacs-Lisp interface has been tested and does work with the following versions of
+Emacs. No changes to these versions is required. Note that in each case, we list the range
+of versions with which the interface is known to work. The interface will not work and is
+not supported with earlier versions. In each case, the interface was tested with the
+latest version available. Evaluating M-x emacs-version in your Emacs will print the
+version number. It is possible that the interface will not work with a version that was
+released with after this manual was printed. If that occurs, please contact us for
+assistance.</p>
+
+<table border="1" cellspacing="1" width="60%">
+  <tr>
+    <th align="center">Emacs Type</th>
+    <th align="center">Range of Supported Versions</th>
+  </tr>
+  <tr>
+    <td>GNU Emacs</td>
+    <td>19.34, 20.2</td>
+  </tr>
+  <tr>
+    <td>Xemacs</td>
+    <td>19.16, 20.3 (with and without Mule support)</td>
+  </tr>
+</table>
+
+<blockquote>
+  <p>Table 1: Supported versions of Emacs</p>
+</blockquote>
+
+<p>GNU Emacs 20.2 is supported with the following caveat: eli works, but a bug in the
+handling of `load-file-name' prevents loading the interface the normal way, by just
+loading &quot;fi-site-init.el&quot;. You must put the directory which contains
+fi-site-init.el in your `load-path'. See examples/emacs.el for an example of how to do
+this. The bug should be fixed in GNU Emacs 20.3, when it comes out.</p>
+
+<h4><strong>XEmacs users only:</strong></h4>
+
+<p>You must recompile the <em>.el</em> files because of incompatibilities between GNU
+Emacs and XEmacs.&nbsp; You can do this by:</p>
+
+<blockquote>
+  <pre>% cd <em>&lt;Allegro directory&gt;</em>/eli
+% make clean
+% make emacs=<em>xemacs</em> xemacs=<em>xemacs</em></pre>
+</blockquote>
+
+<p>You will need GNU Make to execute the above command, and you should substitute the real
+name of your XEmacs for <em>xemacs</em>.</p>
+
+<p>The Emacs function fi:verify-emacs-support will determine if your Emacs has the
+internal code necessary for the Emacs-Lisp interface. Evaluating M-x
+fi:verify-emacs-support in your Emacs will print:</p>
+
+<blockquote>
+  <pre>everything looks fine!</pre>
+</blockquote>
+
+<p>in the minibuffer if it finds the required support. Otherwise an error is signaled
+specifying the missing feature(s).</p>
+
+<h3><a name="Previous versions of the Emacs-Lisp interface">Previous versions of the
+Emacs-Lisp interface</a></h3>
+
+<p>Previous versions of the Emacs-Lisp interface have been distributed with Allegro CL and
+also via anonymous FTP. The version at the time this document was written was 2.0.21 and
+this document describes this version only. Versions before 2.0 contain substantially less
+functionality.</p>
+
+<p>Versions of this interface prior to 2.0 worked (for the most part, at least) on a
+variety of implementations of Common Lisp. This latest version is much more specific to
+Allegro CL and uses internal features of Allegro CL which are not available in other Lisp
+implementations. Therefore, many features in version 2.0 and later of the Emacs-Lisp
+interface will not work on implementations other than Allegro Common Lisp. The Emacs
+variable <font face="Courier New">fi:emacs-lisp-interface-version</font> contains the
+version information.</p>
+
+<h3><a name="What should be in your .emacs file">What should be in your .emacs file</a></h3>
+
+<p>The code for the Emacs-Lisp interface needs to be loaded into Emacs when Emacs starts
+up. The simplest way to ensure that the interface is loaded is to have the proper forms in
+your $HOME/.emacs file (that is, the .emacs file in your home directory). The exact forms
+depend on where Allegro CL was installed on your system (since starting with Allegro CL
+4.3, the Emacs-Lisp interface code is not merged into the standard Emacs library).
+Assuming that Allegro CL was installed into <em>/usr/acl50</em>. Here is the correct form
+to place in <em>.emacs:</em></p>
+
+<blockquote>
+  <pre>(load &quot;/usr/acl50/eli/fi-site-init&quot;)</pre>
+</blockquote>
+
+<p>Note: replace <em>/usr/acl50</em> with the correct directory if that is not where
+Allegro CL was installed. (<em>/usr/acl50</em> is the suggested directory in the
+Installation Guide but any directory may have been used. Your system administrator -- or
+whoever installed Allegro CL -- should be able to provide this information.)</p>
+
+<h3><a name="Emacs Documentation">Emacs Documentation</a></h3>
+
+<p>Two manuals available from the Free Software Foundation will help users of Emacs: the
+GNU Emacs Manual (mentioned above) and the GNU Emacs Lisp Reference Manual. The latter
+manual describes the version of Lisp used internally by Emacs (called Emacs Lisp, which is
+not Common Lisp). Both are available from the Free Software Foundation, whose address can
+be found above in the section <a href="#If you are new to Emacs">If you are new to Emacs</a>.</p>
+
+<p>All of the documentation available in the Emacs Info program may be printed on
+hardcopy, including the GNU Emacs Manual. To start the Emacs Info program, type C-h i. For
+information about printing hardcopy, see the Texinfo section of the Info program. Note
+that printing the Emacs manual is easiest if you have TeX.</p>
+
+<h3><a name="Licensing issues and The Free Software Foundation">Licensing issues and The
+Free Software Foundation</a></h3>
+
+<p>Users of the Emacs-Lisp interface are bound by the GNU Emacs copyright agreement. Note
+that all of the Emacs code may be redistributed. However, the text of the on-line Common
+Lisp Manual pages are Copyright (C) Franz Inc.</p>
+
+<p>This Copyright message applies to the clman pages:</p>
+
+<p>All files are Copyright (C) 1988-1998 by Franz Inc. Users may copy these files to
+computers for their own use. These files may not be distributed in printed form without
+the express prior written approval of Franz Inc. These files may not be included as part
+of any other software package without the express prior written approval of Franz Inc. All
+other rights reserved.</p>
+
+<p>Files whose type is `el' may be distributed with GNU Emacs under the terms of the GNU
+Emacs license agreement. Files without the extension `el' are not covered by the GNU Emacs
+License agreement and use is restricted according to the copyright notice above.</p>
+
+<h3><a name="Quirks of the Emacs-Lisp Interface">Quirks of the Emacs-Lisp Interface</a></h3>
+
+<p>Below is a brief list of Emacs-Lisp Interface features that have caused users trouble. 
+
+<ul>
+  <li>C-u may not behave in an expected manner. If a C-u is typed at the end of certain types
+    of buffers, then the functionality invoked will be different from the standard Emacs
+    functionality. This is because C-u can be bound as a superkey (see the information under
+    the heading Superkeys in section 3.1). In Emacs C-u is the universal-argument. In a Unix
+    shell C-u is often the kill character. The Emacs-Lisp Interface provides either
+    functionality depending on where in the buffer C-u is typed. If you are at the end of a
+    buffer and are getting the kill behavior when you want the prefix behavior, move up one
+    line (with C-p) and try again.</li>
+  <li>The Emacs-Lisp interface keeps track of the current package of common-lisp-mode buffers.
+    If the Emacs-Lisp interface fails to correctly determine the current package, then the
+    interface may fail in mysterious ways. The most common failure occurs when the Emacs-Lisp
+    interface attempts to query the Common Lisp environment. If you experience strange
+    failures you may want to verify that the Emacs-Lisp interface has the correct package by
+    doing the following:</li>
+</ul>
+
+<blockquote>
+  <p>Evaluate the following expression while in a Common Lisp buffer: </p>
+</blockquote>
+
+<blockquote>
+  <blockquote>
+    <pre>M-x eval-expression RET fi:package</pre>
+  </blockquote>
+</blockquote>
+
+<blockquote>
+  <p>The string returned should make sense as a package. A legitimate sample return value is
+  &quot;mypackage&quot;.</p>
+</blockquote>
+
+<h3><a name="Recent changes to the Emacs-Lisp Interface">Recent changes to the Emacs-Lisp
+Interface</a></h3>
+
+<p>Changes from version 2.0.20 (shipped with Allegro CL 4.3.2 on Windows 95/NT) to
+__VERSION__: 
+
+<ul>
+  <li><font face="Courier New">fi:common-lisp</font> does not side-effect <font
+    face="Courier New">fi:common-lisp-directory</font>.</li>
+  <li>New variable, <font face="Courier New">fi:common-lisp-image-file</font>, is used by <font
+    face="Courier New">fi:common-lisp</font> to default the <font face="Courier New">image-file</font>
+    argument (when calling from a program) and question (when calling interactively).</li>
+  <li><font face="Courier New">fi:common-lisp-image-name</font> can no longer be a cons, the <font
+    face="Courier New">cdr</font> being the Lisp image file.&nbsp; See <font
+    face="Courier New">fi:common-lisp-image-file</font> above.</li>
+  <li>The clman facility is no longer distributed.&nbsp; It was out of date.&nbsp; It will be
+    replaced in the near future with an HTML version.</li>
+  <li>Allegro CL <font face="Courier New">if*</font> macro now available in Emacs Lisp.</li>
+  <li>Building on UNIX: type <em>make</em> in the <em>eli</em>/ directory.&nbsp; The number of
+    warnings during the compile has been reduced to 1.</li>
+  <li>Bug fix: make sure the case mode of Lisp and Emacs never get out of sync.</li>
+  <li>Lisp mode bindings: the <font face="Courier New">C-c<em>&lt;upper case character&gt;</em></font>
+    bindings are now available as <font face="Courier New">C-c<em>&lt;lower case character&gt;</em></font>,
+    too.</li>
+  <li>New Lisp mode binding: <font face="Courier New">C-cC-t</font> is bound to <font
+    face="Courier New">fi:trace-definer</font>.</li>
+  <li>New variable, <font face="Courier New">fi:auto-fill</font>, controls whether or not
+    auto-fill minor mode is used in Lisp editing modes.&nbsp; The default value is <font
+    face="Courier New">nil</font>.</li>
+</ul>
+
+<p>Changes from version 2.0.19 (shipped with Allegro CL 4.3 and 4.3.1) to 2.0.20 (shipped
+with Allegro CL 4.3.2), all to support using eli on Windows: 
+
+<ul>
+  <li>The <font face="Courier New">fi:common-lisp</font> function takes an additional optional
+    argument, when called from a program, the Lisp image file to use.&nbsp; The <font
+    face="Courier New">image-file</font> argument is the sixth optional argument to <font
+    face="Courier New">fi:common-lisp</font>.&nbsp; When called interactively, <font
+    face="Courier New">fi:common-lisp</font> now asks for the name of the Lisp image file.
+    &nbsp; This question is fourth of five questions.</li>
+  <li><font face="Courier New">fi:common-lisp-image-name</font> can now be a cons, the <font
+    face="Courier New">car</font> being the Lisp executable and the <font face="Courier New">cdr</font>
+    being the Lisp image file.</li>
+  <li>On Windows, the host argument to <font face="Courier New">fi:common-lisp</font> always
+    defaults to <font face="Courier New">&quot;localhost&quot;</font>.&nbsp; There is
+    currently no support for remotely running Lisp.</li>
+  <li>Build procedure on Windows is to just load <em><font face="Calisto MT">fi-site-init</font></em>.
+    &nbsp; The necessary files will be automatically compiled before loading.&nbsp; If you
+    want this behavior on UNIX, set <font face="Courier New">fi:compile-at-load-time</font> to
+    <font face="Courier New">t</font> in your ~/.emacs.</li>
+</ul>
+
+<h3><a name="Bug reports and fixes">Bug reports and fixes</a></h3>
+
+<p>You may report bugs and problems with the Emacs-Lisp interface to us, just like Common
+Lisp bugs. If you report a bug or problem, please be sure to include the version of Lisp
+that you are running. Bugs in Emacs may also be reported however we are not always able to
+fix them.</p>
+
+<hr>
+
+<h2><a name="2. Starting the Emacs-Lisp interface">2. Starting the Emacs-Lisp interface</a></h2>
+
+<p>`Starting the Emacs-Lisp interface' is actually a misnomer. Assuming the interface code
+has been loaded into Emacs, it is available whenever Emacs is running. (Below, in Section
+3 Running Common Lisp we describe how to start Lisp from within Emacs). Therefore, this
+section is really about ensuring that the interface is loaded into Emacs.</p>
+
+<p>The simplest way to ensure that the interface is loaded is to have the proper forms in
+your $HOME/.emacs file (that is, the .emacs file in your home directory). The exact forms
+depend on where Allegro CL was installed on your system (since starting with Allegro CL
+4.3, the Emacs-Lisp interface code is not merged into the standard Emacs library).
+Assuming that Allegro CL was installed into <em>/usr/acl50</em>. Here is the correct form
+to place in <em>.emacs</em>:</p>
+
+<blockquote>
+  <pre>(load &quot;/usr/acl50/eli/fi-site-init&quot;)</pre>
+</blockquote>
+
+<p>Note: replace <em>/usr/acl50</em> with the correct directory if that is not where
+Allegro CL was installed. (<em>/usr/acl50</em> is the suggested directory in the
+Installation Guide but any directory may have been used. Your system administrator -- or
+whoever installed Allegro CL -- should be able to provide this information.</p>
+
+<p>These forms cause the interface to be loaded when Emacs starts up. Note that in the
+following sections, we discuss many variables that customize the Emacs-Lisp programming
+environment. Forms changing the default values of these variables can also be put in the
+.emacs file, allowing you to customize the environment to your liking. Note that these
+forms should be placed before (above) the two forms specified above.</p>
+
+<p>While putting the specified load form in $HOME/.emacs is the recommended method of
+loading the Emacs-Lisp interface, it is not required. If you are using Emacs and the
+Emacs-Lisp interface is not loaded, you can load it as follows.</p>
+
+<blockquote>
+  <pre>M-x load-file RET /usr/acl50/eli/fi-site-init</pre>
+</blockquote>
+
+<h3>Note about running Common Lisp on a different machine than Emacs</h3>
+
+<p>If M-x fi:common-lisp is used to start a Common Lisp process on a remote machine (i.e.
+a different machine than the one running Emacs), and Emacs is exited without first exiting
+from Common Lisp, Common Lisp may continue running on the remote machine. While there
+seems to be no sure-fire way to prevent this, you can load code into Emacs which prevents
+you from exiting Emacs while Common Lisp is running. This code is contained in the file
+home/misc/dot-emacs. The home/ directory is read off the distribution tape (and it
+typically the Lisp library directory). Make use of this code if you wish by placing it in
+your .emacs file in your home directory (home/misc/dot-emacs is a sample .emacs file).</p>
+
+<hr>
+
+<h3><a name="2.1. Troubleshooting the Emacs-Lisp interface">2.1. Troubleshooting the
+Emacs-Lisp interface</a></h3>
+
+<p>This section gives some hints about what may be wrong if either the Emacs-Lisp
+interface does not seem to be available at all or does not seem to work as described in
+this document. The interface is supported by Franz Inc. (although we do not support Emacs
+itself), so problems with the interface can be reported to us just like bugs or problems
+with Allegro CL and related products. We do ask, however, that you check out the
+suggestions here before reporting a problem to us. The following problems are discussed in
+this section, each under a heading in bold type. 
+
+<ul>
+  <li><a href="#Emacs reports that a function defined in the interface is undefined">Emacs
+    reports that a function defined in the interface is undefined</a></li>
+  <li><a href="#Emacs reports that it cannot find a file to load">Emacs reports that it cannot
+    find a file to load</a></li>
+  <li><a href="#Emacs reports that it encountered an error when loading .emacs">Emacs reports
+    that it encountered an error when loading .emacs</a></li>
+  <li><a href="#Checking your setup">Checking your setup</a></li>
+  <li><a href="#Other strange or unexplained behavior">Other strange or unexplained behavior</a></li>
+</ul>
+
+<h4><a name="Emacs reports that a function defined in the interface is undefined">Emacs
+reports that a function defined in the interface is undefined</a></h4>
+
+<p>Suppose you try to invoke the command fi:common-lisp (which starts up Allegro CL within
+Emacs) and Emacs reports that function is undefined. A likely cause is that the Emacs-Lisp
+interface is not loaded. The variable fi:package-loaded is set to t when the interface is
+loaded. Evaluate that variable in a *scratch* buffer (by typing its name followed by a
+LINEFEED). If the value is nil, the interface is not loaded. Check your $HOME/.emacs file
+and make sure the form that loads &quot;fi-site-init&quot; is in the file.&nbsp; If the
+value of the variable is t, there is a more serious problem which does not have an easily
+identifiable cause.</p>
+
+<h4><a name="Emacs reports that it cannot find a file to load">Emacs reports that it
+cannot find a file to load</a></h4>
+
+<p>The files needed by the Emacs-Lisp interface reside in the fi subdirectory of one of
+the Emacs Lisp library directories. If you evaluate the Emacs variable load-path, a list
+of directories will be printed. The fi directory should be a subdirectory of the first
+directory in the list whose last element is /lisp/. Check to see if that directory does
+have an fi subdirectory. If it does not, the Emacs-Lisp interface was not installed
+correctly. See the Installation Guide for information on how to install the interface. If
+the fi subdirectory is there, perhaps it is not accessible on the machine where Emacs is
+running (usually because of a problem with NFS).</p>
+
+<h4><a name="Emacs reports that it encountered an error when loading .emacs">Emacs reports
+that it encountered an error when loading .emacs</a></h4>
+
+<p>The cause of this problem cannot be known in advance. Here we suggest how to further
+investigate. Exit Emacs and restart it with the -q option (which suppresses the loading of
+the $HOME/.emacs file). Then type the following in the *scratch* buffer:</p>
+
+<blockquote>
+  <pre>(setq debug-on-error t) LF
+(load &quot;~/.emacs&quot;) LF</pre>
+</blockquote>
+
+<p>Note that you press LINEFEED (LF) rather than RETURN (RET) after typing the forms.</p>
+
+<p>If you run Emacs and Lisp on different machines, then you must be certain that the
+value of fi:emacs-to-lisp-transaction-directory is a directory which is accessible on both
+machines. Care must be taken to get the pathname just right, including the possible NFS
+prefix (/net/MACHINE-NAME/...).</p>
+
+<h4><a name="Checking your setup">Checking your setup</a></h4>
+
+<p>If you are having trouble with the Emacs-Lisp interface, we recommend that you check
+for trouble involving your personal .emacs and .clinit.cl files. 
+
+<ol>
+  <li>Start up Emacs with the -q option: &lt;shell prompt&gt;% emacs -q This will start up
+    Emacs without reading your .emacs file.</li>
+  <li>Load the Emacs-Lisp interface by hand: M-x load-file RET /usr/acl50/eli/fi-site-init</li>
+  <li>Start up a Common Lisp image with the -qq option: M-x fi:common-lisp Answer the
+    question: Image arguments (separate by spaces): with -qq This will start up Common Lisp
+    without reading any .clinit.cl files.</li>
+  <li>Try the Emacs-Lisp interface command that tests the interface: <font face="Courier New">M-x
+    fi:verify-emacs-support</font>. See <a href="#Previous versions of Emacs">Previous
+    versions of Emacs</a> for more information about this command.</li>
+</ol>
+
+<h4><a name="Other strange or unexplained behavior">Other strange or unexplained behavior</a></h4>
+
+<p>The most common cause of other strange or unexplained behavior is using the Emacs-Lisp
+interface with a version of Emacs other than the one distributed with Allegro CL. The
+Emacs-Lisp interface is only supported on that specific version. While only the person who
+installed Allegro CL and Emacs knows for sure, a simple test is to compare the version
+number specific in the Release Notes with the version number stored in the Emacs image
+itself, accessed with the function emacs-version. To evaluate this function, enter</p>
+
+<blockquote>
+  <pre>M-x emacs-version</pre>
+</blockquote>
+
+<p>to Emacs. This function returns a string specifying the version number. Note that even
+if that number is the same as that in the Release Notes, it may not be the exact version
+from the Allegro CL distribution. However, if the numbers are different, it is certainly
+not the same.</p>
+
+<p>Also note that fi: is not a package prefix (as it would be in Common Lisp). Instead, it
+is just part of the symbol name so you always must type it. (We use fi: to guarantee that
+the names of functions defined in our interface do not conflict with other function
+names.)</p>
+
+<hr>
+
+<h2><a name="3. Running Common Lisp">3. Running Common Lisp</a></h2>
+
+<p>Interacting with Common Lisp occurs in an Emacs subprocess buffer. This interaction can
+even occur between Emacs and Common Lisp processes that reside on different machines.
+Common Lisp must be started with the function <font face="Courier New">fi:common-lisp</font>.
+You cannot start Common Lisp in an Emacs shell and then initiate the interface. Most of
+the Emacs-Lisp interface will not work with a Lisp image started in an Emacs shell.</p>
+
+<p>When called for the first time in an emacs session, <font face="Courier New">fi:common-lisp</font>
+prompts in the minibuffer for information on how you wish to invoke Lisp (see section <a
+href="#3.3. Functions and variables for Interacting with a CL subprocess">3.3 Functions
+and variables for interacting with a CL subprocess</a> for details on what questions are
+asked). Subsequent calls use the previous answers unless qualified with <font
+face="Courier New">C-u</font>. Once it knows what to invoke, <font face="Courier New">fi:common-lisp</font>
+makes a Common Lisp subprocess in a buffer named (in the default) <font face="Courier New">*common-lisp*</font>.
+After start-up, <font face="Courier New">*common-lisp*</font> might have contents which
+look similar to this:</p>
+
+<blockquote>
+  <pre>Allegro CL 5.0 [SPARC; R1] (7/15/98 00:00)
+Copyright (C) 1985-1998, Franz Inc., Berkeley, CA, USA
+;; Optimization settings: safety 1, space 1, speed 1,
+;; debug 2. For a complete description of all compiler
+;; switches given the current optimization settings
+;; evaluate (EXPLAIN-COMPILER-SETTINGS).</pre>
+  <pre>;; Starting socket daemon and emacs-lisp interface...
+USER(1):</pre>
+</blockquote>
+
+<p>First, what you in fact see will probably be different. In particular everything after
+`5.0' in the first line will likely be different (the information there specifies the
+exact version shipped to you); the notice in comments may be changed and anyway, we have
+changed the linebreaks to prevent wrapping; and the code changes faster than the
+documentation. However, what you see will be similar.</p>
+
+<p>The user(N): is the Allegro CL prompt. The comment just before the first prompt
+signifies that an Allegro CL process that communicates with Emacs has started (see <a
+href="../doc/cl/multiprocessing.htm">multiprocessing.htm</a> for a definition of process).
+Meanwhile, in the Emacs minibuffer, you should see</p>
+
+<blockquote>
+  <pre>Trying to start connection...done.</pre>
+</blockquote>
+
+<p>That message signifies that the hidden, or backdoor, communication between Emacs and
+Common Lisp has been initiated. Emacs and Common Lisp will be communicating over an
+network connection.</p>
+
+<p>The Emacs-Lisp interface is currently started with the -e Allegro Common Lisp command
+line option. This allows the interface to be started for images that do not behave like a
+standard Common Lisp image (with a read-eval-print loop). For more information, see the
+description of fi:start-lisp-interface-arguments in section 3.3 below.</p>
+
+<p>It is possible for the interface to fail to start up (failure will be indicated by the
+failure of `Starting socket daemon and emacs-lisp interface...' to appear in the
+*common-lisp* buffer or the failure of `Trying to start connection...done' to appear in
+the Emacs minibuffer. You can start the interface (or restart it if is dies) with the
+Allegro CL function excl:start-emacs-lisp-interface.</p>
+
+<hr>
+
+<h3><a name="3.1. Key bindings in Common Lisp subprocess mode">3.1. Key bindings in Common
+Lisp subprocess mode</a></h3>
+
+<p>Many of the key bindings in a *common-lisp* buffer behave much like a shell buffer
+does. The *common-lisp* buffer and a shell buffer have mode specific commands with the key
+prefix C-c. Both buffers have key bindings that will delete typed input (words or lines),
+send an EOF or interrupt, or send the input to the Allegro CL process.</p>
+
+<p>The key bindings can be classified into four categories: (1) General subprocess
+interaction, (2) Editing, (3) Lisp environment queries, and (4) Superkeys (Superkeys are
+keybindings that have different effects according to whether they are entered at the end
+of a buffer or elsewhere in the buffer). We describe the key bindings in each category
+next.</p>
+
+<h4>General subprocess interaction</h4>
+
+<p>The keys/functions in this category provide the functionality that a shell buffer would
+have. All the special characters (C-c, C-d, C-w, C-u, etc.) are handled by these
+functions:</p>
+<div align="center"><center>
+
+<table border="1" cellspacing="1" width="60%">
+  <tr>
+    <th width="106">key</th>
+    <th width="480">binding</th>
+  </tr>
+  <tr>
+    <td width="106">RET</td>
+    <td width="480">fi:inferior-lisp-newline</td>
+  </tr>
+  <tr>
+    <td width="106">C-c C-\</td>
+    <td width="480">fi:subprocess-quit</td>
+  </tr>
+  <tr>
+    <td width="106">C-c C-d</td>
+    <td width="480">fi:subprocess-send-eof<br>
+    (fi:remote-lisp-send-eof when Lisp is remote)</td>
+  </tr>
+  <tr>
+    <td width="106">C-c C-c</td>
+    <td width="480">fi:subprocess-interrupt</td>
+  </tr>
+  <tr>
+    <td width="106">C-c =</td>
+    <td width="480">fi:lisp-sync-current-working-directory</td>
+  </tr>
+  <tr>
+    <td width="106">C-c C-w</td>
+    <td width="480">fi:subprocess-backward-kill-word</td>
+  </tr>
+  <tr>
+    <td width="106">C-c C-v</td>
+    <td width="480">fi:subprocess-show-output</td>
+  </tr>
+  <tr>
+    <td width="106">C-c C-u</td>
+    <td width="480">fi:subprocess-kill-input</td>
+  </tr>
+  <tr>
+    <td width="106">C-c C-o</td>
+    <td width="480">fi:subprocess-send-flush</td>
+  </tr>
+  <tr>
+    <td width="106">C-c RET</td>
+    <td width="480">fi:subprocess-input-region</td>
+  </tr>
+  <tr>
+    <td width="106">C-c C-k</td>
+    <td width="480">fi:subprocess-kill-output</td>
+  </tr>
+  <tr>
+    <td width="106">C-c C-a</td>
+    <td width="480">fi:subprocess-beginning-of-line</td>
+  </tr>
+</table>
+</center></div>
+
+<p align="center">Table 2: General Subprocess Keybindings</p>
+
+<h4>Editing </h4>
+
+<p>The keys/functions in this category provide the functionality to edit and enter
+expressions that will be processed by Common Lisp:</p>
+<div align="center"><center>
+
+<table border="1" cellspacing="1" width="60%">
+  <tr>
+    <th width="210">key</th>
+    <th width="361">binding</th>
+  </tr>
+  <tr>
+    <td width="210">DEL</td>
+    <td width="361">backward-delete-char-untabify</td>
+  </tr>
+  <tr>
+    <td width="210">TAB</td>
+    <td width="361">fi:lisp-indent-line</td>
+  </tr>
+  <tr>
+    <td width="210">C-c ]</td>
+    <td width="361">fi:super-paren</td>
+  </tr>
+  <tr>
+    <td width="210">C-c C-e</td>
+    <td width="361">fi:end-of-defun</td>
+  </tr>
+  <tr>
+    <td width="210">C-c ;</td>
+    <td width="361">fi:comment-region</td>
+  </tr>
+  <tr>
+    <td width="210">C-c ^</td>
+    <td width="361">fi:center-defun</td>
+  </tr>
+  <tr>
+    <td width="210">C-c %</td>
+    <td width="361">fi:extract-list</td>
+  </tr>
+  <tr>
+    <td width="210">C-c C-y</td>
+    <td width="361">fi:pop-input</td>
+  </tr>
+  <tr>
+    <td width="210">C-c C-s</td>
+    <td width="361">fi:re-search-forward-input</td>
+  </tr>
+  <tr>
+    <td width="210">C-c C-r</td>
+    <td width="361">fi:re-search-backward-input</td>
+  </tr>
+  <tr>
+    <td width="210">C-c C-p</td>
+    <td width="361">fi:pop-input</td>
+  </tr>
+  <tr>
+    <td width="210">C-c C-n</td>
+    <td width="361">fi:push-input</td>
+  </tr>
+  <tr>
+    <td width="210">C-c C-l</td>
+    <td width="361">fi:list-input-ring</td>
+  </tr>
+  <tr>
+    <td width="210">C-x RET</td>
+    <td width="361">fi:inferior-lisp-input-list</td>
+  </tr>
+  <tr>
+    <td width="210">ESC C-q</td>
+    <td width="361">fi:indent-sexp</td>
+  </tr>
+  <tr>
+    <td width="210">ESC RET</td>
+    <td width="361">fi:inferior-lisp-input-sexp</td>
+  </tr>
+</table>
+</center></div>
+
+<p align="center">Table 3: Editing Keybindings</p>
+
+<h4>Lisp environment query</h4>
+
+<p>The keys/functions in this category provide a way to obtain information from the
+Allegro CL environment. These functions use the hidden communication between Emacs and
+Lisp to simulate Lisp-machine like behavior:</p>
+<div align="center"><center>
+
+<table border="1" cellspacing="1" width="60%">
+  <tr>
+    <th>key</th>
+    <th>binding</th>
+  </tr>
+  <tr>
+    <td>C-c ?</td>
+    <td>fi:lisp-apropos</td>
+  </tr>
+  <tr>
+    <td>C-c s</td>
+    <td>fi:scan-stack</td>
+  </tr>
+  <tr>
+    <td>C-c .</td>
+    <td>fi:lisp-find-definition</td>
+  </tr>
+  <tr>
+    <td>C-c 4 .</td>
+    <td>fi:lisp-find-definition-other-window</td>
+  </tr>
+  <tr>
+    <td>C-c ,</td>
+    <td>fi:lisp-find-next-definition</td>
+  </tr>
+  <tr>
+    <td>C-c SPC</td>
+    <td>fi:lisp-delete-pop-up-window</td>
+  </tr>
+  <tr>
+    <td>C-c w</td>
+    <td>fi:lisp-macroexpand-recursively</td>
+  </tr>
+  <tr>
+    <td>C-c t</td>
+    <td>fi:toggle-trace-definition</td>
+  </tr>
+  <tr>
+    <td>C-c m</td>
+    <td>fi:lisp-macroexpand</td>
+  </tr>
+  <tr>
+    <td>C-c f</td>
+    <td>fi:lisp-function-documentation</td>
+  </tr>
+  <tr>
+    <td>C-c d</td>
+    <td>fi:describe-symbol</td>
+  </tr>
+  <tr>
+    <td>C-c c</td>
+    <td>fi:list-who-calls</td>
+  </tr>
+  <tr>
+    <td>C-c a</td>
+    <td>fi:lisp-arglist</td>
+  </tr>
+  <tr>
+    <td>C-c TAB</td>
+    <td>fi:lisp-complete-symbol</td>
+  </tr>
+</table>
+</center></div>
+
+<p align="center">Table 4: Lisp Environment Query Keybindings</p>
+
+<p>The functions in this category that read symbols also do dynamic completion of symbols
+present in the Allegro CL environment. The Emacs-Lisp interface has no static symbols
+database, so a symbol is available for completion just after it is created. See the
+description of fi:lisp-complete-symbol in section 5.1 below.</p>
+
+<h4>Superkeys</h4>
+
+<p>Because there is a set of process-related functions that are needed in the
+*common-lisp* buffer, these key bindings have a special meaning at the end of the buffer.
+That is, there are certain key sequences which have behavior determined by
+fi:inferior-common-lisp-mode when typed at the end of the buffer, but have their global
+meaning when typed anywhere else in the buffer. The key sequences and their meanings are
+given below, and they are only in effect when fi:subprocess-enable-superkeys is non-nil
+(before fi:inferior-common-lisp-mode is entered for the first time)</p>
+<div align="center"><center>
+
+<table border="1" cellspacing="1" width="566">
+  <tr>
+    <th width="36">key</th>
+    <th width="518">binding</th>
+  </tr>
+  <tr>
+    <td width="36">C-\</td>
+    <td width="518">send &quot;kill -QUIT&quot; (UNIX quit) to Common Lisp</td>
+  </tr>
+  <tr>
+    <td width="36">C-w</td>
+    <td width="518">delete the last word (from &quot;stty werase&quot;)</td>
+  </tr>
+  <tr>
+    <td width="36">C-u</td>
+    <td width="518">delete the current input (from &quot;stty kill&quot;)</td>
+  </tr>
+  <tr>
+    <td width="36">C-o</td>
+    <td width="518">flush output (from &quot;stty flush&quot;)</td>
+  </tr>
+  <tr>
+    <td width="36">C-d</td>
+    <td width="518">send EOF to Common Lisp</td>
+  </tr>
+  <tr>
+    <td width="36">C-a</td>
+    <td width="518">goto the beginning of the line, ignore the Common Lisp prompt</td>
+  </tr>
+</table>
+</center></div>
+
+<p align="center">Table 5: Superkeys</p>
+
+<p>C-v, C-u, and C-o are chosen because those are the (default) keys used by stty werase,
+kill, and flush in Unix.</p>
+
+<p>So, C-d at the end of the *common-lisp* buffer will send Common Lisp an end of file,
+and at other places in the buffer will delete the next character (unless you have rebound
+C-d to call another function). See the entry for fi:superkey-shadow-universal-argument for
+ways to control the universal argument C-u.</p>
+
+<hr>
+
+<h3><a name="3.2. Typing input to Common Lisp">3.2. Typing input to Common Lisp</a></h3>
+
+<p>The Emacs Lisp function bound to RET is more than just &quot;send the current line to
+the Common Lisp process&quot;. In fact, it sends only entire s-expressions, or forms, to
+Common Lisp. This allows editing of incomplete, multi-line expressions before Common Lisp
+sees them.</p>
+
+<p>To accomplish the advanced input features, Emacs needs to know the form of the Common
+Lisp prompt. The prompt in Allegro CL is defined by the value of the variable <font
+face="Courier New">top-level:*prompt*</font>. This value must be a string acceptable as
+the second argument to format. Although the prompt can be changed at any time, it is
+typically set in the file <font face="Courier New">$HOME/.clinit.cl</font>. But however
+the prompt is changed, the Emacs user option <font face="Courier New">fi:common-lisp-prompt-pattern</font>
+must be changed as well -- so that the default value of <font face="Courier New">top-level:*prompt*</font>
+(in Common Lisp) and <font face="Courier New">fi:common-lisp-prompt-pattern</font> (in
+Emacs Lisp) are in agreement.</p>
+
+<p>See the file <em>misc/prompts.cl</em> in the Allegro directory for examples of other
+prompts. See <a href="../doc/cl/top_level.htm">top_level.htm</a> for information on the prompt itself.</p>
+
+<h4>Input rings</h4>
+
+<p>The subprocess input ring helps to minimize typing in many different modes of the
+Emacs-Lisp interface. The Emacs-Lisp interface shell modes and Common Lisp modes have
+subprocess input rings. The subprocess input ring is similar to the Emacs kill ring,
+except each subprocess buffer has a separate subprocess input ring. Previously typed input
+can be yanked to the prompt at the end of the Common Lisp subprocess buffer. It can then
+be edited before sending it to Common Lisp. The selection of which input to yank can be
+the previous, next or selected by regular expression search through the input ring. See
+the Emacs-Lisp interface commands fi:list-input-ring, fi:pop-input, fi:push-input,
+fi:re-search-backward-input and fi:re-search-forward-input.</p>
+
+<h4>Tracking directory changes</h4>
+
+<p>Top-level commands to change the directory in the Common Lisp process are watched by
+Emacs, so that the Emacs variable default-directory can be changed when the Common Lisp
+current working directory is changed. The Common Lisp top-level commands :cd, :pushd, and
+:popd are tracked, and when typed in the *common-lisp* buffer the new directory is saved
+in default-directory.</p>
+
+<p>The Common Lisp top-level commands :dirs and :pwd do exactly what their C shell
+counterparts do: print the directory stack and current working directory.</p>
+
+<h4>Tracking package changes</h4>
+
+<p>Another Common Lisp top-level command, <font face="Courier New">:package</font>, is
+tracked by the Emacs-Lisp interface. When package changes are done either via the
+top-level command <font face="Courier New">:package</font> or the macro <font
+face="Courier New">in-package</font>, Emacs tracks the current package of the <font
+face="Courier New">*common-lisp*</font> buffer. The current package is used by many
+Emacs-Lisp interface functions that query the Common Lisp environment, such as <font
+face="Courier New">fi:lisp-arglist</font>.</p>
+
+<p>The current package is displayed in the mode-line.&nbsp; So, when</p>
+
+<pre>    :package foo</pre>
+
+<p>is entered in the <font face="Courier New">*common-lisp*</font> buffer, the mode-line
+will be updated to contain the string <em>pkg:foo</em> after the mode identifier. &nbsp;
+See <a href="#4.2. Packages and readtables">4.2 Packages and readtables</a> for more
+information.</p>
+
+<h4>Lisp Listeners</h4>
+
+<p>Because Allegro CL has multiprocessing (see <a href="../doc/cl/multiprocessing.htm">multiprocessing.htm</a>
+for more information), multiple threads of control can be created--multiple user
+interactions, or top-levels, can be created within the same UNIX process. Within one
+Common Lisp process, any number of lisp listeners, as these top-levels are called, can be
+created.</p>
+
+<p>The Emacs-Lisp interface has a function for creating a lisp listener onto an existing
+Common Lisp subprocess: fi:open-lisp-listener. This can be used to debug multiprocessing
+applications or to execute forms while Common Lisp is doing other processing.</p>
+
+<hr>
+
+<h3><a name="3.3. Functions and variables for Interacting with a CL subprocess">3.3.
+Functions and variables for Interacting with a CL subprocess</a></h3>
+
+<pre>
+%% fi:common-lisp
+</pre>
+
+<p>Below is an example .emacs file that defines a function run-common-lisp, which will
+start up a Lisp with default arguments. run-common-lisp is useful if the user frequently
+uses the same Lisp.&nbsp; (This is eli/examples/emacs.el.)</p>
+
+<pre>
+%%include examples/emacs.el
+</pre>
+
+<pre>
+%% fi:open-lisp-listener
+%% fi:toggle-to-lisp			fi:common-lisp-mode-map
+%% fi:define-global-lisp-mode-bindings
+%% fi:common-lisp-buffer-name
+%% fi:common-lisp-directory
+%% fi:common-lisp-image-name
+%% fi:common-lisp-image-file
+%% fi:common-lisp-image-arguments
+%% fi:common-lisp-host
+%% fi:common-lisp-prompt-pattern
+%% fi:common-lisp-subprocess-timeout
+%% fi:start-lisp-interface-arguments
+%% fi:use-background-streams
+%% fi:start-lisp-interface-hook
+%% fi:reset-lep-connection
+%% fi:in-package-regexp
+%% fi:default-in-package-regexp
+
+%% fi:inferior-common-lisp-mode
+%% fi:inferior-lisp-input-list		fi:inferior-common-lisp-mode-map
+%% fi:inferior-lisp-input-sexp		fi:inferior-common-lisp-mode-map
+%% fi:inferior-lisp-newline		fi:inferior-common-lisp-mode-map
+%% fi:lisp-sync-current-working-directory fi:inferior-common-lisp-mode-map
+%% fi:list-input-ring			fi:inferior-common-lisp-mode-map
+%% fi:pop-input				fi:inferior-common-lisp-mode-map
+%% fi:push-input			fi:inferior-common-lisp-mode-map
+%% fi:re-search-backward-input		fi:inferior-common-lisp-mode-map
+%% fi:re-search-forward-input		fi:inferior-common-lisp-mode-map
+%% fi:remote-lisp-send-eof		fi:inferior-common-lisp-mode-map
+%% fi:subprocess-backward-kill-word	fi:inferior-common-lisp-mode-map
+%% fi:subprocess-beginning-of-line	fi:inferior-common-lisp-mode-map
+%% fi:subprocess-input-region		fi:inferior-common-lisp-mode-map
+%% fi:subprocess-interrupt		fi:inferior-common-lisp-mode-map
+%% fi:subprocess-kill			fi:inferior-common-lisp-mode-map
+%% fi:subprocess-kill-input		fi:inferior-common-lisp-mode-map
+%% fi:subprocess-kill-output		fi:inferior-common-lisp-mode-map
+%% fi:subprocess-quit			fi:inferior-common-lisp-mode-map
+%% fi:subprocess-send-eof		fi:inferior-common-lisp-mode-map
+%% fi:subprocess-send-flush		fi:inferior-common-lisp-mode-map
+%% fi:subprocess-show-output		fi:inferior-common-lisp-mode-map
+%% fi:subprocess-suspend		fi:inferior-common-lisp-mode-map
+
+%% fi:lisp-listener-mode
+%% fi:interrupt-listener			fi:lisp-listener-mode-map
+%% fi:tcp-lisp-listener-kill-process		fi:lisp-listener-mode-map
+%% fi:tcp-lisp-listener-send-eof		fi:lisp-listener-mode-map
+
+%% fi:emacs-to-lisp-transaction-directory
+%% fi:default-input-ring-max
+%% fi:display-buffer-function
+%% fi:new-screen-for-common-lisp-buffer
+%% fi:eval-in-lisp
+%% fi:eval-in-lisp-asynchronous
+%% fi:filename-frobber-hook
+%% fi:lisp-evalserver-number-reads
+%% fi:shell-cd-regexp
+%% fi:shell-popd-regexp
+%% fi:shell-pushd-regexp
+%% fi:subprocess-continuously-show-output-in-visible-buffer
+%% fi:subprocess-enable-superkeys
+%% fi:subprocess-env-vars
+%% fi:superkey-shadow-universal-argument
+</pre>
+
+<hr>
+
+<h2><a name="4. Editing Common Lisp Programs">4. Editing Common Lisp Programs</a></h2>
+
+<p>This section and its subsections discuss the Emacs mode for editing Common Lisp
+programs.</p>
+
+<p>Common Lisp editing mode, fi:common-lisp-mode, is automatically entered when a Common
+Lisp source file is visited. The Emacs Lisp variable fi:common-lisp-file-types specifies
+the file types of Common Lisp source files. The following sections discuss the various
+aspects of fi:common-lisp-mode.</p>
+
+<hr>
+
+<h3><a name="4.1. Indentation">4.1. Indentation</a></h3>
+
+<p>Indentation of a form can be performed with C-M-q, (Hold the CONTROL and META keys
+while depressing the q key) when the point is on an opening parenthesis. Indentation of
+the current line can be performed by typing TAB.</p>
+
+<p>All Common Lisp forms are indented with the generally accepted amount of indentation.
+For some of the special forms and macros new to Common Lisp (due to the ANSI X3J13
+committee), the indentation is not as standardized as it is for older forms. At the
+current time, the user interface to the indentation method specification is not
+documented. It is, however, available for your perusal in the file fi/indent.el-there are
+many examples at the end of this file.</p>
+
+<p>Comments in Common Lisp begin with a semicolon (;). Comments starting with different
+numbers of semicolons are indented differently. The Emacs Lisp variable
+fi:lisp-comment-indent-specification specifies how the indentation is done.
+fi:lisp-comment-indent-specification is a list, where the Nth element (counting from 1)
+specifies how N semicolons will be indented. That is, the first element specifies how a
+single semicolon will be indented. The values in the list are either: 
+
+<ul>
+  <li>a positive number n, which means indent to the nth column,</li>
+  <li>a negative number, which means indent a negative number of columns relative to the
+    current column,</li>
+  <li>t, which means indent as an s-expression at the same column surrounding s-expressions
+    are indented to, or</li>
+  <li>nil, which means leave the comment where it is.</li>
+</ul>
+
+<p>The initial value of fi:lisp-comment-indent-specification is</p>
+
+<pre>    `(list 40 t nil 0)</pre>
+
+<p>which means indent one semicolon to column 40, two semicolons to the column
+s-expressions would indent to, three semicolons should be left alone, and four semicolons
+are left justified.</p>
+
+<p>NOTE: if the buffer-local variable comment-column is changed, then the first element of
+fi:lisp-comment-indent-specification is changed to contain the value of comment-column.</p>
+
+<p>Additionally, if fi:lisp-electric-semicolon is non-nil, then semicolon placement will
+happen automatically when semicolons are inserted into the buffer--no TAB is required to
+indent the current line. The value of this variable defaults to nil.</p>
+
+<p>Here is an example of each type, using default values:</p>
+
+<pre>;;;; Foo the Bar</pre>
+
+<pre>(in-package :foo)</pre>
+
+<pre>(defun bar (thang)
+  ;; BAR the THANG
+;;;; WARNING: frobs beware
+  (frob-the-frammis thang)		; out in right margin field
+;;; leave me where I lie...
+  ;; but indent by right...
+  )</pre>
+
+<pre>
+%% fi:lisp-comment-indent-specification
+</pre>
+
+<hr>
+
+<h3><a name="4.2. Packages and readtables">4.2. Packages and readtables</a></h3>
+
+<p>The Common Lisp package in which a source file is defined is an important quantity
+which must be known to Emacs. Readtables, though less essential, are also useful when
+known to Emacs. Such information is used by Emacs, when communicating with Common Lisp, to
+insure that the operations performed in the Common Lisp environment are with respect to
+the correct package and expressions are read with the correct readable.</p>
+
+<p>There are two methods for telling Emacs about which package to use. 
+
+<ol>
+  <li>The in-package macro form is parsed when a file is visited, and the argument to
+    in-package is used as the package for that buffer.</li>
+  <li>The file mode line (unfortunately named, since the name conflicts with the display mode
+    line) also communicates information about the file to Emacs.</li>
+</ol>
+
+<p>The file mode line can also be used to specify a readtable and the Emacs mode. A file
+mode line must be the first line of text in the file and has the following form:</p>
+
+<pre>; -*- ... -*-</pre>
+
+<p>where ... has the following fields: 
+
+<ul>
+  <li><table border="0" cellpadding="0" cellspacing="0" width="95%">
+      <tr>
+        <td width="100%"><strong>mode: mode-name</strong><p>mode-name is the name of the function
+        that will enter the mode for this file. It overrides the mode chosen based on the file
+        name's type (suffix). This is a feature available in standard Emacs.</td>
+      </tr>
+    </table>
+  </li>
+  <li><table border="0" cellpadding="0" cellspacing="0" width="95%">
+      <tr>
+        <td width="100%"><strong>package: name</strong><p>name is the name of the package for the
+        file. For compatibility with Lisp machines, name can be a list--everything but the first
+        element is ignored, which should be the name of the package. This value overrides the
+        package specified by an in-package form (if there is one).</td>
+      </tr>
+    </table>
+  </li>
+  <li><table border="0" cellpadding="0" cellspacing="0" width="95%">
+      <tr>
+        <td width="100%"><strong>readtable: name</strong><p>name is the name of the readtable for
+        this buffer. See the description of excl:named-readtable in <a
+        href="../doc/cl/pages/operators/excl/named-readtable.htm">named-readtable.htm</a> for information on
+        creating and using named readtables.</td>
+      </tr>
+    </table>
+  </li>
+</ul>
+
+<p>Fields in the file mode line are separated by semicolons. The following example
+illustrate a file mode line: With the in-package and eval-when forms, loading this file
+into Emacs will result in the correct package and readtable being used by Lisp operations
+on the file:</p>
+
+<pre>;; -*- mode: fi:common-lisp-mode; package: mypack; readtable: myrt -*-
+(in-package :mypack)
+(eval-when (compile 
+            load    ;; see note below
+            eval)
+  (setq *readtable* (named-readtable :myrt)))
+; ... [rest of code]</pre>
+
+<p>Note: load is not needed in the eval-when form when no extraneous reading will happen
+when the compiled version of this file is loaded. load must be omitted is the named
+readtable does not actually exist at runtime (when, for example, you use a special
+readtable for developing an application but it is not included in the application when it
+is finished).</p>
+
+<p>The file mode line is parsed by the standard Emacs Lisp function set-auto-mode, which
+has been modified by this interface to look for the package and readtable fields. If you
+change the file mode line or in-package form in a buffer, you may execute the Emacs Lisp
+function fi:parse-mode-line-and-package to re-parse the package. A file mode line, if
+supplied, overrides the value of an in-package form.</p>
+
+<p>The display mode line is used to display status information about buffers (and it
+appears, usually in a contrasting color, at the bottom of the buffer). In particular, the
+package and readtable (if any) are displayed in the display mode line.</p>
+
+<p>If a file contains neither a file mode line nor an in-package form, the following
+supplies the package:</p>
+
+<pre>
+%% fi:default-package
+%% fi:package
+%% fi:readtable
+</pre>
+
+<hr>
+
+<h3><a name="4.3. Syntactic modification of Common Lisp source code">4.3. Syntactic
+modification of Common Lisp source code</a></h3>
+
+<p>Users of Emacs Lisp mode in standard Emacs will be familiar with the many ways to
+manipulate Lisp expressions. We mention three additional functions available in
+fi:common-lisp-mode. A full description of these functions and the keybindings defined for
+the functions is provided later. </p>
+
+<pre>fi:extract-list</pre>
+
+<blockquote>
+  <p>Take the list on which the point resides and move it up one level. That is, delete the
+  enclosing expression. With an optional integer prefix argument n, take the list on which
+  the point resides and move it up n times.</p>
+</blockquote>
+
+<pre>fi:comment-region</pre>
+
+<blockquote>
+  <p>Comment the region between the point and the mark. With a non-nil prefix argument,
+  uncomment the region.</p>
+</blockquote>
+
+<pre>fi:super-paren</pre>
+
+<blockquote>
+  <p>Close the current top-level form by inserting as many parenthesis as are necessary.</p>
+</blockquote>
+
+<hr>
+
+<h3><a name="4.4. Information sharing between Common Lisp and Emacs">4.4. Information
+sharing between Common Lisp and Emacs</a></h3>
+
+<p>The commands that were discussed that query the Common Lisp environment, in Section 3.1
+Key bindings in Common Lisp subprocess mode, also apply to Common Lisp editing mode, with
+several additional commands:</p>
+
+<pre>      key		binding
+      ---		-------
+      C-c C-r		fi:lisp-eval-or-compile-region
+      C-c C-s		fi:lisp-eval-or-compile-last-sexp
+      C-c C-b		fi:lisp-eval-or-compile-current-buffer
+      ESC C-x		fi:lisp-eval-or-compile-defun
+		  The above group of functions cause the
+		  region, last s-expression, the entire buffer
+		  or the current top-level form to be
+		  evaluated in the Common Lisp environment.
+		  With a prefix argument, the source is
+		  compiled.</pre>
+
+<pre>      C-c m		fi:lisp-macroexpand
+      C-c w		fi:lisp-macroexpand-recursively
+		  The above two functions cause the form at the point
+		  to be macroexpanded, recursively so with the second
+		  function.</pre>
+
+<pre>      C-c t		fi:toggle-trace-definition
+		  Toggle tracing a function in the Common Lisp
+		  environment.  If it is currently being traced, then
+		  tracing will be turned off, or if is not being
+		  traced, then tracing will be turned on for this one
+		  function.  With a prefix argument, entry to this
+		  function will cause entry into the debugger (trace
+		  on break).</pre>
+
+<pre>      C-c ?		fi:lisp-apropos
+      C-c f		fi:lisp-function-documentation
+      C-c d		fi:describe-symbol
+      C-c c		fi:list-who-calls
+      C-c a		fi:lisp-arglist
+		  The above group of functions read a function name
+		  from the minibuffer, using the symbol at the point,
+		  if there is one, as the default answer, and execute
+		  `apropos', find the documentation on the function,
+		  describe the function, find the callers of the
+		  function, or the arglist for the function, in the
+		  Common Lisp environment.  The information is printed
+		  in the minibuffer if it will fix, otherwise a buffer
+		  is popped up that displays the information.</pre>
+
+<pre>      C-c TAB		fi:lisp-complete-symbol
+		  Dynamically complete the symbol at the point in the
+		  Common Lisp environment.  This means that you may
+		  define a function or variable in Common Lisp, go
+		  into Common Lisp source buffer, and complete the
+		  name.  Each time completion is done it looks up the
+		  possible completions, dynamically, and does not use
+		  a static table.</pre>
+
+<pre>		  Abbreviations are also expanded.  For example, in
+		  the initial `user' package, which inherits symbols
+		  from the `common-lisp' package, ``m-p-d-'' will
+		  expand to ``most-positive-double-float''.  The
+		  hyphen (-) is a separator that causes the substring
+		  before the hyphen to be matched at the beginning of
+		  words in target symbols. </pre>
+
+<pre>      C-c .		fi:lisp-find-definition
+      C-c 4 .		fi:lisp-find-definition-other-window
+      C-c ,		fi:lisp-find-next-definition
+		  The above group of functions are used for finding
+		  definitions of objects defined in the Common Lisp
+		  environment.   See the documents
+                     <a
+href="../doc/cl/source_file_recording.htm">source_file_recording.htm</a>
+                     <a
+href="../doc/cl/cross_reference.htm">xref.htm</a>
+                  for information on this.  In short, you will need to
+		  set the Common Lisp special variables
+		  *record-source-file-info* and
+		  *record-xref-info* to non-nil values before loading
+		  any files into Common Lisp.</pre>
+
+<hr>
+
+<h3><a name="4.5. common-lisp-mode functions and variables">4.5. common-lisp-mode
+functions and variables</a></h3>
+
+<pre>
+%% fi:common-lisp-mode
+%% fi:center-defun			fi:common-lisp-mode-map
+%% fi:comment-region			fi:common-lisp-mode-map
+%% fi:uncomment-region 
+%% fi:end-of-defun			fi:common-lisp-mode-map
+%% fi:extract-list			fi:common-lisp-mode-map
+%% fi:indent-sexp			fi:common-lisp-mode-map
+%% fi:lisp-apropos			fi:common-lisp-mode-map
+%% fi:lisp-arglist			fi:common-lisp-mode-map
+%% fi:lisp-complete-symbol 		fi:common-lisp-mode-map
+%% fi:describe-symbol			fi:common-lisp-mode-map
+%% fi:lisp-evals-always-compile
+%% fi:lisp-eval-current-buffer 		fi:common-lisp-mode-map
+%% fi:lisp-eval-or-compile-current-buffer fi:common-lisp-mode-map
+%% fi:lisp-eval-defun			fi:common-lisp-mode-map
+%% fi:lisp-compile-current-buffer 	fi:common-lisp-mode-map
+%% fi:lisp-compile-defun		fi:common-lisp-mode-map
+%% fi:lisp-eval-or-compile-defun	fi:common-lisp-mode-map
+%% fi:lisp-eval-last-sexp		fi:common-lisp-mode-map
+%% fi:lisp-compile-last-sexp		fi:common-lisp-mode-map
+%% fi:lisp-eval-or-compile-last-sexp	fi:common-lisp-mode-map
+%% fi:lisp-eval-region			fi:common-lisp-mode-map
+%% fi:lisp-compile-region		fi:common-lisp-mode-map
+%% fi:lisp-eval-or-compile-region	fi:common-lisp-mode-map
+%% fi:lisp-find-definition		fi:common-lisp-mode-map
+%% fi:lisp-find-definition-other-window	fi:common-lisp-mode-map
+%% fi:lisp-find-next-definition		fi:common-lisp-mode-map
+%% fi:lisp-function-documentation	fi:common-lisp-mode-map
+%% fi:lisp-indent-line			fi:common-lisp-mode-map
+%% fi:lisp-macroexpand			fi:common-lisp-mode-map
+%% fi:lisp-macroexpand-recursively	fi:common-lisp-mode-map
+%% fi:lisp-mode-auto-indent
+%% fi:lisp-mode-newline			fi:common-lisp-mode-map
+%% fi:log-functional-change		fi:common-lisp-mode-map
+%% fi:super-paren			fi:common-lisp-mode-map
+%% fi:trace-definition
+%% fi:toggle-trace-definition		fi:common-lisp-mode-map
+</pre>
+
+<hr>
+
+<h3><a name="4.6. definition-mode functions and variables">4.6. definition-mode functions
+and variables</a></h3>
+
+<pre>
+%% fi:definition-mode
+%% fi:inverse-definition-mode
+%% fi:maintain-definition-stack
+%% fi:compare-source-files
+%% fi:list-buffer-definitions
+%% fi:list-undefined-functions 
+%% fi:list-unused-functions
+%% fi:definition-mode-goto-definition	fi:definition-mode-map
+%% fi:definition-mode-goto-next		fi:definition-mode-map
+%% fi:definition-mode-goto-previous	fi:definition-mode-map
+%% fi:definition-mode-quit		fi:definition-mode-map
+%% fi:definition-mode-undo		fi:definition-mode-map
+%% fi:definition-mode-toggle-trace	fi:definition-mode-map
+%% fi:inverse-definition-mode-quit	fi:inverse-definition-mode-map
+%% fi:inverse-definition-who-calls	fi:inverse-definition-mode-map
+</pre>
+
+<hr>
+
+<h2><a name="5. Writing and Debugging Common Lisp Programs">5. Writing and Debugging
+Common Lisp Programs</a></h2>
+
+<p>The Emacs-Lisp interface is a rich programming environment for the construction and
+debugging of Common Lisp programs. The debugging aids are classified into several
+categories. In Emacs: 
+
+<ul>
+  <li>commands which query the Common Lisp environment for information</li>
+  <li>commands to change the state of the Common Lisp environment</li>
+  <li>a mode for debugging Common Lisp processes from within Emacs</li>
+  <li>additional lisp listeners for debugging multiprocessing applications</li>
+  <li>programming aids</li>
+</ul>
+
+<p>In addition to the interface from Emacs to debugging programs, Allegro CL provides a
+rich set of tools to debug programs (see <a href="../doc/cl/debugging.htm">debugging.htm</a>).
+Functions in Allegro CL which are implemented with the help of the Emacs-Lisp interface
+are the top-level command :edit and the function common-lisp:ed - both allow the source
+code for a particular function to be edited. The editing operation is initiated from
+Emacs, but the action is performed by Allegro CL. :edit edits the function associated with
+the current stack frame and common-lisp:ed allow the editing of arbitrary functions or
+functions associated with symbols or function specs. For example, a call to lisp:ed
+returns a value immediately</p>
+
+<pre>    USER(1): (ed 'frob)</pre>
+
+<pre>    &lt;mp:process Metdot Session 0 @ #x90e7a6&gt;
+    USER(2): </pre>
+
+<p>but causes a buffer to be created and made visible in Emacs displaying the definition
+of frob.</p>
+
+<pre>
+%% fi:auto-fill
+%% fi:check-unbalanced-parentheses-when-saving
+%% fi:common-lisp-file-types
+%% fi:compile-file
+%% fi:echo-evals-from-buffer-in-listener-p
+%% fi:fill-paragraph 
+%% fi:find-tag-lock
+%% fi:find-unbalanced-parenthesis
+%% fi:indent-code-rigidly
+%% fi:indent-methods-case-sensitive
+%% fi:kill-definition
+%% fi:lisp-do-indentation
+%% fi:lisp-electric-semicolon
+%% fi:load-file
+%% fi:parse-mode-line-and-package
+%% fi:pop-to-sublisp-buffer-after-lisp-eval
+</pre>
+
+<hr>
+
+<h3><a name="5.1. Finding the definitions of functions">5.1. Finding the definitions of
+functions</a></h3>
+
+<p>An important programming aid is being able to easily locate the source for functions.
+Sometimes the name of a function is not entirely known, so substrings or regular
+expressions need be used to locate possible definitions.</p>
+
+<p>Additionally, Emacs provides a tags facility, which does precisely what is described
+above, except it uses a static database created by the program etags. This is, obviously,
+of limited value since as the database becomes out of date the ability to find definitions
+diminishes.</p>
+
+<p>The approach taken in this interface is to use the information present in the Common
+Lisp environment, and, if that lookup fails, to use the Emacs tags mechanism.</p>
+
+<p>The information that is saved in the Common Lisp environment when files are loaded into
+Common Lisp uses the Source-file recording facility of Allegro CL, which is described in <a
+href="../doc/cl/source_file_recording.htm">source_file_recording.htm</a>. Source-file information
+will be recorded and loaded if the values of the Common Lisp variables <a
+href="../doc/cl/pages/variables/excl/s_record-source-file-info_s.htm">excl:*record-source-file-info*</a>
+and <a href="../doc/cl/pages/variables/excl/s_load-source-file-info_s.htm">excl:*load-source-file-info*</a>
+are non-nil.</p>
+
+<h4>Retrieving information from the Common Lisp environment</h4>
+
+<p>During the course of debugging or programming, it is useful to have access to the
+wealth of information present in the Common Lisp environment. The arglist of a function,
+for example, is useful when composing a call to a particular function, but only if it is
+inexpensive to look it up.</p>
+
+<p>The following functions are specifically available in Common Lisp editing mode because
+they are bound to a key sequence:</p>
+
+<pre>	key		action
+	---		-------
+	C-c ?		LISP:APROPOS on a string or regular expression
+	C-c a		print the arglist of a function 
+	C-c c		list the who calls a function
+	C-c d		LISP:DESCRIBE a symbol
+	C-c f		print the function documentation of a symbol
+	C-c m		macroexpand the form at the point
+	C-c w		recursively macroexpand the form at the point
+	C-c TAB		present completions of a partially named symbol
+	C-c .		find the source for a function
+	C-c 4 .		find the source for a function, in the other window
+	C-c ,		find the next definition, when there is more than one</pre>
+
+<pre>	Table 10: Bindings for Retrieving information from the Common
+		  Lisp environment</pre>
+
+<p>in addition to the above functions bound to key sequences, the following functions are
+available as extended commands (We mention these functions briefly. Their full
+descriptions are later):</p>
+
+<pre>	fi:edit-who-calls
+		Edit all the callers of a function.</pre>
+
+<pre>	fi:list-who-is-called-by
+	fi:edit-who-is-called-by
+		List or edit all the functions that are called by a
+		function.</pre>
+
+<pre>	fi:list-generic-function-methods
+	fi:edit-generic-function-methods
+		List or edit all the methods of a generic function.</pre>
+
+<pre>	fi:describe-class
+	fi:describe-function
+		Describe a named class or function.</pre>
+
+<pre>	fi:list-undefined-functions
+		List the functions which are called but not defined.</pre>
+
+<p>`List' means to display the names in definition mode, which allows for easily finding
+the source associated with a definition. See the description of fi:definition-mode `Edit'
+means to find the source associated with a definition, making the additional definitions
+available via C-c ,.</p>
+
+<p>Many of the above commands create a buffer names *CL-temp* to display the information
+they retrieve from the Lisp environment. After viewing the contents of this buffer, you
+may restore the arrangement of windows, as they were before the *CL-temp* buffer was made
+visible, by invoking the function fi:lisp-delete-pop-up-window. The keybinding C-c SPC
+will run this function.</p>
+
+<h4>Emacs functions and variables for retrieving CL environment information</h4>
+
+<pre>
+%% fi:lisp-delete-pop-up-window		fi:common-lisp-mode-map
+%% fi:pop-up-temp-window-behavior
+%% fi:list-who-calls			fi:common-lisp-mode-map
+%% fi:list-who-is-called-by
+%% fi:edit-who-calls
+%% fi:edit-who-is-called-by
+%% fi:list-generic-function-methods
+%% fi:edit-generic-function-methods
+%% fi:describe-class
+%% fi:describe-function
+</pre>
+
+<hr>
+
+<h3><a name="5.2. Interaction with Allegro Composer">5.2. Interaction with Allegro
+Composer</a></h3>
+
+<p>The following Emacs functions allow interaction with the various components of Allegro
+Composer. To use them, Allegro Composer must be running. Note that these Emacs functions
+are formally defined later.</p>
+
+<pre>fi:inspect-class
+fi:inspect-function
+fi:inspect-value</pre>
+
+<blockquote>
+  <p>Inspect a named class, function or arbitrary value. These functions work in conjunction
+  with Allegro Composer to create an inspector window containing the indicated object.</p>
+</blockquote>
+
+<pre>fi:show-calls-to
+fi:show-calls-from</pre>
+
+<blockquote>
+  <p>Show graphs of calls to/from a specific function.&nbsp; The Allegro Grapher is used to
+  display a graph with the indicated information.</p>
+</blockquote>
+
+<pre>fi:show-subclasses
+fi:show-superclasses</pre>
+
+<blockquote>
+  <p>Show graphs of the subclasses/superclasses of a class. The Allegro Grapher is used to
+  display a graph with the indicated information.</p>
+</blockquote>
+
+<h4>Emacs functions and variables that interact with Allegro Composer</h4>
+
+<pre>
+%% fi:inspect-class 
+%% fi:inspect-function
+%% fi:inspect-value
+%% fi:show-calls-to
+%% fi:show-calls-from
+%% fi:show-subclasses
+%% fi:show-superclasses
+</pre>
+
+<hr>
+
+<h3><a name="5.3. Modifying the state of the Common Lisp environment">5.3. Modifying the
+state of the Common Lisp environment</a></h3>
+
+<p>In the course of programming it is often necessary to make changes in the Common Lisp
+environment. Being able to do this without having to actually type commands to a Common
+Lisp prompt can be valuable, especially when there would be a good deal of typing
+involved.</p>
+
+<p>The following functions are specifically available in Common Lisp editing mode because
+they are bound to a key sequence: </p>
+
+<pre>	key		action
+	---		-------
+	C-c C-r		evaluate the region
+	C-c C-s		evaluate the last s-expression
+	C-c C-b		evaluate the entire current buffer
+	ESC C-x		evaluate the current top-level form
+	ESC T		toggle tracing a function, optionally break on entry</pre>
+
+<pre>	Table 11: Bindings to modify the Common Lisp environment</pre>
+
+<p>Additionally, the above commands to evaluation will compile the expressions sent to
+Common Lisp if a prefix argument is given to the command.</p>
+
+<p>The commands to evaluate portions of Emacs buffers are useful, but require the
+programmer to indicate which portions of the buffer are evaluated. Sometimes the act of
+making changes to source code is deeper than just fixing one or two functions. The
+following functions, available as extended commands (M-x) help ease the demand on
+remembering what changes have been made or having to recompile more than is necessary,
+which can be time consuming in a large system:</p>
+
+<pre>fi:list-buffer-changed-definitions
+fi:list-changed-definitions</pre>
+
+<blockquote>
+  <p>List the definitions that have been added, deleted or modified in the current buffer or
+  in all buffers visiting Common Lisp source code (in mode fi:common-lisp-mode).&nbsp;
+  Listing the definitions creates a buffer showing one-line descriptions of the definitions,
+  in fi:definition-mode.&nbsp; Each line contains a `name' and `type'.&nbsp; The current
+  list of types are:</p>
+</blockquote>
+<div align="center"><center>
+
+<table border="1" cellspacing="1" width="579">
+  <tr>
+    <td valign="top" align="left" width="144"><font face="Courier New">:operator</font></td>
+    <td width="423">for functions, methods, generic functions and macros</td>
+  </tr>
+  <tr>
+    <td valign="top" align="left" width="144"><font face="Courier New">:type</font></td>
+    <td width="423">for classes (types)</td>
+  </tr>
+  <tr>
+    <td valign="top" align="left" width="144"><font face="Courier New">:setf-method</font></td>
+    <td width="423">for setf methods</td>
+  </tr>
+  <tr>
+    <td valign="top" align="left" width="144"><font face="Courier New">:variable</font></td>
+    <td width="423">for constants and variables</td>
+  </tr>
+</table>
+</center></div>
+
+<pre>fi:eval-buffer-changed-definitions
+fi:eval-changed-definitions
+fi:compile-buffer-changed-definitions
+fi:compile-changed-definitions</pre>
+
+<blockquote>
+  <p>Evaluate each of the definitions that have been added or modified in the current buffer
+  or in all buffers visiting Common Lisp source code.&nbsp; ``C-c ,'' finds subsequent
+  definitions, if there is more than one. This synchronizes the definitions of the currently
+  in-core versions of files being edited by Emacs with Common Lisp.&nbsp; The last two
+  functions compile the changed definitions in the Common Lisp environment, whereas the
+  first two load the interpreted versions of the changed definitions.</p>
+</blockquote>
+
+<pre>fi:copy-buffer-changed-definitions
+fi:copy-changed-definitions</pre>
+
+<blockquote>
+  <p>Copy into the kill ring the definitions that have been added or modified in the current
+  buffer or in all buffers visiting Common Lisp source code.</p>
+</blockquote>
+
+<p>All the above functions take a prefix argument, since, which defaults to the value of
+the variable fi:change-definitions-since-default, defined just below. The value of since
+causes the above functions to operate on the changes: 
+
+<ul>
+  <li>since = 1: since the file was first read by Emacs.</li>
+  <li>since = 2: since the current buffer was last saved (by Emacs).</li>
+  <li>since = 3: that have not yet been compiled or evaluated by Emacs.</li>
+</ul>
+
+<p>thus allowing fine control over which types of changed definitions are used listed,
+evaluated, compiled or yanked.</p>
+
+<p>Useful in comparing two files of similar origin is fi:compare-source-files, which lists
+the definitions that have been added, deleted or modified between the two file name
+arguments read from the minibuffer, if called interactively.</p>
+
+<p>Lastly, it is sometimes useful to remove or kill definitions in the Common Lisp
+environment. fi:kill-definition inserts after the defining form at the point a form which,
+when evaluated, will kill the definition. With a prefix argument, fi:kill-definition will,
+instead of inserting the killing form, evaluate the kill definition form in the Common
+Lisp environment.</p>
+
+<p>Here is the definition of fi:change-definitions-since-default:</p>
+
+<pre>
+%% fi:change-definitions-since-default
+</pre>
+
+<h4>Functions and variables that modify the state of the Lisp environment</h4>
+
+<p>All of these functions act on definitions which have changed since: 
+
+<ul>
+  <li>a file was first read by Emacs (since = 1)</li>
+  <li>a buffer was last saved (since = 2)</li>
+  <li>a buffer was last compiled or evaluated (since = 3).</li>
+</ul>
+
+<p>The since prefix argument controls the behavior. You can specify it explicitly (by `C-u
+since M-x &lt;function of interest&gt;' where since is 1, 2, or 3), or accept the default,
+which is controlled by the variable fi:change-definitions-since-default defined above. Its
+initial value is last-compile-or-eval, which is equivalent to since = 1.</p>
+
+<pre>
+%% fi:list-buffer-changed-definitions
+%% fi:list-changed-definitions 
+%% fi:eval-buffer-changed-definitions
+%% fi:eval-changed-definitions
+%% fi:compile-buffer-changed-definitions
+%% fi:compile-changed-definitions
+%% fi:copy-buffer-changed-definitions
+%% fi:copy-changed-definitions
+</pre>
+
+<hr>
+
+<h3><a name="5.4. Debugging Common Lisp processing in Emacs">5.4. Debugging Common Lisp
+processing in Emacs</a></h3>
+
+<p>Without a window debugger, which presents a graphical view of the runtime stack,
+programmers debugging Common Lisp programs must resort to examining the stack with the
+debugger commands described in <a href="../doc/cl/debugging.htm">debugging.htm</a>. It is often
+the case, however, that much moving up and down the stack must be done to find the proper
+point of error. Scan stack mode allows a snapshot of the Common Lisp runtime stack to be
+taken, and for navigation through the stack to proceed in a Emacs buffer with a host of
+local commands to make this a painless experience.</p>
+
+<p>Consider the following example, typed in the *common-lisp* buffer created by
+fi:common-lisp:</p>
+
+<pre>    user(1): (defun foo (x) (bar x))</pre>
+
+<pre>    foo
+    user(2): (defun bar (x) (1+ x))
+    bar
+    user(3): (foo `foo)
+    Error: foo is an illegal argument to + 
+    [1] user(4): </pre>
+
+<p>At this point, the problem can be debugged using :zoom, the offended function
+identified and fixed. A :zoom would look like:</p>
+
+<pre>    [1] user(4): :zoom
+    Evaluation stack:</pre>
+
+<pre>    -&gt;(error &quot;~s is an illegal argument to +&quot; foo)
+      (excl::+_2op foo 1)
+      (1+ foo)
+      (bar foo)
+      (foo foo)
+    ... more older frames ...
+    [1] user(5):</pre>
+
+<p>It is now desirable to move the current frame pointer down the stack to find the
+problem. The inconvenience here is that much output is generated moving around in the
+stack to find the frame which contains the useful information.</p>
+
+<p>Scan stack mode makes the perusal of the stack much easier. At the point of error, if
+C-c s is typed, then the following question is asked, in the minibuffer:</p>
+
+<pre>    Process to debug: Initial Lisp Listener</pre>
+
+<p>where the Initial Lisp Listener is the default input to the query. Unless a
+multiprocessing application is being run, then most errors occur in the initial process
+created when Common Lisp is run, which is called the Initial Lisp Listener. Typing RET to
+this query will cause a debugger buffer to be created and displayed. The buffer will be
+named *debugger:XXX where XXX is the pretty form of the process name of the Allegro Common
+Lisp process which is being debugged. For the example above, it will have the following
+contents:</p>
+
+<pre>Debugger commands:
+
+C-cC-c :continue
+C-cC-p :pop
+C-cC-r :reset
+.      make frame under the point the current frame
+D      disassemble the function
+R      restart function (give prefix to specify different form)
+a      toggle visibility of all frames (by default a subset are visible)
+d      next line
+e      edit source corresponding to function
+g      revert stack from Lisp
+h      Causes this help text to become visible
+l      display the lexical variables
+p      pretty print
+q      switch back to &quot;*common-lisp*&quot; buffer
+r      return a value
+u      previous line</pre>
+
+<pre>Type SPACE to hide this help summary.</pre>
+
+<pre>Evaluation stack:</pre>
+
+<pre> -&gt;(error &quot;~s is an illegal argument to +&quot; foo)
+   (excl::+_2op foo 1)
+   (1+ foo)
+   (bar foo)
+   (foo foo)
+   (eval (foo 'foo))
+   (apply #&lt;Function top-level-read-eval-print-loop @ #x4854ce&gt; nil)
+   (excl::start-reborn-lisp)</pre>
+
+<p>where the first section of the buffer is help text, which can be made to disappear by
+typing SPC. The commands in this mode can be grouped according to functionality: 
+
+<ul>
+  <li><table border="0" cellpadding="0" cellspacing="0" width="95%">
+      <tr>
+        <td width="100%">motion in the stack:<pre>	d	goto to the next frame, making it `current'
+	u	goto to the previous frame, making it `current'
+	.	make frame on the line with the point `current'</pre>
+        <p>The `current' frame is signified by the &quot;-&gt;&quot; indicator.&nbsp; All the
+        commands below operate on the current frame, the one with the &quot;-&gt;&quot; beside it.</td>
+      </tr>
+    </table>
+  </li>
+  <li><table border="0" cellpadding="0" cellspacing="0" width="95%">
+      <tr>
+        <td width="100%">exiting commands:<pre>	r	return a value, read from the minibuffer and
+		evaluated in the Common Lisp environment
+	R	restart execution, with a prefix argument with
+		a new functions and arguments
+	C-cC-c	continue from the current error, which must be
+		continuable, and the default restart is chosen
+		(equivalent to &quot;:continue 0&quot;)
+	C-cC-p	Abandon this error and pop out to the top
+		level read-eval-print loop or a previous
+		debugger loop (equivalent to &quot;:pop&quot;)
+	C-cC-r	Abandon all debugger loops and reset to the
+		top level (equivalent to &quot;:reset&quot;)
+	q	quit scan stack mode</pre>
+        <p>All of the &quot;exiting&quot; type commands leave scan stack mode and restore the
+        window configuration to what is was when this mode was entered.</td>
+      </tr>
+    </table>
+  </li>
+  <li><table border="0" cellpadding="0" cellspacing="0" width="95%">
+      <tr>
+        <td width="100%">print auxiliary information:<pre>	D	disassemble the function associated with
+		a frame and position the buffer with the
+		return pc highlighted
+	l	retrieve the local, or lexical, variables
+		associated with a frame.  Local variable
+		information is dependent of the value of the
+		compiler switch compiler:save-local-names-switch
+	p	pprint the function and actual arguments of a frame</pre>
+        <p>All the above commands display their output in a buffer named *CL-temp*.</td>
+      </tr>
+    </table>
+  </li>
+  <li><table border="0" cellpadding="0" cellspacing="0" width="95%">
+      <tr>
+        <td width="100%">miscellaneous:<pre>	e	edit the definition of the function associated
+		with a frame
+	h	toggle the visibility of the help text, which
+		if visible, is at the beginning of the buffer
+	a	toggle between hiding certain stack frames,
+		which are normally not useful in debugging,
+		and show all stack frames 
+	g	revert stack the stack from the Common Lisp
+		process from which the current stack was taken</pre>
+        </td>
+      </tr>
+    </table>
+  </li>
+</ul>
+
+<h4>Emacs functions for scanning the Common Lisp stack</h4>
+
+<pre>
+%% fi:scan-stack
+%% fi:scan-stack-mode
+%% fi:scan-stack-mode-display-help
+%% fi:ss-continue			fi:scan-stack-mode-map
+%% fi:ss-disassemble			fi:scan-stack-mode-map
+%% fi:ss-edit				fi:scan-stack-mode-map
+%% fi:ss-hide-help-text			fi:scan-stack-mode-map
+%% fi:ss-locals				fi:scan-stack-mode-map
+%% fi:ss-next-frame 
+%% fi:ss-pop				fi:scan-stack-mode-map
+%% fi:ss-pprint				fi:scan-stack-mode-map
+%% fi:ss-previous-frame 
+%% fi:ss-quit				fi:scan-stack-mode-map
+%% fi:ss-reset				fi:scan-stack-mode-map
+%% fi:ss-restart			fi:scan-stack-mode-map
+%% fi:ss-return				fi:scan-stack-mode-map
+%% fi:ss-revert-stack			fi:scan-stack-mode-map
+%% fi:ss-toggle-all			fi:scan-stack-mode-map
+%% fi:ss-unhide-help-text		fi:scan-stack-mode-map
+</pre>
+
+<h4>Debugging with gdb</h4>
+
+<p>gdb is a source level debugger provided by the Free Software Foundation. Its
+functionality is broadly similar to adb and dbx. You can call gdb on a Lisp image with the
+following command.</p>
+
+<pre>
+%% fi:gdb
+</pre>
+
+<hr>
+
+<h3><a name="5.5. Lisp Listeners">5.5. Lisp Listeners</a></h3>
+
+<p>During the course of debugging multi-process applications, it is often useful to be
+able to type to an additional listener in the same Common Lisp. That is, within one UNIX
+Common Lisp process it is possible to run multiple threads, each executing different
+processes in the Common Lisp address space. The function fi:open-lisp-listener will open a
+Lisp listener on an existing Common Lisp process started with fi:common-lisp.</p>
+
+<p>The following Allegro CL debugging commands are also useful in debugging multi-process
+applications:</p>
+
+<pre>:processes	list all the Common Lisp processes and their state
+:arrest		stop a Common Lisp process
+:focus		make a process the focus of future stack
+		commands, such :zoom
+:unarrest	reverse the effect of arrest and focusing on a
+		process, allowing it to continue, if possible</pre>
+
+<p>The scan stack mode above is also useful for multi-process applications, however a
+process must be `quiescent' for fi:scan-stack-mode to be used on it. `quiescent' means the
+process must have called error or break and be in a read-eval-print loop waiting for
+debugging commands. The above process related top-level commands, however, can be used to
+stop running processes for examination.</p>
+
+<hr>
+
+<h3><a name="5.6. Miscellaneous programming aids">5.6. Miscellaneous programming aids</a></h3>
+
+<p>This section lists the miscellaneous programming and debugging aids which do not fit
+into the above sections: 
+
+<ul>
+  <li>the subprocess input ring helps to minimize typing during a debugging session.
+    Previously typed input can be yanked to the prompt at the end of the Common Lisp
+    subprocess buffer. It can then be edited before sending it to Common Lisp. The selection
+    of which input to yank can be the previous, next or selected by regular expression search
+    through the input ring. See the emacs commands fi:list-input-ring, fi:pop-input,
+    fi:push-input, fi:re-search-backward-input and fi:re-search-forward-input in Section 3.3
+    Functions and variables for Interacting with a CL subprocess.</li>
+  <li>fi:list-buffer-definitions provides an easy method of scanning or visiting all the
+    definitions in a buffer. The result is a buffer in definition mode which gives a one-line
+    description of each definition. See fi:definition-mode for more information.</li>
+</ul>
+
+<hr>
+
+<h3><a name="5.7. Bug reports">5.7. Bug reports</a></h3>
+
+<p>Finally, we end our discussion on debugging by mentioning a function which will allow
+Franz Inc. to be sent a bug report with all the right information:</p>
+
+<pre>
+%% fi:bug-report
+</pre>
+
+<hr>
+
+<h2><a name="6. Shell modes">6. Shell modes</a></h2>
+
+<p>The Emacs-Lisp interface defines many useful functions to interact with various types
+of shells. Below is a description of the functions and variables associated with various
+shell modes.</p>
+
+<p>The main differences between the standard Emacs shell mode and the Franz Emacs-Lisp
+interface are described below: 
+
+<ul>
+  <li>support for rlogin, su, and telnet, including secure password entry for su and telnet
+    modes.</li>
+  <li>command completion. See fi:shell-command-completion.</li>
+  <li>file name completion. See fi:shell-file-name-completion. Note that
+    fi:shell-do-completion will do either command or filename completion.</li>
+  <li>better tracking of directory changes (handles +N arguments to pushd and popd).</li>
+  <li>input ring for yanking and searching for previously typed input. The subprocess input
+    ring helps to minimize typing. Previously typed input can be yanked to the prompt at the
+    end of a shell subprocess buffer. It can then be edited before sending it to the shell.
+    The selection of which input to yank can be the previous, next or selected by regular
+    expression search through the input ring. See the Emacs commands fi:list-input-ring,
+    fi:pop-input, fi:push-input, fi:re-search-backward-input and fi:re-search-forward-input.</li>
+  <li>superkeys for convenience of typing `shell' specific characters at the end of a
+    subprocess buffer. There is a set of process-related functions that are needed in shell
+    mode buffers. Superkey key bindings have a special meaning at the end of the buffer, but
+    have their global meaning when typed anywhere else in the buffer. The superkey facility is
+    controlled by fi:subprocess-enable-superkeys. fi:superkey-shadow-universal-argument
+    controls how C-u behaves.</li>
+  <li>An initial input string is sent automatically upon starting a remote shell. Sending a
+    string allows one to set the tty correctly. Symptoms of an incorrect tty setting include
+    spurious ^M characters and extra echoing of input. See fi:su-initial-input,
+    fi:telnet-initial-input and fi:rlogin-initial-input.</li>
+</ul>
+
+<h3>shell mode</h3>
+
+<pre>
+%% fi:shell
+%% fi:shell-command-completion
+%% fi:shell-do-completion
+%% fi:shell-file-name-completion
+%% fi:shell-image-arguments
+%% fi:shell-image-name
+%% fi:shell-mode
+%% fi:shell-mode-bang
+%% fi:shell-mode-use-history
+%% fi:shell-prompt-pattern
+%% fi:shell-sync-current-working-directory
+%% fi:shell-token-pattern
+</pre>
+
+<h3>su mode</h3>
+
+<pre>
+%% fi:su
+%% fi:su-initial-input
+%% fi:su-mode
+%% fi:su-prompt-pattern
+%% fi:remote-root-login
+%% fi:remote-su-mode
+</pre>
+
+<h3>telnet mode</h3>
+
+<pre>
+%% fi:telnet
+%% fi:telnet-mode
+%% fi:telnet-image-arguments
+%% fi:telnet-image-name
+%% fi:telnet-initial-input
+%% fi:telnet-prompt-pattern
+%% fi:telnet-start-garbage-filter
+</pre>
+
+<h3>rlogin mode</h3>
+
+<pre>
+%% fi:rlogin
+%% fi:rlogin-mode
+%% fi:rlogin-image-arguments
+%% fi:rlogin-image-name
+%% fi:rlogin-initial-input
+%% fi:rlogin-prompt-pattern
+%% fi:rlogin-send-eof			fi:rlogin-mode-map
+%% fi:rlogin-send-interrupt		fi:rlogin-mode-map
+%% fi:rlogin-send-quit			fi:rlogin-mode-map
+%% fi:rlogin-send-stop			fi:rlogin-mode-map
+</pre>
+
+<hr>
+
+<h2>7<a name="7. Advanced miscellaneous features">. Advanced miscellaneous features</a></h2>
+
+<p>This section and its subsections discuss advanced features of the Emacs-Lisp interface.</p>
+
+<pre>
+%% fi:define-emacs-lisp-mode
+</pre>
+
+<hr>
+
+<h3><a name="7.1. Emacs hooks">7.1. Emacs hooks</a></h3>
+
+<p>Some functions in Emacs will call one or more hook functions. A hook is a user settable
+variable whose value is a hook function. Hooks allow the user to customize features of
+emacs. Hooks are usually set in the .emacs file, but may be changed by other emacs
+functions. Many of the mode functions in the Emacs-Lisp Interface run one or more hooks.
+The hooks and the order they are called are listed in the table below. Note that the
+documentation for each mode function also lists the hook called (if any). For more
+information about hooks, please see the FSF Emacs and Emacs Lisp documentation. </p>
+
+<pre>Function Called			Hooks run (in order)
+fi:inferior-common-lisp-mode	fi:lisp-mode-hook 
+				fi:subprocess-mode-hook 
+				fi:inferior-common-lisp-mode-hook
+fi:lisp-listener-mode		fi:lisp-mode-hook 
+				fi:subprocess-mode-hook
+				fi:lisp-listener-mode-hook
+fi:common-lisp-mode		fi:lisp-mode-hook 
+				fi:common-lisp-mode-hook
+fi:definition-mode		fi:definition-mode-hook
+fi:inverse-definition-mode	fi:inverse-definition-mode-hook
+fi:scan-stack-mode		fi:scan-stack-mode-hook
+fi:shell-mode			fi:subprocess-mode-hook 
+				fi:shell-mode-hook
+fi:su-mode			fi:subprocess-mode-hook 
+				fi:su-mode-hook
+fi:remote-su-mode		fi:subprocess-mode-hook 
+				fi:rlogin-mode-hook
+fi:telnet-mode			fi:subprocess-mode-hook
+				fi:telnet-mode-hook
+fi:rlogin-mode			fi:subprocess-mode-hook 
+				fi:rlogin-mode-hook</pre>
+
+<p>Hooks are commonly used to customize the key-map of a particular mode. The Emacs code
+fragment below would cause the C-i keystroke to invoke the function
+fi:shell-do-completion.&nbsp; Note that C-i is also the TAB key.</p>
+
+<pre>(setq fi:subprocess-mode-hook
+   '(lambda ()
+      (interactive)
+      (define-key (current-local-map) &quot;\C-i&quot; 
+        'fi:shell-do-completion)))</pre>
+
+<hr>
+
+<h3><a name="7.2. The Emacs-Lisp interface and excl:dumplisp">7.2. The Emacs-Lisp
+interface and excl:dumplisp</a></h3>
+
+<p>Just about everything we have said so far in this document about the Emacs-Lisp
+interface has assumed that the Lisp image was created with install_lisp in a relatively
+standard fashion. install_lisp is the program that installs Allegro CL. By `a relatively
+standard fashion', we mean that the restart_function= command line argument to
+install_lisp was not specified. </p>
+
+<p>Problems starting the Emacs-Lisp interface can arise, however, when starting images: 
+
+<ol>
+  <li>created with excl:dumplisp called with a restart function specified as the value of the
+    :restart-function keyword argument;</li>
+  <li>created with excl:dumplisp called with a non-nil value specified for the
+    :ignore-command-line-arguments keyword argument;</li>
+  <li>created by install_lisp with a value specified for the restart_function= command line
+    argument to install_lisp.</li>
+</ol>
+
+<p>Note that cases (2) and (3) are really the same. install_lisp creates its image with
+excl:dumplisp. install_lisp calls excl:dumplisp with :ignore-command-line-arguments nil in
+all situations except when restart_function= is specified on the command line, in which
+case :ignore-command-line-arguments is specified to be t.</p>
+
+<p>Those cases cause problems because of how the Emacs-Lisp interface is started, as we
+describe next.</p>
+
+<h4>How Emacs and Lisp rendezvous</h4>
+
+<p>As we said in section 3 (and elsewhere), the Emacs-Lisp interface is started by
+invoking within Emacs the function fi:common-lisp. That function either asks you for
+command line arguments for Lisp or (typically after the first invocation within an Emacs
+session) simply takes the value of the Emacs Lisp variable
+fi:start-lisp-interface-arguments. Here is what happens then: 
+
+<ul>
+  <li>fi:common-lisp invokes a Common Lisp subprocess with the arguments ``-e
+    (excl:start-emacs-lisp-interface t)'' followed by whatever other command-line arguments
+    there are.</li>
+  <li>the buffer in which Common Lisp is run, *common-lisp* by default, has an Emacs Lisp
+    filter that looks for strings of the form ^A&lt;...&gt;^A, that is something surrounded by
+    ^A's.</li>
+  <li>when Common Lisp starts up, it evaluates the argument following the -e (actually it
+    reads from the command line argument string and then evaluates).</li>
+  <li>excl:start-emacs-lisp-interface prints the information Emacs needs to rendezvous with
+    Lisp to *terminal-io*. This information is given to the Emacs Lisp process filter, in the
+    form ^A&lt;...&gt;^A.</li>
+  <li>the process filter sees the ^A&lt;...&gt;^A and extracts the following information from
+    what appears in &lt;...&gt;:<ul>
+      <li>The internet port number</li>
+      <li>the password (not yours -- generated by Lisp)</li>
+      <li>the case mode of Common Lisp</li>
+      <li>the host on which Common Lisp is running</li>
+      <li>the ipc version</li>
+    </ul>
+  </li>
+  <li>the above information is used to setup the interface and establish a connection between
+    Lisp and Emacs.</li>
+</ul>
+
+<p>Because information is passed between Lisp and Emacs in this special way, the
+connection between Emacs and Lisp can only be established by running Common Lisp with
+fi:common-lisp. Prior to starting the connection between Lisp and Emacs, Emacs can only
+communicate to Lisp via the command line. Therefore, the Lisp side of the connection is
+started using the command line. The problem with images that ignore command-line arguments
+should be apparent.</p>
+
+<p>The problem with an image created with excl:dumplisp with a restart function is a bit
+more subtle but essentially the same. Command line arguments are processed after the
+restart function returns. However restart functions are (often) designed not to return
+(they provide the interface to an application, e.g.) Therefore, specifying a restart
+function prevents command line arguments from being processed.</p>
+
+<h4>Starting the interface directly with excl:start-emacs-lisp-interface</h4>
+
+<p>If, because command-line arguments are ignored or there is a restart function, the
+Emacs-Lisp interface does not start up (or if it does not start up for any other reason),
+you can start it directly from within Lisp by calling excl:start-emacs-lisp-interface. We
+remind you again that the image must have been started with fi:common-lisp for this to
+work.</p>
+
+<hr>
+
+<h3><a name="7.3. Raw mode">7.3. Raw mode</a></h3>
+
+<p>Usually Common Lisp allows input editing of expressions as they are typed in.&nbsp;
+Borrowing a term from Unix, we call this the cooked mode. A Common Lisp program may need
+to read characters as they are typed in, without newlines. We call this raw mode. Usually,
+the Emacs-Lisp interface expects Common Lisp to be in cooked mode. To use the Emacs-Lisp
+interface with a Common Lisp that is in raw mode, we provide the Lisp function
+excl:get-terminal-characteristics and Emacs Lisp variables and functions.</p>
+
+<h4>Security and raw mode</h4>
+
+<p>To use a remote Common Lisp in raw mode with a local Emacs-Lisp interface, one must use
+the Unix on command. The on command requires that the rexd daemon be turned on in
+/etc/inetd.conf. The rexd daemon is a known potential security hole. </p>
+
+<p>Note that it is possible to use a local Common Lisp in raw mode and a local Emacs-Lisp
+interface without using on. That situation does not pose a security problem.</p>
+
+<p>An example use:</p>
+
+<pre>(defun raw-read-char (&amp;optional (stream *standard-input*) &amp;rest args)
+  ;;  If this function is loaded into a Common Lisp started 
+  ;;  under Emacs and via M-x fi:common-lisp, then the 
+  ;;  before method on SET-TERMINAL-CHARACTERISTICS will set
+  ;;  commands to Emacs that will change the values of 
+  ;;  fi:raw-mode and fi:raw-mode-echo appropriately. This 
+  ;;  means that the READ-CHAR below will read one character 
+  ;;  and *not* require a terminating newline character for 
+  ;;  READ-CHAR to return, as is normally needed when not in 
+  ;;  RAW or CBREAK mode (see ioctl(2) in the UNIX manual).
+  (excl:set-terminal-characteristics stream :input-processing :cbreak)
+  ;;  We use HANDLER-CASE instead of UNWIND-PROTECT here 
+  ;;  because being in CBREAK mode and going into the debugger 
+  ;;  would not be very friendly.
+  (prog1
+     (handler-case
+      (apply #'read-char stream args)
+      (error (c)
+	(format *terminal-io* 
+	  &quot;error doing read-char from ~s: ~a&quot;
+	  stream c)))
+	   (excl:set-terminal-characteristics stream :input-processing
+	   :cooked)))</pre>
+
+<p>The following two variables deal with raw mode. The first tells you if you are in raw
+mode. The second controls the echo behavior in raw mode.</p>
+
+<pre>
+%% fi:raw-mode
+%% fi:raw-mode-echo
+</pre>
+</body>
+</html>

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-modes.el,v 1.70 1997/12/20 00:25:48 layer Exp $
+;; $Id: fi-modes.el,v 1.71 1998/08/06 23:18:32 layer Exp $
 
 ;;;; Mode initializations
 
@@ -113,7 +113,8 @@ If nil, no automatic package tracking will be done.")
 (defun fi:inferior-common-lisp-mode (&optional mode-hook &rest mode-hook-args)
   "Major mode for interacting with Common Lisp subprocesses.
 The keymap for this mode is bound to fi:inferior-common-lisp-mode-map:
-\\{fi:inferior-common-lisp-mode-map}
+
+<font face=\"Courier New\">\\{fi:inferior-common-lisp-mode-map}</font>
 Entry to this mode runs the following hooks:
 
 	fi:lisp-mode-hook
@@ -152,7 +153,8 @@ but before doing any other mode setup."
 (defun fi:inferior-franz-lisp-mode (&optional mode-hook &rest mode-hook-args)
   "Major mode for interacting with Franz Lisp subprocesses.
 The keymap for this mode is bound to fi:inferior-franz-lisp-mode-map:
-\\{fi:inferior-franz-lisp-mode-map}
+
+<font face=\"Courier New\">\\{fi:inferior-franz-lisp-mode-map}</font>
 Entry to this mode runs the following hooks:
 
 	fi:lisp-mode-hook
@@ -191,7 +193,8 @@ but before doing any other mode setup."
 (defun fi:lisp-listener-mode (&optional mode-hook)
   "Major mode for interacting with Common Lisp over a socket.
 The keymap for this mode is bound to fi:lisp-listener-mode-map:
-\\{fi:lisp-listener-mode-map}
+
+<font face=\"Courier New\">\\{fi:lisp-listener-mode-map}</font>
 Entry to this mode runs the following hooks:
 
 	fi:lisp-mode-hook
@@ -229,7 +232,8 @@ any other mode setup."
 (defun fi:common-lisp-mode (&optional mode-hook)
   "Major mode for editing Lisp code to run in Common Lisp.
 The keymap for this mode is bound to fi:common-lisp-mode-map:
-\\{fi:common-lisp-mode-map}
+
+<font face=\"Courier New\">\\{fi:common-lisp-mode-map}</font>
 Entry to this mode runs the following hooks:
 
 	fi:lisp-mode-hook
@@ -274,7 +278,8 @@ the file modeline."
 (defun fi:franz-lisp-mode (&optional mode-hook)
   "Major mode for editing Lisp code to run in Franz Lisp.
 The keymap for this mode is bound to fi:franz-lisp-mode-map:
-\\{fi:franz-lisp-mode-map}
+
+<font face=\"Courier New\">\\{fi:franz-lisp-mode-map}</font>
 Entry to this mode runs the following hooks:
 
 	fi:lisp-mode-hook
@@ -305,7 +310,8 @@ any other mode setup."
 (defun fi:emacs-lisp-mode (&optional mode-hook)
   "Major mode for editing Lisp code to run in Emacs Lisp.
 The keymap for this mode is bound to fi:emacs-lisp-mode-map:
-\\{fi:emacs-lisp-mode-map}
+
+<font face=\"Courier New\">\\{fi:emacs-lisp-mode-map}</font>
 Entry to this mode runs the fi:emacs-lisp-mode-hook hook.
 
 When calling from a program, argument is MODE-HOOK,

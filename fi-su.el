@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-su.el,v 1.17 1997/02/27 17:34:37 layer Exp $
+;; $Id: fi-su.el,v 1.18 1998/08/06 23:18:32 layer Exp $
 
 (defvar fi:su-mode-map nil
   "The su major-mode keymap.")
@@ -35,7 +35,8 @@ is seen.")
 (defun fi:su-mode (&optional mode-hook)
   "Major mode for interacting with an inferior su.
 The keymap for this mode is bound to fi:su-mode-map:
-\\{fi:su-mode-map}
+
+<font face=\"Courier New\">\\{fi:su-mode-map}</font>
 Entry to this mode runs the following hooks:
 
 	fi:subprocess-mode-hook
@@ -69,7 +70,8 @@ any other mode setup."
 (defun fi:remote-su-mode (&optional mode-hook)
   "Major mode for interacting with an remote inferior su.
 The keymap for this mode is bound to fi:remote-su-mode-map:
-\\{fi:remote-su-mode-map}
+
+<font face=\"Courier New\">\\{fi:remote-su-mode-map}</font>
 Entry to this mode runs the following hooks:
 
 	fi:subprocess-mode-hook
