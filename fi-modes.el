@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.65 1996/06/05 20:31:45 layer Exp $
+;; $Id: fi-modes.el,v 1.66 1996/06/21 17:48:41 layer Exp $
 
 ;;;; Mode initializations
 
