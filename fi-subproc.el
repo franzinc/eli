@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 3.7.4.1 2004/05/19 17:47:29 layer Exp $
+;; $Id: fi-subproc.el,v 3.7.4.2 2004/06/28 17:09:38 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -426,12 +426,6 @@ risk.")
 	(error "fi:common-lisp aborted by user."))))
   (when fi::started-via-file
     (error "Emacs-Lisp interface already started via a file."))
-  (when (not fi::rsh-command)
-    (setq fi::rsh-command
-      (cond ((fi::command-exists-p "remsh") "remsh")
-	    ((fi::command-exists-p "rsh") "rsh")
-	    ((and (on-ms-windows) (fi::command-exists-p "rsh.exe") "rsh.exe"))
-	    (t (error "can't find the rsh command in your path")))))
   (when (and fi::shell-buffer-for-common-lisp-interaction-host-name
 	     (or (y-or-n-p "A make-dist might be in progress.  Continue? ")
 		 (error "fi:common-lisp aborted.")))
@@ -450,6 +444,15 @@ risk.")
 					   (string= "localhost" host)
 					   ;; so it is case insensitive:
 					   (string-match host (system-name))))
+	    (when (not fi::process-is-local)
+	      (when (not fi::rsh-command)
+		(setq fi::rsh-command
+		  (cond ((fi::command-exists-p "remsh") "remsh")
+			((fi::command-exists-p "rsh") "rsh")
+			((and (on-ms-windows) (fi::command-exists-p "rsh.exe")
+			      "rsh.exe"))
+			(t (error
+			    "can't find the rsh command in your path"))))))
 	    (if (interactive-p)
 		(if fi::process-is-local
 		    (and directory (expand-file-name directory))
@@ -591,8 +594,7 @@ be a string. Use the 6th argument for image file."))
        (fi:common-lisp-subprocess-wait-forever)
        ((and (> i 0) (zerop (mod i 10)))
 	;; Every 10 iterations, ask if they still want to wait:
-	(when (not (y-or-n-p
-		    "Continue waiting for ACL to startup? "))
+	(when (not (y-or-n-p "Continue waiting for ACL to startup? "))
 	  (error "Connection aborted.")))
        (t
 	(when (> i fi:common-lisp-subprocess-timeout)
