@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.25 1988/05/12 10:15:28 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.26 1988/05/12 12:23:09 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -52,22 +52,28 @@ name is interactively read and must be the name of an existing buffer.  New
 buffers with the same mode as the current buffer will also use BUFFER-NAME
 for `eval' commands."
   (interactive "bBuffer name containing a Lisp process: ")
-  (let ((process (get-buffer-process (get-buffer buffer-name))))
-    (if process
-	(if (memq major-mode '(fi:common-lisp-mode fi:franz-lisp-mode))
-	    (let ((buffers (buffer-list))
-		  (proc-name (process-name process)))
-	      (cond ((eq major-mode 'fi:common-lisp-mode)
-		     (setq fi::freshest-common-sublisp-name proc-name))
-		    ((eq major-mode 'fi:franz-lisp-mode)
-		     (setq fi::freshest-franz-sublisp-name proc-name)))
-	      (while buffers
-		(if (eq (fi::symbol-value-in-buffer 'major-mode (car buffers))
+  (let* ((process (get-buffer-process (get-buffer buffer-name)))
+	 (mode (or (and (memq major-mode '(fi:common-lisp-mode
+					   fi:franz-lisp-mode))
 			major-mode)
-		    (fi::set-in-buffer 'fi::sublisp-name proc-name
-				       (car buffers)))
-		(setq buffers (cdr buffers))))
-	  (error "The current buffer is not in a Lisp editing mode.")) 
+		   (let* ((alist '(("common-lisp" . fi:common-lisp-mode)
+				   ("franz-lisp" . fi:franz-lisp-mode)))
+			  (type (completing-read "Lisp type (? for help): "
+						 alist nil t nil)))
+		     (cdr (assoc type alist))))))
+    (if process
+	(let ((buffers (buffer-list))
+	      (proc-name (process-name process)))
+	  (cond ((eq mode 'fi:common-lisp-mode)
+		 (setq fi::freshest-common-sublisp-name proc-name))
+		((eq mode 'fi:franz-lisp-mode)
+		 (setq fi::freshest-franz-sublisp-name proc-name)))
+	  (while buffers
+	    (if (eq mode (fi::symbol-value-in-buffer 'major-mode
+						     (car buffers)))
+		(fi::set-in-buffer 'fi::sublisp-name proc-name
+				   (car buffers)))
+	    (setq buffers (cdr buffers))))
       (error "There is no process associated with buffer %s!"
 	     buffer-name))))
 
