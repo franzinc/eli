@@ -1,4 +1,4 @@
-;;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.7 1988/03/04 09:10:22 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.8 1988/03/19 18:48:20 layer Exp $
 ;;;
 ;;; Mode initializations
 
@@ -375,8 +375,11 @@ non-nil."
 			   (symbol-name p)))
 			((and (consp p)
 			      (eq 'quote (car p))
-			      (symbolp (cadr p)))
-			 (symbol-name (cadr p)))
+			      (symbolp (car (cdr p))))
+			 (let ((name (symbol-name (car (cdr p)))))
+			   (if (= (elt name 0) ?:)
+			       (substring name 1)
+			     name)))
 			((stringp p) p)))))
 	  (if fi::package
 	      fi::package
@@ -483,10 +486,10 @@ The subprocess modes are `fi:shell-mode', `fi:inferior-lisp-mode' and
   map)
 
 (defun fi::tcp-lisp-mode-commands (map supermap)
-  (fi::shell-mode-commands (fi::lisp-mode-commands map) supermap))
+  (fi::lisp-mode-commands (fi::shell-mode-commands map supermap)))
 
 (defun fi::inferior-lisp-mode-commands (map supermap)
-  (fi::shell-mode-commands (fi::lisp-mode-commands map) supermap))
+  (fi::lisp-mode-commands (fi::shell-mode-commands map supermap)))
 
 ;;;;
 ;;; Initializations
