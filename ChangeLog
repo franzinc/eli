@@ -7,6 +7,14 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.1.pre-beta.4
+
+2000-06-26  Kevin Layer  <layer@ultra>
+
+	* fi-basic-lep.el (lep::make-session-for-lisp): improve error
+	reporting even more
+
+*******************************************************************************
 2.1.pre-beta.3
 
 2000-06-22  Kevin Layer  <layer@ultra>
