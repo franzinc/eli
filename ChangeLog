@@ -9,6 +9,10 @@ For more detailed instructions on filling in the ChangeLog form, see
 ******************************************************************************
 post-6.2 release changes: 
 
+2003-07-03  Kevin Layer  <layer@crikey>
+
+	* fi-dmode.el: make RET and C-c. goto definitions, too
+
 2003-03-26  Kevin Layer  <layer@crikey>
 
 	* fi-basic-lep.el (fi::make-connection-to-lisp): bug13111: hide

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-dmode.el,v 1.31.20.2 2002/02/07 16:41:34 layer Exp $
+;; $Id: fi-dmode.el,v 1.31.20.2.8.1 2003/07/03 17:44:36 layer Exp $
 
 ;; Create a mode in which each line is a definition and . on that
 ;; definition brings up the definition in another window
@@ -72,12 +72,15 @@ Entry to this mode runs the fi:definition-mode-hook."
 
   (if (null fi:definition-mode-map)
       (let ((map (make-keymap)))
-	(define-key map "\C-_" 'fi:definition-mode-undo)
-	(define-key map "."    'fi:definition-mode-goto-definition)
-	(define-key map "n"    'fi:definition-mode-goto-next)
-	(define-key map "p"    'fi:definition-mode-goto-previous)
-	(define-key map "t"    'fi:definition-mode-toggle-trace)
-	(define-key map "q"    'fi:definition-mode-quit)
+	(define-key map "\C-_"  'fi:definition-mode-undo)
+	(define-key map "."     'fi:definition-mode-goto-definition)
+	(define-key map "\r"    'fi:definition-mode-goto-definition)
+	(define-key map "\C-c"  (make-sparse-keymap))
+	(define-key map "\C-c." 'fi:definition-mode-goto-definition)
+	(define-key map "n"     'fi:definition-mode-goto-next)
+	(define-key map "p"     'fi:definition-mode-goto-previous)
+	(define-key map "t"     'fi:definition-mode-toggle-trace)
+	(define-key map "q"     'fi:definition-mode-quit)
 	(setq fi:definition-mode-map map)))
 
   (use-local-map fi:definition-mode-map)
@@ -136,12 +139,15 @@ Entry to this mode runs the fi:inverse-definition-mode-hook."
 
   (if (null fi:inverse-definition-mode-map)
       (let ((map (make-keymap)))
-	(define-key map "\C-_" 'fi:definition-mode-undo)
-	(define-key map "."    'fi:definition-mode-goto-definition)
-	(define-key map "n"    'fi:definition-mode-goto-next)
-	(define-key map "c"    'fi:inverse-definition-who-calls)
-	(define-key map "p"    'fi:definition-mode-goto-previous)
-	(define-key map "q"    'fi:inverse-definition-mode-quit)
+	(define-key map "\C-_"  'fi:definition-mode-undo)
+	(define-key map "."     'fi:definition-mode-goto-definition)
+	(define-key map "\r"    'fi:definition-mode-goto-definition)
+	(define-key map "\C-c"  (make-sparse-keymap))
+	(define-key map "\C-c." 'fi:definition-mode-goto-definition)
+	(define-key map "n"     'fi:definition-mode-goto-next)
+	(define-key map "c"     'fi:inverse-definition-who-calls)
+	(define-key map "p"     'fi:definition-mode-goto-previous)
+	(define-key map "q"     'fi:inverse-definition-mode-quit)
 	(setq fi:inverse-definition-mode-map map)))
 
   (use-local-map fi:inverse-definition-mode-map)
