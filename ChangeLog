@@ -7,6 +7,13 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.9
+
+Mon Jul 06 10:05:21 1998    <layer@HOBART>
+
+	* eli.htm: add note to `changes' section
+
+*******************************************************************************
 2.0.21.8
 
 Thu Jul  2 13:31:45 1998  Kevin Layer  <layer@ultra>
