@@ -8,16 +8,11 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-leep.el,v 1.7 1992/05/11 14:57:13 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-leep.el,v 1.8 1992/10/02 09:08:40 layer Exp $
 
 ;; The epoch side of presentations in a lisp-listener window.
 
-(defvar fi::epoch-has-zones nil)
-
-(if (and (boundp 'epoch::version)
-	 (string-match "Epoch 4.0" epoch::version))
-    (setq fi::epoch-has-zones t)
-  (setq fi::epoch-has-zones nil))
+(defvar fi::epoch-has-zones (fboundp 'epoch::make-zone))
 
 (defvar fi::highlighted-zone-style nil)
 (defvar fi::highlighted-style nil)
