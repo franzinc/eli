@@ -24,68 +24,74 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.5 1991/03/13 21:41:52 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.6 1991/03/15 12:43:28 layer Exp $
 ;;
 
 ;; Create a mode in which each line is a definition and . on that
 ;; definition brings up the definition in another window
 
-(defvar dmode-saved-window-configuration nil)
+(defvar lep::definition-mode-saved-window-configuration nil)
 
-(defvar dmode-map nil)
-  
-(defvar dmode-mouse-map nil)
+(defvar fi:definition-mode-map nil)
 
-(defun dmode-quit ()
+(defvar fi:definition-mode-mouse-map nil)
+
+(defvar fi:definition-mode-hook nil
+  "*A hook run from fi:definition-mode.")
+
+(defun fi:definition-mode ()
+  "A major mode for viewing definitions of objects defined in the Common
+Lisp environment.  The definitions are put in a buffer called
+*definitions*, and each line contains the name and type of the definition.
+The type is one of:
+
+	:operator	for functions, methods, generic functions
+				and macros,
+	:type		for classes (types),
+	:setf-method	for setf methods, or
+	:variable	for constants and variables.
+
+Definition mode is used by other tools, such as the changed-definition
+commands, fi:lisp-who-calls, as well as fi:list-buffer-definitions.
+
+The keymap for this mode is bound to fi:definition-mode-map:
+\\{fi:definition-mode-map}
+Entry to this mode runs the fi:definition-mode-hook."
   (interactive)
-  (bury-buffer)
-  (set-window-configuration dmode-saved-window-configuration))
-
-(defvar definitions nil)
-
-(defun dmode ()
   (kill-all-local-variables)
-  (use-local-map dmode-map)
-  (setq major-mode 'dmode)
+  (setq major-mode 'fi:definition-mode)
   (setq mode-name "Definition Mode")
-  (make-local-variable 'definitions)
-  (make-local-variable 'types)
-  (make-local-variable 'other-args)
-  (make-local-variable 'fi:package)
-  (make-local-variable 'finding-function)
-  (when dmode-mouse-map (use-local-mouse-map dmode-mouse-map)))
 
-(defun dmode-mouse-select (info)
-  (goto-char (car info))
-  (beginning-of-line)
-  (dmode-goto-definition))
-  
-  
+  (make-local-variable 'lep::definitions)
+  (make-local-variable 'lep::definition-types)
+  (make-local-variable 'lep::definition-other-args)
+  (make-local-variable 'lep::definition-finding-function)
 
-(defun dmode-goto-definition ()
-  (interactive)
-  (let* ((n (count-lines (point-min)
-			 (save-excursion (beginning-of-line) (point))))
-	 (buffer (current-buffer))
-	 (def (nth n definitions))
-	 (other (nth n other-args))
-	 (type (nth n types)))
-    (when (and (not (equal type '(nil))) finding-function)
-      (apply (car finding-function) def type buffer (append other (cdr finding-function))))))
+  (if (null fi:definition-mode-map )
+      (let ((map (make-keymap)))
+	(define-key map "\e."  'fi:lisp-find-tag)
+	(define-key map "\C-." 'fi:definition-mode-goto-definition)
+	(define-key map "."    'fi:definition-mode-goto-definition)
+	(define-key map "n"    'fi:definition-mode-goto-next)
+	(define-key map "p"    'fi:definition-mode-goto-previous)
+	(define-key map "q"    'fi:definition-mode-quit)
+	(setq fi:definition-mode-map map)))
 
-(defun dmode-goto-next ()
-  (interactive)
-  (next-line 1)
-  (dmode-goto-definition))
+  (use-local-map fi:definition-mode-map)
 
-(defun dmode-goto-previous ()
-  (interactive)
-  (previous-line 1)
-  (dmode-goto-definition))
+  ;;(if fi:definition-mode-mouse-map
+  ;;    nil
+  ;;  (setq fi:definition-mode-mouse-map (create-mouse-map))
+  ;;  (define-mouse fi:definition-mode-mouse-map mouse-left mouse-down
+  ;;		'lep::dmode-mouse-select))
+  (when fi:definition-mode-mouse-map
+    (use-local-mouse-map fi:definition-mode-mouse-map))
 
+  (run-hooks 'fi:definition-mode-hook))
 
-
-(defun list-buffer-definitions ()
+(defun fi:list-buffer-definitions ()
+  "List the definition for all the objects in the current buffer.  That is,
+use the current buffer and display all the definitions contained in it."
   (interactive)
   (let ((buffer (current-buffer)))
     (make-request (scm::file-definitions-session
@@ -94,15 +100,58 @@
 		  ((buffer fi:package) (the-definitions)
 		   (lep:display-some-definitions 
 		    fi:package
-		    the-definitions (list 'find-buffer-definition
-						 buffer)))
+		    the-definitions
+		    (list 'lep::find-buffer-definition buffer)))
 		  ;; Error continuation
 		  ((buffer) (error)
 		   (message "Cannot find the definitions of buffer %s: %s"
 			    buffer error)))))
 
+;;(defun lep::dmode-mouse-select (info)
+;;  (goto-char (car info))
+;;  (beginning-of-line)
+;;  (fi:definition-mode-goto-definition))
 
-(defun find-buffer-definition (string type list-buffer buffer)
+(defun fi:definition-mode-quit ()
+  "Quit definition mode and restore the window configuration as it was
+before definition mode was entered."
+  (interactive)
+  (bury-buffer)
+  (set-window-configuration lep::definition-mode-saved-window-configuration))
+
+(defun fi:definition-mode-goto-definition ()
+  "Find the definition associated with the entry on the current line."
+  (interactive)
+  (let* ((n (count-lines (point-min)
+			 (save-excursion (beginning-of-line) (point))))
+	 (buffer (current-buffer))
+	 (def (nth n lep::definitions))
+	 (other (nth n lep::definition-other-args))
+	 (type (nth n lep::definition-types)))
+    (when (and (not (equal type '(nil))) lep::definition-finding-function)
+      (apply (car lep::definition-finding-function)
+	     def type buffer
+	     (append other (cdr lep::definition-finding-function))))))
+
+(defun fi:definition-mode-goto-next ()
+  "Find the definition on the next line.  Equivalent to ``\\<global-map>\\[next-line]''
+followed by \
+``\\<fi:definition-mode-map>\\[fi:definition-mode-goto-definition]'' \
+in definition mode."
+  (interactive)
+  (next-line 1)
+  (fi:definition-mode-goto-definition))
+
+(defun fi:definition-mode-goto-previous ()
+  "Find the definition on the previous line.  Equivalent to ``\\<global-map>\\[previous-line]''
+followed by \
+``\\<fi:definition-mode-map>\\[fi:definition-mode-goto-definition]'' \
+in definition mode."
+  (interactive)
+  (previous-line 1)
+  (fi:definition-mode-goto-definition))
+
+(defun lep::find-buffer-definition (string type list-buffer buffer)
   (unless (bufferp buffer) (setq buffer (find-file-noselect buffer)))
   (make-request (scm::find-buffer-definition-session
 		 :pathname (buffer-file-name buffer) 
@@ -123,7 +172,7 @@
 (defun lep:display-some-definitions (package buffer-definitions
 				     fn-and-arguments
 				     &optional buffer-name)
-  (setq dmode-saved-window-configuration
+  (setq lep::definition-mode-saved-window-configuration
     (current-window-configuration))
   (switch-to-buffer-other-window (or buffer-name "*definitions*"))
   (setq buffer-read-only nil)
@@ -135,32 +184,14 @@
 	      (princ (second x) (current-buffer)))
 	    (insert "\n"))
 	  buffer-definitions)
-  (dmode)
+  (fi:definition-mode)
   (not-modified)
   (setq buffer-read-only t)
-  (setq definitions (mapcar 'car buffer-definitions))
-  (setq types (mapcar 'second buffer-definitions))
-  (setq other-args (mapcar 'third buffer-definitions))
-  (setq finding-function fn-and-arguments)
+  (setq lep::definitions (mapcar 'car buffer-definitions))
+  (setq lep::definition-types (mapcar 'second buffer-definitions))
+  (setq lep::definition-other-args (mapcar 'third buffer-definitions))
+  (setq lep::definition-finding-function fn-and-arguments)
   (setq fi:package package)
   (let ((height (window-height)))
     (when (> height 5) (shrink-window (- height 5))))
-  (beginning-of-buffer)
-  ;;don't go to the first definition, by default
-  ;; (dmode-goto-definition)
-  )
-
-(if dmode-map 
-    nil
-  (setq dmode-map (make-sparse-keymap))
-  (define-key dmode-map "\c-." 'dmode-goto-definition)
-  (define-key dmode-map "." 'dmode-goto-definition)
-  (define-key dmode-map "p" 'dmode-goto-previous)
-  (define-key dmode-map "n" 'dmode-goto-next)
-  (define-key dmode-map "q" 'dmode-quit)
-  (define-key dmode-map "\e."	'fi:lisp-find-tag))
-
-;;(if dmode-mouse-map
-;;    nil
-;;  (setq dmode-mouse-map (create-mouse-map))
-;;  (define-mouse dmode-mouse-map mouse-left mouse-down 'dmode-mouse-select))
+  (beginning-of-buffer))
