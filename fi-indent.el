@@ -19,7 +19,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.39 1992/07/17 15:28:24 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.40 1992/09/11 14:49:40 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If non-nil, semicolons that begin comments are indented as they are
@@ -326,7 +326,8 @@ status of that parse."
 With argument, indent any additional lines of the same expression
 rigidly along with this one."
   (interactive "P")
-  (let ((indent (fi::calculate-lisp-indent)) shift-amt beg end
+  (let ((indent (fi::calculate-lisp-indent))
+	shift-amt beg end
 	(pos (- (point-max) (point))))
     (beginning-of-line)
     (setq beg (point))
@@ -386,8 +387,13 @@ of the start of the containing expression."
     (beginning-of-line)
     (let ((indent-point (point))
 	  (state fi::calculate-lisp-indent-state-temp)
-	  paren-depth desired-indent (retry t)
-	  last-sexp containing-sexp)
+	  paren-depth
+	  desired-indent
+	  (retry t)
+	  last-sexp
+	  containing-sexp
+	  temp
+	  (comment-hack nil))
       (if parse-start
 	  (goto-char parse-start)
 	(beginning-of-defun))
@@ -400,9 +406,16 @@ of the start of the containing expression."
 
       (rplaca fi::lisp-most-recent-parse-result (point))
       (rplacd fi::lisp-most-recent-parse-result (copy-sequence state))
-      
+
+      (when (and (setq temp (nth 3 state)) (= ?| temp))
+	;; in a #||# comment
+	(indent-relative nil)
+	(setq desired-indent (current-column))
+	(setq comment-hack t))
+
       ;; Find innermost containing sexp
-      (while (and retry
+      (while (and (null comment-hack)
+		  retry
 		  (setq paren-depth (car state))
 		  (> paren-depth 0))
 	(setq retry nil)
@@ -418,7 +431,7 @@ of the start of the containing expression."
 		  (setq state peek))))
 	(rplaca fi::lisp-most-recent-parse-result (point))
 	(rplacd fi::lisp-most-recent-parse-result (copy-sequence state))
-	
+
 	(if retry
 	    nil
 	  ;; Innermost containing sexp found
@@ -487,9 +500,10 @@ of the start of the containing expression."
       ;; Point is at the point to indent under unless we are inside a string.
       ;; Call indentation hook except when overriden by fi:lisp-indent-offset
       ;; or if the desired indentation has already been computed.
-      (cond ((nth 3 state)
+      (cond (comment-hack)
+	    ((nth 3 state)
 	     ;; Inside a string, don't change indentation.
-	     (goto-char indent-point)
+             (goto-char indent-point)
 	     (skip-chars-forward " \t")
 	     (setq desired-indent (current-column)))
 	    ((and (integerp fi:lisp-indent-offset) containing-sexp)
