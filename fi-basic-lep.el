@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.22 1991/09/30 11:38:56 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.23 1991/10/03 12:45:58 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -671,7 +671,9 @@ lisp-eval-server has not been started, then this function starts it."
 
 (defun fi::wait-for-reply-to-come-back (result-cons)
   (when (not (car result-cons))
-    (let ((count fi:lisp-evalserver-number-reads))
+    (let ((count fi:lisp-evalserver-number-reads)
+	  ;; the user can type ^G if they get tired of waiting
+	  (fi:lisp-evalserver-timeout 1000))
       (while (and (> (setq count (1- count)) 0)
 		  (null (car result-cons)))
 	(accept-process-output 
