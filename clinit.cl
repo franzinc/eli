@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/Attic/clinit.cl,v 1.9 1989/05/22 15:30:08 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/clinit.cl,v 1.10 1989/07/11 18:20:01 layer Exp $
 
 #|
 
@@ -70,7 +70,7 @@ setenv EMACSLIBRARY /usr/local/lib/emacs
 		     si:*require-search-list*)
 	       (push first si:*require-search-list*))
 	     (if (find-package :ipc)
-		 (set (svalue :ipc :lisp-listener-daemon-ff-loaded) nil))
+		 (set (svalue :ipc :.lisp-listener-daemon-ff-loaded.) nil))
 	     (require :ipc)
 	     (require :emacs)
 	     (if udp (set (svalue :ipc :*unix-domain*) unix-domain))
