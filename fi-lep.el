@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.14 1991/02/28 23:23:21 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.15 1991/03/07 14:57:37 layer Exp $
 ;;
 
 (defvar fi:always-in-a-window nil)
@@ -178,7 +178,7 @@ buffers package to the package of PACKAGE."
   (interactive (if current-prefix-arg
 		   '(nil t)
 		 (list (car (fi::get-default-symbol "Lisp locate source")) nil)))
-  (fi::lisp-find-tag-common something next nil))
+  (fi::lisp-find-tag-common something next t))
 
 (defun delete-metadot-session ()
   (if lep:*meta-dot-session* (lep::kill-session lep:*meta-dot-session*))
