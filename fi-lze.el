@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.23 1992/04/28 14:02:25 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.24 1992/04/28 23:20:24 layer Exp $
 ;;
 ;; Code the implements evaluation in via the backdoor
 
@@ -43,7 +43,8 @@
     (setq fi::show-compilation-status nil)))
 
 (defun fi::error-if-request-in-progress ()
-  (and fi::show-compilation-status
+  (and nil ;; turn off this feature for now...
+       fi::show-compilation-status
        (eq (fi::connection-process fi::*connection*)
 	   fi::show-compilation-status)
        (error "A background eval/compile request is pending, please wait...")))
