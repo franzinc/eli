@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-xemacs.el,v 2.11.6.3 2002/02/07 16:41:34 layer Exp $
+;; $Id: fi-xemacs.el,v 2.11.6.3.8.1 2003/08/07 18:16:52 layer Exp $
 
 (defun fi-find-buffer-visiting (filename)
   (get-file-buffer filename))
@@ -281,12 +281,22 @@
   (when (eq current-menubar (default-value 'current-menubar))
     ;; current-menubar isn't yet buffer local
     (set-buffer-menubar current-menubar)
-    (fi::install-menubar fi:allegro-file-menu)
-    (fi::install-menubar fi:allegro-edit-menu)
-    (fi::install-menubar fi:allegro-debug-menu)
-    (fi::install-menubar fi:allegro-help-menu)
-    (when (and fi:composer-menu (not (on-ms-windows)))
-      (fi::install-menubar fi:composer-menu))))
+    (cond (fi:menu-bar-single-item
+	   (fi::install-menubar
+	    (list "ACL"
+		  fi:allegro-file-menu
+		  fi:allegro-edit-menu
+		  fi:allegro-debug-menu
+		  fi:allegro-help-menu
+		  (when (and fi:composer-menu (not (on-ms-windows)))
+		    fi:composer-menu))))
+	  (t
+	   (fi::install-menubar fi:allegro-file-menu)
+	   (fi::install-menubar fi:allegro-edit-menu)
+	   (fi::install-menubar fi:allegro-debug-menu)
+	   (fi::install-menubar fi:allegro-help-menu)
+	   (when (and fi:composer-menu (not (on-ms-windows)))
+	     (fi::install-menubar fi:composer-menu))))))
 
 (defvar fi::menubar-initialization)
 (setq fi::menubar-initialization

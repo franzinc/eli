@@ -12,6 +12,7 @@ post-6.2 release changes:
 2003-08-07  Kevin Layer  <layer@crikey>
 
 	* fi-keys.el: fix minor bug with keymap init
+	* fi-xemacs.el: implement fi:menu-bar-single-item on xemacs
 
 2003-08-05  Kevin Layer  <layer@crikey>
 2.4.0
