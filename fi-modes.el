@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.54 1993/08/12 23:45:11 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.55 1993/09/01 03:24:33 layer Exp $
 
 ;;;; Mode initializations
 
@@ -55,12 +55,18 @@ fi:common-lisp-mode.")
   "Non-nil when buffer has a subprocess.")
 
 (defvar fi:lisp-mode-hook
-    '(lambda ()
-      (if (and (boundp 'fi:package) fi:package)
-	  (setq mode-line-process '("; package: " fi:package))))
+    (function
+     (lambda ()
+       (let ((ml nil))
+	 (when (and (boundp 'fi:package) fi:package)
+	   (setq ml (nconc ml '("; pkg:" fi:package))))
+	 (when (and (boundp 'fi:readtable) fi:readtable)
+	   (setq ml (nconc ml '("; rt:" fi:readtable))))
+	 (setq mode-line-process ml))))
   "*The initial value of this hook, which is run whenever a Lisp mode is
-entered, causes the `package' to be displayed in the mode line.  It uses
-MODE-LINE-PROCESS, which has no use in non-subprocess buffers.")
+entered, causes the `package' and readtable (if any) to be displayed in the
+mode line.  It uses MODE-LINE-PROCESS, which has no use in non-subprocess
+buffers.")
 
 (defvar fi:in-package-regexp nil
   "*If non-nil, the regular expression that describes the IN-PACKAGE form,
@@ -349,82 +355,102 @@ for more information.")
 The buffer's IN-PACKAGE form and the -*- mode line are parsed for this
 information.  This function is automatically called when a Common Lisp
 source file is visited, but may be executed explicitly to re-parse the
-package."
+package.
+
+When using Allegro CL 4.2 or later, the ``Readtable: '' can be used to name
+the readtable used for evaluations given to Lisp from emacs."
   (interactive)
+  (setq fi:readtable (fi::parse-mode-line "readtable"))
+  (setq fi:package
+    (fi::parse-mode-line "package" fi:default-package t
+			 'fi::parse-package-from-buffer t)))
+
+(defun fi::parse-mode-line (key
+			    &optional default-value messagep fail-hook
+				      list-value-ok)
   (save-excursion
-    ;; look for -*- ... package: xxx; .... -*-
-    (let (beg end)
+    (let ((case-fold-search t)
+	  (search-string (format "%s:" key))
+	  value found start end)
       (goto-char (point-min))
       (skip-chars-forward " \t\n")
-      (if (and (search-forward "-*-" (save-excursion (end-of-line) (point)) t)
-	       (progn
-		 (skip-chars-forward " \t")
-		 (setq beg (point))
-		 (search-forward "-*-"
-				 (save-excursion (end-of-line) (point)) t))
-	       (progn
-		 (forward-char -3)
-		 (skip-chars-backward " \t")
-		 (setq end (point))
-		 (goto-char beg)
-		 (if (search-forward ":" end t)
-		     (progn
-		       (goto-char beg)
-		       (if (let ((case-fold-search t))
-			     (search-forward "package:" end t))
-			   (progn
-			     (skip-chars-forward " \t")
-			     (setq beg (point))
-			     (if (> beg end) (setq end beg))
-			     (if (search-forward ";" end t)
-				 (forward-char -1)
-			       (goto-char end))
-			     (skip-chars-backward " \t")
-			     (cond
-			      ((>= beg (point))
-			       (setq fi:package fi:default-package))
-			      (t
-			       (let ((package
-				      (if (= (string-to-char "(")
-					     (char-after beg))
-					  (buffer-substring (+ 1 beg) (point))
-					(buffer-substring beg (point)))))
-				 (setq fi:package
-				   (downcase
-				    (symbol-name
-				     (car (read-from-string
-					   package))))))))))))
-		 fi:package))
-	  fi:package
-	(let* ((case-fold-search t)
-	       (pos (re-search-forward "^(in-package[\t ]*" nil t)))
-	  ;; find the `in-package' form, and snarf the package
-	  ;; that way
-	  (if pos
-	      (let* ((start (match-end 0))
-		     (end (progn (search-forward ")" nil t)
-				 (match-beginning 0)))
-		     (p-string (buffer-substring start end))
-		     (p (car (read-from-string p-string))))
-		(setq fi:package
-		  (cond ((symbolp p)
-			 (if (= (elt (symbol-name p) 0) ?:)
-			     (substring (symbol-name p) 1)
-			   (symbol-name p)))
-			((and (consp p)
-			      (eq 'quote (car p))
-			      (symbolp (car (cdr p))))
-			 (let ((name (symbol-name (car (cdr p)))))
-			   (if (= (elt name 0) ?:)
-			       (substring name 1)
-			     name)))
-			((stringp p) p)))))))))
-  (if (or (not (boundp 'fi:package))
-	  (null fi:package))
-      (progn
-	(setq fi:package fi:default-package)
-	(message "using default package specification of `%s'" fi:package))
-    (message "package specification is `%s'" fi:package)))
+      (when (and (search-forward "-*-"
+				 (save-excursion (end-of-line) (point)) t)
+		 (progn
+		   (skip-chars-forward " \t")
+		   (setq start (point))
+		   (search-forward "-*-"
+				   (save-excursion (end-of-line) (point))
+				   t)))
+	(forward-char -3)
+	(skip-chars-backward " \t")
+	(setq end (point))
+	(goto-char start)
+		 
+	(when (search-forward ":" end t)
+	  (goto-char start)
+	  (when (search-forward search-string end t)
+	    (skip-chars-forward " \t")
+	    (setq start (point))
+	    (if (> start end) (setq end start))
+	    (if (search-forward ";" end t)
+		(forward-char -1)
+	      (goto-char end))
+	    (skip-chars-backward " \t")
+	    (cond
+	     ((>= start (point))
+	      (setq value default-value))
+	     (t
+	      (let ((val
+		     (if (and list-value-ok
+			      (= (string-to-char "(")
+				 (char-after start)))
+			 (buffer-substring (+ 1 start)
+					   (point))
+		       (buffer-substring start (point)))))
+		(setq found t)
+		(setq value
+		  (downcase
+		   (symbol-name (car (read-from-string val)))))))))))
+      (when (and (not found) fail-hook)
+	(goto-char (point-min))
+	(let ((val (funcall fail-hook)))
+	  (when val
+	    (setq found t value val))))
+      (unless found (setq value default-value))
+      (when messagep
+	(if found
+	    (message "%s specification is `%s'" key value)
+	  (message "using default key specification of `%s'"
+		   key value)))
+      value)))
+
+(defun fi::parse-package-from-buffer ()
+  (goto-char (point-min))
+  (let ((pos (re-search-forward "^(in-package[\t ]*" nil t))
+	value)
+    ;; find the `in-package' form, and snarf the package
+    ;; that way
+    (when pos
+      (let* ((start (match-end 0))
+	     (end (progn (search-forward ")" nil t)
+			 (match-beginning 0)))
+	     (p-string (buffer-substring start end))
+	     (p (car (read-from-string p-string))))
+	(setq value
+	  (cond ((symbolp p)
+		 (if (= (elt (symbol-name p) 0) ?:)
+		     (substring (symbol-name p) 1)
+		   (symbol-name p)))
+		((and (consp p)
+		      (eq 'quote (car p))
+		      (symbolp (car (cdr p))))
+		 (let ((name (symbol-name (car (cdr p)))))
+		   (if (= (elt name 0) ?:)
+		       (substring name 1)
+		     name)))
+		((stringp p) p)))))
+    value))
 
 ;;;;
 ;;; Initializations

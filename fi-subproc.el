@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.152 1993/08/12 23:45:19 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.153 1993/09/01 03:24:40 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -85,13 +85,21 @@ form or the entire buffer).")
 
 (defvar fi:package nil
   "A buffer-local variable whose value is automatically set for editing
-modes and will be nil or a string which names a package in the Lisp world
-(ie, in a Lisp subprocess running as an inferior of Emacs in some buffer)
-for other modes.  It is used when expressions are sent from an Emacs buffer
-to a Lisp process so that the symbols are read into the correct Lisp
-package.")
+modes and will be nil or a string which names a package in the Lisp
+world--ie, in a Lisp subprocess running as an inferior of Emacs in some
+buffer.  It is used when expressions are sent from an Emacs buffer to a
+Lisp process so that the symbols are read into the correct Lisp package.")
 
 (make-variable-buffer-local 'fi:package)
+
+(defvar fi:readtable nil
+  "A buffer-local variable whose value is automatically set for editing
+modes and will be nil or a string which names a readtable in the Lisp
+world--ie, in a Lisp subprocess running as an inferior of Emacs in some
+buffer.  It is used when expressions are sent from an Emacs buffer to a
+Lisp process so that the symbols are read using the correct readtable.")
+
+(make-variable-buffer-local 'fi:readtable)
 
 
 ;;;;

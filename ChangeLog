@@ -1,3 +1,12 @@
+Tue Aug 31 20:00:00 1993  Kevin Layer  (layer@sole)
+
+	* fi-basic-lep.el: pass :buffer-readtable to make-session
+
+	* fi-modes.el: note readtable in mode line formatting; revamp -*-
+	mode line parsing to be more general (to handle "readtable: ").
+
+	* fi-subproc.el: add fi:readtable defvar
+
 Tue Aug 31 16:23:49 1993  Kevin Layer  (layer@sole)
 
 	* fi-site-init.el: fi::emacs-type, which tells which type of emacs
