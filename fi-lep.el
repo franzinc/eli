@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.5 1991/02/12 17:17:35 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.6 1991/02/12 22:42:16 layer Exp $
 ;;
 ;;;;;; This LEP file redefines many of the fi:functions in the fi/keys.el file
 
@@ -319,33 +319,56 @@ the point is used as the default."
 		 (message "Cannot describe %s: %s" symbol error))))
 
 
-
 (defun show-some-text (text package)
-  "Display TEXT in a temporary buffer putting that buffer setting that buffers package to the
-package of PACKAGE"
-  (let ((buffer (get-buffer-create "*CL-temp*"))
-	(switched nil))
-    (unless (eq (current-buffer) buffer)
-      (setq switched t)
-      (if (one-window-p)
-	  (split-window-vertically))
-      (other-window 1)
-      (switch-to-buffer buffer t))
-    (erase-buffer)
-    (fi:common-lisp-mode)
-    (setq fi:package package)
-    (insert text)
-    (beginning-of-buffer)
+  "Display TEXT in a temporary buffer putting that buffer setting that
+buffers package to the package of PACKAGE."
+  (let* ((from-window (selected-window))
+	 (from-window-height (1- (window-height))) ; minus mode line
+	 (buffer (get-buffer-create "*CL-temp*"))
+	 (buffer-window (get-buffer-window buffer))
+	 (lines nil))
+    
+    ;; fill the buffer
+    (save-excursion
+      (set-buffer buffer)
+      (erase-buffer)
+      (fi:common-lisp-mode)
+      (setq fi:package package)
+      (insert text)
+      (beginning-of-buffer)
+      (setq lines (count-lines (point-min) (point-max))))
+
+    ;; get to the proper window
+    ;;
+    (cond (buffer-window
+	   (select-window buffer-window))
+	  ((eq (current-buffer) buffer)
+	   ;; in the correct buffer
+	   )
+	  ((one-window-p)
+	   (split-window)
+	   (other-window 1)
+	   (switch-to-buffer buffer))
+	  (t
+	   (select-window (get-largest-window))
+	   (setq from-window (selected-window))
+	   (setq from-window-height (1- (window-height)))
+	   (split-window)
+	   (other-window 1)
+	   (switch-to-buffer buffer)))
+
     (unless (one-window-p)
-      (let ((height (1- (window-height)))
-	    (lines (count-lines (point-min) (point-max))))
-	;; What is a good maximum????
-	(setq lines (min 100 (max lines 3)))
-	(cond ((> height lines) 
-	       (shrink-window (- height lines)))
-	      ((> lines height) 
-	       (enlarge-window (- lines height))))))
-    (when switched (other-window 1))))
+      (let ((target-size
+	     (min (/ from-window-height 2)
+		  (max window-min-height lines))))
+	(if (< target-size (window-height))
+	    (shrink-window (- (window-height) target-size 1))
+	  (if (> target-size (window-height))
+	      (enlarge-window (- target-size (window-height))))
+	  )))
+    
+    (bury-buffer buffer)
+    (select-window from-window)))
 
 ;;; Function documentation
 
