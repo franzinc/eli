@@ -4,12 +4,19 @@ For more detailed instructions on filling in the ChangeLog form, see
 <version for this commit, if applicable>
 
 Documentation changes:	<`none' or give pointer to them>
-Bootstrapping needed:	<`none' or give pointer to instructions>
 Tests for new features:	<`no new features', `no tests for new features', or
 			 give pointer to test files>
 
 <standard changelog date stamp>
 	* <changes go here...>
+
+*******************************************************************************
+Documentation changes:	none
+Tests for new features:	no new features
+
+Thu Nov 21 13:42:48 1996  Kevin Layer  <layer@ultra>
+
+	* local-fi-developer-hooks.el: add update-modify-line
 
 *******************************************************************************
 2.0.20.alpha.8

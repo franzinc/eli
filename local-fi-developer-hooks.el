@@ -1,5 +1,5 @@
 ;; local-fi-developer-hooks.el
-;; $Id: local-fi-developer-hooks.el,v 2.4 1996/08/01 22:36:49 layer Exp $
+;; $Id: local-fi-developer-hooks.el,v 2.5 1996/11/21 21:44:05 layer Exp $
 
 ;; This file is not for public distribution.
 ;; It contains extra hooks for fi developers only, things like special
@@ -59,3 +59,20 @@
 	  (function
 	   (lambda ()
 	     (pushnew 'fi::update-acl-id local-write-file-hooks))))
+
+(defun update-modify-line ()
+  (interactive)
+  (save-excursion
+    (beginning-of-buffer)
+    (if (search-forward "-[" 500 t)
+	(let ((debug-on-error nil))
+	  (condition-case ()
+	      (let ((from (point)))
+		(search-forward "]-" (+ (point) 100))
+		(backward-char 2)
+		(delete-region from (point))
+		(insert-string (concat (current-time-string)
+				       " by " (user-login-name))))
+	    (error (message "error updating modify line...")
+		   (sit-for 1))))))
+  nil)
