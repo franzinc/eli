@@ -1,7 +1,7 @@
 ;;; subprocess-lisp.el
 ;;;   functions to send lisp source code to the sublisp process
 ;;;
-;;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.9 1988/02/26 18:38:59 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.10 1988/02/29 11:38:10 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -245,28 +245,6 @@ that for a hack??"
 			 package package)
 		 "*package*")
 	       filename)))))
-
-(defun run-common-lisp-tcp (&optional host)
-  "Make a new buffer connected to the Lisp Listener Daemon on the given host,
-which defaults to the local host.  A fresh buffer is made for each
-invocation."
-  (interactive)
-  (let ((buffer (generate-new-buffer "*tcplisp*"))
-	(host (or host local-host-name))
-	proc)
-    (save-excursion
-      (set-buffer buffer)
-      (if unix-domain
-	  (setq proc (open-network-stream
-		      (buffer-name buffer) buffer unix-domain-socket 0))
-	(setq proc (open-network-stream (buffer-name buffer) buffer
-					local-host-name
-					excl-service-name)))
-      (process-send-string proc (format "\"%s\"\n" (buffer-name buffer)))
-      (goto-char (point-max))
-      (set-marker (process-mark proc) (point)))
-    (switch-to-buffer buffer)
-    (fi:tcp-lisp-mode common-lisp-prompt-pattern)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -567,7 +545,7 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 		  (get-process freshest-franz-sublisp-name))
 	     (setq sublisp-name freshest-franz-sublisp-name)
 	   (setq sublisp-name (prog1
-				  (run-franz-lisp nil)
+				  (run-franz-lisp)
 				(switch-to-buffer nil)
 				(sleep-for 5)))))
 	((eql major-mode 'common-lisp-mode)
@@ -575,7 +553,7 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 		  (get-process freshest-common-sublisp-name))
 	     (setq sublisp-name freshest-common-sublisp-name)
 	   (setq sublisp-name (prog1
-				  (run-common-lisp nil)
+				  (run-common-lisp)
 				(switch-to-buffer nil)
 				(sleep-for 1)))))
 	(t (error
