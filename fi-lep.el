@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.8 1991/02/12 22:59:36 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.9 1991/02/13 10:20:37 layer Exp $
 ;;
 ;;;;;; This LEP file redefines many of the fi:functions in the fi/keys.el file
 
@@ -323,8 +323,7 @@ the point is used as the default."
 (defun show-some-text (text package)
   "Display TEXT in a temporary buffer putting that buffer setting that
 buffers package to the package of PACKAGE."
-  (let* ((window-min-height 1)
-	 (from-window (selected-window))
+  (let* ((from-window (selected-window))
 	 (from-window-orig-height (1- (window-height))) ; minus mode line
 	 (buffer (get-buffer-create "*CL-temp*"))
 	 (buffer-window (get-buffer-window buffer))
@@ -364,13 +363,14 @@ buffers package to the package of PACKAGE."
 	   (switch-to-buffer buffer)))
 
     (unless (one-window-p)
-      (let ((target-size
-	     (min (/ from-window-orig-height 2)
-		  (max window-min-height lines))))
+      (let* ((window-min-height 1)
+	     (target-size
+	      (min (/ from-window-orig-height 2)
+		   (max window-min-height lines))))
 	(if (< target-size (window-height))
 	    (shrink-window (- (window-height) target-size 1))
 	  (if (> target-size (window-height))
-	      (enlarge-window (- target-size (window-height)))))))
+	      (enlarge-window (- target-size (window-height) -1))))))
     
     (bury-buffer buffer)
     (select-window from-window)))
@@ -528,14 +528,12 @@ from the sexp around the point."
   (insert string))
 
 (defun lep::create-listener-stream ()
-  "Create a tcp listener in response to a request for a listener stream"
+  "Create a tcp listener in response to a request for a listener stream."
   ;; We create a tcp listener using the stream protocol which arranges for
   ;; the stream to be passed back to the session
-  (print 1 (get-buffer "*scratch*"))
   (let ((fi::listener-protocol ':stream))
     (send-string (fi:tcp-common-lisp -1)
-		 (format "%d\n" (session-id session))))
-  (print 2 (get-buffer "*scratch*")))
+		 (format "%d\n" (session-id session)))))
 
 (defun getf-property (plist property &optional default)
   (while (and plist
