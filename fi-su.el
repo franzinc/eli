@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-su.el,v 1.3 1990/10/13 19:37:10 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-su.el,v 1.4 1991/01/31 14:47:03 layer Exp $
 
 (defvar fi:su-mode-map nil
   "The su major-mode keymap.")
@@ -49,7 +49,15 @@ is deemed to be prompt, and is not re-executed.")
 is seen.")
 
 (defun fi:su-mode (&optional mode-hook)
-  "Major mode for interacting with an inferior su."
+  "Major mode for interacting with an inferior su.
+The keymap for this mode is bound to fi:su-mode-map:
+\\{fi:su-mode-map}
+Entry to this mode runs the following hooks:
+
+	fi:subprocess-mode-hook
+	fi:su-mode-hook
+
+in the above order."
   (interactive)
   (kill-all-local-variables)
   (if mode-hook (funcall mode-hook))
@@ -68,7 +76,7 @@ is seen.")
 				      'shell)))
   (use-local-map fi:su-mode-map)
   (setq fi:subprocess-super-key-map fi:su-mode-super-key-map)
-  (run-hooks 'fi:subprocess-mode-hook 'fi:shell-mode-hook))
+  (run-hooks 'fi:subprocess-mode-hook 'fi:su-mode-hook))
 
 (defun fi:remote-su-mode (&optional mode-hook)
   "Major mode for interacting with an inferior su."
