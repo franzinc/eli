@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.124 1991/09/11 15:22:23 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.125 1991/09/16 14:54:32 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -118,17 +118,34 @@ accessible on both machine with the same pathname (via the wonders of NFS).")
   "*If non-nil, forms evalutated directly in fi:common-lisp-mode by the
 fi:lisp-eval-* functions will be echoed by Common Lisp.")
 
-(defvar fi:start-lisp-interface-function
-    'fi:start-backdoor-interface
-  "*If non-nil, the function which is called to startup the Emacs-Lisp
-interface.  This happens automatically when the Common Lisp process is
-started with fi:common-lisp.")
+(defvar fi:start-lisp-interface-arguments
+    (function
+     (lambda (use-background-streams)
+       (list "-e"
+	     (format "\"(excl::start-emacs-lisp-interface %s 1)\""
+		     use-background-streams))))
+  "*This value of this variable determines whether or not the emacs-lisp
+interface is started automatically when fi:common-lisp is used to run
+Common Lisp images.   If non-nil, then a the value of this variable should
+be a function of one argument that returns command line argument sufficient
+to start the emacs-lisp interface.  The argument is a boolean that
+determines whether or not background streams are used (see
+fi:use-background-streams).")
+
+(defvar fi:use-background-streams t
+  "*If non-nil, then the default function bound to
+fi:start-lisp-interface-arguments will cause background streams to be
+initialized in ACL (see the function excl:use-background-streams).  Roughly
+speaking, background streams cause processes that do output, but which are
+not associated with any particular stream, to do it in a unique listener in
+an emacs buffer.  This allows MP:PROCESS-RUN-FUNCTION in the Lisp
+environment to be more useful.")
 
 (defvar fi:start-lisp-interface-hook nil
   "*A function or a list of functions to call when we get the rendezvous
 info from Lisp in the Lisp subprocess buffer.  This is used to
 automatically startup the Emacs-Lisp hidden communication via a socket.
-fi:start-lisp-interface-function initiates the connection with Lisp from
+fi:start-lisp-interface-arguments initiates the connection with Lisp from
 the Emacs side, Lisp then starts up the daemon which listens for
 connections and prints a string to the subprocess buffer (which is not
 displayed by the process filter for the Common Lisp subprocess), at which
@@ -259,34 +276,10 @@ buffer local.")
 (defvar fi::rsh-command "rsh")
 (defvar fi::rsh-args nil)
 
-(defun fi:start-backdoor-interface (process)
-  "Send a string to PROCESS, which should be a Lisp, that starts the
-Emacs-Lisp interface.  This only works in Allegro CL, currently."
+(defun fi::start-backdoor-interface (proc)
   (fi:verify-emacs-support)
-  (unless (fi::lep-open-connection-p)
-    (setq fi::common-lisp-backdoor-main-process-name (process-name process))
-    ;; It appears that sometimes the following form doesn't make it to the
-    ;; Common Lisp process.  My theory for this is that there is either an
-    ;; Emacs/UNIX bug that causes the input to be thrown away.  The
-    ;; SLEEP-FOR is an attempt to work around this bug.
-    (sleep-for 2)
-    (send-string
-     process
-     "(progn
-      (princ \";; Starting socket daemon\n\")
-      (force-output)
-      (excl::require :ipc)
-      (excl::require :emacs)
-      #+allegro-v4.1 (excl::require :lep)
-      #+allegro-v4.1 (excl::require :scm)
-      (apply
-       (find-symbol (symbol-name :start-lisp-listener-daemon) :ipc)
-       #+allegro-v4.1 '(:use-lep t :unix-domain nil)
-       #-allegro-v4.1 nil)
-      (when (fboundp 'excl::use-background-streams)
-        (excl::use-background-streams))
-      (values))\n")
-    (send-string process (fi::setup-tcp-connection process))))
+  (setq fi::common-lisp-backdoor-main-process-name (process-name proc))
+  (fi::reset-metadot-session))
 
 (defun fi:common-lisp (&optional buffer-name directory image-name
 				 image-args host)
@@ -336,6 +329,12 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	 (image-args (if (interactive-p)
 			 image-args
 		       (or image-args fi:common-lisp-image-arguments)))
+	 (real-args
+	  (if fi:start-lisp-interface-arguments
+	      (append (funcall fi:start-lisp-interface-arguments
+			       fi:use-background-streams)
+		      image-args)
+	    image-args))
 	 (host (if (interactive-p)
 		   host
 		 (or host fi:common-lisp-host)))
@@ -361,11 +360,11 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		fi:common-lisp-prompt-pattern
 		(if local image-name fi::rsh-command)
 		(if local
-		    image-args
-		  (fi::remote-lisp-args host image-name image-args
+		    real-args
+		  (fi::remote-lisp-args host image-name real-args
 					directory))
 		'fi::common-lisp-subprocess-filter
-		fi:start-lisp-interface-function
+		'fi::start-backdoor-interface
 		;;
 		;; rest of the arguments are the
 		;; mode-hook function and its arguments
@@ -383,13 +382,13 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 			   (cd dir)
 			 (error nil))))))
 		local host directory)))
-    (setq fi::common-lisp-first-time nil
-	  fi:common-lisp-buffer-name buffer-name
-	  fi:common-lisp-directory directory
-	  fi:common-lisp-image-name image-name
-	  fi:common-lisp-image-arguments image-args
-	  fi:common-lisp-host host)
-    (fi::reset-metadot-session)
+    (when (interactive-p)
+      (setq fi::common-lisp-first-time nil
+	    fi:common-lisp-buffer-name buffer-name
+	    fi:common-lisp-directory directory
+	    fi:common-lisp-image-name image-name
+	    fi:common-lisp-image-arguments image-args
+	    fi:common-lisp-host host))
     proc))
 
 (defun fi:open-lisp-listener (&optional buffer-number
@@ -509,12 +508,13 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		       (error nil)))))
 		local directory)))
     (setq fi:franz-lisp-process-name (process-name proc))
-    (setq fi::franz-lisp-first-time nil
-	  fi:franz-lisp-buffer-name buffer-name
-	  fi:franz-lisp-directory directory
-	  fi:franz-lisp-image-name image-name
-	  fi:franz-lisp-image-arguments image-args
-	  fi:franz-lisp-host host)
+    (when (interactive-p)
+      (setq fi::franz-lisp-first-time nil
+	    fi:franz-lisp-buffer-name buffer-name
+	    fi:franz-lisp-directory directory
+	    fi:franz-lisp-image-name image-name
+	    fi:franz-lisp-image-arguments image-args
+	    fi:franz-lisp-host host))
     proc))
 
 ;;;;
