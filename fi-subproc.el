@@ -19,7 +19,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.137 1992/02/21 14:36:10 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.138 1992/04/28 14:02:10 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -943,18 +943,26 @@ This function implements continuous output to visible buffers."
   (setq fi::last-input-start (make-marker))
   (setq fi::last-input-end (make-marker)))
 
+;; cached & discombobulated value of CDPATH env variable
+(defvar fi::cdpath nil)
+
 (defun fi::subprocess-watch-for-special-commands ()
-  "Watch for special commands like, for example, `cd' in a shell."
+  "Watch for special commands like, for example, `cd' in a shell.  We grok
+the `cdpath' C shell environment variable, if you add the line
+
+	setenv CDPATH \"$cdpath\"
+
+to your `.cshrc' after the `set cdpath=(...)' in the same file."
   (if (null fi::shell-directory-stack)
       (setq fi::shell-directory-stack (list default-directory)))
   (condition-case ()
-      ;; "To err is really not nice." -dkl 11/21/88
-      (save-excursion
-	(goto-char fi::last-input-start)
-	(cond
-	  ((and fi:in-package-regexp (looking-at fi:in-package-regexp))
-	   (goto-char (match-end 0))
-	   (cond
+      (let ((directory nil) (directory-stack nil))
+	(save-excursion
+	  (goto-char fi::last-input-start)
+	  (cond
+	   ((and fi:in-package-regexp (looking-at fi:in-package-regexp))
+	    (goto-char (match-end 0))
+	    (cond
 	     ((or (looking-at "[ \t]*[':]\\(.*\\)[ \t]*)")
 		  (looking-at "[ \t]*\"\\(.*\\)\"[ \t]*)")
 		  (looking-at "[ \t]*\\(.*\\)[ \t]*)"))
@@ -965,12 +973,12 @@ This function implements continuous output to visible buffers."
 	      ;; :pa foo
 	      (setq fi:package
 		(buffer-substring (match-beginning 1) (match-end 1)))))
-	   ;; need to do something here to force the minibuffer to
-	   ;; redisplay:
-	   (set-buffer-modified-p (buffer-modified-p)))
-	  ((and fi:shell-popd-regexp (looking-at fi:shell-popd-regexp))
-	   (goto-char (match-end 0))
-	   (cond
+	    ;; need to do something here to force the minibuffer to
+	    ;; redisplay:
+	    (set-buffer-modified-p (buffer-modified-p)))
+	   ((and fi:shell-popd-regexp (looking-at fi:shell-popd-regexp))
+	    (goto-char (match-end 0))
+	    (cond
 	     ((looking-at ".*&[ \t]*$")
 	      ;; "popd ... &" executes in a subshell!
 	      )
@@ -981,8 +989,9 @@ This function implements continuous output to visible buffers."
 			     (buffer-substring (match-beginning 1)
 					       (match-end 1)))))))
 		(if (null n)
-		    (cd (car (setq fi::shell-directory-stack
-			       (cdr fi::shell-directory-stack))))
+		    (setq directory
+		      (car (setq fi::shell-directory-stack
+			     (cdr fi::shell-directory-stack))))
 		  ;; pop n'th entry
 		  (if (> n (length fi::shell-directory-stack))
 		      (message "Directory stack not that deep.")
@@ -991,9 +1000,9 @@ This function implements continuous output to visible buffers."
 			      nil)
 		      (setq fi::shell-directory-stack
 			(append fi::shell-directory-stack tail)))))))))
-	  ((and fi:shell-pushd-regexp (looking-at fi:shell-pushd-regexp))
-	   (goto-char (match-end 0))
-	   (cond
+	   ((and fi:shell-pushd-regexp (looking-at fi:shell-pushd-regexp))
+	    (goto-char (match-end 0))
+	    (cond
 	     ((looking-at ".*&[ \t]*$")
 	      ;; "pushd ... &" executes in a subshell!
 	      )
@@ -1011,18 +1020,17 @@ This function implements continuous output to visible buffers."
 			      nil)
 		      (setq fi::shell-directory-stack
 			(append head fi::shell-directory-stack))
-		      (cd (car head)))))))
+		      (setq directory (car head)))))))
 	     ((looking-at "[ \t]+\\([^ \t]+\\)[;\n]")
 	      ;; pushd dir
-	      (let ((dir (expand-file-name
-			  (substitute-in-file-name
-			   (buffer-substring (match-beginning 1)
-					     (match-end 1))))))
-		(if (file-directory-p dir)
-		    (progn
-		      (setq fi::shell-directory-stack
-			(cons dir fi::shell-directory-stack))
-		      (cd dir)))))
+	      (let* ((xdir (buffer-substring (match-beginning 1)
+					     (match-end 1)))
+		     (dir
+		      (if (string-match "$~" xdir)
+			  (expand-file-name (substitute-in-file-name xdir))
+			xdir)))
+		(setq directory dir)
+		(setq directory-stack 'push)))
 	     ((looking-at "[ \t]*[;\n]")
 	      ;; pushd
 	      (if (< (length fi::shell-directory-stack) 2)
@@ -1031,27 +1039,80 @@ This function implements continuous output to visible buffers."
 		  (append (list (car (cdr fi::shell-directory-stack))
 				(car fi::shell-directory-stack))
 			  (cdr (cdr fi::shell-directory-stack))))
-		(cd (car fi::shell-directory-stack))))))
-	  ((and fi:shell-cd-regexp (looking-at fi:shell-cd-regexp))
-	   (goto-char (match-end 0))
-	   (cond
+		(setq directory (car fi::shell-directory-stack))))))
+	   ((and fi:shell-cd-regexp (looking-at fi:shell-cd-regexp))
+	    (goto-char (match-end 0))
+	    (cond
 	     ((looking-at ".*&[ \t]*$")
 	      ;; "cd foo &" executes in a subshell!
 	      )
 	     ((looking-at "[ \t]*[;\n]")
 	      ;; cd
-	      (cd (rplaca fi::shell-directory-stack (getenv "HOME"))))
+	      (setq directory
+		(rplaca fi::shell-directory-stack (getenv "HOME"))))
 	     ((looking-at "[ \t]+\\([^ \t]+\\)[ \t]*[;\n]")
 	      ;; cd dir
-	      (let ((dir (expand-file-name
-			  (substitute-in-file-name
-			   (buffer-substring (match-beginning 1)
-					     (match-end 1))))))
-		(if (file-directory-p dir)
-		    (progn
-		      (rplaca fi::shell-directory-stack dir)
-		      (cd dir)))))))))
+	      (let* ((xdir
+		      (buffer-substring (match-beginning 1) (match-end 1)))
+		     (dir
+		      (if (string-match "$~" xdir)
+			  (expand-file-name (substitute-in-file-name xdir))
+			xdir)))
+		(setq directory dir)
+		(setq directory-stack 'replace)))))))
+	(when directory
+	  (if (file-directory-p directory)
+	      (progn
+		(cd directory)
+		(cond ((eq 'push directory-stack)
+		       (setq fi::shell-directory-stack
+			 (cons directory fi::shell-directory-stack)))
+		      ((eq 'replace directory-stack)
+		       (rplaca fi::shell-directory-stack directory))))
+	    ;; check CDPATH
+	    (unless fi::cdpath
+	      (setq fi::cdpath (fi::listify-cdpath)))
+	    (let ((cdpath fi::cdpath)
+		  (done nil)
+		  (dir nil))
+	      (while (and cdpath (not done))
+		(setq dir (format "%s/%s" (car cdpath) directory))
+		(when (file-directory-p dir)
+		  (cd dir)
+		  (cond ((eq 'push directory-stack)
+			 (setq fi::shell-directory-stack
+			   (cons dir fi::shell-directory-stack)))
+			((eq 'replace directory-stack)
+			 (rplaca fi::shell-directory-stack dir)))
+		  (setq done t))
+		(setq cdpath (cdr cdpath)))))))
     (error nil)))
+
+(defun fi::listify-cdpath ()
+  (fi::explode (getenv "CDPATH") ? ))
+
+(defun fi::explode (string char)
+  (let ((res nil)
+	(s 0)
+	(i 0)
+	(max (length string)))
+    (while (< i max)
+      (if (= char (aref string i))
+	  (progn
+	    (setq res (cons (substring string
+				       (if (zerop s)
+					   0
+					 (1+ s))
+				       i) res))
+	    (setq s i)))
+      (setq i (+ i 1)))
+    (unless (= s max)
+      (setq res (cons (substring string
+				 (if (zerop s)
+				     0
+				   (1+ s))
+				 i) res)))
+    (nreverse res)))
 
 (defun fi::get-buffer-host (buffer)
   "Given BUFFER return the value in this buffer of fi::lisp-host."
