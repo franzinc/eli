@@ -1,19 +1,19 @@
 ;;; subprocess-ring.el
 ;;;   subprocess input ring for subprocess modes
 ;;;
-;;; $Header: /repo/cvs.copy/eli/fi-ring.el,v 1.1 1987/05/14 14:08:39 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-ring.el,v 1.2 1988/02/19 12:16:58 layer Exp $
 
 ;;; This code is very similar to the kill-ring implementation
 ;;; and implements the subprocess input ring.  Each subprocess buffer
 ;;; has its own input ring.
 
-(defconst default-input-ring-max 32
+(defvar default-input-ring-max 50
   "Default maximum length of input rings.")
 
 (defvar input-ring nil
   "List of previous input to subprocess.")
 
-(defvar input-ring-max 64
+(defvar input-ring-max default-input-ring-max
   "Maximum length of input ring before oldest elements are thrown away.")
 
 (defvar input-ring-yank-pointer nil
