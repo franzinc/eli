@@ -22,7 +22,7 @@ Wed Jun 24 10:22:28 1998  Kevin Layer  <layer@ultra>
 	* Doc.el: move engine to Doc0.el
  	* Makefile: remove old doc stuff
 	* fi-compile.el: make readme.htm here
-	* local.mak: readme.htm rule
+	* local.mak: readme.htm rule; fix release_files
 	* fi-*.el: doc string changes
 
 *******************************************************************************
