@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.66 1990/09/08 01:03:47 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.67 1990/09/10 15:04:07 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -144,13 +144,9 @@ symbol.")
 
 (make-variable-buffer-local 'fi:subprocess-enable-superkeys)
 
-(defvar fi:display-buffer-function
-    (function
-     (lambda (buffer)
-       (select-window (display-buffer buffer))))
-  "*If non-nil, then it is used as the function which is funcall'd with one
-argument, a buffer, to display a subprocess buffer when it is created (ie,
-from `fi:common-lisp').")
+(defvar fi:display-buffer-function 'switch-to-buffer
+  "*A function of one argument, a buffer, which is used to display a
+buffer when a subprocess is created.")
 
 ;;;;;;;;;;;;;;;;;;;;;; internal vars
 
@@ -620,78 +616,79 @@ are read from the minibuffer."
 (defun fi::subprocess-filter (process output &optional stay cruft)
   "Filter output from processes tied to buffers.
 This function implements continuous output to visible buffers."
-  (save-excursion
-    (set-buffer (process-buffer process))
-    (if (and (boundp 'fi::remote-host) fi::remote-host)
-	(setq output (fi::subprocess-control-a-frammis output))))
-  (if cruft
-      (setq output (fi::substitute-chars-in-string '((?\r)) output)))
-  (let* ((old-buffer (current-buffer))
-	 (buffer (process-buffer process))
-	 (in-buffer (eq buffer old-buffer))
-	 (window-of-buffer (get-buffer-window buffer))
-	 (no-window (or (null window-of-buffer)
-			(not (windowp window-of-buffer))))
-	 (xmarker (process-mark process))
-	 (marker (if (marker-position xmarker)
-		     xmarker
-		   (set-marker (make-marker) 0 buffer)))
-	 (marker-point (marker-position marker))
-	 (output-length (length output))
-	 old-point
-	 point-not-before-marker
-	 new-point)
-    ;; The three symbols below are not bound above because `(window-point)'
-    ;;   for the selected window does not always return the same thing as the
-    ;;   function `(point)' in that window!  [Version 18 is supposed to fix
-    ;;   this bug.]
-    ;; Note that there is no function that returns all of the windows that
-    ;;   are currently displaying a buffer.  Because of this, not all windows
-    ;;   will be updated properly by this filter function.  What should be
-    ;;   done is to loop through all windows displaying the buffer and do
-    ;;   `(set-window-point)' in each.
-    (if (not in-buffer)
-	(progn
-	  (set-buffer buffer)
-	  (setq old-point
-	    (if no-window
-		(point)
-	      (window-point window-of-buffer))))
-      (setq old-point (point)))
-    (setq point-not-before-marker (>= old-point marker-point))
-    (setq new-point (if point-not-before-marker
-			(+ old-point output-length)
-		      old-point))
+  (let ((inhibit-quit t))
     (save-excursion
-      ;; Go to point of last output by fi::make-process and insert new
-      ;;   output there, preserving position of the marker.
-      (goto-char marker-point)
-      ;; The code below works around what appears to be a display bug
-      ;;   in GNU Emacs 17.  If `(insert-before-markers)' is used when
-      ;;   the process marker (process-mark), window-start point
-      ;;   (window-start), and window point (point) are all coincident,
-      ;;   the window display `sticks' on the topmost line.  We use
-      ;;   `(insert-string)' followed by `(set-marker)' to avoid this
-      ;;   problem.  This also happens to be the way
-      ;;   `handle_process_output()' deals with this in `process.c'.
-      (insert-string output)
-      (set-marker marker (point)))
-    (if (not in-buffer)
-	(if (and fi:subprocess-continuously-show-output-in-visible-buffer
-		 point-not-before-marker)
-	    ;; Keep window's notion of `point' in a constant relationship to
-	    ;;   the process output marker.
+      (set-buffer (process-buffer process))
+      (if (and (boundp 'fi::remote-host) fi::remote-host)
+	  (setq output (fi::subprocess-control-a-frammis output))))
+    (if cruft
+	(setq output (fi::substitute-chars-in-string '((?\r)) output)))
+    (let* ((old-buffer (current-buffer))
+	   (buffer (process-buffer process))
+	   (in-buffer (eq buffer old-buffer))
+	   (window-of-buffer (get-buffer-window buffer))
+	   (no-window (or (null window-of-buffer)
+			  (not (windowp window-of-buffer))))
+	   (xmarker (process-mark process))
+	   (marker (if (marker-position xmarker)
+		       xmarker
+		     (set-marker (make-marker) 0 buffer)))
+	   (marker-point (marker-position marker))
+	   (output-length (length output))
+	   old-point
+	   point-not-before-marker
+	   new-point)
+      ;; The three symbols below are not bound above because `(window-point)'
+      ;;   for the selected window does not always return the same thing as the
+      ;;   function `(point)' in that window!  [Version 18 is supposed to fix
+      ;;   this bug.]
+      ;; Note that there is no function that returns all of the windows that
+      ;;   are currently displaying a buffer.  Because of this, not all windows
+      ;;   will be updated properly by this filter function.  What should be
+      ;;   done is to loop through all windows displaying the buffer and do
+      ;;   `(set-window-point)' in each.
+      (if (not in-buffer)
+	  (progn
+	    (set-buffer buffer)
+	    (setq old-point
+	      (if no-window
+		  (point)
+		(window-point window-of-buffer))))
+	(setq old-point (point)))
+      (setq point-not-before-marker (>= old-point marker-point))
+      (setq new-point (if point-not-before-marker
+			  (+ old-point output-length)
+			old-point))
+      (save-excursion
+	;; Go to point of last output by fi::make-process and insert new
+	;;   output there, preserving position of the marker.
+	(goto-char marker-point)
+	;; The code below works around what appears to be a display bug
+	;;   in GNU Emacs 17.  If `(insert-before-markers)' is used when
+	;;   the process marker (process-mark), window-start point
+	;;   (window-start), and window point (point) are all coincident,
+	;;   the window display `sticks' on the topmost line.  We use
+	;;   `(insert-string)' followed by `(set-marker)' to avoid this
+	;;   problem.  This also happens to be the way
+	;;   `handle_process_output()' deals with this in `process.c'.
+	(insert-string output)
+	(set-marker marker (point)))
+      (if (not in-buffer)
+	  (if (and fi:subprocess-continuously-show-output-in-visible-buffer
+		   point-not-before-marker)
+	      ;; Keep window's notion of `point' in a constant relationship to
+	      ;;   the process output marker.
+	      (if no-window
+		  (goto-char new-point)
+		(set-window-point window-of-buffer new-point))
 	    (if no-window
-		(goto-char new-point)
-	      (set-window-point window-of-buffer new-point))
-	  (if no-window
-	      t;; Still there.
-	    (set-window-point window-of-buffer old-point)))
-      (goto-char new-point))
-    (cond
-      (in-buffer nil)
-      (stay old-buffer)
-      (t (set-buffer old-buffer)))))
+		t ;; Still there.
+	      (set-window-point window-of-buffer old-point)))
+	(goto-char new-point))
+      (cond
+       (in-buffer nil)
+       (stay old-buffer)
+       (t (set-buffer old-buffer))))))
 
 (defun fi::subprocess-control-a-frammis (string)
   (if (string-match "\\(.*\\)\\(.*\\)\\(.*\\)" string)
