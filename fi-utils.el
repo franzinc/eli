@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.18 1991/08/23 08:57:54 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.19 1991/09/11 15:22:13 layer Exp $
 
 ;;; Misc utilities
 
@@ -300,4 +300,5 @@ rebuild emacs with MAINTAIN_ENVIRONMENT undefined."))
     (erase-buffer)
     (insert string)
     (beginning-of-buffer)
-    (beep)))
+    (beep)
+    (signal 'error (list ""))))
