@@ -1,4 +1,4 @@
-;;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.15 1988/04/08 09:41:40 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.16 1988/04/08 12:58:11 layer Exp $
 ;;;
 ;;; Mode initializations
 
@@ -252,7 +252,7 @@ Entry to this mode calls the value of `fi:lisp-mode-hook' and
   (if (null fi:common-lisp-mode-map)
       (progn
 	(setq fi:common-lisp-mode-map (make-sparse-keymap))
-	(fi::lisp-mode-commands fi:common-lisp-mode-map nil)))
+	(fi::lisp-mode-commands fi:common-lisp-mode-map nil nil)))
   (use-local-map fi:common-lisp-mode-map)
   (make-local-variable 'fi::sublisp-name)
   (setq fi::sublisp-name fi::freshest-common-sublisp-name)
@@ -273,7 +273,7 @@ Entry to this mode calls the value of `fi:lisp-mode-hook' and
   (if (null fi:franz-lisp-mode-map)
       (progn
 	(setq fi:franz-lisp-mode-map (make-sparse-keymap))
-	(fi::lisp-mode-commands fi:franz-lisp-mode-map nil)))
+	(fi::lisp-mode-commands fi:franz-lisp-mode-map nil nil)))
   (use-local-map fi:franz-lisp-mode-map)
   (make-local-variable 'fi::sublisp-name)
   (setq fi::sublisp-name fi::freshest-franz-sublisp-name)
@@ -293,7 +293,7 @@ non-nil."
   (if (null fi:lisp-mode-map)
       (progn
 	(setq fi:lisp-mode-map (make-sparse-keymap))
-	(fi::lisp-mode-commands fi:lisp-mode-map nil)))
+	(fi::lisp-mode-commands fi:lisp-mode-map nil nil)))
   (use-local-map fi:lisp-mode-map)
   (run-hooks 'fi:indent-setup-hook 'fi:lisp-mode-hook))
 
@@ -311,7 +311,7 @@ value is non-nil."
   (if (null fi:emacs-lisp-mode-map)
       (progn
 	(setq fi:emacs-lisp-mode-map (make-sparse-keymap))
-	(fi::lisp-mode-commands fi:emacs-lisp-mode-map nil)))
+	(fi::lisp-mode-commands fi:emacs-lisp-mode-map nil nil)))
   (use-local-map fi:emacs-lisp-mode-map)
   (run-hooks 'fi:indent-setup-hook 'fi:emacs-lisp-mode-hook))
 
@@ -442,13 +442,14 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
 	(define-key map "\C-w"  'fi:subprocess-superkey)
 	(define-key map "\C-z"  'fi:subprocess-superkey)
 	(define-key map "\C-\\" 'fi:subprocess-superkey)))
-  (define-key map "\C-c" supermap)
+  (if supermap (define-key map "\C-c" supermap))
   map)
 
-(defun fi::lisp-mode-commands (map mode)
+(defun fi::lisp-mode-commands (map supermap mode)
   (define-key map "\e" (make-sparse-keymap))
   (define-key map "\C-x" (make-sparse-keymap))
-  (define-key map "\C-c" (make-sparse-keymap))
+
+  (if supermap (define-key map "\C-c" supermap))
   
   (define-key map "\e\C-q"	'indent-sexp)
   (define-key map "\C-?"	'backward-delete-char-untabify)
@@ -484,12 +485,14 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
 
 (defun fi::tcp-lisp-mode-commands (map supermap)
   (fi::lisp-mode-commands (fi::subprocess-mode-commands
-			   map supermap 'tcp-lisp)
+			   map nil 'tcp-lisp)
+			  supermap
 			  'tcp-lisp))
 
 (defun fi::inferior-lisp-mode-commands (map supermap)
   (fi::lisp-mode-commands (fi::subprocess-mode-commands
-			   map supermap 'sub-lisp)
+			   map nil 'sub-lisp)
+			  supermap
 			  'sub-lisp))
 
 (defun fi:lisp-reindent-newline-indent ()
