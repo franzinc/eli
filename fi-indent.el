@@ -19,7 +19,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.42 1992/09/24 17:58:27 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.43 1993/03/23 10:13:56 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If non-nil, semicolons that begin comments are indented as they are
@@ -1560,7 +1560,7 @@ if matched at the beginning of a line, means don't indent that line."
   ;; generic Common Lisp
   
   (put 'compiler-let tag '((1 1 quote) (0 t 1)))
-  (put 'defclass tag '((1 2 quote) (0 t 3)))
+  (put 'defclass tag '((1 2 quote) (0 t 2)))
   (put 'defgeneric tag
        (quote (if (fi:lisp-atom-p 2)
 		  ((1 3 lambda-list) (0 t 3))
