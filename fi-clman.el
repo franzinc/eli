@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.21 1991/08/22 21:28:33 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.22 1991/09/12 11:12:59 layer Exp $
 
 (defun fi::setup-default-clman-package-info ()
   ;;  Returns a list that 
@@ -45,12 +45,13 @@
 	       xxx)))
 	  '(("about" "about/")
 	    ("clos" "clos/")
-	    ("compiler" "compiler/")
-	    ("cond" "cond/")
+	    ("cltr1" "cltr1/")
+	    ("comp" "comp/")
 	    ("excl" "excl/")
-	    ("foreign" "foreign/")
+	    ("ff" "ff/")
 ;;;;	    ("graph" "graph/")
 	    ("inspect" "inspect/")
+	    ("ipc" "ipc/")	      
 	    ("lisp" "lisp/")
 	    ("mp" "mp/")
 	    ("sys" "sys/")
@@ -71,7 +72,7 @@ DIRECTORY) for PRODUCT.")
 displayed, and the buffer which is the value of fi:clman-displaying-buffer.
 If you wish, you can set this variable to your own displaying function.")
 
-(defvar fi:clman-displaying-buffer "*CLMan*"
+(defvar fi:clman-displaying-buffer "*clman*"
   "*Either nil or a string naming the buffer that the system will use for
 displaying documentation pages.  If nil, then the system will not try to
 reuse the same buffer.")
@@ -123,7 +124,7 @@ buffer will be in CLMAN mode."
 	  (null fi:clman-package-info))
       (fi::setup-clman-oblist))
   (let* ((string (downcase (read-string "clman apropos: ")))
-	 (apropos-buffer-name "*CLMan-Apropos*"))
+	 (apropos-buffer-name "*clman-apropos*"))
     (with-output-to-temp-buffer apropos-buffer-name
       (let ((package-name-list (fi:clman-package-nicknames))
 	    (item nil)(package nil))
