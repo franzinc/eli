@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.86 1993/07/27 20:39:44 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.87 1993/08/11 17:04:43 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -65,7 +65,10 @@ test.out:	$(elcs) fi-test.el
 	$(emacs) -nw -batch -q -l fi-test.el
 	@date > test.out
 
-clean:
+clean_OS:
+	rm -f *.o clman makeman
+
+clean:	clean_OS
 	rm -f fi-*.elc *.doc
 
 tags:	TAGS
