@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.14 1991/04/22 13:41:07 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.15 1991/04/22 23:25:37 layer Exp $
 ;;
 
 (defconst lep:current-frame-regexp "^ ->")
@@ -78,12 +78,9 @@ process. With argument ALL, do a \":zoom :all t\"."
 				     :all (or lep:show-all-frames all))
 		  ;; Normal continuation
 		  ((from-buffer process-name) (stack)
-		   (let* ((name "*acl debugger*")
-			  (big-name (format "%s<%s>" name process-name))
-			  (buffer-name
-			   (cond ((get-buffer name) name)
-				 ((get-buffer big-name) big-name)
-				 (t name))))
+		   (let ((buffer-name (format "*debugger:%s*"
+					      (fi::make-pretty-process-name
+					       process-name))))
 		     (pop-to-buffer buffer-name)
 		     (if buffer-read-only (toggle-read-only))
 		     (erase-buffer)
@@ -101,6 +98,22 @@ process. With argument ALL, do a \":zoom :all t\"."
 		  ;; Error continuation
 		  (() (error)
 		   (message "Cannot zoom on stack: %s" error)))))
+
+(defun fi::make-pretty-process-name (process-name)
+  ;; spaces to hyphens, and remove *'s
+  (let ((s process-name)
+	(i 0)
+	(max (length process-name))
+	(res "")
+	(c nil))
+    (while (< i max)
+      (setq c (aref s i))
+      (cond ((= ?* c))
+	    ((= ?  c)
+	     (setq res (concat res "-")))
+	    (t (setq res (concat res (char-to-string c)))))
+      (setq i (+ i 1)))
+    res))
 
 (defun fi:scan-stack-mode (&optional from-buffer process-name)
   "Major mode for debugging a Common Lisp process.
@@ -388,14 +401,13 @@ buffer."
 (defun lep::buffer-process ()
   (cond
    (lep::process-name)
-   (t
-    (let* ((processes
-	    (cdr (car (lep::eval-session-in-lisp
-		       'lep::list-all-processes-session))))
-	   (completions
-	    (mapcar (function (lambda (x) (list x))) processes)))
-      (completing-read "Process to debug: "
-		       completions
-		       nil
-		       t
-		       "Initial Lisp Listener")))))
+   (t (lep::read-lisp-process-name "Process to debug: "))))
+
+(defun lep::read-lisp-process-name (prompt)
+  (let* ((processes
+	  (cdr (car (lep::eval-session-in-lisp
+		     'lep::list-all-processes-session))))
+	 (completions
+	  (mapcar (function (lambda (x) (list x))) processes)))
+    (completing-read prompt completions nil t
+		     "Initial Lisp Listener")))
