@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.41 1993/07/13 18:55:32 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.42 1993/07/15 00:02:19 layer Exp $
 
 ;;; Misc utilities
 
@@ -120,7 +120,10 @@ nil if non-exists.  Yes, a value of nil and no local value are the same."
   (let ((p load-path)
 	(done nil) res)
     (while (and (not done) p)
-      (if (file-exists-p (setq res (concat (car p) "/" file)))
+      (if (file-exists-p
+	   (setq res (concat (car p)
+			     (unless (string-match "/$" (car p)) "/")
+			     file)))
 	  (setq done t)
 	(setq res nil))
       (setq p (cdr p)))
@@ -328,19 +331,24 @@ at the beginning of the line."
 (defvar fi::original-package nil)
 
 (defun fi::get-default-symbol (prompt &optional up-p ignore-keywords)
-  (let* ((symbol-at-point (fi::get-symbol-at-point up-p))
-	 (read-symbol
-	  (let ((fi::original-package fi:package))
-	    (if (fboundp 'epoch::mapraised-screen)
-		(epoch::mapraised-screen (minibuf-screen)))
-	    (completing-read
-	     (if symbol-at-point
-		 (format "%s: (default %s) " prompt symbol-at-point)
-	       (format "%s: " prompt))
-	     'fi::minibuffer-complete))))
-    (list (if (string= read-symbol "")
-	      symbol-at-point
-	    read-symbol))))
+  (let ((symbol-at-point (fi::get-symbol-at-point up-p)))
+    (if (and (boundp 'last-command-event)
+	     (or (menu-event-p last-command-event)
+		 (button-press-event-p last-command-event)
+		 (button-release-event-p last-command-event)))
+	(list symbol-at-point)
+      (let ((read-symbol
+	     (let ((fi::original-package fi:package))
+	       (if (fboundp 'epoch::mapraised-screen)
+		   (epoch::mapraised-screen (minibuf-screen)))
+	       (completing-read
+		(if symbol-at-point
+		    (format "%s: (default %s) " prompt symbol-at-point)
+		  (format "%s: " prompt))
+		'fi::minibuffer-complete))))
+	(list (if (string= read-symbol "")
+		  symbol-at-point
+		read-symbol))))))
 
 (defun fi::minibuffer-complete (pattern predicate what)
 

@@ -19,7 +19,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.148 1993/07/13 18:55:24 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.149 1993/07/15 00:02:15 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -403,9 +403,8 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 			   (cd dir)
 			 (error nil))))))
 		local host directory)))
-    (when (interactive-p)
-      (setq fi::common-lisp-first-time nil))
-    (setq fi:common-lisp-buffer-name buffer-name
+    (setq fi::common-lisp-first-time nil
+	  fi:common-lisp-buffer-name buffer-name
 	  fi:common-lisp-directory directory
 	  fi:common-lisp-image-name image-name
 	  fi:common-lisp-image-arguments image-args
@@ -545,9 +544,8 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		       (error nil)))))
 		local directory)))
     (setq fi:franz-lisp-process-name (process-name proc))
-    (when (interactive-p)
-      (setq fi::franz-lisp-first-time nil))
-    (setq fi:franz-lisp-buffer-name buffer-name
+    (setq fi::franz-lisp-first-time nil
+	  fi:franz-lisp-buffer-name buffer-name
 	  fi:franz-lisp-directory directory
 	  fi:franz-lisp-image-name image-name
 	  fi:franz-lisp-image-arguments image-args

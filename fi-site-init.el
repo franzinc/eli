@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.40 1993/07/13 18:55:16 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.41 1993/07/15 00:02:10 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -46,5 +46,10 @@
 
 (setq fi:package-loaded t)
 
-(when (string-match "Lucid" emacs-version)
-  (load "fi-lemacs"))
+;; the test for GNU Emacs 19 has to be after that for lemacs, because
+;; the version of lemacs is 19.* too!
+
+(cond ((string-match "ucid" emacs-version)
+       (load "fi-lemacs"))
+      ((string-match "GNU Emacs 19\." emacs-version)
+       (load "fi-emacs19")))

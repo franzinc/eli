@@ -1,3 +1,23 @@
+Wed Jul 14 16:58:12 1993  Kevin Layer  (layer at sole)
+
+	* Makefile: add fi-emacs19.elc
+
+	* fi-emacs19.el: stub file, for now
+
+>>>	* fi-keys.el: fix require of 'tags; add fi:uncomment-region
+
+	* fi-lemacs.el: lots of additions, still work in-progress
+
+	* fi-lep.el: when m-. is done, tell what is being searched for
+
+	* fi-site-init.el: load only one of fi-lemacs or fi-emacs19
+
+	* fi-subproc.el: set fi::common-lisp-first-time even when
+	non-interactive.
+
+	* fi-utils.el: the "get default symbol" function now behaves
+	differently when m-. called from a menu.
+
 Tue Jul 13 11:46:44 1993  Kevin Layer  (layer@sole)
 
 	* Makefile: add fi-lemacs.el

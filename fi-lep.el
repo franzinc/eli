@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.50 1993/07/13 18:55:05 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.51 1993/07/15 00:02:08 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -127,7 +127,8 @@ at file visit time."
 				 &optional what from-fspec)
   (when (not (fi::lep-open-connection-p))
     (error "connection to ACL is down--can't find tag"))
-  (message "Finding %s..." (or what "definition"))
+  (message "Finding %s for %s..."
+	   (or what "definition") something)
   (fi::push-metadot-session
    (or what "definition")
    something

@@ -8,12 +8,11 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.82 1993/06/29 22:01:51 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.83 1993/07/15 00:02:02 layer Exp $
 
-(condition-case nil
-    ;; lemacs doesn't have a tags to require...
-    (require 'tags)
-  (error nil))
+(if (string-match "ucid" emacs-version)
+    (require 'tags "etags")
+  (require 'tags))
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -856,11 +855,11 @@ argument ARG do it that many times."
     (insert string)
     (backward-sexp 1)))
 
-(defun fi:comment-region (start end &optional arg)
+(defun fi:comment-region (start end &optional uncomment)
   "Comment all lines in the current region.  With prefix arg, uncomment the
 region (it should have been commented with this function).
 When calling from a program, arguments are START and END, both buffer
-positions, and ARG."
+positions, and UNCOMMENT."
   (interactive "r\nP")
   (save-excursion
     (let ((start (progn (goto-char (max start (point-min)))
@@ -879,9 +878,9 @@ positions, and ARG."
              (while (and (< count len)
                          (eql (elt comment-start count) ?\;)) 
                (setq count (+ count 1)))
-	     (make-string count ?;))))
+	     (make-string count (string-to-char ";")))))
       (goto-char end)
-      (if (null arg)
+      (if (not uncomment)
 	  ;;Comment Region
 	  (if (string-equal comment-end "")
 	      ;;When no comment-end exists, put a comment-prefix
@@ -915,6 +914,13 @@ positions, and ARG."
 	    (replace-match comment-end))
 	  (if (looking-at (regexp-quote comment-prefix))
 	      (replace-match "")))))))
+
+(defun fi:uncomment-region (start end)
+  "Uncomment all lines in the current region (it should have been commented
+with the function fi:comment-region).  When calling from a program,
+arguments are START and END."
+  (interactive "r\n")
+  (fi:comment-region start end t))
 
 (defun fi:lisp-delete-pop-up-window ()
   "Make the *CL-temp* buffer disappear and restore the window configuration
