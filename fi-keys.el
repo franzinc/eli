@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.6 1988/05/13 10:29:00 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.7 1988/05/18 14:02:21 layer Exp $
 
 ;;;;
 ;;; Key defs
@@ -43,6 +43,7 @@ shell, rlogin, sub-lisp or tcp-lisp."
   (define-key map "\C-a" 'fi:subprocess-beginning-of-line)
   (define-key map "\C-k" 'fi:subprocess-kill-output)
   (define-key map "\C-l" 'fi:list-input-ring)
+  (define-key map "\C-m" 'fi:subprocess-input-region)
   (define-key map "\C-n" 'fi:push-input)
   (define-key map "\C-o" 'fi:subprocess-send-flush)
   (define-key map "\C-p" 'fi:pop-input)
@@ -95,8 +96,8 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
   (cond
     ((memq mode '(sub-lisp tcp-lisp))
      (define-key map "\r"	'fi:inferior-lisp-newline)
-     (define-key map "\e\r"	'fi:inferior-lisp-send-sexp-input)
-     (define-key map "\C-x\r"	'fi:inferior-lisp-send-list-input))
+     (define-key map "\e\r"	'fi:inferior-lisp-input-sexp)
+     (define-key map "\C-x\r"	'fi:inferior-lisp-input-list))
     (t (define-key map "\r"	'fi:lisp-reindent-newline-indent)))
 
   (cond
@@ -172,14 +173,52 @@ process, or listener when using TCP/IP-style communication."
 		  (funcall indent-line-function))))
 	  ;; a non-list s-exp, so just send it off...
 	  (fi:subprocess-send-input)))
-    (fi:inferior-lisp-send-sexp-input)))
+    
+    ;; find the user's input contained around the cursor and send that to
+    ;; the inferior lisp
+    (let (start end)
+      (if (or (and (bolp) (looking-at "("))
+	      (re-search-backward "^(" nil t)
+	      (prog1 (re-search-backward subprocess-prompt-pattern nil t)
+		(goto-char (match-end 0))))
+	  (progn
+	    (setq start (point))
+	    (let* ((eol (save-excursion (end-of-line) (point)))
+		   (state (save-excursion (parse-partial-sexp start eol)))
+		   (depth (car state)))
+	      (if (zerop depth)
+		  (setq end eol)
+		(setq end (save-excursion
+			    (if (< depth 0)
+				(up-list (- depth))
+			      (goto-char eol)
+			      (up-list depth))
+			    (point))))
+	      (fi:subprocess-input-region start end)))
+	(error "couldn't find start of input")))))
+    
+(defun fi:subprocess-input-region (start end)
+  "Send the region to the Lisp subprocess."
+  (interactive "r")
+  (let* ((process (get-buffer-process (current-buffer)))
+	 (string (buffer-substring start end)))
+    (goto-char (point-max))
+    (setq start (point))
+    (move-marker fi::last-input-start (point))
+    (insert string)
+    (if (not (bolp)) (insert "\n"))
+    (setq end (point))
+    (move-marker fi::last-input-end (point))
+    (fi::send-region-split process start end fi:subprocess-map-nl-to-cr)
+    (fi::input-ring-save fi::last-input-start (1- fi::last-input-end))
+    (set-marker (process-mark process) (point))))
 
-(defun fi:inferior-lisp-send-sexp-input (&optional arg)
+(defun fi:inferior-lisp-input-sexp (&optional arg)
   "Send s-expression(s) to the Lisp subprocess."
   (interactive "P")
   (fi:inferior-lisp-send-input arg 'sexp))
 
-(defun fi:inferior-lisp-send-list-input (&optional arg)
+(defun fi:inferior-lisp-input-list (&optional arg)
   "Send list(s) to the Lisp subprocess."
   (interactive "P")
   (fi:inferior-lisp-send-input arg 'lists))
