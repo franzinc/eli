@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.4 1991/02/15 23:18:05 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.5 1991/02/15 23:37:53 layer Exp $
 ;;
 ;; Code the implements evaluation in via the backdoor
 
@@ -70,3 +70,22 @@ compiled."
   (lep::eval-region-internal (min (point) (mark))
 			     (max (point) (mark))
 			     compilep))
+
+(defun fi:lisp-eval-last-sexp (compilep)
+  "Send the sexp before the point to the Lisp subprocess associated with
+this buffer.  If a Lisp subprocess has not been started, then one is
+started.  With a prefix argument, the source sent to the subprocess is
+compiled."
+  (interactive "P")
+  (let ((start (save-excursion
+		 (forward-sexp -1)
+		 (point))))
+    (lep::eval-region-internal start (point)
+			       compilep)))
+
+(defun fi:lisp-eval-current-buffer (compilep)
+  "Send the entire buffer to the Lisp subprocess associated with this
+buffer.  If a Lisp subprocess has not been started, then one is started.
+With a prefix argument, the source sent to the subprocess is compiled."
+  (interactive "P")
+  (lep::eval-region-internal (point-min) (point-max) compilep))
