@@ -9,8 +9,13 @@ For more detailed instructions on filling in the ChangeLog form, see
 ******************************************************************************
 post-6.2 release changes: 
 
-2003-08-28  Kevin Layer  <layer@crikey>
+2003-09-03  Kevin Layer  <layer@crikey>
 2.4.1
+
+	* fi-keys.el (fi:super-paren): bug13181: better approach
+	* fi-subproc.el (fi::make-tcp-connection): bug13275: minor fix
+
+2003-08-28  Kevin Layer  <layer@crikey>
 
 	* fi-sublisp.el,
 	* fi-subproc.el,
