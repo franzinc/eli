@@ -45,7 +45,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.7 1989/04/17 16:13:36 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.8 1989/04/18 10:06:03 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If `t', semicolons that begin comments are indented as they are typed.")
@@ -219,7 +219,7 @@ buffer-local.")
 (defun fi::indent-lisp-semicolon (&optional at last-state)
   "Indent Lisp semicolon at point.
 The optional parameters specify the point at which the last partial
-s-expression parse (using `parse-partial-sexp') terminated and the
+s-expression parse (using `fi::parse-partial-sexp') terminated and the
 status of that parse."
   (save-excursion
     (let ((new-point (point))
@@ -227,7 +227,7 @@ status of that parse."
 	  (parse-state (if last-state last-state '(0 0 0 nil nil nil 0))))
       (if (and last-state (< old-point (point)))
 	  (setq parse-state
-	    (parse-partial-sexp
+	    (fi::parse-partial-sexp
 	     old-point (point) nil nil last-state last-state))
 	(progn
 	  ;; Find beginning of the top-level list.
@@ -247,7 +247,7 @@ status of that parse."
 	  (if (= old-point (point))
 	      (setq old-point 1))
 	  (setq parse-state
-	    (parse-partial-sexp
+	    (fi::parse-partial-sexp
 	     old-point (point) nil nil nil parse-state))))
       (if (not (or (nth 3 parse-state)
 		   (nth 4 parse-state)
@@ -292,7 +292,7 @@ status of that parse."
 (setq-default fi::lisp-most-recent-parse-result '(0 0 0 0 nil nil nil 0)
   "Most recent parse result: point at parse end and parse state.
 A list that is the `cons' of the point at which the most recent
-parse ended and the parse state from `parse-partial-sexp'.")
+parse ended and the parse state from `fi::parse-partial-sexp'.")
 
 (defun fi:lisp-indent-line (&optional whole-exp)
   "Indent current line as Lisp code.
@@ -336,7 +336,7 @@ rigidly along with this one."
 	   (fi:indent-code-rigidly beg end shift-amt)))))
  
 (defvar fi::calculate-lisp-indent-state-temp '(0 0 0 nil nil nil 0)
-  "Used as the last argument to parse-partial-sexp so we do as little
+  "Used as the last argument to fi::parse-partial-sexp so we do as little
 consing as is possible.")
 
 (defun fi::calculate-lisp-indent (&optional parse-start)
@@ -356,9 +356,11 @@ of the start of the containing expression."
       (if parse-start
 	  (goto-char parse-start)
 	(beginning-of-defun))
+
       ;; Find outermost containing sexp
+      
       (while (< (point) indent-point)
-	(setq state (parse-partial-sexp
+	(setq state (fi::parse-partial-sexp
 		     (point) indent-point 0 nil nil state)))
 
       (rplaca fi::lisp-most-recent-parse-result (point))
@@ -391,7 +393,7 @@ of the start of the containing expression."
 	      ;; Don't call hook.
 	      (setq desired-indent (current-column))
 	    ;; Move to first sexp after containing open paren
-	    (parse-partial-sexp (point) last-sexp 0 t nil
+	    (fi::parse-partial-sexp (point) last-sexp 0 t nil
 				;; the result goes here:
 				(cdr fi::lisp-most-recent-parse-result))
 	    (rplaca fi::lisp-most-recent-parse-result (point))
@@ -402,7 +404,7 @@ of the start of the containing expression."
 			  last-sexp))
 		  (progn (goto-char last-sexp)
 			 (beginning-of-line)
-			 (parse-partial-sexp
+			 (fi::parse-partial-sexp
 			  (point) last-sexp 0 t nil
 			  ;; the result goes here:
 			  (cdr fi::lisp-most-recent-parse-result))
@@ -417,7 +419,7 @@ of the start of the containing expression."
 		 last-sexp)
 	      ;; Last sexp is on same line as containing sexp.
 	      ;; It's almost certainly a function call.
-	      (parse-partial-sexp (point) last-sexp 0 t nil
+	      (fi::parse-partial-sexp (point) last-sexp 0 t nil
 				  ;; the result goes here:
 				  (cdr fi::lisp-most-recent-parse-result))
 	      (rplaca fi::lisp-most-recent-parse-result (point))
@@ -425,7 +427,7 @@ of the start of the containing expression."
 		  ;; Indent beneath first argument or, if only one sexp
 		  ;; on line, indent beneath that.
 		  (progn (forward-sexp 1)
-			 (parse-partial-sexp
+			 (fi::parse-partial-sexp
 			  (point) last-sexp 0 t nil
 			  ;; the result goes here:
 			  (cdr fi::lisp-most-recent-parse-result))
@@ -436,11 +438,12 @@ of the start of the containing expression."
 	      ;; Again, it's almost certainly a function call.
 	      (goto-char last-sexp)
 	      (beginning-of-line)
-	      (parse-partial-sexp (point) last-sexp 0 t nil
+	      (fi::parse-partial-sexp (point) last-sexp 0 t nil
 				  ;; the result goes here:
 				  (cdr fi::lisp-most-recent-parse-result))
 	      (rplaca fi::lisp-most-recent-parse-result (point))
 	      (backward-prefix-chars))))))
+
       ;; Point is at the point to indent under unless we are inside a string.
       ;; Call indentation hook except when overriden by fi:lisp-indent-offset
       ;; or if the desired indentation has already been computed.
@@ -465,7 +468,7 @@ of the start of the containing expression."
       desired-indent)))
 
 (defvar fi::lisp-indent-state-temp '(nil nil nil nil nil nil nil)
-  "Used as the last argument to parse-partial-sexp so we can do as little
+  "Used as the last argument to fi::parse-partial-sexp so we can do as little
 consing as possible.")
 
 (defun fi:lisp-indent-hook (indent-point state)
@@ -477,18 +480,7 @@ consing as possible.")
       (if (/= (point) (car (cdr state)))
 	  (let ((function (buffer-substring (progn (forward-char -1) (point))
 					    (progn (forward-sexp 1) (point))))
-		(count 1))
-	    (parse-partial-sexp (point) indent-point 1 t nil
-				fi::lisp-indent-state-temp)
-	    (while (and (condition-case nil
-			    (progn
-			      (forward-sexp 1)
-			      (parse-partial-sexp
-			       (point) indent-point 1 t nil
-			       fi::lisp-indent-state-temp))
-			  (error nil))
-			(< (point) indent-point))
-	      (setq count (1+ count)))
+		(count (fi::calc-count (car (cdr state)) indent-point)))
 	    (setq calculated-indent
 	      (fi::lisp-invoke-method
 	       (nth 1 state)
@@ -521,12 +513,12 @@ consing as possible.")
 		      (setq function (buffer-substring
 				      (progn (forward-char -1) (point))
 				      (progn (forward-sexp 1) (point))))
-		      (parse-partial-sexp (point) indent-point 1 t nil
-					  fi::lisp-indent-state-temp)
+		      (fi::parse-partial-sexp (point) indent-point 1 t nil
+					      fi::lisp-indent-state-temp)
 		      (while (and (condition-case nil
 				      (progn
 					(forward-sexp 1)
-					(parse-partial-sexp
+					(fi::parse-partial-sexp
 					 (point) indent-point 1 t nil
 					 fi::lisp-indent-state-temp))
 				    (error nil))
@@ -539,6 +531,21 @@ consing as possible.")
 			 depth count state
 			 indent-point))))))))
       calculated-indent)))
+
+(defun fi::calc-count (from to)
+  (save-excursion
+    (let ((count 1))
+      (goto-char from)
+      (forward-char 1)
+      (while (and (condition-case nil
+		      (progn
+			(forward-sexp 2)
+			(backward-sexp 1)
+			t)
+		    (error nil))
+		  (< (point) to))
+	(setq count (1+ count)))
+      count)))
 
 (defun fi::lisp-get-method (name)
   (let ((method
@@ -704,12 +711,12 @@ treated just like a LAMBDA (whose method is '((1 1 lambda-list) (0 t 1)))."
 	      (condition-case nil
 		  (progn
 		    (forward-char 1)
-		    (parse-partial-sexp (point) indent-point 1 t nil
+		    (fi::parse-partial-sexp (point) indent-point 1 t nil
 					fi::lisp-indent-state-temp)
 		    (while (and (condition-case nil
 				    (progn
 				      (forward-sexp 1)
-				      (parse-partial-sexp
+				      (fi::parse-partial-sexp
 				       (point) indent-point 1 t nil
 				       fi::lisp-indent-state-temp))
 				  (error nil))
@@ -957,7 +964,7 @@ non-keyword s-expression."
     (forward-char 1)
     (if ignore-car
 	(progn (forward-sexp 1)
-	       (parse-partial-sexp (point) indent-point 1 t nil
+	       (fi::parse-partial-sexp (point) indent-point 1 t nil
 				   fi::lisp-indent-state-temp)))
     (while (and
 	    (< (point) indent-point)
@@ -1010,7 +1017,7 @@ non-keyword s-expression."
 			  (setq last-keyword-arg-start (point))
 			  (setq last-was-keyword nil))))
 		  (goto-char end-sexp)
-		  (parse-partial-sexp (point) indent-point 1 t nil
+		  (fi::parse-partial-sexp (point) indent-point 1 t nil
 				      fi::lisp-indent-state-temp))
 	      (error nil))))
     (list last-keyword-start last-keyword-arg-start last-sexp-start
@@ -1153,7 +1160,7 @@ NIL otherwise.  The ELEMENT is the number of the element, zero indexed."
 			(setq atomic (not (eq (following-char) ?\()))))
 		  (goto-char end-sexp)
 		  (setq count (1+ count))
-		  (parse-partial-sexp (point) indent-point 1 t nil
+		  (fi::parse-partial-sexp (point) indent-point 1 t nil
 				      fi::lisp-indent-state-temp))
 	      (error nil))))
     (list atomic found)))
@@ -1192,7 +1199,7 @@ distinguished."
 					(setq spec-count (1+ spec-count)))
 				    (forward-sexp 1)))
 			      (setq count (1+ count))
-			      (parse-partial-sexp
+			      (fi::parse-partial-sexp
 			       (point) indent-point 1 t nil
 			       fi::lisp-indent-state-temp))
 			  (error nil))))
@@ -1249,14 +1256,14 @@ distinguished."
       (forward-char 1)
       (forward-sexp 1)
       ;; Now find the start of the last form.
-      (parse-partial-sexp (point) indent-point 1 t nil
+      (fi::parse-partial-sexp (point) indent-point 1 t nil
 			  fi::lisp-indent-state-temp)
       (while (and (< (point) indent-point)
 		  (condition-case nil
 		      (progn
 			(setq spec-count (1- spec-count))
 			(forward-sexp 1)
-			(parse-partial-sexp (point) indent-point 1 t nil
+			(fi::parse-partial-sexp (point) indent-point 1 t nil
 					    fi::lisp-indent-state-temp))
 		    (error nil))))
       ;; Point is sitting on first character of last (or spec-count) sexp.
@@ -1304,8 +1311,9 @@ distinguished."
 	(while (and (not innerloop-done)
 		    (not (setq outer-loop-done (eobp))))
 	  (setq previous-parse-result current-parse-result)
-	  (setq state (parse-partial-sexp (point) (progn (end-of-line) (point))
-					  nil nil state))
+	  (setq state
+	    (fi::parse-partial-sexp (point) (progn (end-of-line) (point))
+				    nil nil state))
 	  (setq current-parse-result (cons (point) state))
 	  (setq next-depth (car state))
 	  (if (nth 4 state)
@@ -1315,8 +1323,9 @@ distinguished."
 		    (save-excursion
 		      (goto-char comment-at)
 		      (if previous-parse-result
-			  (fi::indent-lisp-semicolon (car previous-parse-result)
-						     (cdr previous-parse-result))
+			  (fi::indent-lisp-semicolon
+			   (car previous-parse-result)
+			   (cdr previous-parse-result))
 			(fi::indent-lisp-semicolon))))
 		(end-of-line)
 		(setcar (nthcdr 4 state) nil)))
@@ -1370,7 +1379,7 @@ if matched at the beginning of a line, means don't indent that line."
       (goto-char start)
       (or (bolp)
 	  (setq state
-	    (parse-partial-sexp (point) (progn (forward-line 1) (point)))))
+	    (fi::parse-partial-sexp (point) (progn (forward-line 1) (point)))))
       (if (null state) (setq state '(nil nil nil nil nil nil nil)))
       (while (< (point) end)
 	(or (nth 3 state)		; in string?
@@ -1383,7 +1392,7 @@ if matched at the beginning of a line, means don't indent that line."
 			     (progn (skip-chars-forward " \t") (point)))
 	      (or (eolp)
 		  (indent-to (max 0 (+ indent arg)) 0))))
-	(setq state (parse-partial-sexp
+	(setq state (fi::parse-partial-sexp
 		     (point) (progn (forward-line 1) (point))
 		     nil nil state state))))))
 
@@ -1502,24 +1511,24 @@ if matched at the beginning of a line, means don't indent that line."
 
   (put 'restart-bind tag
        '((2 1 ((0 t (fi:lisp-indent-keyword-list
-		     nil	; quotedp
-		     t		; keyword-arg-pairs-p
-		     2		; keyword-count
-		     2		; special-keyword-count
-		     1		; special-count
-		     t		; ignore-after-count
+		     nil		; quotedp
+		     t			; keyword-arg-pairs-p
+		     2			; keyword-count
+		     2			; special-keyword-count
+		     1			; special-count
+		     t			; ignore-after-count
 		     ;; keywords recognized:
 		     ":interactive-function" ":report-function"))))
 	 (0 t 1)))
   (put 'restart-case tag
        '((1 (2 t) ((1 1 lambda-list)
 		   (0 t (fi:lisp-indent-keyword-list
-			 nil	; quotedp
-			 t	; keyword-arg-pairs-p
-			 2	; keyword-count
-			 2	; special-keyword-count
-			 1	; special-count
-			 t	; ignore-after-count
+			 nil		; quotedp
+			 t		; keyword-arg-pairs-p
+			 2		; keyword-count
+			 2		; special-keyword-count
+			 1		; special-count
+			 t		; ignore-after-count
 			 ;; keywords recognized:
 			 ":report" ":interactive"))))
 	 (0 t 1)))
@@ -1529,9 +1538,9 @@ if matched at the beginning of a line, means don't indent that line."
   ;; CLOS
 
   (put 'defmethod tag 
-       '(if (fi:lisp-atom-p 2)
-	    ((1 3 lambda-list) (0 t 3))
-	 ((1 2 lambda-list) (0 t 2))))
+       (quote (if (fi:lisp-atom-p 2)
+		  ((1 3 lambda-list) (0 t 3))
+		((1 2 lambda-list) (0 t 2)))))
   
   (put 'make-instance tag 1)
 
