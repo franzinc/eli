@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.100 1993/09/17 06:20:09 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.101 1993/09/17 06:23:18 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -126,7 +126,6 @@ clman:	clman.o clmanaux.o
 release_root = /net/vapor/scm/emacs-lib/Dists
 
 fi_release_files = ChangeLog fi-*.el fi-*.elc Makefile *.doc examples/*.el
-fi_release_gztar = $(release_root)/eli-`cat version`.tar.gz
 
 acl_release_files = ChangeLog fi-*.el fi-*.elc Makefile *.doc examples/*.el \
 	$(acl_clman_release_files)
@@ -154,7 +153,8 @@ fi-dist:	all
 	tar cf - $(fi_release_files) | \
 	  (cd $(release_root)/fi-`cat version`; tar xf -)
 	(version=`cat version`; cd $(release_root); \
-	 tar cf - fi-$$version | gzip -9 > $(fi_release_gztar))
+	 tar cf - fi-$$version | \
+	     gzip -9 > $(release_root)/eli-$$version.tar.gz)
 	(version=`cat version`; cvs tag `echo fi_$$version | sed s/\\\\./_/g'`)
 
 clman_version = 4.1-v2
