@@ -7,6 +7,15 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 ******************************************************************************
+2.2.6
+
+2001-09-18  Kevin Layer  <layer@crikey>
+
+	* emacsdir.pl,
+	* Makefile: use /cygdrive/x instead of //x, since the latter
+	doesn't work in the newest cygwin
+
+******************************************************************************
 2.2.5
 
 2001-09-10  Kevin Layer  <layer@crikey>
