@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.136 1998/03/18 20:28:53 layer Exp $
+# $Id: Makefile,v 1.137 1998/03/28 21:02:19 layer Exp $
 # This makefile requires GNU make.
 
 include version.mak
@@ -12,7 +12,9 @@ emacs = $(emacsdir)/bin/emacs.exe
 # ../bin/pwd prints like c:/... instead of //c/... like the cygnus version.
 pwd = $(shell ../bin/pwd)
 else
+ifneq ($(OS_NAME),linux)
 xemacs = xemacs
+endif
 emacs = emacs
 pwd = $(shell pwd)
 endif

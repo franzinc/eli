@@ -7,6 +7,13 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.pre-beta.21
+
+Sat Mar 28 01:22:21 1998  Kevin Layer  <layer@ultra>
+
+	* Makefile: for linux
+
+*******************************************************************************
 2.0.21.pre-beta.20
 
 Tue Mar 24 15:53:21 1998  Kevin Layer  <layer@ultra>
