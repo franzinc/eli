@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 1.91 2003/10/10 22:34:29 layer Exp $
+;; $Id: fi-lep.el,v 1.92 2003/10/14 21:26:39 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -288,7 +288,8 @@ time."
 		(beginning-of-buffer))
 	    (progn
 	      (goto-char
-	       (if (on-ms-windows)
+	       (if (and (on-ms-windows)
+			(not (eq buffer-file-coding-system 'no-conversion)))
 		   (fi::cl-file-position-to-point point)
 		 (1+ point)))
 	      (if (not xb) (set-mark (point)))))
@@ -318,7 +319,8 @@ difference.)  Note that fi:goto-char may not work multi-byte characters in
 versions of Emacs that support such things."
   (interactive "NGoto CL file-position: ")
   (goto-char
-   (if (on-ms-windows)
+   (if (and (on-ms-windows)
+	    (not (eq buffer-file-coding-system 'no-conversion)))
        (fi::cl-file-position-to-point file-position)
      file-position)))
 

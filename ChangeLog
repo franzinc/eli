@@ -11,6 +11,8 @@ For more detailed instructions on filling in the ChangeLog form, see
 
 2003-10-14    <layer@HOBART>
 
+	* fi-lep.el: rfe4040: handle binary modes by not using the
+	  fi::cl-file-position-to-point hack in this case
 	* fi-modes.el: rfe4251: same treatment for other modes
 	* fi-emacs21.el: rfe5597: resizing a frame causes the pretty
 	  printer to notice the change
