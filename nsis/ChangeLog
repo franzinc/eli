@@ -1,6 +1,6 @@
 2004-10-08    <mikel@franz.com>
 
-	* install.nsi: check for ACL installation
+	* install.nsi: check for ACL installation.
 	               prompt to create/modify .emacs file
 		       with sample ELI starting code.
 

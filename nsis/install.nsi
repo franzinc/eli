@@ -1,4 +1,4 @@
-; $Id: install.nsi,v 1.1.2.2 2004/10/08 18:06:10 mikel Exp $
+; $Id: install.nsi,v 1.1.2.3 2004/10/08 22:39:16 mikel Exp $
 
 !define REGKEY "Software\GNU\Gnu Emacs Easy Installer"
 !define ACLREGKEY "Software\Franz Inc.\Allegro Common Lisp"
@@ -6,12 +6,18 @@
 !define SHORT_PROD "Gnu Emacs"
 !define emacs_dir "emacs-21.3"
 
+!include "StrFunc.nsh"
+; !include "ReplaceSubStr.nsh"
+
+# Declare used Functions from StrFunc
+${StrRep}
+
 SetCompressor lzma
 
 Name "${VERBOSE_PROD}"
 
 ; The installer program that will be created
-OutFile "instemacs213.exe"
+OutFile "emacs213.exe"
 
 ; The default installation directory
 InstallDir "$PROGRAMFILES\${VERBOSE_PROD}"
@@ -41,7 +47,7 @@ Section "${VERBOSE_PROD}"
   ; Set output path to the installation directory.
   SetOutPath "$INSTDIR"
 
-  File /r "$emacs_dir\*"
+  File /r "${emacs_dir}\*"
 
   ; Write the installation path into the registry
   WriteRegStr HKLM "${REGKEY}" "Install_Dir" "$INSTDIR"
@@ -63,8 +69,10 @@ SectionEnd
 ; Optional section (can be disabled by the user)
   var homevar
   var test
+  var edited_eli_p
   var eli_init_file
   var eli_handle
+  var eli_text
   var allegro_dir
 
 Section "Allegro Emacs-Lisp Interface setup"
@@ -119,6 +127,7 @@ prompt_to_create:
   FileOpen $eli_handle $eli_init_file "w"
 
 write_to_eli:
+  IntOp $edited_eli_p 1 + 0
   FileWrite $eli_handle \
 	"; This is sample code for starting and specifying defaults to the"
   FileWriteByte $eli_handle "13"
@@ -131,7 +140,8 @@ write_to_eli:
 	"; to load automatically when you start emacs."
   FileWriteByte $eli_handle "13"
   FileWriteByte $eli_handle "10"
-  FileWrite $eli_handle '; (push "$allegro_dir/eli" load-path)'
+  ${StrRep} $eli_text '; (push "$allegro_dir/eli" load-path)' '\' '/'
+  FileWrite $eli_handle $eli_text
   FileWriteByte $eli_handle "13"
   FileWriteByte $eli_handle "10"
   FileWrite $eli_handle '; (load "fi-site-init.el")'
@@ -140,16 +150,21 @@ write_to_eli:
   FileWrite $eli_handle ';'
   FileWriteByte $eli_handle "13"
   FileWriteByte $eli_handle "10"
-  FileWrite $eli_handle \
-	'; (setq fi:common-lisp-image-name "$allegro_dir/mlisp.exe")'
+  ${StrRep} $eli_text \
+	'; (setq fi:common-lisp-image-name "$allegro_dir/mlisp.exe")' \
+	'\' '/'
+  FileWrite $eli_handle $eli_text
   FileWriteByte $eli_handle "13"
   FileWriteByte $eli_handle "10"
-  FileWrite $eli_handle \
-	'; (setq fi:common-lisp-image-file "$allegro_dir/mlisp.dxl")'
+  ${StrRep} $eli_text \
+	'; (setq fi:common-lisp-image-file "$allegro_dir/mlisp.dxl")' \
+	'\' '/'
+  FileWrite $eli_handle $eli_text
   FileWriteByte $eli_handle "13"
   FileWriteByte $eli_handle "10"
-  FileWrite $eli_handle \
-	'; (setq fi:common-lisp-directory "$allegro_dir")'
+  ${StrRep} $eli_text '; (setq fi:common-lisp-directory "$allegro_dir")' \
+	'\' '/'
+  FileWrite $eli_handle $eli_text
   FileWriteByte $eli_handle "13"
   FileWriteByte $eli_handle "10"
   FileClose $eli_handle
@@ -174,7 +189,11 @@ Section "Run Emacs after install"
 	/SD IDNO \
 	IDNO norun
 
-  Exec '"$INSTDIR\bin\runemacs.exe"'
+  IntCmp $edited_eli_p 0 open_without_initfile
+  Exec '"$INSTDIR\bin\runemacs.exe" "$eli_init_file"'
+  goto norun
+open_without_initfile:
+  Exec '"$INSTDIR\bin\runemacs.exe "'
 
 norun:
 
