@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.30 1988/05/12 22:55:58 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.31 1988/05/12 23:08:49 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -281,25 +281,25 @@ are read from the minibuffer."
 (defun fi::make-subprocess (buffer-number process-name mode-function
 					  image-prompt image-file
 					  image-arguments)
-  (if (not (stringp image-file))
-      (setq image-file (funcall image-file)))
-  (let* ((start-up-feed-name
-	  (if image-file
-	      (concat "~/.emacs_" (file-name-nondirectory image-file))))
-	 (buffer (fi::make-process-buffer process-name buffer-number))
+  (let* ((buffer (fi::make-process-buffer process-name buffer-number))
 	 (buffer-name (buffer-name buffer))
-	 process status)
+	 start-up-feed-name process status)
     (switch-to-buffer buffer)
     (setq process (get-buffer-process buffer))
     (setq status (if process (process-status process)))
     (if (memq status '(run stop))
 	(goto-char (point-max))
+      (if (not (stringp image-file))
+	  (setq image-file (funcall image-file)))
       (if process (delete-process process))
       (setq process (apply 'start-process
 			   (append (list buffer-name buffer image-file)
 				   image-arguments)))
       (set-process-sentinel process 'fi::subprocess-sentinel)
       (set-process-filter process 'fi::subprocess-filter)
+      (setq start-up-feed-name
+	(if image-file
+	    (concat "~/.emacs_" (file-name-nondirectory image-file))))
       (cond
 	((and start-up-feed-name (file-exists-p start-up-feed-name))
 	 ;; This is guaranteed to wait long enough
