@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-basic-lep.el,v 1.51 2003/09/29 23:28:23 layer Exp $
+;; $Id: fi-basic-lep.el,v 1.52 2003/10/14 22:34:33 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -29,7 +29,7 @@
     (when n (setq text (substring text 0 n))))
   (if (and (not (eq 'minibuffer (car fi:pop-up-temp-window-behavior)))
 	   (null (cdr fi:pop-up-temp-window-behavior)))
-      (fi::show-some-text-1 text (or xpackage fi:package))
+      (fi::show-some-text-1 text (or xpackage (fi::package)))
     (let* ((window (minibuffer-window))
 	   (width (window-width window))
 	   (lines/len (fi::frob-string text)))
@@ -40,11 +40,7 @@
 	  (progn
 	    (message "%s" text)
 	    (fi::note-background-reply))
-	(fi::show-some-text-1
-	 ;; cond clause commented 18oct94 smh.  See above.
-	 (cond ;; (fi:package (format "[package: %s]\n%s" fi:package text))
-	  (t text))
-	 (or xpackage fi:package))))))
+	(fi::show-some-text-1 text (or xpackage (fi::package)))))))
 
 ;; Why are these necessary????
 (defvar resize-mini-windows)
@@ -414,7 +410,8 @@ emacs-lisp interface cannot be started.
 							   session-arguments))
 				     session-arguments
 				   (list* ':buffer-package
-					  (fi::string-to-keyword fi:package)
+					  (fi::string-to-keyword
+					   (fi::package))
 					  session-arguments)))))
     (process-send-string process "\n")
     session))

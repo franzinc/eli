@@ -1,4 +1,4 @@
-;; $Id: fi-site-init.el,v 1.120 2003/09/29 23:28:23 layer Exp $
+;; $Id: fi-site-init.el,v 1.121 2003/10/14 22:34:33 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -248,7 +248,7 @@ On Windows, just remove all .elc files and restart xemacs.")
   (fi::load "fi-indent"))
 (fi::load "fi-gnu")
 
-(unless fi::load-subprocess-files
+(when (not fi::load-subprocess-files)
   (defvar fi:package nil)
   (make-variable-buffer-local 'fi:package)
   ;; used in Common Lisp edit mode:

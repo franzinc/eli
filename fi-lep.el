@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 1.92 2003/10/14 21:26:39 layer Exp $
+;; $Id: fi-lep.el,v 1.93 2003/10/14 22:34:33 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -149,7 +149,7 @@ at file visit time."
    from-fspec
    (fi::make-complex-request
     (scm::metadot-session
-     :package (fi::string-to-keyword fi:package)
+     :package (fi::string-to-keyword (fi::package))
      :type t				; used to be (or type t), but
 					; `type' is not bound in this
 					; context
@@ -500,7 +500,7 @@ buffer, the package is parsed at file visit time."
 (defun fi::lisp-macroexpand-common (expander type)
   (fi::make-request
       (lep::macroexpand-session
-       :expander expander :package (fi::string-to-keyword fi:package)
+       :expander expander :package (fi::string-to-keyword (fi::package))
        :form (let ((start (condition-case ()
 			      (fi::find-other-end-of-list)
 			    (error nil))))
@@ -509,7 +509,7 @@ buffer, the package is parsed at file visit time."
 		       (buffer-substring start (point))
 		     (read-string (format "form to %s: " type))))))
     (() (expansion)
-     (fi:show-some-text fi:package expansion))
+     (fi:show-some-text (fi::package) expansion))
     (() (error)
      (fi::show-error-text "Cannot macroexpand: %s" error))))
 
@@ -564,7 +564,7 @@ beginning of words in target symbols."
 				 (cdr (car xxalist))))
 		     (not
 		      (string= (fi::full-package-name
-				(or fi:package "cl-user"))
+				(or (fi::package) "cl-user"))
 			       (fi::full-package-name temp))))
 		(progn
 		  (setq package-override t)
@@ -670,7 +670,7 @@ beginning of words in target symbols."
 		 (car (lep::eval-session-in-lisp
 		       'lep::list-all-completions-session
 		       ':pattern (fi::frob-case-to-lisp pattern)
-		       ':buffer-package (fi::string-to-keyword fi:package)
+		       ':buffer-package (fi::string-to-keyword (fi::package))
 		       ':package (progn
 				   (if (equal ":" xpackage)
 				       (setq xpackage "keyword"))
@@ -733,12 +733,12 @@ beginning of words in target symbols."
 			   prompt (fi::getf-property options ':initial-input)))
 		  (colonp (string-match ":?:" string nil))
 		  (xpackage (or (fi::getf-property options ':package)
-			       fi:package)))
+				(fi::package))))
 	     ;; symbol-point
 	     (if colonp
 		 string
 	       (if xpackage
-		   (concat fi:package "::" string)
+		   (concat (fi::package) "::" string)
 		 string))))
 	  (:file-name (read-file-name
 		       prompt
@@ -1018,7 +1018,7 @@ the next definition, if there is one."
    (fi::make-complex-request
     (scm::edit-sequence-session
      :generator generator
-     :package (fi::string-to-keyword fi:package)
+     :package (fi::string-to-keyword (fi::package))
      :fspec fspec)
     ((other-window-p fspec what) (pathname point n-more)
      (fi::show-found-definition fspec pathname point n-more other-window-p)
@@ -1085,11 +1085,12 @@ time."
   (interactive (fi::get-default-symbol "Function documentation for symbol"
 				       nil t))
   (fi::make-request
-      (lep::function-documentation-session :package fi:package :fspec symbol)
+      (lep::function-documentation-session :package (fi::package)
+					   :fspec symbol)
     ;; Normal continuation
     ((symbol) (documentation)
      (if documentation
-	 (fi:show-some-text fi:package documentation)
+	 (fi:show-some-text (fi::package) documentation)
        (fi::show-error-text "There is no documentation for %s" symbol)))
     ;; Error continuation
     ((symbol) (error)

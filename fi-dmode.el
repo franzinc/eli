@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-dmode.el,v 1.33 2003/07/03 21:05:02 layer Exp $
+;; $Id: fi-dmode.el,v 1.34 2003/10/14 22:34:33 layer Exp $
 
 ;; Create a mode in which each line is a definition and . on that
 ;; definition brings up the definition in another window
@@ -288,7 +288,7 @@ in definition mode."
     :fspec string
     :type type
     :package (save-excursion (set-buffer buffer)
-			     (fi::string-to-keyword fi:package)))
+			     (fi::string-to-keyword (fi::package))))
    ;; Normal continuation
    ((string list-buffer) (pathname point n-more)
     (fi::show-found-definition string pathname point n-more t)

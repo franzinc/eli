@@ -7,6 +7,22 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.4.6
+
+2003-10-14    <layer@HOBART>
+
+	* fi-basic-lep.el,
+	* fi-changes.el,
+	* fi-dmode.el,
+	* fi-lep.el,
+	* fi-modes.el,
+	* fi-utils.el: rfe2463: handle multiple in-package's in a file.
+	  This was done by using a function fi::package that either
+	  returns fi:package, if multiple in-package's were not detected
+	  at file read time, or the actual package backward from the
+	  point, if there were multiple in-package's at file read time.
+
+*******************************************************************************
 2.4.5
 
 2003-10-14    <layer@HOBART>

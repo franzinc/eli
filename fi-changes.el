@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-changes.el,v 1.21 2002/07/09 22:15:31 layer Exp $
+;; $Id: fi-changes.el,v 1.22 2003/10/14 22:34:33 layer Exp $
 ;;
 ;; Support for changed definitions
 
@@ -106,7 +106,7 @@ OLD-FILE."
   (interactive "fNew file: \nfOld file: ")
   (find-file new-file)
   (let ((actual-file (buffer-file-name (find-buffer-visiting new-file)))
-	(xpackage fi:package))
+	(xpackage (fi::package)))
     (fi::make-request (scm::list-changed-definitions
 		       :transaction-directory fi:emacs-to-lisp-transaction-directory
 		       :operation ':list
@@ -204,7 +204,7 @@ OLD-FILE."
      error))))
 
 (defun fi::show-changes (changes &optional buffer-name xpackage)
-  (lep:display-some-definitions (or xpackage fi:package)
+  (lep:display-some-definitions (or xpackage (fi::package))
 				changes
 				(list 'lep::find-buffer-definition)
 				(or buffer-name "*changes*")))

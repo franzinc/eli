@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-modes.el,v 1.77 2003/10/14 21:12:34 layer Exp $
+;; $Id: fi-modes.el,v 1.78 2003/10/14 22:34:33 layer Exp $
 
 ;;;; Mode initializations
 
@@ -82,6 +82,11 @@ for purposes of tracking package changes in a subprocess Lisp buffer.  The
 value of this is taken from fi:default-in-package-regexp in Lisp subprocess
 buffers, but is nil elsewhere.")
 (make-variable-buffer-local 'fi:in-package-regexp)
+
+(defvar fi::multiple-in-packages nil
+  ;; non-nil if there are multiple ones in the current buffer
+  )
+(make-variable-buffer-local 'fi::multiple-in-packages)
 
 (defvar fi:default-in-package-regexp
   "(\\(cl:\\|common-lisp:\\)?in-package\\>\\|:pa\\>\\|:pac\\>\\|:pack\\>\\|:packa\\>\\|:packag\\>\\|:package\\>"
@@ -438,11 +443,16 @@ the readtable used for evaluations given to Lisp from emacs."
 		   key value)))
       value)))
 
-(defun fi::parse-package-from-buffer ()
-  (goto-char (point-min))
-  (let ((pos (re-search-forward
-	      "^(\\(cl:\\|common-lisp:\\)?in-package[\t ]*#?" nil t))
-	value)
+(defvar fi::*in-package-regexp*
+    "^(\\(cl:\\|common-lisp:\\)?in-package[\t ]*#?")
+
+(defun fi::parse-package-from-buffer (&optional current-point
+						backward
+						post-init)
+  (when (not current-point) (goto-char (point-min)))
+  (let* ((search (if backward 're-search-backward 're-search-forward))
+	 (pos (funcall search fi::*in-package-regexp* nil t))
+	 value)
     ;; find the `in-package' form, and snarf the package
     ;; that way
     (when pos
@@ -464,6 +474,9 @@ the readtable used for evaluations given to Lisp from emacs."
 		       (substring name 1)
 		     name)))
 		((stringp p) p)))))
+    (when (and (null post-init)
+	       (funcall search fi::*in-package-regexp* nil t))
+      (setq fi::multiple-in-packages t))
     value))
 
 (defun fi::find-tag-common-lisp ()

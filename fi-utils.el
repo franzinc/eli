@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 1.77 2003/10/13 21:03:10 layer Exp $
+;; $Id: fi-utils.el,v 1.78 2003/10/14 22:34:33 layer Exp $
 
 ;;; Misc utilities
 
@@ -376,7 +376,7 @@ at the beginning of the line."
     (if fi::use-symbol-at-point
 	(list symbol-at-point)
       (let ((read-symbol
-	     (let ((fi::original-package fi:package))
+	     (let ((fi::original-package (fi::package)))
 	       (fi::ensure-minibuffer-visible)
 	       (fi::completing-read
 		(if symbol-at-point
@@ -1156,3 +1156,10 @@ created by fi:common-lisp."
 (defun fi::probe-file (file)
   (when (file-exists-p file)
     file))
+
+(defun fi::package ()
+  (cond
+   ((not fi::multiple-in-packages) fi:package)
+   (t
+    ;; look back from the point for the correct package name
+    (save-excursion (fi::parse-package-from-buffer t t t)))))
