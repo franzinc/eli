@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.7 1991/03/12 18:29:47 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.8 1991/03/13 15:03:30 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -36,7 +36,7 @@
   (list ':connection
 	process 
 	nil				; sessions
-	0				; session id counter
+	-1				; session id counter
 	host))
 
 (defun connection-process (c) (second c))
@@ -118,9 +118,13 @@
 	   (setq lep::*connection* (make-connection host process))))
 	(t (error "Cannot start LEP to this lisp - incorrect IPC version"))))
 
+(defvar lep::trace-lep-filter nil)
+
 (defun connection-filter (process string)
   "When a complete sexpression comes back from the lisp, read it and then
 handle it"
+  (when lep::trace-lep-filter
+    (print string (get-buffer "*scratch*")))
   (save-excursion
     (set-buffer (process-buffer process))
     (goto-char (point-max))
@@ -145,9 +149,10 @@ handle it"
 	  (error nil))
       (if form (handle-input process form)))))
 
-
 (defun handle-input (process form)
   "A reply is (session-id . rest) or (nil . rest)"
+  (when lep::trace-lep-filter
+    (print (list process form) (get-buffer "*scratch*")))
   (let* ((id (car form))
 	 (connection (find-connection-from-process process))
 	 (session (find-session connection id)))
@@ -228,7 +233,7 @@ handle it"
 				(cdr continuation-and-arguments)
 				(car error-continuation)
 				(cdr error-continuation))))
-    (set-connection-session-id connection (1+ id))
+    (set-connection-session-id connection (1- id))
     (add-session  connection session)
     session))
 
