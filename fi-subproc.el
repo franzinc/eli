@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.33 1988/05/19 14:42:43 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.34 1988/05/19 15:03:41 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -105,6 +105,10 @@ elsewhere, these keys have their normal global binding.  This is a
 buffer-local symbol.  This variable should be set before starting-up the
 first subprocess.  Use setq-default to set the default value for this
 symbol.")
+
+(defvar fi:display-buffer-function 'switch-to-buffer
+  "If the value of this is non-nil, then it is used as the function to
+display a subprocess buffer.")
 
 ;;;;;;;;;;;;;;;;;;;;;; internal vars
 
@@ -285,7 +289,9 @@ are read from the minibuffer."
 	 (default-dir default-directory)
 	 (buffer-name (buffer-name buffer))
 	 start-up-feed-name process status)
-    (switch-to-buffer buffer)
+    (if fi:display-buffer-function
+	(funcall fi:display-buffer-function buffer)
+      (switch-to-buffer buffer))
     (setq process (get-buffer-process buffer))
     (setq status (if process (process-status process)))
     (if (memq status '(run stop))
@@ -318,7 +324,9 @@ are read from the minibuffer."
 				fi:subprocess-map-nl-to-cr)))
       (goto-char (point-max))
       (set-marker (process-mark process) (point))
-      (funcall mode-function)
+      (let ((saved-input-ring fi::input-ring))
+	(funcall mode-function)
+	(setq fi::input-ring saved-input-ring))
       (make-local-variable 'subprocess-prompt-pattern)
       (setq subprocess-prompt-pattern image-prompt)
       (fi::make-subprocess-variables))
@@ -339,7 +347,9 @@ are read from the minibuffer."
 		      given-service
 		    (if fi:unix-domain 0 fi:excl-service-name)))
 	 proc status)
-    (switch-to-buffer buffer)
+    (if fi:display-buffer-function
+	(funcall fi:display-buffer-function buffer)
+      (switch-to-buffer buffer))
     (setq proc (get-buffer-process buffer))
     (setq status (if proc (process-status proc)))
     (if (eq status 'run)
@@ -359,7 +369,9 @@ are read from the minibuffer."
 
       (goto-char (point-max))
       (set-marker (process-mark proc) (point))
-      (funcall mode)
+      (let ((saved-input-ring fi::input-ring))
+	(funcall mode)
+	(setq fi::input-ring saved-input-ring))
       (make-local-variable 'subprocess-prompt-pattern)
       (setq subprocess-prompt-pattern image-prompt)
       (fi::make-subprocess-variables))
@@ -389,12 +401,10 @@ are read from the minibuffer."
 	(get-buffer-create buffer-name))))
 
 (defun fi::make-subprocess-variables ()
-  (if (null fi::input-ring)
-      (progn
-	(setq fi::input-ring-max fi:default-input-ring-max)
-	(setq fi::input-ring-yank-pointer nil)
-	(setq fi::shell-directory-stack nil)
-	(setq fi::last-input-search-string "")))
+  (setq fi::input-ring-max fi:default-input-ring-max)
+  (setq fi::input-ring-yank-pointer nil)
+  (setq fi::shell-directory-stack nil)
+  (setq fi::last-input-search-string "")
   (setq fi::last-input-start (make-marker))
   (setq fi::last-input-end (make-marker)))
 
