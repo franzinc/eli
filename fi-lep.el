@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.52 1993/07/22 23:05:04 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.53 1993/07/22 23:56:46 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -887,11 +887,28 @@ environment."
   (fi::compile-or-load-file file ':load))
 
 (defun fi::compile-or-load-file (file operation)
-  (fi::make-request
-   (lep::compile/load-file-request :pathname file :operation operation)
-   (() ())
-   (() (error)
-    (message "Could not :%s" error))))
+  (fi::error-if-request-in-progress)
+  (let* ((compilep nil)
+	 (msg-start
+	  (format "%s %s..."
+		  (cond ((eq ':load operation) "Loading")
+			((eq ':compile operation)
+			 (setq compilep t)
+			 "Compiling")
+			(t 
+			 (setq compilep t)
+			 "Compiling and loading"))
+		  (file-name-nondirectory file))))
+    (fi::note-background-request compilep)
+    (message "%s" msg-start)
+    (fi::make-request
+	(lep::compile/load-file-request :pathname file :operation operation)
+      ((compilep msg-start) (res)
+       (fi::note-background-reply (list compilep))
+       (message "%sdone." msg-start))
+      ((compilep) (error)
+       (fi::note-background-reply (list compilep))
+       (message "Could not :%s" error)))))
 
 
 (defun fi:list-undefined-functions ()

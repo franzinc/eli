@@ -1,3 +1,10 @@
+Thu Jul 22 16:55:18 1993  Kevin Layer  (layer at sole)
+
+	* fi-lemacs.el: more menu hacking
+
+	* fi-lep.el: fix fi::compile-or-load-file to give better
+	notification of what it is doing.
+
 Thu Jul 22 16:04:14 1993  Kevin Layer  (layer at sole)
 
 	* Makefile.fi: local rdist rules; new rules for makeman, et al

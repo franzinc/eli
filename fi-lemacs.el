@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/Attic/fi-lemacs.el,v 2.3 1993/07/22 23:05:01 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-lemacs.el,v 2.4 1993/07/22 23:56:42 layer Exp $
 
 (defconst fi:allegro-file-menu
     '("ACLFile"
@@ -254,8 +254,13 @@
       ["Find next definition" fi:lisp-find-next-definition fi::connection-open]
       ["Arglist" fi:menu-lisp-arglist fi::connection-open]
       ["Toggle trace" fi:menu-toggle-trace-definition fi::connection-open]
+      ["Macroexpand" fi:lisp-macroexpand fi::connection-open]
       ["Recursive macroexpand" fi:lisp-macroexpand-recursively
        fi::connection-open]
+      "----"
+      ["Compile and load file" fi:menu-compile-and-load-file
+       fi::connection-open]
+      ["Load file" fi:menu-load-file fi::connection-open]
       ))
 
 (defun fi:menu-lisp-find-definition ()
@@ -272,6 +277,16 @@
   (interactive)
   (let ((fi::use-symbol-at-point t))
     (call-interactively 'fi:toggle-trace-definition)))
+
+(defun fi:menu-compile-and-load-file ()
+  (interactive)
+  (when (buffer-file-name)
+    (fi:compile-file (buffer-file-name))))
+
+(defun fi:menu-load-file ()
+  (interactive)
+  (when (buffer-file-name)
+    (fi:load-file (buffer-file-name))))
 
 (defun fi:common-lisp-mode-popup-menu (e)
   (interactive "@e")
