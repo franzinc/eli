@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.18 1988/11/21 21:15:52 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.19 1989/02/14 17:17:52 layer Exp $
 
 ;;;;
 ;;; Key defs
@@ -388,7 +388,8 @@ With a prefix argument, macroexpand the code as the compiler would."
   (let* ((start (condition-case ()
 		    (fi::find-other-end-of-list)
 		  (error nil)))
-	 (filename (format "/tmp/%s,mexp" (user-login-name)))
+	 (filename (format "%s/%s,mexp" fi:emacs-to-lisp-transaction-directory
+			   (user-login-name)))
 	 (string
 	  (format fi::lisp-macroexpand-command
 		  (if (and (boundp 'fi:package) fi:package)
