@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.99 1991/03/16 13:51:45 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.100 1991/03/28 12:55:50 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -91,9 +91,34 @@ current package.  The two things this must match are the IN-PACKAGE macro
 form and all the possible instances of the :package top-level command.
 If nil, no automatic package tracking will be done.")
 
+(defvar fi:pop-to-sublisp-buffer-after-lisp-eval t
+  "*If non-nil, then go to the Lisp subprocess buffer after sending
+expressions to Lisp (via fi:lisp-eval-* function).")
+
+(defvar fi:package nil
+  "A buffer-local variable whose value should either be nil or a string
+which names a package in the Lisp world (ie, in a Lisp subprocess running
+as an inferior of Emacs in some buffer).  It is used when expressions are
+sent from an Emacs buffer to a Lisp process so that the symbols are read
+into the correct Lisp package.")
+
+(make-variable-buffer-local 'fi:package)
+
+
 ;;;;
 ;;; Common Lisp Variables and Constants
 ;;;;
+
+(defvar fi:source-info-not-found-hook 'find-tag
+  "*The value of this variable is funcalled when source information is not
+present in Lisp for a symbol.  The function is given one argument, the name
+for which source is desired (a string).  The null string means use the word
+at the point as the search word.  This allows the GNU Emacs tags facility
+to be used when the information is not present in Lisp.")
+
+(defvar fi:echo-evals-from-buffer-in-listener-p nil
+  "*If non-nil, forms evalutated directly in fi:common-lisp-mode by the
+fi:lisp-eval-* functions will be echoed by Common Lisp.")
 
 (defvar fi:start-lisp-interface-function
     'fi:start-backdoor-interface
@@ -244,10 +269,10 @@ Emacs-Lisp interface.  This only works in Allegro CL, currently."
      "(progn
       (princ \";; Starting socket daemon\n\")
       (force-output)
-      (excl::require :ipc
-                     (merge-pathnames excl::*library-code-pathname* \"ipc\"))
-      (excl::require :emacs
-                     (merge-pathnames excl::*library-code-pathname* \"emacs\"))
+      (excl::require :ipc)
+      (excl::require :emacs)
+      (excl::require :lep)
+      (excl::require :scm)
       (apply
        (find-symbol (symbol-name :start-lisp-listener-daemon) :ipc)
        #+allegro-v4.1 '(:use-lep t :unix-domain nil)
@@ -937,3 +962,4 @@ This function implements continuous output to visible buffers."
 	      (cons (format "%s=%s" (car (car v)) (eval (cdr (car v))))
 		    process-environment))))
       (setq v (cdr v)))))
+
