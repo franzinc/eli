@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.21 1989/08/07 16:45:51 layer Rel $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.22 1990/08/31 23:47:20 layer Exp $
 
 ;;;;
 ;;; Key defs
@@ -47,16 +47,21 @@ shell, rlogin, sub-lisp or tcp-lisp."
   (define-key map "\C-w" 'fi:subprocess-backward-kill-word)
 
   (cond
-    ((memq mode '(sub-lisp shell))
-     (if (eq mode 'shell)
-	 (define-key map "\C-z"	'fi:subprocess-suspend))
-     (define-key map "\C-c"	'fi:subprocess-interrupt)
-     (define-key map "\C-d"	'fi:subprocess-send-eof)
-     (define-key map "\C-\\"	'fi:subprocess-quit))
-    ((eq mode 'tcp-lisp)
-     (define-key map "\C-c"	'fi:tcp-lisp-interrupt-process)
-     (define-key map "\C-d"	'fi:tcp-lisp-send-eof)
-     (define-key map "\C-\\"	'fi:tcp-lisp-kill-process)))
+   ((eq mode 'rlogin)
+    (define-key map "\C-z"	'fi:rlogin-send-stop)
+    (define-key map "\C-c"	'fi:rlogin-send-interrupt)
+    (define-key map "\C-d"	'fi:rlogin-send-eof)
+    (define-key map "\C-\\"	'fi:rlogin-send-quit))
+   ((memq mode '(sub-lisp shell))
+    (if (eq mode 'shell)
+	(define-key map "\C-z"	'fi:subprocess-suspend))
+    (define-key map "\C-c"	'fi:subprocess-interrupt)
+    (define-key map "\C-d"	'fi:subprocess-send-eof)
+    (define-key map "\C-\\"	'fi:subprocess-quit))
+   ((eq mode 'tcp-lisp)
+    (define-key map "\C-c"	'fi:tcp-lisp-interrupt-process)
+    (define-key map "\C-d"	'fi:tcp-lisp-send-eof)
+    (define-key map "\C-\\"	'fi:tcp-lisp-kill-process)))
   map)
 
 (defun fi::subprocess-mode-commands (map supermap mode)
@@ -344,12 +349,10 @@ the minibuffer.  The word around the point is used as the default."
 	 (format "(progn
                     (format t  \"~:[()~;~:*~{~a~^ ~}~]\"
                     (cond
-                     ((macro-function '%s) '(\"%s is a macro\"))
-                     ((special-form-p '%s) '(\"%s is a special form\"))
                      ((not (fboundp '%s)) '(\"%s has no function binding\"))
                      (t (excl::arglist '%s))))
                     (values))\n"
-		 symbol symbol symbol symbol symbol symbol symbol)))
+		 symbol symbol symbol symbol symbol)))
     (if (fi::background-sublisp-process)
 	(process-send-string fi::backdoor-process string)
       (fi::eval-string-send string nil t))))
@@ -614,6 +617,11 @@ possible.  This regexp should start with \"^\"."
   (interactive)
   (process-send-eof))
 
+(defun fi:rlogin-send-eof ()
+  "Send eof to process running through remote login subprocess buffer."
+  (interactive)
+  (send-string (get-buffer-process (current-buffer)) "\C-d"))
+
 (defun fi:subprocess-kill-output ()
   "Kill all output from the subprocess since the last input."
   (interactive)
@@ -639,6 +647,11 @@ Also move the point there."
   (interactive)
   (interrupt-process nil t))
 
+(defun fi:rlogin-send-interrupt ()
+  "Send interrupt to process running through remote login subprocess buffer."
+  (interactive)
+  (send-string (get-buffer-process (current-buffer)) "\C-c"))
+
 (defun fi:subprocess-kill ()
   "Send a `kill' (SIGKILL) signal to the current subprocess."
   (interactive)
@@ -649,10 +662,20 @@ Also move the point there."
   (interactive)
   (quit-process nil t))
 
+(defun fi:rlogin-send-quit ()
+  "Send quit to process running through remote login subprocess buffer."
+  (interactive)
+  (send-string (get-buffer-process (current-buffer)) "\C-\\"))
+
 (defun fi:subprocess-suspend ()
   "Suspend, with a SIGSTOP, the current subprocess."
   (interactive)
   (stop-process nil t))
+
+(defun fi:rlogin-send-stop ()
+  "Send stop to process running through remote login subprocess buffer."
+  (interactive)
+  (send-string (get-buffer-process (current-buffer)) "\C-z"))
 
 (defun fi:subprocess-kill-input ()
   "Kill all input since the last output by the subprocess."
