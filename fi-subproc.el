@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.173 1996/09/23 18:17:53 layer Exp $
+;; $Id: fi-subproc.el,v 1.174 1996/10/21 18:05:19 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -396,6 +396,10 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 				 (cdr executable-image-name)))
 		      image-args)
 	    image-args))
+	 (real-args
+	  (if (on-ms-windows)
+	      (fi::reorder-arguments real-args)
+	    real-args))
 	 (process-connection-type fi::common-lisp-connection-type) ;bug3033
 	 (proc
 	  (if (on-ms-windows)
@@ -507,6 +511,26 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	    fi:common-lisp-image-arguments image-args
 	    fi:common-lisp-host host))
     proc))
+
+(defun fi::reorder-arguments (arguments)
+  ;; make sure the dlisp arguments are first
+  (let ((dlisp-args nil)
+	(other-args nil)
+	(arg nil))
+    (while arguments
+      (setq arg (car arguments))
+      (cond ((or (string= "+c" arg) (string= "+p" arg)
+		 (string= "+B" arg) (string= "+m" arg))
+	     (push arg dlisp-args))
+	    ((or (string= "+s" arg) (string= "+d" arg)
+		 (string= "+t" arg) (string= "+b" arg))
+	     (push arg dlisp-args)
+	     (setq arguments (cdr arguments))
+	     (push (car arguments) dlisp-args))
+	    (t (push arg other-args)))
+      (setq arguments (cdr arguments)))
+    (append (nreverse dlisp-args) (nreverse other-args))))
+	 
 
 (defun fi::socket-start-lisp (process-name image arguments)
   (let ((win32-start-process-show-window t)
