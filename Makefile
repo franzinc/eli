@@ -1,29 +1,41 @@
-# $Id: Makefile,v 1.142 2000/03/22 22:27:23 layer Exp $
+# $Id: Makefile,v 1.143 2000/05/01 21:44:03 layer Exp $
 # This makefile requires GNU make.
 
 include version.mak
 
 SHELL = sh
 
+###############################################################################
 # $(OS) is from the environment on Windows NT
 ifeq ($(OS),Windows_NT)
+ifdef xemacs
+#### non-Cygwin can't do -nw
+#xemacsdir = $(shell perl.exe xemacsdir.pl)
+#emacs = $(xemacsdir)/XEmacs-21.1.9/i386-pc-win32/xemacs.exe
+#### Cygwin version is just right
+emacs = /usr/local/bin/xemacs
+pwd = $(shell pwd)
+else
 emacsdir = $(shell perl.exe emacsdir.pl)
 emacs = $(emacsdir)/bin/emacs.exe
 # ../bin/pwd prints like c:/... instead of //c/... like the cygnus version.
 pwd = $(shell ../bin/pwd.exe)
-else
-xemacs = xemacs
+endif
+###############################################################################
+else ### unix
+ifdef xemacs
+emacs = xemacs
+else 
 emacs = emacs
+endif
 pwd = $(shell pwd)
 endif
+###############################################################################
 
 all default:	fi-vers.el compile readme.htm
 
 compile:	fi-vers.el
 	$(emacs) -nw -batch -q -l $(pwd)/fi-compile.el -kill
-#ifdef xemacs
-#	$(xemacs) -nw -batch -q -l $(pwd)/fi-xcompile.el -kill
-#endif
 
 fi-vers.el: Makefile version.mak
 	rm -f fi-vers.el
