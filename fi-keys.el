@@ -8,11 +8,13 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.84 1993/07/23 03:48:53 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.85 1993/08/11 17:06:30 layer Exp $
 
 (if (string-match "ucid" emacs-version)
     (require 'tags "etags")
-  (require 'tags))
+  (if (string-match "^19\." emacs-version)
+      (require 'etags "etags")
+    (require 'tags)))
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -1011,7 +1013,7 @@ following form in your ~/.emacs file:
 
 To prevent this message to appear when find-tag or find-tag-other-window
 are invoked, put this form in your ~/.emacs before the LOAD of
-\"fi/site-init\":
+\"fi-site-init\":
 
 	(setq fi:find-tag-lock nil)
 

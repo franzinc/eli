@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.87 1993/08/11 17:04:43 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.88 1993/08/11 17:06:27 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -152,7 +152,6 @@ clman_release_files       = $(clman_files_common) \
 			    -C small_manual manual/OBLIST.el \
 			    -C small_manual clman.data
 clman_release_files_clim2 = $(clman_files_common) manual/OBLIST.el clman.data
-clman_data_release	  = $(release_root)/clman.data
 clman_release_gztar       = $(release_root)/clman-$(clman_version).tar.gz
 clman_release_gztar_clim2 = $(release_root)/clman-$(clman_version)-clim2.tar.gz
 clman_release_stats	  = $(release_root)/clman-$(clman_version).stats
@@ -175,7 +174,6 @@ clman-dist:	all_clman
 		>> $(clman_release_stats)
 	gzip -d < $(clman_release_gztar_clim2) | wc -c \
 		>> $(clman_release_stats)
-	cp -p clman.data $(clman_data_release)
 
 ###############################################################################
 

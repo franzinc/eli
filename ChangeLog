@@ -1,3 +1,9 @@
+Wed Aug 11 10:05:19 1993  Kevin Layer  (layer@sole)
+
+	* fi-keys.el: fix for fsf emacs 19
+
+	* fi-lep.el: fix doc string
+
 Tue Jul 27 13:07:02 1993  Kevin Layer  (layer at sole)
 
 	* clmanaux.c: exit status <0 means `failed'

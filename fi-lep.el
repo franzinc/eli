@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.54 1993/07/23 03:49:02 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.55 1993/08/11 17:06:35 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -313,7 +313,7 @@ Put something like this form in your ~/.emacs file:
 
   (setq fi:emacs-to-lisp-transaction-directory (expand-file-name \"~/tmp\"))
 
-before the load of fi/site-init.  Don't forget to make sure ~/tmp exists,
+before the load of fi-site-init.  Don't forget to make sure ~/tmp exists,
 since the Emacs-Lisp interface will not create it."
 	    fi:emacs-to-lisp-transaction-directory pathname)
   nil)
