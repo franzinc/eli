@@ -45,7 +45,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.42 1990/09/08 01:04:11 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.43 1990/09/08 02:23:24 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -229,39 +229,34 @@ freshest-<franz,common>-sublisp-name, which should contain the name of the
 most recently started sublisp.  If neither of these exist, runs the command
 franz-lisp or common-lisp, depending on the major mode of the buffer."
   ;; see if sublisp is named yet.  if its not, name it intelligently.
-  (save-excursion
-    (save-window-excursion
-      (cond (fi::sublisp-name t)
-	    ((eq major-mode 'fi:inferior-common-lisp-mode)
-	     (setq fi::sublisp-name fi::freshest-common-sublisp-name))
-	    ((eq major-mode 'fi:inferior-franz-lisp-mode)
-	     (setq fi::sublisp-name fi::freshest-franz-sublisp-name))
-	    ((eq major-mode 'fi:franz-lisp-mode)
-	     (if fi::freshest-franz-sublisp-name
-		 (setq fi::sublisp-name fi::freshest-franz-sublisp-name)
-	       (setq fi::sublisp-name "franz-lisp")))
-	    ((eq major-mode 'fi:common-lisp-mode)
-	     (if fi::freshest-common-sublisp-name
-		 (setq fi::sublisp-name fi::freshest-common-sublisp-name)
-	       (setq fi::sublisp-name "common-lisp")))
-	    (t (error "Cant start a subprocess for Major mode %s." major-mode)))
-      ;; start-up the sublisp process if necessary and possible
-      (cond ((get-process fi::sublisp-name))
-	    ((eql major-mode 'fi:franz-lisp-mode)
-	     (if (and fi::freshest-franz-sublisp-name 
-		      (get-process fi::freshest-franz-sublisp-name))
-		 (setq fi::sublisp-name fi::freshest-franz-sublisp-name)
-	       (setq fi::sublisp-name (prog1 (fi:franz-lisp)
-					(sleep-for 1)))))
-	    ((eql major-mode 'fi:common-lisp-mode)
-	     (if (and fi::freshest-common-sublisp-name 
-		      (get-process fi::freshest-common-sublisp-name))
-		 (setq fi::sublisp-name fi::freshest-common-sublisp-name)
-	       (setq fi::sublisp-name (prog1 (fi:common-lisp)
-					(sleep-for 1)))))
-	    (t (error "Can't start a subprocess for sublisp-name %s."
-		      fi::sublisp-name)))
-      nil)))
+  (cond (fi::sublisp-name)
+	((eq major-mode 'fi:inferior-common-lisp-mode)
+	 (setq fi::sublisp-name fi::freshest-common-sublisp-name))
+	((eq major-mode 'fi:inferior-franz-lisp-mode)
+	 (setq fi::sublisp-name fi::freshest-franz-sublisp-name))
+	((eq major-mode 'fi:franz-lisp-mode)
+	 (if fi::freshest-franz-sublisp-name
+	     (setq fi::sublisp-name fi::freshest-franz-sublisp-name)))
+	((eq major-mode 'fi:common-lisp-mode)
+	 (if fi::freshest-common-sublisp-name
+	     (setq fi::sublisp-name fi::freshest-common-sublisp-name)))
+	(t (error "Cant start a subprocess for Major mode %s." major-mode)))
+  ;; start-up the sublisp process if necessary and possible
+  (cond ((and fi::sublisp-name
+	      (get-process fi::sublisp-name)))
+	((eq major-mode 'fi:franz-lisp-mode)
+	 (if (and fi::freshest-franz-sublisp-name 
+		  (get-process fi::freshest-franz-sublisp-name))
+	     (setq fi::sublisp-name fi::freshest-franz-sublisp-name)
+	   (setq fi::sublisp-name (save-excursion (fi:franz-lisp)))))
+	((eq major-mode 'fi:common-lisp-mode)
+	 (if (and fi::freshest-common-sublisp-name 
+		  (get-process fi::freshest-common-sublisp-name))
+	     (setq fi::sublisp-name fi::freshest-common-sublisp-name)
+	   (setq fi::sublisp-name (save-excursion (fi:common-lisp)))))
+	(t (error "Can't start a subprocess for sublisp-name %s."
+		  fi::sublisp-name)))
+  nil)
 
 (defun fi::send-string-load (process text nl-to-cr compile-file-p)
   (let (pkg)
