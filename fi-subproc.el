@@ -1,7 +1,7 @@
 ;;; subprocess.el
 ;;;   subprocess modes and functions
 ;;;
-;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.4 1987/09/07 23:23:33 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.5 1987/10/22 21:06:44 layer Exp $
 
 (provide 'subprocess)
 
@@ -307,8 +307,7 @@ in the MAP given as argument."
   (define-key map "\C-u" 'fi:kill-shell-input)
   (define-key map "\C-v" 'fi:show-output-from-shell)
   (define-key map "\C-w" 'subprocess-backward-kill-word)
-  (define-key map "\C-x" 'input-region)
-  ;;(define-key map "\C-y" 'fi:copy-last-shell-input)
+  ;;(define-key map "\C-x" 'input-region)
   (define-key map "\C-y" 'pop-input)
   (define-key map "\C-z" 'fi:stop-shell-subjob)
   (define-key map "\C-\\" 'fi:quit-shell-subjob)
@@ -330,6 +329,7 @@ in the MAP given as argument."
   (define-key map "\C-a" 'subprocess-beginning-of-line)
   (define-key map "\C-m" 'fi:shell-send-input)
   (define-key map "\C-c" 'fi:interrupt-shell-subjob)
+  (define-key map "\C-i" 'shell-file-name-completion)
   (if subprocess-enable-superkeys
     (progn
       (define-key map "\C-d" 'subprocess-superkey)
@@ -489,6 +489,7 @@ Not at end, copies current line to the end of the buffer and sends it,
   by matching the regexp that is the value of shell-prompt-pattern if
   possible.  This regexp should start with \"^\"."
   (interactive)
+  (if shell-completions-window (shell-completion-cleanup))
   (end-of-line)
   (if (eobp)
       (progn
@@ -986,6 +987,74 @@ This function implements continuous output to visible buffers."
 		    (char-to-string char)))
 	       string
 	       nil)))
+
+;;;;
+;;; File name completions
+;;;;
+
+(defvar shell-completions-window nil
+  "If non-nil, completion window requires cleaning up.")
+
+(defvar shell-token-pattern "[ \t\n()<>&|;=]"
+  "*Regexp used by shell name completion to mark path name boundries.")
+
+(defun shell-file-name-completion ()
+  "Preform file name completion in shell mode"
+  (interactive)
+  (let ((shell-expand-string nil)
+	(shell-expand-begin nil)
+	(shell-expand-end nil)
+	(shell-expand-dir nil)
+	(shell-expand-file nil)
+	(shell-expand-completion nil))
+
+    ;; look back
+    (re-search-backward shell-token-pattern nil t)
+    (forward-char)
+    (setq shell-expand-begin (point))
+    ;; look ahead
+    (if (re-search-forward shell-token-pattern nil 0) (backward-char))
+    (setq shell-expand-end (point))
+
+    ;; the name requiring expansion
+    (setq shell-expand-string
+      (buffer-substring shell-expand-begin shell-expand-end))
+    ;; directory part of name
+    (setq shell-expand-dir
+      (or (file-name-directory shell-expand-string) default-directory))
+    ;; file part of name
+    (setq shell-expand-file
+      (file-name-nondirectory shell-expand-string))
+    
+    ;; do the expansion
+    (setq shell-expand-completion
+      (file-name-completion shell-expand-file shell-expand-dir))
+    ;; display the results
+    (if (eq shell-expand-completion t) (message "Sole completion")
+      (if (eq shell-expand-completion nil) (message "No match")
+	(if (equal shell-expand-completion shell-expand-file)
+	    (progn
+	      (if shell-completions-window nil
+		(setq shell-completions-window
+		  (current-window-configuration)))
+	      (message "Making completion list...")
+	      (with-output-to-temp-buffer " *Completions*"
+		(display-completion-list
+		  (sort (file-name-all-completions
+			  shell-expand-completion shell-expand-dir)
+			'string-lessp)))
+	      (message ""))
+ 	  ;; put in the expansion
+	  (search-backward shell-expand-file)
+	  (replace-match shell-expand-completion t t))))))
+
+(defun shell-completion-cleanup ()
+  "Clean up windows after shell file name completion."
+  (interactive)
+  (if shell-completions-window
+      (save-excursion
+	(set-window-configuration shell-completions-window)
+	(setq shell-completions-window nil))))
 
 ;;;;
 ;;; Misc Initializations
