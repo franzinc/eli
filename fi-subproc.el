@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.151 1993/07/27 20:12:23 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.152 1993/08/12 23:45:19 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -411,16 +411,6 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	  fi:common-lisp-image-arguments image-args
 	  fi:common-lisp-host host)
     proc))
-
-(defun fi:restart-common-lisp ()
-  "Run Common Lisp again, with the same arguments that were given to
-fi:common-lisp the last time it was evaluated, interactively or not."
-  (interactive)
-  (fi:common-lisp fi:common-lisp-buffer-name
-		  fi:common-lisp-directory
-		  fi:common-lisp-image-name
-		  fi:common-lisp-image-arguments
-		  fi:common-lisp-host))
 
 (defun fi:open-lisp-listener (&optional buffer-number
 					buffer-name
@@ -848,9 +838,43 @@ the first \"free\" buffer name and start a subprocess in that buffer."
     proc))
 
 (defun fi::subprocess-sentinel (process status)
-  ;; Sentinel and filter for subprocesses.  The sentinel currently
+  ;; Sentinel for subprocesses.  The sentinel currently
   ;; does nothing, other than prevent the status change message when the
   ;; process dies.
+  (when (and fi::lisp-is-remote
+	     (string-match "exited abnormally" status))
+    (let ((extra ""))
+      (when (and (not (string= (system-name) fi::lisp-host))
+		 (string-match fi::lisp-host (system-name)))
+	(setq extra
+	  (format "
+
+It appears that the host you gave to fi:common-lisp (%s) was meant to
+be %s--the latter name is how this host is known to GNU Emacs.
+If you type:
+
+    M-x fi:common-lisp RET
+
+and answer \"%s\" to the \"Host: \" question, the %s will
+probably succeed."
+		  fi::lisp-host
+		  (system-name)
+		  (system-name)
+		  fi::rsh-command)))
+      (fi:error "
+It appears that %s to host %s exited abnormally.
+This is probably due to the host you specified to fi:common-lisp (%s)
+being inaccessible.  Check that 
+
+    %s%% rsh %s date
+
+works--if it does not, then fi:common-lisp will fail.%s"
+		fi::rsh-command
+		fi::lisp-host
+		fi::lisp-host
+		(system-name)
+		fi::lisp-host
+		extra)))
   t)
 
 (defun fi::tcp-sentinel (process status)

@@ -10,13 +10,12 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/Attic/fi-lemacs.el,v 2.5 1993/07/23 04:18:49 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-lemacs.el,v 2.6 1993/08/12 23:45:06 layer Exp $
 
 (defconst fi:allegro-file-menu
     '("ACLFile"
-      ["Run Common Lisp" fi:common-lisp fi::connection-not-open]
+      ["Run/Restart Common Lisp" fi:common-lisp fi::connection-not-open]
       ["New Listener" fi:open-lisp-listener fi::connection-open]
-      ["Restart Common Lisp" fi:restart-common-lisp fi::connection-once-open]
       "----"
       ("Compile"
        ["top-level form" fi:lisp-compile-defun fi::connection-open]
