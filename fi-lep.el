@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 1.79.20.5 1999/08/25 17:30:57 layer Exp $
+;; $Id: fi-lep.el,v 1.79.20.6 1999/12/20 23:41:35 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -481,7 +481,7 @@ separator that causes the substring before the hyphen to be matched at the
 beginning of words in target symbols."
   (interactive)
   (let* ((end (point))
-	 package-name xpackage real-beg
+	 xpackage real-beg
 	 (beg (save-excursion
 		(backward-sexp 1)
 		(while (= (char-syntax (following-char)) ?\')
@@ -491,9 +491,8 @@ beginning of words in target symbols."
 		  (if (re-search-forward ":?:" end t)
 		      (setq xpackage
 			(concat ":"
-				(setq package-name
-				  (buffer-substring opoint
-						    (match-beginning 0)))))))
+				(buffer-substring opoint
+						  (match-beginning 0))))))
 		(point)))
 	 (pattern (format "%s" (buffer-substring beg end)))
 	 (functions-only (if (eq (char-after (1- real-beg)) ?\() t nil))
