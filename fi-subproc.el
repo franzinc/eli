@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.41 1988/07/23 12:13:42 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.42 1988/11/03 17:11:57 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -329,10 +329,6 @@ are read from the minibuffer."
 	    (concat "~/.emacs_" (file-name-nondirectory image-file))))
       (cond
 	((and start-up-feed-name (file-exists-p start-up-feed-name))
-	 ;; This is guaranteed to wait long enough
-	 ;; but has bad results if the shell or Lisp does not prompt at all
-	 ;;	     (while (= size (buffer-size))
-	 ;;	       (sleep-for 1))
 	 ;; I hope 1 second is enough!
 	 (sleep-for 1)
 	 (goto-char (point-max))
