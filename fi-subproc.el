@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.108 1991/06/19 22:16:50 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.109 1991/06/20 15:22:31 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -349,6 +349,18 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		local host directory)))
     (setq fi::common-lisp-first-time nil)
     proc))
+
+(defun fi:goto-common-lisp (arg)
+  "This interactive function is meant to be bound to a global key, so that
+getting to the *common-lisp* buffer can be done with a minimum of key
+strokes.  You can, for example, put the following form in your ~/.emacs
+file:
+
+	(define-key global-map \"\\C-xl\" 'fi:goto-common-lisp)
+
+and typing ``C-x l'' provide an easy way to start a Common Lisp and go to it."
+  (interactive "p")
+  (fi:common-lisp arg))
 
 (defun fi:open-lisp-listener (&optional buffer-number buffer-name)
   "Open a connection to an existing Common Lisp process, started with the
