@@ -1,5 +1,5 @@
 	      Franz Inc. GNU Emacs/Common Lisp Interface
-	 $Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.16 1988/05/18 14:02:02 layer Exp $
+	 $Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.17 1988/05/19 15:04:02 layer Exp $
 
 This document is a specification of the Franz Inc. GNU Emacs interface
 to Common Lisp, which is written entirely in GNU Emacs Lisp (for GNU
@@ -352,8 +352,8 @@ with the name `fi:<IMAGE>-prompt-pattern' or from the following:
 %% fi:common-lisp-prompt-pattern
 
 %% fi:subprocess-enable-superkeys
-
 %% fi:pop-to-sublisp-buffer-after-lisp-eval
+%% fi:display-buffer-function
 
    The following variables are used in TCP Common Lisp mode:
 
