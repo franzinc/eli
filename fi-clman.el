@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.26 1992/01/12 11:48:20 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.27 1992/01/16 11:09:52 layer Exp $
 
 (defvar fi::manual-directory nil)
 
@@ -124,28 +124,31 @@ buffer will be in CLMAN mode."
   (let* ((string (downcase (read-string "clman apropos: ")))
 	 (temp-buffer-show-hook 'fi::clman-temp-buffer-show)
 	 (apropos-buffer-name "*clman-apropos*"))
-    (with-output-to-temp-buffer apropos-buffer-name
-      (let ((package-name-list (fi:clman-package-nicknames))
-	    (item nil)
-	    (package nil))
-	(while package-name-list
-	  (setq package (car package-name-list))
-	  (setq lis (eval 
-		     (car (read-from-string 
-			   (concat "fi::clman-" package "-oblist")))))
-	  (let ((item nil))
-	    (while lis
-	      (setq item (car (car lis)))
-	      (if (string-match string item)
-		  (progn (prin1 (concat package ":" item))
-			 (princ "\n")))
-	      (setq lis (cdr lis))))
-	  (setq package-name-list (cdr package-name-list)))))
-      
+    (fi::clman-apropos-1 string apropos-buffer-name)
     (set-buffer apropos-buffer-name)
     (replace-string "\"" "")
     (fi:clman-mode)
     (goto-char (point-min))))
+
+(defun fi::clman-apropos-1 (string apropos-buffer-name)
+  (with-output-to-temp-buffer apropos-buffer-name
+    (let ((package-name-list (fi:clman-package-nicknames))
+	  (item nil)
+	  (lis nil)
+	  (package nil))
+      (while package-name-list
+	(setq package (car package-name-list))
+	(setq lis (eval 
+		   (car (read-from-string 
+			 (concat "fi::clman-" package "-oblist")))))
+	(let ((item nil))
+	  (while lis
+	    (setq item (car (car lis)))
+	    (if (string-match string item)
+		(progn (prin1 (concat package ":" item))
+		       (princ "\n")))
+	    (setq lis (cdr lis))))
+	(setq package-name-list (cdr package-name-list))))))
 
 (defun fi::clman-temp-buffer-show (buffer)
   (cond ((eq buffer (current-buffer))
