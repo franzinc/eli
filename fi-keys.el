@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 3.2 2004/04/29 00:16:41 layer Exp $
+;; $Id: fi-keys.el,v 3.3 2004/04/29 22:35:54 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -964,7 +964,7 @@ If they are not, position the point at the first syntax error found."
 	      (error
 	       (message "Warning: parens are not balanced in this buffer.")
 	       (ding)
-	       (sit-for 1)
+	       (sit-for 2)
 	       ;; so the file is written:
 	       nil)))
 	(condition-case nil
