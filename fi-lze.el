@@ -8,31 +8,39 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.15 1991/09/30 11:39:26 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.16 1991/10/10 14:32:01 layer Exp $
 ;;
 ;; Code the implements evaluation in via the backdoor
 
 (make-variable-buffer-local 'fi::show-compilation-status)
 (setq fi::show-compilation-status nil)
 
-(defun fi::note-background-request (message)
-  (message "%s..." message)
-  (let ((item (assq 'fi::show-compilation-status minor-mode-alist)))
-    (setq layer item)
-    (or (and item (not (string= "" (car (cdr item)))))
-	(or (and item (rplacd item (list (concat " " message))))
-	    (setq minor-mode-alist
-	      (cons (list 'fi::show-compilation-status (concat " " message))
-		    minor-mode-alist)))))
-  (setq fi::show-compilation-status
-    ;; this is so we can tell when lisp has died and been restarted:
-    (fi::connection-process fi::*connection*)))
+(defvar fi::mode-line-note-for-compile " COMPILING")
+(defvar fi::mode-line-note-for-eval " EVALUATING")
 
-(defun fi::note-background-reply (&optional message)
-  (if message (message "%s...done." message))
-  (let ((item (assq 'fi::show-compilation-status minor-mode-alist)))
-    (and item (rplacd item (list ""))))
-  (setq fi::show-compilation-status nil))
+(defun fi::note-background-request (compiling)
+  (let ((message1 (if compiling "Compiling" "Evaluating"))
+	(message (if compiling
+		     fi::mode-line-note-for-compile
+		   fi::mode-line-note-for-eval)))
+    (message "%s..." message1)
+    (let ((item (assq 'fi::show-compilation-status minor-mode-alist)))
+      (setq layer item)
+      (or (and item (not (string= "" (car (cdr item)))))
+	  (or (and item (rplacd item (list message)))
+	      (setq minor-mode-alist
+		(cons (list 'fi::show-compilation-status message)
+		      minor-mode-alist)))))
+    (setq fi::show-compilation-status
+      ;; this is so we can tell when lisp has died and been restarted:
+      (fi::connection-process fi::*connection*))))
+
+(defun fi::note-background-reply (&optional compiling)
+  (let ((message (if compiling "Compiling" "Evaluating")))
+    (if message (message "%s...done." message))
+    (let ((item (assq 'fi::show-compilation-status minor-mode-alist)))
+      (and item (rplacd item (list ""))))
+    (setq fi::show-compilation-status nil)))
 
 (defun fi::error-if-request-in-progress ()
   (and fi::show-compilation-status
@@ -42,7 +50,7 @@
 
 (defun fi::eval-region-internal (start end compilep &optional ignore-package)
   (fi::error-if-request-in-progress)
-  (fi::note-background-request (if compilep "Compiling" "Evaluating"))
+  (fi::note-background-request compilep)
   (let ((buffer (current-buffer)))
     (fi::make-request
      (lep::evaluation-request
@@ -57,7 +65,7 @@
 	(set-buffer buffer)
 	(if results
 	    (fi:show-some-text nil results)
-	  (fi::note-background-reply (if compilep "Compiling" "Evaluating")))
+	  (fi::note-background-reply compilep))
 	(if (not (eq save-buffer buffer))
 	    (set-buffer save-buffer))))
      (() (error)
