@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.69 1991/09/30 11:39:11 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.70 1991/10/01 19:32:08 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -387,89 +387,6 @@ parsed, the enclosing list is processed."
     (send-region process fi::last-input-start fi::last-input-end)
     (fi::input-ring-save fi::last-input-start (1- fi::last-input-end))
     (set-marker (process-mark process) (point))))
-
-;;;;
-;;;;
-
-(defun fi::get-symbol-at-point (&optional up-p
-;;					  packagify
-					  )
-  (let ((symbol (condition-case ()
-		    (save-excursion
-		      (if up-p
-			  (progn
-			    (if (= (following-char) ?\() (forward-char 1))
-			    (if (= (preceding-char) ?\)) (forward-char -1))
-			    (up-list -1)
-			    (forward-char 1)))
-		      (while (looking-at "\\sw\\|\\s_")
-			(forward-char 1))
-		      (if (re-search-backward "\\sw\\|\\s_" nil t)
-			  (progn (forward-char 1)
-				 (buffer-substring
-				  (point)
-				  (progn (forward-sexp -1)
-					 (while (looking-at "\\s'")
-					   (forward-char 1))
-					 (point))))
-			nil))
-		  (error nil))))
-;;    (if (and fi:package packagify (not (string-match ":?:" symbol nil)))
-;;	(format "%s::%s" fi:package symbol)
-    (or symbol
-	(if (and up-p (null symbol))
-	    (fi::get-symbol-at-point)))
-;;      )
-    ))
-
-;; This is a pretty bad hack but it appears that within completing-read
-;; fi:package has the wrong value so we bind this variable to get around
-;; the problem.
-(defvar fi::original-package nil)
-
-(defun fi::get-default-symbol (prompt &optional up-p)
-  (let* ((symbol-at-point
-	  (fi::get-symbol-at-point up-p))
-;;	 (use-package nil)
-	 (read-symbol
-	  (let ((fi::original-package fi:package))
-	    (if (fboundp 'epoch::mapraised-screen)
-		(epoch::mapraised-screen (minibuf-screen)))
-	    (completing-read
-	     (if symbol-at-point
-		 (format "%s: (default %s) " prompt symbol-at-point)
-	       (format "%s: " prompt))
-	     'fi::minibuffer-complete)))
-	 (symbol (if (string= read-symbol "")
-		     symbol-at-point
-		   read-symbol))
-	 (colonp (string-match ":?:" symbol nil)))
-;;    (if (and (not colonp) use-package fi:package)
-;;	(setq symbol (format "%s::%s" fi:package symbol)))
-    (list symbol)))
-
-(defun fi::minibuffer-complete (pattern predicate what)
-  (let ((fi:package fi::original-package))
-    (let (package deletion)
-      (if (string-match ":?:" pattern)
-	  (setq package
-	    (concat
-	     ":" (substring pattern 0 (match-beginning 0)))
-	    deletion (substring pattern 0 (match-end 0))
-	    pattern
-	    (substring pattern (match-end 0))))
-      (let* ((alist
-	      (fi::lisp-complete-1 pattern package nil))
-	     (completion (and alist (try-completion pattern alist))))
-	(ecase what
-	  ((nil)
-	   (cond ((eq completion t) t)
-		 ((and alist (null (cdr alist)))
-		  (concat deletion (car (car alist))))
-		 (t (concat deletion completion))))
-	  ((t)
-	   (mapcar (function cdr) alist))
-	  (lambda (not (not alist))))))))
 
 ;;;;;;;;;;;;;;;;;;;;; general subprocess related functions
 
