@@ -2,7 +2,7 @@
 			      User Guide
 			    Release 2.0.4
 
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.36 1993/03/23 11:07:10 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.37 1993/03/23 11:10:20 layer Exp $
 
 			     Introduction
 
@@ -1294,7 +1294,6 @@ Miscellaneous programming aids
 %% fi:clman-apropos				fi:clman-mode-map
 %% fi:clman-next-entry				fi:clman-mode-map
 %% fi:clman-displaying-buffer
-%% fi:clman-find-file
 
 ===============================================================================
 			   Emacs-Lisp mode
