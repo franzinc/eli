@@ -1,6 +1,6 @@
 ;; Emacs 18 back compatibility hacks for the Franz Inc. emacs-lisp interface
 ;;
-;; Copyright (c) 1993-1994 Franz Inc, Berkeley, Ca.
+;; Copyright (c) 1993-2001 Franz Inc, Berkeley, Ca.
 ;;
 ;; Permission is granted to any individual or institution to use, copy,
 ;; modify, and distribute this software, provided that this complete
@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-emacs18.el,v 2.3 1996/08/01 22:35:50 layer Exp $
+;; $Id: fi-emacs18.el,v 2.3.44.1 2001/06/05 19:07:11 layer Exp $
 
 (defun fi::ensure-buffer-visible (buffer)
   nil)

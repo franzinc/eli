@@ -11,6 +11,11 @@ For more detailed instructions on filling in the ChangeLog form, see
 
 2001-06-05  Kevin Layer  <layer@crikey>
 
+	* fi-modes.el: new variable fi::do-parse-mode-line-and-package,
+	which can turn off parsing package/mode line
+
+2001-06-05  Kevin Layer  <layer@crikey>
+
 	* *.el:
 	- fix copyright
 	- fix "permission to modify" to clarify intent (for the semanticly

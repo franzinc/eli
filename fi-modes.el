@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-modes.el,v 1.74.2.1 2001/06/05 16:01:44 layer Exp $
+;; $Id: fi-modes.el,v 1.74.2.2 2001/06/05 19:06:56 layer Exp $
 
 ;;;; Mode initializations
 
@@ -395,6 +395,8 @@ any other mode setup."
 package specification in the mode line.  See fi:parse-mode-line-and-package
 for more information.")
 
+(defvar fi::do-parse-mode-line-and-package t)
+
 (defun fi:parse-mode-line-and-package ()
   "Determine the current package in which the buffer is defined.
 The buffer's IN-PACKAGE form and the -*- mode line are parsed for this
@@ -405,10 +407,11 @@ package.
 When using Allegro CL 4.2 or later, the ``Readtable: '' can be used to name
 the readtable used for evaluations given to Lisp from emacs."
   (interactive)
-  (setq fi:readtable (fi::parse-mode-line "readtable"))
-  (setq fi:package
-    (fi::parse-mode-line "package" fi:default-package t
-			 'fi::parse-package-from-buffer t)))
+  (when fi::do-parse-mode-line-and-package
+    (setq fi:readtable (fi::parse-mode-line "readtable"))
+    (setq fi:package
+      (fi::parse-mode-line "package" fi:default-package t
+			   'fi::parse-package-from-buffer t))))
 
 (defun fi::parse-mode-line (key
 			    &optional default-value messagep fail-hook
