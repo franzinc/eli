@@ -9,6 +9,10 @@ For more detailed instructions on filling in the ChangeLog form, see
 ******************************************************************************
 post-release patch
 
+2001-11-13  Kevin Layer  <layer@crikey>
+
+	* fi-xemacs.el: fix for fix below
+
 2001-11-12  Kevin Layer  <layer@crikey>
 
 	* fi-basic-lep.el: bug10572: killing buffer can sometimes lead to
