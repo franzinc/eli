@@ -2,3 +2,6 @@ clman
 makeman
 clman.oblist
 test.out
+*.doc
+RefMan.n
+RefCard.n
