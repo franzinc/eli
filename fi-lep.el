@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 1.85.6.2 2001/06/14 05:40:33 layer Exp $
+;; $Id: fi-lep.el,v 1.85.6.3 2001/06/15 22:42:29 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -288,12 +288,14 @@ time."
 
 (defun fi:goto-char (file-position)
   "Given a Common Lisp file-position, which counts octets, go to the
-desired buffer position.  On Windows, this works despite the fact that
-Emacs and Common Lisp have differing views of the end of line convention.
-In Emacs, the end of line is a single character in the buffer, however it
-is often two characters in Common Lisp.  CL compiler warnings that report
-file positions are an example of this.  Note that this hack might not work
-for external formats other than the default."
+desired buffer position. This function is designed to work around the
+problem that on Windows, Emacs and Common Lisp have different views of
+the end of line convention. In Emacs, the end of line is a single
+character in the buffer. In Common Lisp on Windows, however, it is
+often two characters.  (Common Lisp compiler warnings that report file
+positions differently from what is expected illustrates the
+difference.) Note that fi:goto-char may not work for external formats
+other than the default."
   (interactive "NGoto CL file-position: ")
   (goto-char
    (if (on-ms-windows)
