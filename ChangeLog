@@ -11,6 +11,19 @@ Tests for new features:	<`no new features', `no tests for new features', or
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.pre-alpha.0
+
+Documentation changes:	none
+Tests for new features:	no tests for new features
+
+Wed Jan 15 16:54:45 1997    <layer@HOBART>
+
+	* fi-utils.el: completion doesn't try and symbol complete if there
+	is a ( at the beginning of the thing we are completing.  In this
+	case, it just adds a space to the end of the thing we are
+	completing if that is what the user typed.
+
+*******************************************************************************
 2.0.20.pre-beta.7
 
 Documentation changes:	none

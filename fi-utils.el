@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 1.60 1997/01/08 23:54:51 layer Exp $
+;; $Id: fi-utils.el,v 1.61 1997/01/16 00:58:35 layer Exp $
 
 ;;; Misc utilities
 
@@ -385,6 +385,15 @@ at the beginning of the line."
 		read-symbol))))))
 
 (defun fi::minibuffer-complete (pattern predicate what)
+  (if (string-match "^[ \t]*(" pattern)
+      ;; Don't do completion, since we have a form and we should just
+      ;; insert a space.
+      (if (= 32 last-command-char) ;; space
+	  (concat pattern " ")
+	pattern)
+    (fi::minibuffer-complete-1 pattern predicate what)))
+
+(defun fi::minibuffer-complete-1 (pattern predicate what)
 
   ;; HACK HACK HACK HACK
   ;;   ignore-keywords must be bound in the dynamic context in which this
