@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.35 1992/05/28 15:29:46 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.36 1992/08/04 15:49:38 layer Exp $
 
 ;;; Misc utilities
 
@@ -633,3 +633,15 @@ created by fi:common-lisp."
 	      (buffer-substring (point-min) (- (point-max) 1))
 	    (buffer-string)))
       nil)))
+
+(defun fi:member-equal (item list)
+  "Same as common lisp (member item list :test #'equal)."
+  (let ((ptr list)
+        (done nil)
+        (result '()))
+    (while (not (or done (atom ptr)))
+      (cond ((equal item (car ptr))
+             (setq done t)
+             (setq result ptr)))
+      (setq ptr (cdr ptr)))
+    result))
