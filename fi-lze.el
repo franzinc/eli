@@ -24,31 +24,57 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.12 1991/08/22 21:29:43 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.13 1991/09/16 14:54:53 layer Exp $
 ;;
 ;; Code the implements evaluation in via the backdoor
 
+(make-variable-buffer-local 'fi::show-compilation-status)
+(setq fi::show-compilation-status nil)
+
+(defun fi::note-background-request (message)
+  (message "%s..." message)
+  (let ((item (assq 'fi::show-compilation-status minor-mode-alist)))
+    (setq layer item)
+    (or (and item (not (string= "" (car (cdr item)))))
+	(or (and item (rplacd item (list (concat " " message))))
+	    (setq minor-mode-alist
+	      (cons (list 'fi::show-compilation-status message)
+		    minor-mode-alist)))))
+  (setq fi::show-compilation-status t))
+
+(defun fi::note-background-reply (&optional message)
+  (if message (message "%s...done." message))
+  (let ((item (assq 'fi::show-compilation-status minor-mode-alist)))
+    (and item (rplacd item (list ""))))
+  (setq fi::show-compilation-status nil))
+
+(defun fi::error-if-request-in-progress ()
+  (and fi::show-compilation-status
+       (error "A background eval/compile request is pending, please wait...")))
+
 (defun fi::eval-region-internal (start end compilep &optional ignore-package)
-  (if compilep
-      (message "Compiling...")
-    (message "Evaluating..."))
-  (fi::make-request
-   (lep::evaluation-request
-    :text (buffer-substring start end)
-    :echo fi:echo-evals-from-buffer-in-listener-p
-    :partialp (not (and (eq (max start end) (point-max))
-			(eq (min start end) (point-min))))
-    :pathname (buffer-file-name)
-    :compilep (if compilep t nil))
-   ((compilep) (results)
-    (if results
-	(fi:show-some-text nil results)
-      (if compilep
-	  (message "Compiling...done.")
-	(message "Evaluating...done."))))
-   (() (error)
-    (message "Error occurred during evaluation: %s" error))
-   ignore-package))
+  (fi::error-if-request-in-progress)
+  (fi::note-background-request (if compilep "Compiling" "Evaluating"))
+  (let ((buffer (current-buffer)))
+    (fi::make-request
+     (lep::evaluation-request
+      :text (buffer-substring start end)
+      :echo fi:echo-evals-from-buffer-in-listener-p
+      :partialp (not (and (eq (max start end) (point-max))
+			  (eq (min start end) (point-min))))
+      :pathname (buffer-file-name)
+      :compilep (if compilep t nil))
+     ((buffer compilep) (results)
+      (let ((save-buffer (current-buffer)))
+	(set-buffer buffer)
+	(if results
+	    (fi:show-some-text nil results)
+	  (fi::note-background-reply (if compilep "Compiling" "Evaluating")))
+	(if (not (eq save-buffer buffer))
+	    (set-buffer save-buffer))))
+     (() (error)
+      (message "Error occurred during evaluation: %s" error))
+     ignore-package)))
 
 (defun fi:lisp-eval-defun (compilep)
   "Send the current top-level (or nearest previous) form to the Lisp
