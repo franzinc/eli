@@ -1,4 +1,4 @@
-;;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.10 1988/03/20 16:42:51 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.11 1988/03/28 17:31:44 layer Exp $
 ;;;
 ;;; Mode initializations
 
@@ -440,50 +440,46 @@ The subprocess modes are `fi:shell-mode', `fi:inferior-lisp-mode' and
 
 (defun fi::lisp-mode-commands (map)
   (if fi:lisp-auto-semicolon-mode
-      (define-key map ";"		'fi:lisp-semicolon))
+      (progn
+	(define-key map ";"		'fi:lisp-semicolon)
+	(define-key map "\t"		'lisp-indent-line)))
   
   (define-key map "\e" (make-sparse-keymap))
   (define-key map "\C-x" (make-sparse-keymap))
   
+  (define-key map "\e\C-q"		'indent-sexp)
+  (define-key map "\C-?"		'backward-delete-char-untabify)
+  
   (cond
-    ((or (eq major-mode 'fi:common-lisp-mode)
-	 (eq major-mode 'fi:franz-lisp-mode)
-	 (eq major-mode 'fi:emacs-lisp-mode)
-	 (eq major-mode 'fi:lisp-mode))
-     
-     (define-key map "\e\C-q"		'indent-sexp)
-     (define-key map "\C-?"		'backward-delete-char-untabify)
-     (define-key map "\r"		'fi:lisp-reindent-newline-indent)
-	 
-     (if fi:lisp-auto-semicolon-mode
-	 (define-key map "\t"		'lisp-indent-line))
-     
-     (cond
-       ((eq major-mode 'fi:emacs-lisp-mode)
-	(define-key map "\e\C-x"	'eval-defun))
-	   
-       ((or (eq major-mode 'fi:common-lisp-mode)
-	    (eq major-mode 'fi:franz-lisp-mode))
-	(define-key map "\e\C-b"	'fi:eval-current-buffer)
-	(define-key map "\C-x\e" 	'fi:eval-last-sexp)
-	(define-key map "\e\C-r"	'fi:eval-region)
-	(define-key map "\e\C-x"	'fi:eval-defun)
-	    
-	(cond ((eq major-mode 'fi:common-lisp-mode)
-	       (define-key map "\e."	'fi:lisp-find-tag)
-	       (define-key map "\e,"	'fi:lisp-tags-loop-continue)
-	       (define-key map "\eA"	'fi:lisp-arglist)
-	       (define-key map "\eD"	'fi:lisp-describe)
-	       (define-key map "\eF"	'fi:lisp-function-documentation)
-	       (define-key map "\eM"	'fi:lisp-macroexpand))))))
-
-    ((or (eq major-mode 'fi:inferior-lisp-mode)
-	 (eq major-mode 'fi:tcp-lisp-mode))
+    ((memq major-mode '(fi:inferior-lisp-mode fi:tcp-lisp-mode))
      (define-key map "\r"		'fi:inferior-lisp-newline)
      (define-key map "\e\r"		'fi:inferior-lisp-send-sexp-input)
      (define-key map "\C-x"		(make-sparse-keymap))
-     (define-key map "\C-x\r"		'fi:inferior-lisp-send-list-input)
-     (define-key map "\e\C-q"		'indent-sexp)))
+     (define-key map "\C-x\r"		'fi:inferior-lisp-send-list-input))
+    (t 
+     (define-key map "\r"		'fi:lisp-reindent-newline-indent)))
+  
+  (if (eq major-mode 'fi:emacs-lisp-mode)
+      (define-key map "\e\C-x"	'eval-defun))
+  
+  (cond
+    ((memq major-mode '(fi:common-lisp-mode fi:franz-lisp-mode))
+     (define-key map "\eB"		'fi:lisp-eval-current-buffer)
+     (define-key map "\C-x\e" 		'fi:lisp-eval-last-sexp)
+     (define-key map "\e\C-r"		'fi:lisp-eval-region)
+     (define-key map "\e\C-x"		'fi:lisp-eval-defun)))
+  
+  (cond
+    ((memq major-mode '(fi:common-lisp-mode
+			fi:inferior-lisp-mode ; assume the use cl
+			fi:tcp-lisp-mode))
+     (define-key map "\e."		'fi:lisp-find-tag)
+     (define-key map "\e,"		'fi:lisp-tags-loop-continue)
+     (define-key map "\eA"		'fi:lisp-arglist)
+     (define-key map "\eD"		'fi:lisp-describe)
+     (define-key map "\eF"		'fi:lisp-function-documentation)
+     (define-key map "\eM"		'fi:lisp-macroexpand)
+     (define-key map "\eW"		'fi:lisp-walk)))
   map)
 
 (defun fi::tcp-lisp-mode-commands (map supermap)
