@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.19 1991/12/09 22:21:36 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.20 1992/01/12 11:48:39 layer Exp $
 ;;
 ;; Code the implements evaluation in via the backdoor
 
@@ -49,6 +49,123 @@
 	   fi::show-compilation-status)
        (error "A background eval/compile request is pending, please wait...")))
 
+;;;;;;;;;;;;;
+
+(defvar fi:lisp-evals-always-compile nil
+  "*If non-nil, then the fi:lisp-eval-or-compile-* functions will compile
+the form in the Lisp environment, regardless of the presence of a prefix
+argument to these functions, which is what normally determines whether a
+form is compiled.")
+
+(defun fi:lisp-eval-or-compile-defun (compilep)
+  "Send the current top-level (or nearest previous) form to the Lisp
+subprocess associated with this buffer.  A `top-level' form is one that
+starts in column 1.  With a prefix argument, the source sent to the
+subprocess is compiled."
+  (interactive "P")
+  (if (or compilep fi:lisp-evals-always-compile)
+      (fi:lisp-compile-defun)
+    (fi:lisp-eval-defun)))
+
+(defun fi:lisp-eval-or-compile-region (compilep)
+  "Send the text in the region to the Lisp subprocess associated with this
+buffer, one expression at a time if there is more than one complete
+expression.  With a prefix argument, the source sent to the subprocess is
+compiled."
+  (interactive "P")
+  (if (or compilep fi:lisp-evals-always-compile)
+      (fi:lisp-compile-region)
+    (fi:lisp-eval-region)))
+
+(defun fi:lisp-eval-or-compile-last-sexp (compilep)
+  "Send the sexp before the point to the Lisp subprocess associated with
+this buffer.  With a prefix argument, the source sent to the subprocess is
+compiled."
+  (interactive "P")
+  (if (or compilep fi:lisp-evals-always-compile)
+      (fi:lisp-compile-last-sexp)
+    (fi:lisp-eval-last-sexp)))
+
+(defun fi:lisp-eval-or-compile-current-buffer (compilep)
+  "Send the entire buffer to the Lisp subprocess associated with this
+buffer."
+  (interactive "P")
+  (if (or compilep fi:lisp-evals-always-compile)
+      (fi:lisp-compile-current-buffer)
+    (fi:lisp-eval-current-buffer)))
+
+;;;;;;;;;;
+
+(defun fi:lisp-eval-defun ()
+  "Send for evaluation the current top-level (or nearest previous) form to
+the Lisp subprocess associated with this buffer.  A `top-level' form is one
+that starts in column 1."
+  (interactive)
+  (let* ((end (save-excursion (end-of-defun) (point)))
+	 (start (save-excursion
+		  (fi:beginning-of-defun)
+		  (point))))
+    (fi::eval-region-internal start end nil)))
+
+(defun fi:lisp-compile-defun ()
+  "Send for compilation the current top-level (or nearest previous) form to
+the Lisp subprocess associated with this buffer.  A `top-level' form is one
+that starts in column 1."
+  (interactive)
+  (let* ((end (save-excursion (end-of-defun) (point)))
+	 (start (save-excursion
+		  (fi:beginning-of-defun)
+		  (point))))
+    (fi::eval-region-internal start end t)))
+
+(defun fi:lisp-eval-region ()
+  "Send for evaluation the region to the Lisp subprocess associated with
+this buffer."
+  (interactive)
+  (fi::eval-region-internal (min (point) (mark))
+			    (max (point) (mark))
+			    nil))
+
+(defun fi:lisp-compile-region ()
+  "Send for compilation the region to the Lisp subprocess associated with
+this buffer."
+  (interactive)
+  (fi::eval-region-internal (min (point) (mark))
+			    (max (point) (mark))
+			    t))
+
+(defun fi:lisp-eval-last-sexp ()
+  "Send for evaluation the sexp before the point to the Lisp subprocess
+associated with this buffer."
+  (interactive)
+  (let ((start (save-excursion
+		 (forward-sexp -1)
+		 (point))))
+    (fi::eval-region-internal start (point) nil)))
+
+(defun fi:lisp-compile-last-sexp ()
+  "Send for compilation the sexp before the point to the Lisp subprocess
+associated with this buffer."
+  (interactive)
+  (let ((start (save-excursion
+		 (forward-sexp -1)
+		 (point))))
+    (fi::eval-region-internal start (point) t)))
+
+(defun fi:lisp-eval-current-buffer ()
+  "Send for evaluation the entire buffer to the Lisp subprocess associated
+with this buffer."
+  (interactive)
+  (fi::eval-region-internal (point-min) (point-max) nil t))
+
+(defun fi:lisp-compile-current-buffer ()
+  "Send for compilation the entire buffer to the Lisp subprocess associated
+with this buffer."
+  (interactive)
+  (fi::eval-region-internal (point-min) (point-max) t t))
+
+;;;;;;;;;;;;;
+
 (defun fi::eval-region-internal (start end compilep &optional ignore-package)
   (fi::error-if-request-in-progress)
   (fi::note-background-request compilep)
@@ -75,42 +192,3 @@
 		   (if compilep "compile" "eval")
 		   error)))
       ignore-package)))
-
-(defun fi:lisp-eval-defun (compilep)
-  "Send the current top-level (or nearest previous) form to the Lisp
-subprocess associated with this buffer.  A `top-level' form is one that
-starts in column 1.  With a prefix argument, the source sent to the
-subprocess is compiled."
-  (interactive "P")
-  (let* ((end (save-excursion (end-of-defun) (point)))
-	 (start (save-excursion
-		  (fi:beginning-of-defun)
-		  (point))))
-    (fi::eval-region-internal start end compilep)))
-
-(defun fi:lisp-eval-region (compilep)
-  "Send the text in the region to the Lisp subprocess associated with this
-buffer, one expression at a time if there is more than one complete
-expression.  With a prefix argument, the source sent to the subprocess is
-compiled."
-  (interactive "P")
-  (fi::eval-region-internal (min (point) (mark))
-			     (max (point) (mark))
-			     compilep))
-
-(defun fi:lisp-eval-last-sexp (compilep)
-  "Send the sexp before the point to the Lisp subprocess associated with
-this buffer.  With a prefix argument, the source sent to the subprocess is
-compiled."
-  (interactive "P")
-  (let ((start (save-excursion
-		 (forward-sexp -1)
-		 (point))))
-    (fi::eval-region-internal start (point)
-			       compilep)))
-
-(defun fi:lisp-eval-current-buffer (compilep)
-  "Send the entire buffer to the Lisp subprocess associated with this
-buffer."
-  (interactive "P")
-  (fi::eval-region-internal (point-min) (point-max) compilep t))
