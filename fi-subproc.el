@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 3.7.2.2 2004/07/06 22:21:18 layer Exp $
+;; $Id: fi-subproc.el,v 3.7.2.3 2004/08/05 21:00:05 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -323,6 +323,8 @@ process-connection-type (q.v.).")
 in seconds, that Emacs will wait for Lisp to startup, when no connection
 can be made in fi:common-lisp.")
 
+(defvar fi::common-lisp-compatibility-mode-timeout 1)
+
 (defvar fi:common-lisp-subprocess-wait-forever nil
   "*This variable only has an effect on Windows.  If the value is non-nil,
 then wait forever for the Lisp to startup.  Use with caution.  The
@@ -331,10 +333,11 @@ keyboard-quit function will interrupt the waiting, however.")
 (defvar minibuffer-confirm-incomplete)
 
 (defvar fi::set-emacs-mule-terminal-io
-    "(let ((*load-verbose* nil))
+    "(when (not (featurep :allegro-cl-trial))
+       (let ((*load-verbose* nil))
         (princ \";; Setting (stream-external-format *terminal-io*) to :emacs-mule.\")
         (setf (stream-external-format *terminal-io*) :emacs-mule)
-        (values))"
+        (values)))"
     "*The initial input sent to a Lisp listener in order to set its 
 *terminal-io* stream-external-format to :emacs-mule.")
 
@@ -514,7 +517,8 @@ be a string. Use the 6th argument for image file."))
 		       (fi::socket-start-lisp fi::cl-process-name
 					      executable-image-name
 					      real-args))))
-		(sleep-for 1) ;; wait for process to start
+		;; wait for process to start
+		(sleep-for fi::common-lisp-compatibility-mode-timeout)
 		(if (and fi:eli-compatibility-mode
 			 (fi::eli-compat-mode-p 9666))
 		    ;; A Lisp running an older version of eli was detected,
@@ -768,20 +772,15 @@ be a string. Use the 6th argument for image file."))
 ;;;; new style:
 	(win32-start-process-show-window t)
 	(w32-start-process-show-window t)
-	(win32-quote-process-args nil)
-	;; must be nil now, because emacs does weird things with double
-	;; quotes.  See bug14313 for more info.
-	(w32-quote-process-args nil)
+	(win32-quote-process-args t)
+	(w32-quote-process-args t)
 	;; from Greg Klanderman:
 	;; XEmacs 21 NT does this differently...
 	(nt-quote-args-functions-alist '(("." . nt-quote-args-double-quote))))
     (apply (function start-process)
 	   process-name
 	   nil ;; no buffer name
-	   image
-	   (if (on-ms-windows)
-	       (mapcar 'shell-quote-argument arguments)
-	     arguments))))
+	   image arguments)))
 
 (defun fi:open-lisp-listener (&optional buffer-number buffer-name
 					setup-function)
