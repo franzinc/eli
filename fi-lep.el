@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.28 1991/05/28 16:18:20 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.29 1991/06/19 22:17:47 layer Exp $
 ;;
 
 (defvar fi:always-in-a-window nil)
@@ -33,6 +33,7 @@
   (when args (setq text (apply (function format) text args)))
   (let ((n (string-match "\n$" text)))
     (when n (setq text (substring text 0 n))))
+  (fi:lisp-push-window-configuration)
   (if fi:always-in-a-window
       (fi::show-some-text-1 text (or package fi:package))
     (let* ((window (minibuffer-window))
@@ -44,7 +45,7 @@
 	   (lines/len (fi::frob-string text-try)))
       (if (and (< (car lines/len) 2)
 	       (<= (second lines/len) width))
-	  (message text-try)
+	  (message "%s" text-try)
 	(fi::show-some-text-1
 	 (cond (fi:package (format "[package: %s]\n%s" fi:package text))
 	       (t text))
@@ -143,7 +144,7 @@ time."
 		;; Normal continuation
 		(() (what arglist)
 		 (fi:show-some-text nil
-				    "The arglist of %s is %s"
+				    "%s's arglist: %s"
 				    what arglist))
 		;; Error continuation
 		((string) (error)
@@ -170,95 +171,100 @@ time."
 		((string) (error)
 		 (message "error during apropos of %s: %s" string error))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Metadot implementation
 
-(defvar lep:*meta-dot-session* nil)
-(defvar *meta-dot-string* nil)
+(defvar lep::meta-dot-session nil)
+(defvar lep::meta-dot-string nil)
+(defvar lep::meta-dot-what nil)
+(defvar lep::meta-dot-from-fspec nil)
 
-;; Both of these should take a next argument but what does it do?
-
-(defun fi:lisp-find-tag (tag &optional next)
+(defun fi:lisp-find-definition (tag &optional next)
   "Find TAG using information in the Common Lisp environment, in the current
 window.  With prefix arg NEXT, find the next occurance of the last tag.
 fi:package is used to determine from which Common Lisp package the
 operation is done.  In a subprocess buffer, the package is tracked
 automatically.  In source buffer, the package is parsed at file visit
 time."
-  (interactive (if current-prefix-arg
-		   '(nil t)
-		 (list (car (fi::get-default-symbol "Lisp locate source"))
-		       nil)))
-  (fi::lisp-find-tag-common tag next nil))
+  (interactive
+   (if current-prefix-arg
+       '(nil t)
+     (list (car (fi::get-default-symbol "Lisp locate source"))
+	   nil)))
+  (if next
+      (fi:lisp-find-next-definition)
+    (fi::lisp-find-definition-common tag nil)))
 
 
-(defun fi:lisp-find-tag-other-window (tag &optional next)
+(defun fi:lisp-find-definition-other-window (tag &optional next)
   "Find TAG in the other window using information in the Common Lisp
 environment, in the current window.  With prefix arg NEXT, find the next
 occurance of the last tag. fi:package is used to determine from which
 Common Lisp package the operation is done. In a subprocess buffer, the
 package is tracked automatically.  In source buffer, the package is parsed
 at file visit time."
-  (interactive (if current-prefix-arg
-		   '(nil t)
-		 (list (car (fi::get-default-symbol "Lisp locate source"))
-		       nil)))
-  (fi::lisp-find-tag-common tag next t))
+  (interactive
+   (if current-prefix-arg
+       '(nil t)
+     (list (car (fi::get-default-symbol "Lisp locate source other window"))
+	   nil)))
+  (if next
+      (fi:lisp-find-next-definition)
+    (fi::lisp-find-definition-common tag t)))
 
-(defun fi::delete-metadot-session ()
-  (if lep:*meta-dot-session* (lep::kill-session lep:*meta-dot-session*))
-  (setq lep:*meta-dot-session* nil))
+(defun fi::lisp-find-definition-common (something other-window-p
+				 &optional what from-fspec)
+  (when (not (fi::lep-open-connection-p))
+    (error "connection to ACL is down--can't find tag"))
+  (setq lep::meta-dot-string something)
+  (setq lep::meta-dot-what (or what "definition"))
+  (setq lep::meta-dot-from-fspec from-fspec)
+  (fi::delete-metadot-session)
 
-(defun fi::lisp-find-tag-common (something next other-window-p &optional type)
-  (message "Finding definition...")
-  (setq  *meta-dot-string* something)
-  (if (fi::lep-open-connection-p)
-      (progn
-	(fi::delete-metadot-session)
-	(setq lep:*meta-dot-session*
-	  (make-complex-request 
-	   (scm::metadot-session :package (fi::string-to-keyword fi:package)
-				 :type (or type t)
-				 :fspec something)
-	   ((something other-window-p) (pathname point n-more)
-	    (fi::show-found-definition (if (symbolp something)
-				       (symbol-name something)
-				     something)
-				   pathname point n-more other-window-p))
-	   ((something other-window-p) (error)
-	    (fi::delete-metadot-session)
-	    (fi::find-definition-using-find-tag (if (symbolp something)
-						(symbol-name something)
-					      something)
-					    other-window-p error)))))
-    (progn
-      (setq lep:*meta-dot-session* nil)
-      (fi::find-definition-using-find-tag something other-window-p))))
+  (message "Finding %s..." lep::meta-dot-what)
+  (setq lep::meta-dot-session
+    (make-complex-request 
+     (scm::metadot-session :package (fi::string-to-keyword fi:package)
+			   :type t	; used to be (or type t), but
+					; `type' is not bound in this
+					; context
+			   :fspec something)
+     ((something other-window-p what from-fspec)
+      (pathname point n-more)
+      (fi::show-found-definition (if (symbolp something)
+				     (symbol-name something)
+				   something)
+				 pathname point n-more other-window-p))
+     (() (error)
+      (fi::delete-metadot-session)
+      (message "%s" error)
+      ))))
 
-(defun fi:lisp-tags-loop-continue (&optional first-time)
-  "Continue last tags search, started by fi:lisp-find-tag.  With
-prefix arg FIRST-TIME, begin such a command, if the Emacs tags mechanism is
-used.  fi:package is used to determine from which Common Lisp package the
+(defun fi:lisp-find-next-definition ()
+  "Continue last tags search, started by fi:lisp-find-definition.
+fi:package is used to determine from which Common Lisp package the
 operation is done.  In a subprocess buffer, the package is tracked
 automatically.  In source buffer, the package is parsed at file visit
 time."
-  (interactive "P")
-  (message "Finding next definition...")
-  (if (or tags-loop-form (not lep:*meta-dot-session*))
-      (progn
-	(when lep:*meta-dot-session*
-	  (fi::delete-metadot-session))
-	(tags-loop-continue first-time))
-    (fi::make-request-in-existing-session 
-     lep:*meta-dot-session*
-     (:next)
-     (() (pathname point n-more)
-      (fi::show-found-definition *meta-dot-string* pathname point n-more))
-     (() (error)
-      (fi::delete-metadot-session)
-      (fi::find-definition-using-find-tag *meta-dot-string* error)))))
+  (interactive)
+  (message "Finding next %s..." lep::meta-dot-what)
+  (if (not lep::meta-dot-session) (error "No more definitions"))
+  (fi::make-request-in-existing-session 
+   lep::meta-dot-session
+   (:next)
+   (() (pathname point n-more)
+    (fi::show-found-definition lep::meta-dot-string pathname point n-more))
+   (() (error)
+    (fi::delete-metadot-session)
+    (message "%s" error)		; lep::meta-dot-string???
+    )))
+
+(defun fi::delete-metadot-session ()
+  (if lep::meta-dot-session (lep::kill-session lep::meta-dot-session))
+  (setq lep::meta-dot-session nil))
 
 (defun fi::show-found-definition (thing pathname point n-more
-			      &optional other-window-p)
+				  &optional other-window-p)
   (if pathname
       (if (eq pathname ':top-level)
 	  (message
@@ -270,77 +276,50 @@ time."
 	      (setq pathname (funcall fi:filename-frobber-hook pathname)))
 	  ;;
 	  (setq xb (get-file-buffer pathname))
-	  (if (or other-window-p
-		  fi:subprocess-mode
-		  ;; Perhaps there is already a window for this file
-		  )
+	  (if other-window-p
 	      (find-file-other-window pathname)
 	    (find-file pathname))
 	  (if xb (set-mark (point)))
 	  (if (null point)
 	      (progn
 		(setq mess
-		  (format "The definition of %s is somewhere in this file! : "
+		  (format "The definition of %s is somewhere in this file! "
 			  thing))
 		(beginning-of-buffer))
 	    (progn
 	      (goto-char (1+ point))
 	      (if (not xb) (set-mark (point)))))
 	  (cond ((eq n-more 0)
-		 (message (concat mess "No more definitions of %s") thing))
+		 (if lep::meta-dot-from-fspec
+		     (message (concat mess "%ss of %s")
+			      lep::meta-dot-what lep::meta-dot-from-fspec)
+		   (message (concat mess "No more %ss of %s")
+			    lep::meta-dot-what thing)))
 		(n-more
-		 (message (concat mess "%d more definitions of %s")
-			  n-more thing)))))
+ 		 (message (concat mess "%d more %ss of %s")
+			  n-more
+			  lep::meta-dot-what
+			  (or lep::meta-dot-from-fspec thing))))))
     (message "cannot find file for %s" point)))
 
-
-;;; When we have no success with asking the lisp start using the tags mechanism
-;;;; We need to strip of the package prefix here
-
-(defun fi::find-definition-using-find-tag (tag other-window-p &optional error)
-  (if error 
-      (if fi:source-info-not-found-hook
-	  (condition-case nil
-	      (fi::find-definition-using-find-tag-1 tag other-window-p)
-	    (error (message "The source location of `%s' is unknown: %s"
-			    tag error)))
-	(message "Cannot find the definition of %s: %s" tag error))
-    (if fi:source-info-not-found-hook
-	(fi::find-definition-using-find-tag-1 tag other-window-p)
-      (message "Cannot find the definition of %s" tag))))
-
-(defun fi::find-definition-using-find-tag-1 (tag other-window-p)
-  (let* ((tag (if (not (stringp tag))
-		  (prin1-to-string tag)
-		tag))
-	 (colonp (string-match ":?:" tag nil))
-	 (sym (fi::frob-case-to-lisp
-	       (if colonp
-		   (substring tag (match-end 0))
-		 tag))))
-    (funcall fi:source-info-not-found-hook sym other-window-p)))
 
 
 ;; We need to get hold of something
 
 (defun scm::make-and-initialize-metadot-session (something)
   "Put the session into the waiting state"
-  (if lep:*meta-dot-session* (lep::kill-session lep:*meta-dot-session*))
-  (setq lep:*meta-dot-session* session)
-  (setq  *meta-dot-string* something)
+  (if lep::meta-dot-session (lep::kill-session lep::meta-dot-session))
+  (setq lep::meta-dot-session session)
+  (setq  lep::meta-dot-string something)
   (fi::modify-session-continuation
    session
    (list (function (lambda (pathname point n-more)
-		     (fi::show-found-definition *meta-dot-string*
-					    pathname point n-more))))
+		     (fi::show-found-definition lep::meta-dot-string
+						pathname point n-more))))
    (list (function (lambda (error something)
-		     (setq lep:*meta-dot-session* nil)
-		     (fi::find-definition-using-find-tag
-		      (if (symbolp something)
-			  (symbol-name something)
-			something)
-		      error)))
-	 *meta-dot-string*)))
+		     (setq lep::meta-dot-session nil)
+		     (message "%s: %s" something error)))
+	 lep::meta-dot-string)))
 
 (defun scm::return-buffer-status (pathname write-if-modified)
   "This returns information about the status of the buffer: whether it
@@ -472,9 +451,17 @@ visit time."
 	  (fi::lisp-complete-1 pattern package functions-only))
 	 (completion (if alist (try-completion pattern alist))))
     (cond ((eq completion t))
-	  ((null completion)
+	  ((and (null completion) (null alist))
 	   (message "Can't find completion for \"%s\"" pattern)
 	   (ding))
+	  ((and (null completion) alist (null (cdr alist)))
+	   (delete-region beg end)
+	   (insert (car (car alist))))
+	  ((and (null completion) alist)
+	   (message "Making completion list...")
+	   (with-output-to-temp-buffer "*Help*"
+	     (display-completion-list (mapcar 'car alist)))
+	   (message "Making completion list...done"))
 	  ((not (string= pattern completion))
 	   (let ((new (cdr (assoc completion alist))))
 	     (if new
@@ -531,6 +518,7 @@ visit time."
 
 (defun lep::display-string-in-buffer (string buffer)
   "Display a string in buffer"
+  (fi:lisp-push-window-configuration)
   (switch-to-buffer (get-buffer-create buffer))
   (erase-buffer)
   (insert string))
@@ -615,7 +603,7 @@ the package is parsed at file visit time."
 			      (insert "\n"))))
 		 (message "Killing definition...done."))
 		(() (error)
-		 (message "Cannot undefine current definition %s"  error))))
+		 (message "Cannot kill current definition %s" error))))
 
 
 (defun fi:toggle-trace-definition (string)
@@ -655,7 +643,8 @@ visit time."
   (message "Finding callers of %s..." fspec)
   (lep::list-fspecs-common fspec
 			   'lep::who-calls
-			   "Cannot find the callers: %s"))
+			   "Cannot find the callers: %s"
+			   "caller"))
 
 (defun fi:list-who-is-called-by (fspec)
   "List all the functions called by FSPEC.  `List' means to show them in a
@@ -669,7 +658,8 @@ at file visit time."
   (message "Finding who is called by %s..." fspec)
   (lep::list-fspecs-common fspec
 			   'lep::who-is-called-by
-			   "Cannot find who is called by: %s"))
+			   "Cannot find who is called by: %s"
+			   "callee"))
 
 (defun fi:list-generic-function-methods (&optional fspec)
   "List all the generic function methods of FSPEC.  `List' means to show
@@ -684,57 +674,64 @@ package is parsed at file visit time."
   (message "Finding generic function methods of %s..." fspec)
   (lep::list-fspecs-common fspec
 			   'scm::generic-function-methods-function-specs
-			   "Cannot find the generic function methods: %s"))
+			   "Cannot find the generic function methods: %s"
+			   "generic function method"))
 
 
 (defun fi:edit-who-calls (fspec)
   "Edit all the callers of the function named by FSPEC.
-Use ``\\<fi:common-lisp-mode-map>\\[fi:lisp-tags-loop-continue]'' to find the next definition, if there is one."
+Use ``\\<fi:common-lisp-mode-map>\\[fi:lisp-find-next-definition]'' to find the next definition, if there is one."
   (interactive (fi::get-default-symbol "Edit who calls"))
   (message "Editing callers...")
-  (lep::edit-somethings fspec 'lep::who-calls))
+  (lep::edit-somethings fspec 'lep::who-calls nil "caller"))
 
 (defun fi:edit-who-is-called-by (fspec)
   "Edit all functions called by FSPEC.
-Use ``\\<fi:common-lisp-mode-map>\\[fi:lisp-tags-loop-continue]'' to find the next definition, if there is one."
+Use ``\\<fi:common-lisp-mode-map>\\[fi:lisp-find-next-definition]'' to find the next definition, if there is one."
   (interactive (fi::get-default-symbol "Edit who is called by"))
   (message "Editing callees...")
-  (lep::edit-somethings fspec 'lep::who-is-called-by))
+  (lep::edit-somethings fspec 'lep::who-is-called-by nil "callee"))
 
 (defun fi:edit-generic-function-methods (fspec)
   "Edit all the methods of the generic function named by FSPEC.
-Use ``\\<fi:common-lisp-mode-map>\\[fi:lisp-tags-loop-continue]'' to find the next definition, if there is one."
+Use ``\\<fi:common-lisp-mode-map>\\[fi:lisp-find-next-definition]'' to find the next definition, if there is one."
   (interactive (fi::get-default-symbol "Edit generic function methods of"))
   (message "Editing generic function methods...")
   (lep::edit-somethings fspec
-			'scm::generic-function-methods-function-specs))
+			'scm::generic-function-methods-function-specs
+			nil
+			"generic function method"))
 
 
-(defun lep::list-fspecs-common (fspec function msg)
+(defun lep::list-fspecs-common (fspec function msg &optional what)
   (make-request (lep::list-fspecs-session
 		 :function function :fspec (fi::frob-case-to-lisp fspec))
-		((fspec fi:package) (the-definitions)
+		((fspec fi:package what) (the-definitions)
 		 (lep:display-some-definitions fi:package
 					       the-definitions
-					       (list 'lep::find-a-definition)))
+					       (list 'lep::find-a-definition
+						     what
+						     fspec)))
 		((msg) (error)
 		 (message msg error))))
 
-(defun lep::find-a-definition (string type list-buffer)
-  (fi::lisp-find-tag-common string nil t type))
+(defun lep::find-a-definition (string type list-buffer what from-fspec)
+  (fi::lisp-find-definition-common string t what from-fspec))
 
-(defun lep::edit-somethings (fspec generator &optional other-window-p)
-  (if lep:*meta-dot-session* (lep::kill-session lep:*meta-dot-session*))
-  (setq lep:*meta-dot-session*
+(defun lep::edit-somethings (fspec generator &optional other-window-p what)
+  (if lep::meta-dot-session (lep::kill-session lep::meta-dot-session))
+  (setq lep::meta-dot-session
     (make-complex-request
      (scm::edit-sequence-session :generator generator
 				 :package (fi::string-to-keyword fi:package)
 				 :fspec fspec)
-     ((other-window-p fspec) (pathname point n-more)
+     ((other-window-p fspec what) (pathname point n-more)
+      (setq lep::meta-dot-what (or what "definition"))
+      (setq lep::meta-dot-from-fspec fspec)
       (fi::show-found-definition fspec pathname point n-more other-window-p))
      ((fspec) (error)
       (fi::delete-metadot-session)
-      (error "Cannot edit sequence %s: %s" fspec error)))))
+      (error "Cannot edit %s: %s" fspec error)))))
 
 ;;; describing something
 
@@ -810,6 +807,11 @@ time."
 environment."
   (interactive "fFile to compile and load:")
   (fi::compile-or-load-file file ':compile-and-load))
+
+(defun fi:load-file (file)
+  "Load FILE into the Lisp environment."
+  (interactive "fFile to load:")
+  (fi::compile-or-load-file file ':load))
 
 (defun fi::compile-or-load-file (file operation)
   (make-request (lep::compile/load-file-request :pathname file
