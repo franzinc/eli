@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.3 1991/01/29 19:44:20 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.4 1991/02/12 17:17:44 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -57,6 +57,16 @@
 	   lep::*connection*)
       (try-and-start-lep-connection)
       (error "no connection")))
+
+;;; Start up a connection as soon as we know where to connect to.
+
+
+(if (boundp 'fi::frammis-hook)
+    (push 'auto-ensure-lep-connection fi::frammis-hook))
+
+(defun auto-ensure-lep-connection ()
+  (message "Trying to start connection ...")
+  (ensure-lep-connection))
 
 (defun try-and-start-lep-connection ()
   (let ((buffer (process-buffer (progn
