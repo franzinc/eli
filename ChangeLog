@@ -7,6 +7,16 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 ******************************************************************************
+2.2.5
+
+2001-09-10  Kevin Layer  <layer@crikey>
+
+    from smh:
+	* fi-modes.el (fi::find-tag-common-lisp): raise the intelligence
+	of the default tag in find-tag by removing explicit package
+	qualifiers.
+
+******************************************************************************
 2.2.4
 
 2001-08-23  Kevin Layer  <layer@crikey>

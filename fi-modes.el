@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-modes.el,v 1.74.2.2 2001/06/05 19:06:56 layer Exp $
+;; $Id: fi-modes.el,v 1.74.2.2.2.1 2001/09/10 21:01:05 layer Exp $
 
 ;;;; Mode initializations
 
@@ -500,6 +500,20 @@ the readtable used for evaluations given to Lisp from emacs."
 		     name)))
 		((stringp p) p)))))
     value))
+
+(defun fi::find-tag-common-lisp ()
+  ;; This raises the intelligence of the default tag in find-tag by
+  ;; removing explicit package qualifiers, rarely found in the target
+  ;; source file.  See find-tag-tag in lisp/progmodes/etags.el for
+  ;; the defaulting mechanism.  From smh, 8/14/2000.
+  (let ((default (find-tag-default)))
+    (when default
+      (let ((n (position ?: default :from-end t)))
+	(if n
+	    (subseq default (1+ n))
+	  default)))))
+
+(put 'fi:common-lisp-mode 'find-tag-default-function 'fi::find-tag-common-lisp)
 
 ;;;;
 ;;; Initializations
