@@ -22,6 +22,16 @@ Mon Jan 27 10:53:11 1997  Kevin Layer  <layer@ultra>
 	appropriately on Windows
 
 *******************************************************************************
+2.0.21.pre-alpha.5
+
+Documentation changes:	none
+Tests for new features:	no new features
+
+Thu Jan 30 11:03:29 1997  Kevin Layer  <layer@ultra>
+
+	* fi-utils.el: add if* macro from jkf
+
+*******************************************************************************
 2.0.21.pre-alpha.3
 
 Documentation changes:	none

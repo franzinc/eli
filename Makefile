@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.127 1996/12/04 21:57:37 layer Exp $
+# $Id: Makefile,v 1.128 1997/01/30 19:04:16 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -183,7 +183,7 @@ FILES_TO_RDIST = ChangeLog fi-*.el fi-*.elc \
 
 rdist:
 	rm -fr DIST
-	${rdist} -wqc $(FILES_TO_RDIST) "`hostname`:`pwd`/DIST"
+	${rdist} -hwqc $(FILES_TO_RDIST) "`hostname`:`pwd`/DIST"
 	(cd DIST; ${rdist} -Rc . "{`echo ${hosts} | sed 's/ /,/g'`}:$(to)")
 	for h in ${hosts}; do \
 		echo making clman on $$h; \
