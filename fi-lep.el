@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.12 1991/02/27 13:31:00 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.13 1991/02/28 23:05:52 layer Exp $
 ;;
 
 (defvar fi:always-in-a-window nil)
@@ -47,7 +47,7 @@
 	  (message text)
 	(fi::show-some-text-1 text (or package fi:package))))))
 
-(defun fi::show-some-text-1 (text package)
+(defun fi::show-some-text-1 (text package &optional hook &rest args)
   "Display TEXT in a temporary buffer putting that buffer setting that
 buffers package to the package of PACKAGE."
   (let* ((from-window (selected-window))
@@ -102,6 +102,8 @@ buffers package to the package of PACKAGE."
 	  (if (> target-size (window-height))
 	      (enlarge-window (- target-size (window-height) -1))))))
     
+    (when hook (apply hook args))
+    
     (bury-buffer buffer)
     (select-window (or real-from-window from-window))))
 
@@ -139,7 +141,20 @@ buffers package to the package of PACKAGE."
 		((string) (error)
 		 (message "Cannot get the arglist of %s: %s" string error))))
 
-    
+
+
+(defun fi:lisp-apropos (string &optional regexp)
+  (interactive
+   (list (car (fi::get-default-symbol
+	       (if current-prefix-arg "Apropos (regexp)" "Apropos")))
+	 (if current-prefix-arg t nil)))
+  (make-request (lep::apropos-session :string string :regexp regexp)
+		;; Normal continuation
+		(() (text)
+		 (fi:show-some-text nil text))
+		;; Error continuation
+		((string) (error)
+		 (message "error during apropos of %s: %s" string error))))
 
 ;;; Metadot implementation
 
@@ -166,12 +181,10 @@ buffers package to the package of PACKAGE."
   (if lep:*meta-dot-session* (lep::kill-session lep:*meta-dot-session*))
   (setq lep:*meta-dot-session* nil))
 
-(defun fi::lisp-find-tag-common (something  next other-window-p)
-  (message "Finding definition ...")
+(defun fi::lisp-find-tag-common (something next other-window-p)
+  (message "Finding definition...")
   (setq  *meta-dot-string* something)
-  (if (condition-case nil
-	  (progn (ensure-lep-connection) t)
-	(error nil))
+  (if (lep::lep-open-connection-p)
       (progn
 	(delete-metadot-session)
 	(setq lep:*meta-dot-session*
@@ -193,18 +206,21 @@ buffers package to the package of PACKAGE."
       (setq lep:*meta-dot-session* nil)
       (find-definition-using-find-tag something other-window-p))))
 
-(defun fi:lisp-tags-loop-continue ()
-  (interactive)
-  (if  lep:*meta-dot-session*
-      (make-request-in-existing-session 
-       lep:*meta-dot-session*
-       (:next)
-       (() (pathname point n-more)
-	(show-found-definition  *meta-dot-string* pathname point n-more))
-       (() (error)
-	(delete-metadot-session)
-	(find-definition-using-find-tag *meta-dot-string* error)))
-    (find-next-definition-using-find-tag)))
+(defun fi:lisp-tags-loop-continue (&optional first-time)
+  (interactive "P")
+  (if (or tags-loop-form (not lep:*meta-dot-session*))
+      (progn
+	(when lep:*meta-dot-session*
+	  (delete-metadot-session))
+	(tags-loop-continue first-time))
+    (make-request-in-existing-session 
+     lep:*meta-dot-session*
+     (:next)
+     (() (pathname point n-more)
+      (show-found-definition  *meta-dot-string* pathname point n-more))
+     (() (error)
+      (delete-metadot-session)
+      (find-definition-using-find-tag *meta-dot-string* error)))))
 
 (defun show-found-definition (thing pathname point n-more
 			      &optional other-window-p)
@@ -253,7 +269,6 @@ buffers package to the package of PACKAGE."
       (message "Cannot find the definition of %s" tag))))
 
 (defun find-definition-using-find-tag-1 (tag other-window-p)
-  
   (let* ((tag (if (not (stringp tag))
 		  (prin1-to-string tag)
 		tag))
@@ -263,9 +278,6 @@ buffers package to the package of PACKAGE."
 		   (substring tag (match-end 0))
 		 tag))))
     (funcall fi:source-info-not-found-hook sym)))
-
-(defun find-next-definition-using-find-tag ()
-  (tags-loop-continue))
 
 
 ;; We need to get hold of something
@@ -400,7 +412,7 @@ the point is used as the default."
   (interactive)
   (fi::lisp-macroexpand-common 'lisp:macroexpand "macroexpand"))
 
-(defun fi:lisp-walk (arg)
+(defun fi:lisp-macroexpand-recursively (arg)
   "Print the full macroexpansion the form at the point.
 With a prefix argument, macroexpand the code as the compiler would."
   (interactive "P")
@@ -503,7 +515,7 @@ function defintions are considered.  Otherwise all symbols are considered."
 from the sexp around the point."
   (interactive (fi::get-default-symbol "Find references to symbol"))
   ;; Since this takes a while, tell the user that it has started.
-  (message "finding callers of %s..." symbol)
+  (message "Finding callers of %s..." symbol)
   (list-fspecs-common symbol 'lep::who-calls "Cannot find the callers: %s"))
 
 (defun list-fspecs-common (symbol function msg)
