@@ -1,3 +1,8 @@
+Wed Aug  7 15:00:13 1996  Kevin Layer  <layer@freezer>
+
+	* fi-modes.el: handle the # in (in-package #:foo), which
+	previously caused the mode hooks, etc, not to be run.
+
 Thu Aug  1 21:38:59 1996  Kevin Layer  <layer@freezer>
 
 	* fi-subproc.el: fix bug introduced while reducing the number of

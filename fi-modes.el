@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-modes.el,v 1.66 1996/06/21 17:48:41 layer Exp $
+;; $Id: fi-modes.el,v 1.67 1996/08/07 22:01:07 layer Exp $
 
 ;;;; Mode initializations
 
@@ -453,7 +453,7 @@ the readtable used for evaluations given to Lisp from emacs."
 
 (defun fi::parse-package-from-buffer ()
   (goto-char (point-min))
-  (let ((pos (re-search-forward "^(in-package[\t ]*" nil t))
+  (let ((pos (re-search-forward "^(in-package[\t ]*#?" nil t))
 	value)
     ;; find the `in-package' form, and snarf the package
     ;; that way
