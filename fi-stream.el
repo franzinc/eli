@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-stream.el,v 1.5 1991/06/19 22:18:19 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-stream.el,v 1.6 1991/06/27 15:25:29 layer Exp $
 ;;
 
 (defmacro fi::with-keywords (variables rest-arg &rest body)
@@ -44,7 +44,7 @@
   (fi::with-keywords (parent x y width height splitp) args
     (let* ((fi::listener-protocol ':stream)
 	   (proc (save-window-excursion
-		   (fi:open-lisp-listener -1 "compilation-output"))))
+		   (fi:open-lisp-listener -1 "background-interaction"))))
       (cond ((or parent x y width height)
 	     (fi::create-new-mapped-screen-for-stream parent x y width
 						      height))
