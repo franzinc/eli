@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.43 1991/02/21 22:01:21 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.44 1991/02/28 23:06:25 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -137,6 +137,7 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
   (cond
     ((memq major-mode '(fi:common-lisp-mode fi:inferior-common-lisp-mode
 			fi:tcp-common-lisp-mode))
+     (define-key map "\C-c?"	'fi:lisp-apropos)
      (define-key map "\e."	'fi:lisp-find-tag)
      (define-key map "\e,"	'fi:lisp-tags-loop-continue)
      (define-key map "\e\t"	'fi:lisp-complete-symbol)
@@ -146,7 +147,7 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
      (define-key map "\eF"	'fi:lisp-function-documentation)
      (define-key map "\eM"	'fi:lisp-macroexpand)
      (define-key map "\eT"	'fi:toggle-trace-definition)
-     (define-key map "\eW"	'fi:lisp-walk)
+     (define-key map "\eW"	'fi:lisp-macroexpand-recursively)
      (let ((4-map (make-sparse-keymap)))
        (define-key map "\C-x4" 4-map)
        (define-key 4-map "." 	'fi:lisp-find-tag-other-window))))
