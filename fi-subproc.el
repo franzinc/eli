@@ -19,7 +19,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.146 1993/04/09 15:09:01 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.147 1993/06/18 20:02:43 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -849,7 +849,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
   (goto-char (point-max))
   (insert
    (format
-    "---------------------------------------------------------------------\n"))
+    "\n---------------------------------------------------------------------\n"))
   t)
 
 (defun fi::subprocess-filter (process output &optional stay cruft)
