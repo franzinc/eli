@@ -31,17 +31,17 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-ring.el,v 1.6 1988/05/18 13:36:24 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-ring.el,v 1.7 1988/05/19 16:24:00 layer Exp $
 
 ;; This code is very similar to the kill-ring implementation
 ;; and implements the fi::subprocess input ring.  Each fi::subprocess buffer
 ;; has its own input ring.
 
 (defvar fi:default-input-ring-max 50
-  "Default maximum length of input rings.")
+  "*The default maximum length to which an input ring is allowed to grow.")
 
 (defvar fi::input-ring nil
-  "List of previous input to fi::subprocess.")
+  "A list of previous input to a subprocess.")
 
 (defvar fi::input-ring-max fi:default-input-ring-max
   "Maximum length of input ring before oldest elements are thrown away.")
@@ -106,7 +106,7 @@ the subprocess input ring."
 		    fi::input-ring))))))
 
 (defun fi:pop-input (&optional arg)
-  "Yank text from input ring.  Cycle through input ring with each
+  "Yank previous text from input ring.  Cycle through input ring with each
 successive invocation."
   (interactive "*p")
   (setq fi::last-command-was-successful-search nil)
@@ -126,7 +126,7 @@ successive invocation."
 	     (if before (exchange-point-and-mark))))))
 
 (defun fi:push-input (&optional arg)
-  "Yank text from input ring.  Cycle through input ring in reverse
+  "Yank next text from input ring.  Cycle through input ring in reverse
 order with each successive invocation."
   (interactive "*p")
   (setq fi::last-command-was-successful-search nil)
@@ -163,7 +163,7 @@ See also the command fi::yank-input-pop."
 
 (defun fi:list-input-ring (arg &optional reflect)
   "Display contents of input ring, starting at arg.  The list is displayed
-in reverse order if call from a program and the optional second parameter
+in reverse order if called from a program and the optional second parameter
 is non-nil."
   (interactive "p")
   (let* ((input-ring-for-list fi::input-ring)

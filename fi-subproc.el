@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.34 1988/05/19 15:03:41 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.35 1988/05/19 16:24:06 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -40,53 +40,48 @@
 ;;;;
 
 (defvar fi:common-lisp-image-name "cl"
-  "Default Common Lisp image to invoke from (fi:common-lisp).")
+  "*Default Common Lisp image to invoke from `fi:common-lisp'.")
 
 (defvar fi:common-lisp-image-arguments nil
-  "Default Common Lisp image arguments when invoked from (fi:common-lisp).
-Should be a list of strings.")
+  "*Default Common Lisp image arguments when invoked from `fi:common-lisp',
+which must be a list of strings.")
 
 (defvar fi:common-lisp-prompt-pattern
   "^\\(\\[[0-9]+c?\\] \\|\\[step\\] \\)?<[-A-Za-z]* ?[0-9]*?> "
-  "Regexp for Newline command in inferior-common-lisp mode to match Common
-Lisp prompts. Anything from beginning of line up to the end of what this
-pattern matches is deemed to be a prompt.")
-
+  "*The regular expression which matches the Common Lisp prompt, used in
+Inferior Common Lisp mode.  Anything from beginning of line up to the end
+of what this pattern matches is deemed to be a prompt.")
 
 (defvar fi:franz-lisp-image-name "lisp"
-  "Default Franz Lisp image to invoke from (fi:franz-lisp).")
+  "*Default Franz Lisp image to invoke from `fi:franz-lisp'.")
 
 (defvar fi:franz-lisp-image-arguments nil
-  "Default Franz Lisp image arguments when invoked from (fi:franz-lisp).
-Should be a list of strings.")
+  "*Default Franz Lisp image arguments when invoked from `fi:franz-lisp',
+which must be a list of strings.")
 
 (defvar fi:franz-lisp-prompt-pattern
   "^[-=]> +\\|^c{[0-9]+} +"
-  "Regexp used by Newline command in inferior-franz-lisp mode to match
-Franz Lisp prompts. Anything from beginning of line up to the end of what
-this pattern matches is deemed to be prompt, and is not re-executed.")
+  "*The regular expression which matches the Franz Lisp prompt, used in
+Inferior Franz Lisp mode.  Anything from beginning of line up to the end
+of what this pattern matches is deemed to be a prompt.")
 
 (defvar fi:shell-popd-regexp ":?popd"
-  "Regexp to match subshell commands equivalent to popd.
-This variable is buffer-local.  If nil, no automatic directory changes
-will be made.")
+  "*The regular expression matching the C shell `popd' command.  If nil, no
+automatic directory changes will be made.")
 
 (defvar fi:shell-pushd-regexp ":?pushd"
-  "Regexp to match subshell commands equivalent to pushd.
-This variable is buffer-local.  If nil, no automatic directory changes
-will be made.")
+  "*The regular expression matching the C shell `pushd' command.  If nil,
+no automatic directory changes will be made.")
 
 (defvar fi:shell-cd-regexp ":?cd"
-  "Regexp to match subshell commands equivalent to cd.
-This variable is buffer-local.  If nil, no automatic directory changes
-will be made.")
+  "*The regular expression matching the C shell `cd' command.  If nil,
+no automatic directory changes will be made.")
 
 (defvar fi:subprocess-map-nl-to-cr nil
-  "If t, map NL (newline) to CR (carriage-return).  This is a buffer-local
-symbol.")
+  "*If t, then map newline to carriage-return.")
 
 (defvar fi:subprocess-continuously-show-output-in-visible-buffer t
-  "If t, output from a subprocess to a visible buffer is continuously
+  "*If t, output from a subprocess to a visible buffer is continuously
 shown.  If a subprocess buffer is visible and the window point is beyond
 the process output marker, output to that buffer from its associated
 process will be continuously visible.  If the window point is before the
@@ -94,21 +89,21 @@ process output marker, the window is not updated.  This is a buffer-local
 symbol.")
 
 (defvar fi:subprocess-write-quantum 120
-  "Maximum size in bytes of a single write request to a subprocess.")
+  "*Maximum size in bytes of a single write request to a subprocess.")
 
 (defvar fi:subprocess-enable-superkeys nil
-  "If t, certain keys become `superkeys' in subprocess buffers--this should
-be set before starting any subprocesses.  The superkeys are C-a, C-d, C-o,
-C-u, C-w, C-z, and C-\\, which will behave as they would in the current
-local keymap when typed at the end of a subprocess buffer.  If typed
-elsewhere, these keys have their normal global binding.  This is a
-buffer-local symbol.  This variable should be set before starting-up the
-first subprocess.  Use setq-default to set the default value for this
+  "*If t, certain keys become `superkeys' in subprocess buffers--this
+should be set before starting any subprocesses.  The superkeys are C-a,
+C-d, C-o,C-u, C-w, C-z, and C-\\, which will behave as they would in the
+current local keymap when typed at the end of a subprocess buffer.  If
+typed elsewhere, these keys have their normal global binding.  This is a
+buffer-local symbol.  Use setq-default to set the default value for this
 symbol.")
 
 (defvar fi:display-buffer-function 'switch-to-buffer
-  "If the value of this is non-nil, then it is used as the function to
-display a subprocess buffer.")
+  "*If non-nil, then it is used as the function which is funcall'd with one
+argument, a buffer, to display a subprocess buffer when it is created (ie,
+from `fi:common-lisp').")
 
 ;;;;;;;;;;;;;;;;;;;;;; internal vars
 

@@ -1,12 +1,13 @@
-;; $Header: /repo/cvs.copy/eli/fi-filec.el,v 1.4 1988/04/25 15:15:38 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-filec.el,v 1.5 1988/05/19 16:23:58 layer Exp $
 
 ;; File name completions
 
+(defvar fi:shell-token-pattern "[ \t\n()<>&|;=]"
+  "*The regular expression used by file name completion to mark path name
+boundaries.")
+
 (defvar fi::shell-completions-window nil
   "If non-nil, completion window requires cleaning up.")
-
-(defvar fi:shell-token-pattern "[ \t\n()<>&|;=]"
-  "Regexp used by file name completion to mark path name boundaries.")
 
 (defun fi:shell-file-name-completion ()
   "Perform file name completion in subprocess modes."

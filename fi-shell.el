@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-shell.el,v 1.6 1988/05/12 10:41:27 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-shell.el,v 1.7 1988/05/19 16:24:13 layer Exp $
 
 (defvar fi:shell-mode-map nil
   "The shell major-mode keymap.")
@@ -40,14 +40,14 @@
   "Used for super-key processing in shell mode.")
 
 (defvar fi:shell-image-name "csh"
-  "Default Shell image to invoke from (fi:shell).")
+  "*Default Shell image to invoke from (fi:shell).")
 
 (defvar fi:shell-image-arguments '("-i")
-  "Default Shell image arguments when invoked from (fi:shell).")
+  "*Default Shell image arguments when invoked from (fi:shell).")
 
 (defvar fi:shell-prompt-pattern
   "^[-_.a-zA-Z0-9]*[#$%>] *"
-  "Regexp used by Newline command in shell mode to match subshell prompts.
+  "*Regexp used by Newline command in shell mode to match subshell prompts.
 Anything from beginning of line up to the end of what this pattern matches
 is deemed to be prompt, and is not re-executed.")
 

@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.7 1988/05/18 14:02:21 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.8 1988/05/19 16:24:20 layer Exp $
 
 ;;;;
 ;;; Key defs
@@ -143,13 +143,13 @@ column."
   (funcall indent-line-function))
 
 (defun fi:inferior-lisp-newline ()
-  "Bound to newline in an inferior lisp buffer.  At the end of the buffer
-it inserts a newline and performs automatic
-indentation.  Whole expressions are sent to Lisp (and not each piece after
-each newline is typed).  This allows previously types lines to be edited
-before Lisp sees the input.  Typed anywhere else in the buffer, this
-functions causes the current line, minus the prompt, to be sent to the Lisp
-process, or listener when using TCP/IP-style communication."
+  "Bound to RET in an inferior Lisp buffer.  At the end of the buffer it
+inserts a newline and performs automatic indentation.  Whole expressions
+are sent to Lisp (not each piece after each newline is typed).  This allows
+previously typed lines to be edited before Lisp is sent the input.  Typed
+anywhere else in the buffer, this functions causes the input previously
+typed (around the point) to be copied to the end of the subprocess buffer
+and send to Lisp."
   (interactive)
   (if (eobp)
       (let ((start (marker-position
@@ -198,7 +198,7 @@ process, or listener when using TCP/IP-style communication."
 	(error "couldn't find start of input")))))
     
 (defun fi:subprocess-input-region (start end)
-  "Send the region to the Lisp subprocess."
+  "Send the region defined by the point and mark to the Lisp subprocess."
   (interactive "r")
   (let* ((process (get-buffer-process (current-buffer)))
 	 (string (buffer-substring start end)))
@@ -214,19 +214,22 @@ process, or listener when using TCP/IP-style communication."
     (set-marker (process-mark process) (point))))
 
 (defun fi:inferior-lisp-input-sexp (&optional arg)
-  "Send s-expression(s) to the Lisp subprocess."
+  "Send the sexp on which the point resides to the Lisp subprocess.  With a
+numeric prefix argument, send that many sexps."
   (interactive "P")
   (fi:inferior-lisp-send-input arg 'sexp))
 
 (defun fi:inferior-lisp-input-list (&optional arg)
-  "Send list(s) to the Lisp subprocess."
+  "Send the list before the point to the Lisp subprocess.  With a numeric
+prefix argument, send that many lists."
   (interactive "P")
   (fi:inferior-lisp-send-input arg 'lists))
 
 (defun fi:lisp-eval-last-sexp (compile-file-p)
-  "Send the sexp before the point to the Lisp subprocess.
-If a Lisp subprocess has not been started, then one is started.  With a
-prefix argument, the source sent to the subprocess is compiled."
+  "Send the sexp before the point to the Lisp subprocess associated with
+this buffer.  If a Lisp subprocess has not been started, then one is
+started.  With a prefix argument, the source sent to the subprocess is
+compiled."
   (interactive "P")
   (let ((start (save-excursion
 		 (forward-sexp -1)
@@ -235,9 +238,10 @@ prefix argument, the source sent to the subprocess is compiled."
 
 (defun fi:lisp-eval-defun (compile-file-p)
   "Send the current top-level (or nearest previous) form to the Lisp
-subprocess.  A `top-level'form is one that starts in column 1.  If a Lisp
-subprocess has not been started, then one is started.  With a prefix
-argument, the source sent to the subprocess is compiled."
+subprocess associated with this buffer.  A `top-level' form is one that
+starts in column 1.  If a Lisp subprocess has not been started, then one is
+started.  With a prefix argument, the source sent to the subprocess is
+compiled."
   (interactive "P")
   (let* ((end (save-excursion (end-of-defun) (point)))
 	 (start (save-excursion
@@ -246,19 +250,20 @@ argument, the source sent to the subprocess is compiled."
     (fi::eval-send start end compile-file-p)))
 
 (defun fi:lisp-eval-region (compile-file-p)
-  "Send the text in the region to the Lisp subprocess, one expression at a
-time if there is more than one complete expression.  If a Lisp subprocess
-has not been started, then one is started.  With a prefix argument, the
-source sent to the subprocess is compiled."
+  "Send the text in the region to the Lisp subprocess associated with this
+buffer, one expression at a time if there is more than one complete
+expression.  If a Lisp subprocess has not been started, then one is
+started.  With a prefix argument, the source sent to the subprocess is
+compiled."
   (interactive "P")
   (fi::eval-send (min (point) (mark))
 		 (max (point) (mark))
 		 compile-file-p))
 
 (defun fi:lisp-eval-current-buffer (compile-file-p)
-  "Send the entire buffer to the Lisp subprocess.  If a Lisp subprocess has
-not been started, then one is started.  With a prefix argument, the
-source sent to the subprocess is compiled."
+  "Send the entire buffer to the Lisp subprocess associated with this
+buffer.  If a Lisp subprocess has not been started, then one is started.
+With a prefix argument, the source sent to the subprocess is compiled."
   (interactive "P")
   (fi::eval-send (point-min) (point-max) compile-file-p))
 
@@ -379,7 +384,8 @@ With a prefix argument, macroexpand the code as the compiler would."
       (fi::eval-string-send string nil t))))
 
 (defun fi:lisp-who-calls (&optional symbol)
-  "Asks the sublisp which functions reference a symbol."
+  "Print all the callers of a function.  The default symbol name is taken
+from the sexp around the point."
   (interactive (fi::get-default-symbol "Find references to symbol"))
   ;; Since this takes a while, tell the user that it has started.
   (message "finding callers of %s..." symbol)
@@ -390,15 +396,16 @@ With a prefix argument, macroexpand the code as the compiler would."
       (fi::eval-string-send string nil t))))
 
 (defun fi:tcp-lisp-send-eof ()
-  "Do a db:debug-pop on the TCP listener."
+  "Simulate an EOF on the tcp-lisp process via a db:debug-pop spoken to the
+backdoor Common Lisp listener."
   (interactive)
   (fi:backdoor-eval 
    "(db:debug-pop (mp::process-name-to-process \"%s\"))\n"
    (buffer-name (current-buffer))))
 
 (defun fi:tcp-lisp-kill-process ()
-  "Kill a tcp-lisp process via the backdoor lisp listener: a
-mp:process-kill is sent to the lisp."
+  "Kill a tcp-lisp process via a mp:process-kill spoken to the backdoor
+Common Lisp listener."
   (interactive)
   (fi:backdoor-eval 
    "(mp:process-kill (mp::process-name-to-process \"%s\"))\n"
@@ -406,7 +413,7 @@ mp:process-kill is sent to the lisp."
 
 (defun fi:tcp-lisp-interrupt-process ()
   "Interrupt the tcp-lisp process via a mp:process-interrupt spoken to the
-backdoor lisp listener."
+backdoor Common Lisp listener."
   (interactive)
   (fi:backdoor-eval 
    "(mp:process-interrupt
@@ -453,8 +460,7 @@ other than at the end of the buffer."
       (ding))))
 
 (defun fi:subprocess-beginning-of-line (arg)
-  "Move to beginning of line, skipping over initial prompt.
-Moves point to beginning of line, just like (beginning-of-line),
+  "Moves point to beginning of line, just like (beginning-of-line),
 except that if the pattern at the beginning of the line matches the
 current subprocess prompt pattern, this function skips over it."
   (interactive "P")
@@ -510,7 +516,7 @@ possible.  This regexp should start with \"^\"."
   (process-send-eof))
 
 (defun fi:subprocess-kill-output ()
-  "Kill all output from the subprocess since last input."
+  "Kill all output from the subprocess since the last input."
   (interactive)
   (goto-char (point-max))
   (kill-region fi::last-input-end (point))
@@ -518,24 +524,24 @@ possible.  This regexp should start with \"^\"."
   (set-marker (process-mark (get-buffer-process (current-buffer))) (point)))
 
 (defun fi:subprocess-send-flush ()
-  "Send `flush output' character (^O) to subprocess."
+  "Send the `flush output' character (^O) to subprocess."
   (interactive)
   (send-string (get-buffer-process (current-buffer)) "\C-o"))
 
 (defun fi:subprocess-show-output ()
-  "Display start of this batch of shell output at top of window.
+  "Display the start of this batch of shell output at top of window.
 Also move the point there."
   (interactive)
   (set-window-start (selected-window) fi::last-input-end)
   (goto-char fi::last-input-end))
 
 (defun fi:subprocess-interrupt ()
-  "Interrupt the subprocess."
+  "Interrupt the current subprocess."
   (interactive)
   (interrupt-process nil t))
 
 (defun fi:subprocess-kill ()
-  "Send a `kill' signal to the subprocess in the current buffer."
+  "Send a `kill' (SIGKILL) signal to the current subprocess."
   (interactive)
   (kill-process nil t))
 
@@ -545,12 +551,12 @@ Also move the point there."
   (quit-process nil t))
 
 (defun fi:subprocess-suspend ()
-  "Send a ^Z to the subprocess."
+  "Suspend, with a SIGSTOP, the current subprocess."
   (interactive)
   (stop-process nil t))
 
 (defun fi:subprocess-kill-input ()
-  "Kill all input since last stuff output by the subprocess."
+  "Kill all input since the last output by the subprocess."
   (interactive)
   (kill-region (process-mark (get-buffer-process (current-buffer)))
 	       (point)))

@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.28 1988/05/13 10:28:57 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.29 1988/05/19 16:24:03 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -39,20 +39,26 @@
 ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defvar fi:pop-to-sublisp-buffer-after-lisp-eval t)
+(defvar fi:pop-to-sublisp-buffer-after-lisp-eval t
+  "*If non-nil, then after sending expressions to a Lisp process do pop to
+the buffer which contains the Lisp.")
 
 (defvar fi:package nil
   "A buffer-local variable whose value should either be nil or a string
-which names a package in the Lisp world.  It is used when expressions are
-sent from Emacs buffers to Lisp so that the expressions are read in the
-proper Lisp package.")
+which names a package in the Lisp world (ie, in a Lisp subprocess running
+as an inferior of Emacs in some buffer).  It is used when expressions are
+sent from an Emacs buffer to a Lisp process so that the symbols are read
+into the correct Lisp package.")
 
 (defun fi:set-associated-sublisp (buffer-name)
-  "Evaluated when in a Lisp source buffer causes further `eval' commands to
-use BUFFER-NAME as the buffer which contains a Lisp subprocess.  The buffer
-name is interactively read and must be the name of an existing buffer.  New
-buffers with the same mode as the current buffer will also use BUFFER-NAME
-for `eval' commands."
+  "When evaluated in a Lisp source buffer causes further `eval'
+commands (those which send expressions from Emacs to Lisp) to use
+BUFFER-NAME as the buffer which contains a Lisp subprocess.  If evaluated
+when not in a Lisp source buffer, then the process type is read from the
+minibuffer ("common-lisp" or "franz-lisp").  The buffer name is
+interactively read and must be the name of an existing buffer.  New buffers
+with the same mode as the current buffer will also use BUFFER-NAME for
+future `eval' commands."
   (interactive "bBuffer name containing a Lisp process: ")
   (let* ((process (get-buffer-process (get-buffer buffer-name)))
 	 (mode (or (and (memq major-mode '(fi:common-lisp-mode

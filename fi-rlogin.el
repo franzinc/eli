@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.6 1988/05/12 11:53:38 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.7 1988/05/19 16:24:15 layer Exp $
 
 (defvar fi:rlogin-mode-map nil
   "The rlogin major-mode keymap.")
@@ -40,14 +40,14 @@
   "Used for super-key processing in rlogin mode.")
 
 (defvar fi:rlogin-image-name "rlogin"
-  "Default remote-login image to invoke from (fi:rlogin).")
+  "*Default remote-login image to invoke from (fi:rlogin).")
 
 (defvar fi:rlogin-image-arguments nil
-  "Default remote-login image arguments when invoked from (fi:rlogin).")
+  "*Default remote-login image arguments when invoked from (fi:rlogin).")
 
 (defvar fi:rlogin-prompt-pattern
   "^[-_.a-zA-Z0-9]*[#$%>] *"
-  "Regexp used by Newline command in rlogin mode to match subshell prompts.
+  "*Regexp used by Newline command in rlogin mode to match subshell prompts.
 Anything from beginning of line up to the end of what this pattern matches
 is deemed to be prompt, and is not re-executed.")
 
