@@ -301,10 +301,6 @@ with the name `fi:<IMAGE>-prompt-pattern' or from the following:
 
 %% fi:common-lisp-prompt-pattern
 %% fi:common-lisp-package-regexp
-
-%% fi:subprocess-enable-superkeys
-%% fi:pop-to-sublisp-buffer-after-lisp-eval
-%% fi:display-buffer-function
 
    The following variables are used in TCP Common Lisp mode:
 
@@ -316,6 +312,11 @@ with the name `fi:<IMAGE>-prompt-pattern' or from the following:
 
 plus the following miscellaneous variables:
 
+%% fi:echo-evals-from-buffer-in-listener-p
+%% fi:emacs-to-lisp-transaction-directory
+%% fi:subprocess-enable-superkeys
+%% fi:pop-to-sublisp-buffer-after-lisp-eval
+%% fi:display-buffer-function
 %% fi:lisp-evalserver-timeout
 %% fi:lisp-evalserver-number-reads
 
