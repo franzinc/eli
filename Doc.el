@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.27 1991/03/16 00:13:59 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.28 1991/03/16 12:34:56 layer Exp $
 
 (require 'cl)
 
@@ -93,18 +93,19 @@
 					      (car (third xfunc)))))))
 		       " [function]"
 		     " [command]"))
+	     (line-pad 88)
 	     val doc)
 	(cond
 	 ((fboundp var)
 	  (let* ((xx (symbol-function var))
 		 (arglist (and (consp xx) (car (cdr xx))))
-		 (n 78))
+		 (n line-pad))
 	    (when arglist
 	      (let ((string
 		     (concat " " (mapconcat 'symbol-name arglist " "))))
 		(setq n (- n (length string)))
 		(insert string)))
-	    (insert-char ?  (- n (length func) (length var-string))))
+	    (insert-char ?. (- n (length func) (length var-string))))
 	  (setq current-local-map-var
 	    (cond ((symbol-value mode))
 		  (t nil)))
@@ -133,7 +134,7 @@
 			     (t " [variable]")))
 		 (doc (or (documentation-property var 'variable-documentation)
 			  (error "no documentation available for %s" var))))
-	    (insert-char ?  (- 78 (length type)
+	    (insert-char ?. (- line-pad (length type)
 			       (length (symbol-name var))))
 	    (cond ((syntax-table-p val)
 		   (insert (format "%s\n" type))

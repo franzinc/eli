@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.56 1991/03/16 00:24:50 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.57 1991/03/16 12:34:57 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -64,3 +64,9 @@ install:
 	mkdir $(DEST)/nonlep
 	cp -p lep/*.el* $(DEST)/lep
 	cp -p nonlep/*.el* $(DEST)/nonlep
+
+printer = lw2
+enscript = enscript -P$(printer) -h
+
+print:
+	$(enscript) -B -2r -f Courier6 RefCard.doc
