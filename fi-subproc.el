@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.126 1991/09/27 00:58:30 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.127 1991/09/29 17:52:17 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -122,7 +122,7 @@ fi:lisp-eval-* functions will be echoed by Common Lisp.")
     (function
      (lambda (use-background-streams)
        (list "-e"
-	     (format "\"(start-emacs-lisp-interface %s)\""
+	     (format "(start-emacs-lisp-interface %s)"
 		     use-background-streams))))
   "*This value of this variable determines whether or not the emacs-lisp
 interface is started automatically when fi:common-lisp is used to run
@@ -329,18 +329,18 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	 (image-args (if (interactive-p)
 			 image-args
 		       (or image-args fi:common-lisp-image-arguments)))
-	 (real-args
-	  (if fi:start-lisp-interface-arguments
-	      (append (funcall fi:start-lisp-interface-arguments
-			       fi:use-background-streams)
-		      image-args)
-	    image-args))
 	 (host (if (interactive-p)
 		   host
 		 (or host fi:common-lisp-host)))
 	 
 	 (local (or (string= "localhost" host)
 		    (string= host (system-name))))
+	 (real-args
+	  (if fi:start-lisp-interface-arguments
+	      (append (funcall fi:start-lisp-interface-arguments
+			       fi:use-background-streams)
+		      image-args)
+	    image-args))
 	 (startup-message
 	  (concat
 	   "\n==============================================================\n"
@@ -535,7 +535,13 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	    directory
 	    directory
 	    image-name
-	    (mapconcat (function (lambda (x) (if x x ""))) image-args " ")
+	    (mapconcat (function
+			(lambda (x)
+			  (if x
+			      (concat "\"" x "\"")
+			    "")))
+		       image-args
+		       " ")
 	    (if (string= "rsh" (file-name-nondirectory fi::rsh-command))
 		"'" "")))))
 
