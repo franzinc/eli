@@ -15,4 +15,7 @@
 (load "fi/shell.elc")
 (load "fi/rlogin.elc")
 
+(autoload 'fi:clman         "fi/clman" nil t)
+(autoload 'fi:clman-apropos "fi/clman" nil t)
+
 (setq fi:package-loaded t)
