@@ -1,4 +1,4 @@
-# $Id: local.mak,v 2.6.20.1 1998/06/03 20:22:53 layer Exp $
+# $Id: local.mak,v 2.6.20.2 1998/06/23 22:50:47 layer Exp $
 
 TGZFILE = eli-$(VERSION).tar.gz
 DISTDIR = eli-$(VERSION)
@@ -32,7 +32,7 @@ dist:	FORCE
 
 ###############################################################################
 
-hosts = beast romeo beta tiger freezer sole sparky akbar louie hefty \
+hosts = corba beast romeo beta tiger freezer sole sparky akbar louie hefty \
 	vapor biggie boys high baby
 
 elib_root = /usr/fi/emacs-lib

@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.200.10.5 1998/06/03 20:22:53 layer Exp $
+;; $Id: fi-subproc.el,v 1.200.10.6 1998/06/23 22:50:47 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -326,7 +326,7 @@ can be made in fi:common-lisp.")
 
 (defun fi:common-lisp (&optional buffer-name directory executable-image-name
 				 image-args host image-file)
-  "Create a Common Lisp subprocess and put it in buffer named by
+  "Create a Common Lisp subprocess and put it in the buffer named by
 BUFFER-NAME, with default-directory of DIRECTORY, using EXECUTABLE-IMAGE-NAME
 and IMAGE-ARGS as the binary image pathname and command line
 arguments, doing the appropriate magic to execute the process on HOST.
@@ -349,7 +349,11 @@ used and no information is read from the minibuffer.
 For backward compatibility, BUFFER-NAME can be a number, when called
 programmatically, which means look for, and use if found, numbered buffers
 of the form \"*common-lisp*<N>\" for N > 2.  If BUFFER-NAME < 0, then find
-the first \"free\" buffer name and start a subprocess in that buffer."
+the first \"free\" buffer name and start a subprocess in that buffer.
+
+Each Emacs may have at most one Emacs-Lisp connection. If a connection
+already exists when fi:common-lisp is called, then the *common-lisp* buffer
+will be made the current buffer, and all arguments will be ignored."
   (interactive
    (fi::get-lisp-interactive-arguments
     fi::common-lisp-first-time

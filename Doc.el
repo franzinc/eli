@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.44 1997/10/30 00:45:28 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.44.22.1 1998/06/23 22:50:46 layer Exp $
 
 ;; This file is used to assemble documentation files
 ;; It is provided (in distributions) purely for informational purposes,
@@ -50,10 +50,16 @@
 
   (beginning-of-buffer)
 
-  (while (or (re-search-forward "^%" nil t)
+  (while (or (re-search-forward "^!" nil t)
+	     (re-search-forward "^%" nil t)
 	     (re-search-forward "^@" nil t))
     (beginning-of-line)
     (cond
+     ((looking-at "^!include \\(.*\\)")
+      (let ((file (buffer-substring (match-beginning 1) (match-end 1))))
+	(replace-match "")
+	(message "inserting contents of %s" file)
+	(insert-file-contents-indented file 4)))
      ((or (looking-at "^%% ")
 	  (looking-at "^@@ "))
       (let* ((verbose (looking-at "^%% "))
@@ -166,6 +172,19 @@
 	  (insert "\n\n"))))))
 
   (write-region (point-min) (point-max) output-file))
+
+(defun insert-file-contents-indented (file indent)
+  (insert-string
+   (save-window-excursion
+     (save-excursion
+       (switch-to-buffer "*ifci*")
+       (erase-buffer)
+       (insert-file-contents file)
+       (goto-char (point-min))
+       (while (not (eobp))
+	 (insert-string (make-string indent ? ))
+	 (forward-line 1))
+       (buffer-string)))))
 
 (defun insert-doc-string (string)
   (insert "\n")
