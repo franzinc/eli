@@ -23,114 +23,8 @@
 ;; or
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
-;;
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.34 1991/08/22 21:29:29 layer Exp $
-;;
 
-(defvar fi:always-in-a-window nil)
-
-(defun fi:show-some-text (package text &rest args)
-  (when args (setq text (apply (function format) text args)))
-  (let ((n (string-match "\n$" text)))
-    (when n (setq text (substring text 0 n))))
-  (fi:lisp-push-window-configuration)
-  (if fi:always-in-a-window
-      (fi::show-some-text-1 text (or package fi:package))
-    (let* ((window (minibuffer-window))
-	   (height (1- (window-height window)))
-	   (width (window-width window))
-	   (text-try
-	    (cond (fi:package (format "[package: %s] %s" fi:package text))
-		  (t text)))
-	   (lines/len (fi::frob-string text-try)))
-      (if (and (< (car lines/len) 2)
-	       (<= (second lines/len) width))
-	  (message "%s" text-try)
-	(fi::show-some-text-1
-	 (cond (fi:package (format "[package: %s]\n%s" fi:package text))
-	       (t text))
-	 (or package fi:package))))))
-
-(defun fi::show-some-text-1 (text package &optional hook &rest args)
-  "Display TEXT in a temporary buffer putting that buffer setting that
-buffers package to the package of PACKAGE."
-  (let* ((from-window (selected-window))
-	 (real-from-window nil)
-	 (from-window-orig-height (1- (window-height))) ; minus mode line
-	 (buffer (get-buffer-create "*CL-temp*"))
-	 (buffer-window (get-buffer-window buffer))
-	 (lines nil))
-    
-    ;; fill the buffer
-    (save-excursion
-      (set-buffer buffer)
-      (erase-buffer)
-      (fi:common-lisp-mode)
-      (setq fi:package package)
-      (insert text)
-      (beginning-of-buffer)
-      (setq lines (count-lines (point-min) (point-max))))
-
-    ;; get to the proper window
-    ;;
-    (cond (buffer-window
-	   (when (not (eq (selected-window) buffer-window))
-	     (select-window buffer-window)))
-	  ((eq (current-buffer) buffer))
-	  ((one-window-p)
-	   (setq from-window-orig-height (1- (window-height)))
-	   (split-window)
-	   (save-window-excursion
-	     (other-window 1)
-	     (setq from-window (selected-window)))
-	   (switch-to-buffer buffer))
-	  (t
-	   (setq real-from-window (selected-window))
-	   (select-window (get-largest-window))
-	   (if (eq real-from-window (selected-window))
-	       (setq real-from-window nil))
-	   (setq from-window-orig-height (1- (window-height)))
-	   (split-window)
-	   (save-window-excursion
-	     (other-window 1)
-	     (setq from-window (selected-window)))
-	   (switch-to-buffer buffer)))
-
-    (unless (one-window-p)
-      (let* ((window-min-height 2)
-	     (target-size
-	      (max window-min-height
-		   (min lines (/ from-window-orig-height 2)))))
-	(if (< target-size (window-height))
-	    (shrink-window (- (window-height) target-size 1))
-	  (if (> target-size (window-height))
-	      (enlarge-window (- target-size (window-height) -1))))))
-    
-    (when hook (apply hook args))
-    
-    (bury-buffer buffer)
-    (select-window (or real-from-window from-window))))
-
-(defun fi::frob-string (text)
-  (let ((start 0)
-	(lines 0)
-	(length (length text))
-	(max-length 0)
-	last
-	m)
-    (while (and (setq m (string-match "$" text start))
-		(< m length))
-      (setq last m)
-      (let ((len (- m start)))
-	(if (> len max-length) (setq max-length len)))
-      (setq lines (+ lines 1)
-	    start (1+ m)))  
-    (if (not (eq m last)) (setq lines (1+ lines)))
-    (let ((len (- length start)))
-      (if (> len max-length) (setq max-length len)))
-    (list lines max-length)))
-
-;;;; Implementation of arglist
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.35 1991/09/10 11:19:07 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -138,7 +32,7 @@ STRING.  fi:package is used to determine from which Common Lisp package the
 operation is done.  In a subprocess buffer, the package is tracked
 automatically.  In source buffer, the package is parsed at file visit
 time."
-  (interactive (fi::get-default-symbol "Arglist for"))
+  (interactive (fi::get-default-symbol "Arglist for" t))
   (fi::make-request
    (lep::arglist-session :fspec string)
    ;; Normal continuation
@@ -161,7 +55,8 @@ automatically.  In source buffer, the package is parsed at file visit
 time."
   (interactive
    (list (car (fi::get-default-symbol
-	       (if current-prefix-arg "Apropos (regexp)" "Apropos")))
+	       (if current-prefix-arg "Apropos (regexp)" "Apropos")
+	       nil))
 	 (if current-prefix-arg t nil)))
   (fi::make-request
    (lep::apropos-session :string string :regexp regexp)
@@ -224,7 +119,7 @@ time."
   (interactive
    (if current-prefix-arg
        '(nil t)
-     (list (car (fi::get-default-symbol "Lisp locate source"))
+     (list (car (fi::get-default-symbol "Lisp locate source" t))
 	   nil)))
   (if next
       (fi:lisp-find-next-definition)
@@ -241,7 +136,7 @@ at file visit time."
   (interactive
    (if current-prefix-arg
        '(nil t)
-     (list (car (fi::get-default-symbol "Lisp locate source other window"))
+     (list (car (fi::get-default-symbol "Lisp locate source other window" t))
 	   nil)))
   (if next
       (fi:lisp-find-next-definition)
@@ -267,7 +162,8 @@ at file visit time."
      (fi::show-found-definition (if (symbolp something)
 				    (symbol-name something)
 				  something)
-				pathname point n-more other-window-p))
+				pathname point n-more other-window-p
+				(eq 0 n-more)))
     (() (error)
      (when (fi::pop-metadot-session)
        (message "%s" error))))))
@@ -285,7 +181,8 @@ time."
    (lep::meta-dot-session)
    (:next)
    (() (pathname point n-more)
-    (fi::show-found-definition (lep::meta-dot-string) pathname point n-more))
+    (fi::show-found-definition (lep::meta-dot-string) pathname point n-more
+			       nil (eq 0 n-more)))
    (() (error)
     (when (fi::pop-metadot-session)
       (message "%s" error)))))
@@ -298,7 +195,8 @@ time."
    session
    (list (function (lambda (pathname point n-more)
 		     (fi::show-found-definition (lep::meta-dot-string)
-						pathname point n-more))))
+						pathname point n-more
+						(eq 0 n-more)))))
    (list (function (lambda (error something)
 		     (when (fi::pop-metadot-session)
 		       (message "%s: %s" something error))))
@@ -341,8 +239,16 @@ time."
 	 (setq lep::meta-dot-from-fspec from-fspec)
 	 (setq lep::meta-dot-session session))))
 
+(defun fi::reset-metadot-session ()
+  (setq lep::meta-dot-what nil)
+  (setq lep::meta-dot-string nil)
+  (setq lep::meta-dot-from-fspec nil)
+  (setq lep::meta-dot-session nil))
+
+
 (defun fi::show-found-definition (thing pathname point n-more
-				  &optional other-window-p)
+				  &optional other-window-p
+					    pop-stack)
   (if pathname
       (if (eq pathname ':top-level)
 	  (message
@@ -377,7 +283,8 @@ time."
  		 (message (concat mess "%d more %ss of %s")
 			  n-more
 			  (lep::meta-dot-what)
-			  (or (lep::meta-dot-from-fspec) thing))))))
+			  (or (lep::meta-dot-from-fspec) thing))))
+	  (when pop-stack (fi::pop-metadot-session))))
     (message "cannot find file for %s" point)))
 
 
@@ -687,7 +594,7 @@ fi:package is used to determine from which Common Lisp package the
 operation is done.  In a subprocess buffer, the package is tracked
 automatically.  In source buffer, the package is parsed at file visit
 time."
-  (interactive (fi::get-default-symbol "(un)trace"))
+  (interactive (fi::get-default-symbol "(un)trace" t))
   (fi::make-request
    (lep::toggle-trace :fspec string :break current-prefix-arg)
    ;; Normal continuation
@@ -709,7 +616,7 @@ surrounding the point.  fi:package is used to determine from which Common
 Lisp package the operation is done.  In a subprocess buffer, the package is
 tracked automatically.  In source buffer, the package is parsed at file
 visit time."
-  (interactive (fi::get-default-symbol "List who calls"))
+  (interactive (fi::get-default-symbol "List who calls" t))
   ;; Since this takes a while, tell the user that it has started.
   (message "Finding callers of %s..." fspec)
   (lep::list-fspecs-common fspec
@@ -725,7 +632,7 @@ the text surrounding the point.  fi:package is used to determine from which
 Common Lisp package the operation is done.  In a subprocess buffer, the
 package is tracked automatically.  In source buffer, the package is parsed
 at file visit time."
-  (interactive (fi::get-default-symbol "List who is called by"))
+  (interactive (fi::get-default-symbol "List who is called by" t))
   (message "Finding who is called by %s..." fspec)
   (lep::list-fspecs-common fspec
 			   'lep::who-is-called-by
@@ -740,7 +647,7 @@ taken from the text surrounding the point.  fi:package is used to determine
 from which Common Lisp package the operation is done.  In a subprocess
 buffer, the package is tracked automatically.  In source buffer, the
 package is parsed at file visit time."
-  (interactive (fi::get-default-symbol "List generic function methods of"))
+  (interactive (fi::get-default-symbol "List generic function methods of" t))
   ;; Since this takes a while, tell the user that it has started.
   (message "Finding generic function methods of %s..." fspec)
   (lep::list-fspecs-common fspec
@@ -752,21 +659,21 @@ package is parsed at file visit time."
 (defun fi:edit-who-calls (fspec)
   "Edit all the callers of the function named by FSPEC.
 Use ``\\<fi:common-lisp-mode-map>\\[fi:lisp-find-next-definition]'' to find the next definition, if there is one."
-  (interactive (fi::get-default-symbol "Edit who calls"))
+  (interactive (fi::get-default-symbol "Edit who calls" t))
   (message "Editing callers...")
   (lep::edit-somethings fspec 'lep::who-calls nil "caller"))
 
 (defun fi:edit-who-is-called-by (fspec)
   "Edit all functions called by FSPEC.
 Use ``\\<fi:common-lisp-mode-map>\\[fi:lisp-find-next-definition]'' to find the next definition, if there is one."
-  (interactive (fi::get-default-symbol "Edit who is called by"))
+  (interactive (fi::get-default-symbol "Edit who is called by" t))
   (message "Editing callees...")
   (lep::edit-somethings fspec 'lep::who-is-called-by nil "callee"))
 
 (defun fi:edit-generic-function-methods (fspec)
   "Edit all the methods of the generic function named by FSPEC.
 Use ``\\<fi:common-lisp-mode-map>\\[fi:lisp-find-next-definition]'' to find the next definition, if there is one."
-  (interactive (fi::get-default-symbol "Edit generic function methods of"))
+  (interactive (fi::get-default-symbol "Edit generic function methods of" t))
   (message "Editing generic function methods...")
   (lep::edit-somethings fspec
 			'scm::generic-function-methods-function-specs
@@ -812,7 +719,7 @@ fi:package is used to determine from which Common Lisp package the
 operation is done.  In a subprocess buffer, the package is tracked
 automatically.  In source buffer, the package is parsed at file visit
 time."
-  (interactive (fi::get-default-symbol "Describe symbol"))
+  (interactive (fi::get-default-symbol "Describe symbol" nil))
   (lep::describe-something fspec 'identity))
 
 (defun fi:describe-class (fspec)
@@ -822,7 +729,7 @@ fi:package is used to determine from which Common Lisp package the
 operation is done.  In a subprocess buffer, the package is tracked
 automatically.  In source buffer, the package is parsed at file visit
 time."
-  (interactive (fi::get-default-symbol "Class name"))
+  (interactive (fi::get-default-symbol "Class name" nil))
   (lep::describe-something fspec 'clos::find-class))
 
 
@@ -833,7 +740,7 @@ fi:package is used to determine from which Common Lisp package the
 operation is done.  In a subprocess buffer, the package is tracked
 automatically.  In source buffer, the package is parsed at file visit
 time."
-  (interactive (fi::get-default-symbol "Function spec"))
+  (interactive (fi::get-default-symbol "Function spec" t))
   (lep::describe-something fspec 'fdefinition))
 
 
@@ -859,7 +766,7 @@ fi:package is used to determine from which Common Lisp package the
 operation is done.  In a subprocess buffer, the package is tracked
 automatically.  In source buffer, the package is parsed at file visit
 time."
-  (interactive (fi::get-default-symbol "Describe symbol"))
+  (interactive (fi::get-default-symbol "Describe symbol" nil))
   (fi::make-request
    (lep::function-documentation-session :package fi:package :fspec symbol)
    ;; Normal continuation
