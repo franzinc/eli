@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.114 1991/06/27 15:26:09 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.115 1991/06/28 09:57:19 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -322,7 +322,9 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	  (concat
 	   "\n==============================================================\n"
 	   (format "Starting image `%s'\n" image-name)
-	   (format "  with arguments `%s'\n" image-args)
+	   (if image-args
+	       (format "  with arguments `%s'\n" image-args)
+	     "  with no arguments\n")
 	   (format "  in directory `%s'\n" directory)
 	   (format "  on machine `%s'.\n" host)
 	   "\n"))
