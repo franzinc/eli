@@ -5,9 +5,8 @@
 
 emacs = /usr/local/emacs
 
-elc-files = modes.elc subprocess.elc subprocess-lisp.elc\
-	    subprocess-filec.elc subprocess-ring.elc\
-	    lisp-indent.elc aux.elc doc.elc
+elc-files = modes.elc subproc.elc sublisp.elc filec.elc ring.elc\
+	    indent.elc aux.elc doc.elc
 
 all:	depend doc.n
 
