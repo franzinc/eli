@@ -7,6 +7,13 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.1
+
+Tue May 26 13:11:40 1998  Kevin Layer  <layer@ultra>
+
+	* fi-subproc.el: [spr17196] warn user of xemacs20 incompatibily
+
+*******************************************************************************
 2.0.21.0
 
 Fri May  8 10:12:08 1998  Kevin Layer  <layer@ultra>

@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.200.10.2 1998/04/22 23:46:00 layer Exp $
+;; $Id: fi-subproc.el,v 1.200.10.3 1998/05/26 20:14:42 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -367,6 +367,20 @@ be a string. Use the 6th argument for image file."))
     fi:common-lisp-image-arguments
     (or fi:common-lisp-host (system-name))
     fi:common-lisp-image-file))
+  (when (and (boundp 'minibuffer-confirm-incomplete)
+	     minibuffer-confirm-incomplete
+	     (eq 'xemacs20 fi::emacs-type))
+    (save-excursion
+      (delete-other-windows)
+      (switch-to-buffer "*Help*")
+      (erase-buffer)
+      (insert "
+It is known that XEmacs 20 and a non-nil value of the variable
+`minibuffer-confirm-incomplete' are incompatible with Lisp symbol
+completions read in the minibuffer.  Use this combination at your own
+risk.")
+      (when (null (y-or-n-p "Run Lisp anyway? "))
+	(error "fi:common-lisp aborted by user."))))
   (unless (or fi::rsh-command (on-ms-windows))
     (setq fi::rsh-command
       (cond ((fi::command-exists-p "remsh") "remsh")
