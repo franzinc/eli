@@ -1,6 +1,6 @@
 /* Copyright (C) 1993, Franz Inc., Berkeley, CA.  All rights reserved. */
 
-/* $Id: makeman.c,v 2.4 1996/10/03 07:21:10 layer Exp $ */
+/* $Id: makeman.c,v 2.5 1996/10/03 17:54:43 layer Exp $ */
 
 #include "clman.h"
 
@@ -146,15 +146,15 @@ make_data()
 	symlen = strlen(symbols[i]);
 	hashval = hash(symbols[i], symlen) % table_max_entries;
 	ei = puthashi(hashval);
-	table[ei].name_index = string_table_size;
-	table[ei].data_index = data_size;
+	table[ei].name_index = htonl(string_table_size);
+	table[ei].data_index = htonl(data_size);
 	dsize = 0;
 	for (fhead = f = files[i]; f != NULL; f = f->next) {
 	    dsize += f->size;
-	    table[ei].ndefs++;
+	    table[ei].ndefs = htons(ntohs(table[ei].ndefs) + 1);
 	    if (f->next != NULL) dsize += seplen;
 	}
-	table[ei].data_size = dsize;
+	table[ei].data_size = htons(dsize);
 	data_size += dsize;
 	string_table_size += symlen;
     }
@@ -173,11 +173,6 @@ write_file(name, fd)
     int zero = 0;
     int written_string_size = 1;
     int written_data_size = 1;
-
-#if 0
-    printf("nsymbols = %d, data_size = %d, table_byte_size = %d\n",
-	   nsymbols, data_size, table_byte_size);
-#endif
 
     h.entry_table_size = htonl(table_byte_size);
     h.string_table_size = htonl(string_table_size);

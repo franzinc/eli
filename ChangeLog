@@ -2,6 +2,10 @@
 2.0.20.alpha.5 release for ACL on Windows
 *******************************************************************************
 
+Thu Oct  3 10:53:53 1996  Kevin Layer  <layer@freezer>
+
+	* makeman.c: more stuff into network byte order
+
 Thu Oct  3 00:13:21 1996  Kevin Layer  <layer@freezer>
 
 	* clman.data added to repository
