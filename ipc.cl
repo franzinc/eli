@@ -16,7 +16,7 @@
 ;; at private expense as specified in DOD FAR 52.227-7013 (c) (1) (ii).
 ;;
 ;;
-;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.17 1988/04/26 22:12:29 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.18 1988/05/24 13:21:06 layer Exp $
 ;; $Locker: layer $
 ;;
 ;; This code is a preliminary IPC interface for ExCL. The functionality
@@ -58,7 +58,10 @@ which case a UNIX domain socket is used.")
 
 (eval-when (load eval)
   (unless lisp-listener-daemon-ff-loaded
-    (unless (load "" :verbose nil
+    (unless (load (if (eql (excl::machine-code) '#.comp::machine-code-tek4300)
+		      "/lib/libc.a"
+		      "")
+		  :verbose nil
 		  :unreferenced-lib-names
 		  (mapcar #'convert-to-lang
 			  '("socket" "bind" "listen" "accept" "getsockname"
