@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.29 1992/07/17 15:28:41 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.30 1992/10/05 08:43:09 layer Exp $
 
 (defvar fi::manual-directory nil)
 
@@ -223,32 +223,18 @@ clman buffer, from anywhere in the buffer."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun fi::retrieve-doc-page-no-pack-specified (sym)
-  (let ((temp-info fi:clman-package-info)
-	(info-item nil)
-	(names nil))
-    (while (not done) 
-      (setq info-item (car temp-info))
-      (if (not info-item)
-	  ;; That's it. We checked them all.
-	  (progn (setq done t)
-		 (message "Couldn't find the doc page for %s" sym))
-	(let ((pack (car info-item))
-	      (doc-dir (car (cdr info-item))))
-	  (setq names (fi::clman-file-nameify pack (fi::clman-downcase sym)))
-	  (if (not names) 
-	      nil			;ignore failures
-	    (let ((files nil))
-	      (while names
-		(setq doc-page (concat doc-dir (car (car names))))
-		(if (file-exists-p doc-page)
-		    (setq files (cons doc-page files)))
-		(setq names (cdr names)))
-	      (setq done t)
-	      (fi::clman-display-file fi:clman-displaying-buffer files)
-	      (setq found-it t)
-	      ))
-	  (setq temp-info (cdr temp-info)))
-	found-it))))
+  (let ((file-name-list nil))
+    (dolist (pack fi:clman-package-info)
+      (dolist (ob
+	       (eval (car (read-from-string
+			   (format "fi::clman-%s-oblist" (car pack))))))
+	(if (string= (fi::clman-downcase sym) 
+		     (car ob))
+	    (push (concat (cadr pack) (cadr ob))
+		  file-name-list))))
+    (if (null file-name-list)
+	(error "%s not found." sym)
+      (fi::clman-display-file fi:clman-displaying-buffer file-name-list))))
 
 (defun fi::retrieve-doc-page-yes-pack-specified (info-item sym)
   (let ((pack (car info-item))
