@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.70 1991/10/01 19:32:08 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.71 1991/10/10 11:36:40 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -487,7 +487,7 @@ subprocess mode."
   (let* ((proc (get-buffer-process (current-buffer)))
 	 (item (or (assq proc fi::tcp-listener-table) '(nil . 1))))
     (if item
-	(fi:eval-in-lisp
+	(fi:eval-in-lisp-asynchronous
 	 (format "(lep::tcp-simulate-special-char #'%s %d)\n"
 		 function (cdr item)))
       (error "can't find generation number for %s" (process-name proc)))))
