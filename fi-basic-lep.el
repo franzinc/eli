@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.24 1991/10/10 11:36:32 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.25 1991/10/15 11:39:57 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -73,15 +73,16 @@ printed in the minibuffer can easily be erased.")
 (defvar fi::show-some-text-1-first-time t)
 
 (defun fi::show-some-text-1 (text package &optional hook &rest args)
-  (fi:lisp-push-window-configuration)
-  (cond ((eq 'split (car fi:pop-up-temp-window-behavior))
-	 (apply 'fi::show-some-text-split text package hook args))
-	((eq 'other (car fi:pop-up-temp-window-behavior))
-	 (apply 'fi::show-some-text-other text package hook args))
-	((eq 'replace (car fi:pop-up-temp-window-behavior))
-	 (apply 'fi::show-some-text-replace text package hook args))
-	(t (error "bad value for car of fi:pop-up-temp-window-behavior: %s"
-		  (car fi:pop-up-temp-window-behavior:))))
+  (let ((buffer (get-buffer-create "*CL-temp*")))
+    ;; fill the buffer
+    (save-excursion
+      (set-buffer buffer)
+      (erase-buffer)
+      (fi:common-lisp-mode)
+      (setq fi:package package)
+      (insert text)
+      (beginning-of-buffer))
+    (fi::display-pop-up-window buffer hook args))
   (fi::note-background-reply)
   (when fi::show-some-text-1-first-time
     (message
@@ -89,112 +90,6 @@ printed in the minibuffer can easily be erased.")
      (substitute-command-keys
       "Type \\[fi:lisp-delete-pop-up-window] to remove *CL-temp* window."))
     (setq fi::show-some-text-1-first-time nil)))
-
-(defun fi::show-some-text-replace (text package &optional hook &rest args)
-  (let ((buffer (get-buffer-create "*CL-temp*")))
-    
-    ;; fill the buffer
-    (save-excursion
-      (set-buffer buffer)
-      (erase-buffer)
-      (fi:common-lisp-mode)
-      (setq fi:package package)
-      (insert text)
-      (beginning-of-buffer)
-      (setq lines (count-lines (point-min) (point-max))))
-
-    (switch-to-buffer buffer)
-
-    (when hook (apply hook args))))
-
-(defun fi::show-some-text-other (text package &optional hook &rest args)
-  (let ((buffer (get-buffer-create "*CL-temp*")))
-    
-    ;; fill the buffer
-    (save-excursion
-      (set-buffer buffer)
-      (erase-buffer)
-      (fi:common-lisp-mode)
-      (setq fi:package package)
-      (insert text)
-      (beginning-of-buffer)
-      (setq lines (count-lines (point-min) (point-max))))
-
-    ;; get to the proper window
-    ;;
-    (cond ((one-window-p)
-	   (split-window)
-	   (other-window 1)
-	   (switch-to-buffer buffer))
-	  ((eq (current-buffer) buffer))
-	  (t
-	   (other-window 1)
-	   (switch-to-buffer buffer)))
-
-    (when hook (apply hook args))
-    
-    (bury-buffer buffer)
-    (other-window 1)))
-
-(defun fi::show-some-text-split (text package &optional hook &rest args)
-  "Display TEXT in a temporary buffer putting that buffer setting that
-buffers package to the package of PACKAGE."
-  (let* ((from-window (selected-window))
-	 (real-from-window nil)
-	 (from-window-orig-height (1- (window-height))) ; minus mode line
-	 (buffer (get-buffer-create "*CL-temp*"))
-	 (buffer-window (get-buffer-window buffer))
-	 (lines nil))
-    
-    ;; fill the buffer
-    (save-excursion
-      (set-buffer buffer)
-      (erase-buffer)
-      (fi:common-lisp-mode)
-      (setq fi:package package)
-      (insert text)
-      (beginning-of-buffer)
-      (setq lines (count-lines (point-min) (point-max))))
-
-    ;; get to the proper window
-    ;;
-    (cond (buffer-window
-	   (when (not (eq (selected-window) buffer-window))
-	     (select-window buffer-window)))
-	  ((eq (current-buffer) buffer))
-	  ((one-window-p)
-	   (setq from-window-orig-height (1- (window-height)))
-	   (split-window)
-	   (save-window-excursion
-	     (other-window 1)
-	     (setq from-window (selected-window)))
-	   (switch-to-buffer buffer))
-	  (t
-	   (setq real-from-window (selected-window))
-	   (select-window (get-largest-window))
-	   (if (eq real-from-window (selected-window))
-	       (setq real-from-window nil))
-	   (setq from-window-orig-height (1- (window-height)))
-	   (split-window)
-	   (save-window-excursion
-	     (other-window 1)
-	     (setq from-window (selected-window)))
-	   (switch-to-buffer buffer)))
-
-    (unless (one-window-p)
-      (let* ((window-min-height 2)
-	     (target-size
-	      (max window-min-height
-		   (min lines (/ from-window-orig-height 2)))))
-	(if (< target-size (window-height))
-	    (shrink-window (- (window-height) target-size 1))
-	  (if (> target-size (window-height))
-	      (enlarge-window (- target-size (window-height) -1))))))
-    
-    (when hook (apply hook args))
-    
-    (bury-buffer buffer)
-    (select-window (or real-from-window from-window))))
 
 ;;;;;;;;;;;;;;;;;;;;;;TODO
 ;;; The filter should not abort because of errors. Some how the errors
