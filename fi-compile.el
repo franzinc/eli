@@ -1,8 +1,8 @@
-;; $Id: fi-compile.el,v 2.8 1998/08/06 23:18:31 layer Exp $
+;; $Id: fi-compile.el,v 2.8.2.1 1998/12/14 18:20:56 layer Exp $
 
 (require 'cl)
 
-(setq byte-compile-compatibility t) ;; emacs 19
+;;(setq byte-compile-compatibility t) ;; emacs 19
 ;; doesn't work:
 ;;(setq byte-compile-emacs19-compatibility t) ;; xemacs 20
 

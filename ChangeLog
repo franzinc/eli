@@ -7,6 +7,13 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.22.2.2
+
+1998-12-14    <layer@HOBART>
+
+	* fi-compile.el: don't use byte-compile-compatibility anymore
+
+*******************************************************************************
 2.0.22.2.1 -- join from acl50 branch onto armysttr branch
 next merge tag: acl50_to_armysttr_merge2
 
