@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.48 1989/05/24 00:11:07 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.49 1989/07/11 18:20:12 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -320,6 +320,7 @@ are read from the minibuffer."
     (if (and (not runningp)
 	     (consp image-file))
 	(setq image-file (funcall image-file)))
+    (setq image-file (expand-file-name image-file))
     (if fi:display-buffer-function
 	(funcall fi:display-buffer-function buffer)
       (switch-to-buffer buffer))
@@ -369,7 +370,9 @@ are read from the minibuffer."
 	 (default-dir default-directory)
 	 (buffer-name (buffer-name buffer))
 	 (host (if given-host
-		   (expand-file-name given-host)
+		   (if fi:unix-domain
+		       (expand-file-name given-host)
+		     given-host)
 		 (if fi:unix-domain
 		     (expand-file-name fi:unix-domain-socket)
 		   fi:local-host-name)))
