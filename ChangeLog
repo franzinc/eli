@@ -16,7 +16,8 @@ Tests for new features:	no new features
 
 Thu Nov 21 13:42:48 1996  Kevin Layer  <layer@ultra>
 
-	* local-fi-developer-hooks.el: add update-modify-line
+	* local-fi-developer-hooks.el: add update-modify-line; move c mode
+	init here
 
 *******************************************************************************
 2.0.20.alpha.8
