@@ -1,4 +1,4 @@
-;;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.16 1988/04/08 12:58:11 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.17 1988/04/14 12:04:53 layer Exp $
 ;;;
 ;;; Mode initializations
 
@@ -227,7 +227,7 @@ emmulate the C shell commands) behave as they do in
   (if (null fi:tcp-lisp-mode-map)
       (setq fi:tcp-lisp-mode-map
 	(fi::tcp-lisp-mode-commands (make-sparse-keymap)
-				fi:tcp-lisp-mode-super-key-map)))
+				    fi:tcp-lisp-mode-super-key-map)))
   (use-local-map fi:tcp-lisp-mode-map)
   (setq fi:subprocess-super-key-map fi:tcp-lisp-mode-super-key-map)
 
@@ -484,14 +484,12 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
   map)
 
 (defun fi::tcp-lisp-mode-commands (map supermap)
-  (fi::lisp-mode-commands (fi::subprocess-mode-commands
-			   map nil 'tcp-lisp)
+  (fi::lisp-mode-commands (fi::subprocess-mode-commands map supermap 'tcp-lisp)
 			  supermap
 			  'tcp-lisp))
 
 (defun fi::inferior-lisp-mode-commands (map supermap)
-  (fi::lisp-mode-commands (fi::subprocess-mode-commands
-			   map nil 'sub-lisp)
+  (fi::lisp-mode-commands (fi::subprocess-mode-commands map supermap 'sub-lisp)
 			  supermap
 			  'sub-lisp))
 
