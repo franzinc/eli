@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.169 1996/08/30 18:04:16 layer Exp $
+;; $Id: fi-subproc.el,v 1.170 1996/09/03 23:55:43 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -345,6 +345,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 				       fi:common-lisp-image-name
 				       fi:common-lisp-image-arguments
 				       (or fi:common-lisp-host (system-name))))
+  (when (on-ms-windows) (error "Use fi:common-lisp-socket on Windows"))
   (unless (or fi::rsh-command (on-ms-windows))
     (setq fi::rsh-command
       (cond ((fi::command-exists-p "remsh") "remsh")
@@ -506,7 +507,9 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	    image-args))
 	 (process-connection-type fi::common-lisp-connection-type) ;bug3033
 	 (proc
-	  (let ((i 0) (process nil))
+	  (let ((start-lisp-after-failed-connection t)
+		(i 0)
+		(process nil))
 	    (while
 		(condition-case condition
 		    (progn
@@ -524,32 +527,32 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 			(eq 'file-error (first fi::last-network-condition))
 			(equal "connection failed"
 			       (second fi::last-network-condition)))))
-	      (when (> i 0)
+	      (when (> i 4)
 		(error "Couldn't make connection to existing Lisp."))
-	      (let ((p
-		     (fi::socket-start-lisp
-		      "common-lisp"
-		      (if (consp executable-image-name)
-			  (car executable-image-name)
-			executable-image-name)
-		      real-args)))
-		(sleep-for 5)
-		(unless (eq 'run (process-status p))
-		  (error "Program %s died."
-			 (if (consp executable-image-name)
-			     (car executable-image-name)
-			   executable-image-name))))
+	      (when start-lisp-after-failed-connection
+		(let ((p
+		       (fi::socket-start-lisp
+			"common-lisp"
+			(if (consp executable-image-name)
+			    (car executable-image-name)
+			  executable-image-name)
+			real-args)))
+		  (unless (eq 'run (process-status p))
+		    (error "Program %s died."
+			   (if (consp executable-image-name)
+			       (car executable-image-name)
+			     executable-image-name)))
+		  (setq start-lisp-after-failed-connection nil)))
+	      (sleep-for 3)
 	      (setq i (+ i 1)))
 	    (unless process
 	      (error "Couldn't make connection to existing Lisp."))
 	    process)))
     (fi::start-backdoor-interface proc)
     (fi::ensure-lep-connection)
-    (setq ;;fi::common-lisp-first-time nil
+    (setq fi::common-lisp-first-time nil
 	  fi:common-lisp-buffer-name buffer-name
 	  fi:common-lisp-directory directory
-	  fi:common-lisp-image-name executable-image-name
-	  fi:common-lisp-image-arguments image-args
 	  fi:common-lisp-host host)
     proc))
 

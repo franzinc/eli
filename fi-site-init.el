@@ -1,4 +1,4 @@
-;; $Id: fi-site-init.el,v 1.77 1996/08/29 17:05:26 layer Exp $
+;; $Id: fi-site-init.el,v 1.78 1996/09/03 23:55:41 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -9,7 +9,26 @@
 (defvar fi::build-time nil)
 (defvar fi::emacs-type nil)
 
-(load "fi-version.el")
+(defvar fi::library-directory
+    (file-name-directory load-file-name))
+
+(defun fi::locate-library (file)
+  (let (p)
+    (if (string-match "\\.elc?$" file)
+	(if (file-exists-p (setq p (format "%s%s" fi::library-directory file)))
+	    p
+	  nil)
+      (cond
+       ((and (setq p (format "%s%s.elc" fi::library-directory file))
+	     (file-exists-p p))
+	p)
+       ((and (setq p (format "%s%s.el" fi::library-directory file))
+	     (file-exists-p p))
+	p)
+       (t nil)))))
+
+(load (or (fi::locate-library "fi-version.el")
+	  (error "Couldn't find fi-version.el.")))
 
 (require 'cl)
 
@@ -72,7 +91,7 @@ exists.")
 (defun fi::load (file &rest load-before-compile)
   (cond
    (fi::load-el-files-only
-    (let ((lib-file (locate-library file))
+    (let ((lib-file (fi::locate-library file))
 	  el-lib-file)
       (unless lib-file (error "can't find file %s" file))
       (dolist (required-file load-before-compile)
@@ -83,7 +102,7 @@ exists.")
 	     (load (substring lib-file 0 (- (length lib-file) 1))))
 	    (t (error "not el or elc")))))
    (fi:compile-at-load-time
-    (let ((lib-file (locate-library file))
+    (let ((lib-file (fi::locate-library file))
 	  el-lib-file)
       (unless lib-file (error "can't find file %s" file))
       (dolist (required-file load-before-compile)
@@ -101,7 +120,7 @@ exists.")
    (t (load file))))
 
 (defun fi::load-compiled (file &rest load-before-compile)
-  (let ((lib-file (locate-library file)))
+  (let ((lib-file (fi::locate-library file)))
     (unless lib-file (error "can't find file %s" file))
     (dolist (required-file load-before-compile)
       (load required-file))
