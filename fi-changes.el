@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-changes.el,v 1.14 1993/09/02 22:34:13 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-changes.el,v 1.15 1994/08/01 22:48:08 smh Exp $
 ;;
 ;; Support for changed definitions
 
@@ -105,24 +105,24 @@ in NEW-FILE which have been added, deleted or changed with respect to
 OLD-FILE."
   (interactive "fNew file: \nfOld file: ")
   (find-file new-file)
-  (let ((xpackage fi:package))
-    (fi::make-request
-	(scm::list-changed-definitions
-	 :transaction-directory fi:emacs-to-lisp-transaction-directory
-	 :operation ':list
-	 :old-file old-file
-	 :new-file new-file)
-     ((xpackage) (changes)
-      (if changes
-	  (fi::show-changes changes nil xpackage)
-	(message "There are no changes.")))
-     (() (error)
-      (error "Cannnot list changed definitions: %s" error)))))
+  (let ((actual-file (buffer-file-name (find-buffer-visiting new-file)))
+	(xpackage fi:package))
+    (fi::make-request (scm::list-changed-definitions
+		       :transaction-directory fi:emacs-to-lisp-transaction-directory
+		       :operation ':list
+		       :actual-file actual-file
+		       :old-file old-file
+		       :new-file new-file)
+      ((xpackage) (changes)
+       (if changes
+	   (fi::show-changes changes nil xpackage)
+	 (message "There are no changes.")))
+      (() (error)
+       (error "Cannnot list changed definitions: %s" error)))))
 
 ;;; The guts of the problem
 
-(defun fi::do-buffer-changed-definitions (operation since
-					  &optional all-buffers)
+(defun fi::do-buffer-changed-definitions (operation since &optional all-buffers)
   (message "Computing changes...")
   (let ((buffer (current-buffer))
 	(copy-file-name (and (eq operation ':copy)
@@ -144,10 +144,9 @@ OLD-FILE."
 		     (fi::transpose-list args))
 	    (message "There are no changes.")))
       (if (fi::check-buffer-for-changes-p since)
-	  (apply
-	   (function fi::do-buffer-changed-definitions-1)
-	   copy-file-name
-	   (fi::compute-file-changed-values-for-current-buffer))
+	  (apply (function fi::do-buffer-changed-definitions-1)
+		 copy-file-name
+		 (fi::compute-file-changed-values-for-current-buffer))
 	(message "There are no changes.")))))
 
 (defun fi::check-buffer-for-changes-p (since)
@@ -170,27 +169,24 @@ OLD-FILE."
 	   (comma-zero (concat (buffer-file-name) unlock-file-suffix))
 	   (t (if (and (not (eq since 'buffer-save))
 		       buffer-backed-up)
-		(fi::find-most-recent-backup-file-name (buffer-file-name))
-	      (buffer-file-name)))))
-	(new-file (buffer-file-name)))
-    (list actual-file old-file new-file)))
+		  (fi::find-most-recent-backup-file-name (buffer-file-name))
+		(buffer-file-name))))))
+    (list actual-file old-file actual-file)))
 
 (defun fi::do-buffer-changed-definitions-1 (copy-file-name actual-file
 					    old-file new-file)
-  (fi::make-request
-   (scm::list-changed-definitions
-    :operation operation
-    :copy-file-name copy-file-name
-    :actual-file actual-file
-    :old-file old-file
-    :new-file new-file
-    :since since)
+  (fi::make-request (scm::list-changed-definitions
+		     :operation operation
+		     :copy-file-name copy-file-name
+		     :actual-file actual-file
+		     :old-file old-file
+		     :new-file new-file
+		     :since since)
    ((operation copy-file-name) (changes)
     (if changes
 	(progn
 	  (if (eq operation ':copy)
-	      (fi::insert-file-contents-into-kill-ring
-	       copy-file-name))
+	      (fi::insert-file-contents-into-kill-ring copy-file-name))
 	  (fi::show-changes changes))
       (message "There are no changes.")))
    ((operation) (error)

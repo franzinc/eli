@@ -32,7 +32,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.59 1993/07/23 03:49:23 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.60 1994/08/01 22:48:32 smh Exp $
 
 (defun fi:set-associated-sublisp (buffer-name mode)
   "Use BUFFER-NAME as the name of a buffer which contains a Lisp subprocess
@@ -115,3 +115,57 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
   (if (processp fi::process-name)
       (setq fi::process-name (process-name fi::process-name)))
   nil)
+
+;; Support for mode-line status indicators.
+
+(defvar fi:allegro-run-status-string "    ")
+
+(defun fi:show-run-status ()
+  "Cause CL to show Run/Wait/GC status in the mode line.  Experimental."
+  (interactive "")
+  (if (or (null fi::common-lisp-backdoor-main-process-name)
+	  (not (fi:process-running-p
+		(get-process fi::common-lisp-backdoor-main-process-name))))
+      (error "Common Lisp must be running to show run bars."))
+  (save-excursion
+    (let* ((buffer
+	    (process-buffer
+	     (get-process fi::common-lisp-backdoor-main-process-name)))
+	   (proc (fi::open-network-stream "Run Bar Process"
+					  nil
+					  (fi::get-buffer-host buffer)
+					  (fi::get-buffer-port buffer))))
+      (set-process-filter   proc 'fi::show-run-status-filter)
+      (set-process-sentinel proc 'fi::show-run-status-sentinel)
+      (send-string proc (format "%s \n" (fi::prin1-to-string fi::listener-protocol)))
+      (send-string proc (format "\"%s\" \n" (process-name proc)))
+      (send-string proc (format "%d \n" (fi::get-buffer-password buffer)))
+      (send-string proc "
+ (progn (ignore-errors (excl::run-status-process))
+        (mp:process-kill mp:*current-process*)) 
+")
+      proc)))
+
+(defun fi::show-run-status-sentinel (process status)
+  (setq fi:allegro-run-status-string "    ")
+  t)
+
+(defun fi::show-run-status-filter (proc string)
+  (let ((len (length string)))
+    (if (> len 4)
+	(setq string (substring string (- len 4)))))
+  (setq fi:allegro-run-status-string string)
+  ;; Force redisplay of all buffers' mode lines to be considered.
+  (save-excursion (set-buffer (other-buffer)))
+  (set-buffer-modified-p (buffer-modified-p))
+  ;; Do redisplay right now, if no input pending.
+  (sit-for 0))
+
+(defun fi::install-mode-line-run-status ()
+  (setq mode-line-buffer-identification
+    '("ACL " fi:allegro-run-status-string " %12b")))
+
+(add-hook 'fi:inferior-common-lisp-mode-hook 'fi::install-mode-line-run-status)
+(add-hook 'fi:common-lisp-mode-hook          'fi::install-mode-line-run-status)
+(add-hook 'fi:lisp-listener-mode-hook        'fi::install-mode-line-run-status)
+(add-hook 'fi:start-lisp-interface-hook      'fi:show-run-status t)

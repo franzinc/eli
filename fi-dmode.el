@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.24 1993/09/02 22:34:16 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.25 1994/08/01 22:48:11 smh Exp $
 
 ;; Create a mode in which each line is a definition and . on that
 ;; definition brings up the definition in another window
@@ -59,6 +59,9 @@ Entry to this mode runs the fi:definition-mode-hook."
   (make-local-variable 'lep::definition-other-args)
   (make-local-variable 'lep::definition-finding-function)
   (make-local-variable 'lep::inverse-definitions)
+
+  (setq lep::inverse-definitions nil)	;In fsf Emacs a local var remains
+					;unbound unless explicitly set.
 
   (if (null fi:definition-mode-map)
       (let ((map (make-keymap)))
@@ -290,12 +293,16 @@ in definition mode."
       (set-buffer buffer)
       (setq buffer-read-only nil)
       (erase-buffer)
-      (mapcar '(lambda (x) 
-		(princ (car x) (current-buffer))
-		(unless (equal '(nil) (second x))
-		  (insert ", ")
-		  (princ (second x) (current-buffer)))
-		(insert "\n"))
+     (setq truncate-lines t)		;smh 22jul94
+      (mapcar (function (lambda (x) 
+			  (princ (car x) (current-buffer))
+			  (unless (equal '(nil) (second x))
+			    (insert ", ")
+			    (princ (second x) (current-buffer)))
+			  (when (third x) ;smh 22jul94
+			    (insert ", ")
+			    (princ (third x) (current-buffer)))
+			  (insert "\n")))
 	      buffer-definitions)
       (fi:definition-mode)
       (set-buffer-modified-p nil)

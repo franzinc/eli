@@ -1,8 +1,13 @@
 /* Copyright (C) 1993, Franz Inc., Berkeley, CA.  All rights reserved. */
 
-/* $Header: /repo/cvs.copy/eli/Attic/clman.c,v 2.3 1993/07/27 20:12:09 layer Exp $ */
+/* $Header: /repo/cvs.copy/eli/Attic/clman.c,v 2.4 1994/08/01 22:48:04 smh Exp $ */
 
 #include "clman.h"
+#include <netinet/in.h>
+
+/*
+ * Changes 11jul94 to hack binary data on different byte-order machines. -smh
+ */
 
 main(argc, argv)
     char **argv;
@@ -41,6 +46,17 @@ main(argc, argv)
 	exit(failed);
     }
     table_max_entries = h.entry_table_size / sizeof(struct Entry);
+    {
+      int i;
+      struct Entry *p;
+
+      for (i=0, p=table; i<table_max_entries; i++, p++) {
+	p->name_index = htonl(p->name_index);
+	p->data_index = htonl(p->data_index);
+	p->data_size  = htons(p->data_size);
+	p->ndefs      = htons(p->ndefs);
+      }
+    }
 
     string_table = (char *)malloc(h.string_table_size);
     if (read(fd, string_table, h.string_table_size) != h.string_table_size) {

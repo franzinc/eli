@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.60 1993/12/11 00:15:20 georgej Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.61 1994/08/01 22:48:22 smh Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -23,8 +23,7 @@ time."
      (fi:show-some-text nil "%s's arglist: %s" what arglist))
     ;; Error continuation
     ((string) (error)
-     (message "Cannot get the arglist of %s: %s" string error))))
-
+     (fi::show-error-text "Cannot get the arglist of %s: %s" string error))))
 
 (defun fi:lisp-apropos (string &optional regexp)
   "In the Common Lisp environment evaluate lisp:apropos on STRING.
@@ -45,7 +44,7 @@ time."
     (fi:show-some-text nil text))
    ;; Error continuation
    ((string) (error)
-    (message "error during apropos of %s: %s" string error))))
+    (fi::show-error-text "error during apropos of %s: %s" string error))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Metadot implementation
@@ -124,7 +123,7 @@ at file visit time."
     (fi::lisp-find-definition-common tag t)))
 
 (defun fi::lisp-find-definition-common (something other-window-p
-				 &optional what from-fspec)
+					&optional what from-fspec)
   (when (not (fi::lep-open-connection-p))
     (error "connection to ACL is down--can't find tag"))
   (message "Finding %s for %s..."
@@ -148,8 +147,8 @@ at file visit time."
 				(eq 0 n-more))
      (if (= 0 n-more) (fi::pop-metadot-session)))
     (() (error)
-     (when (fi::pop-metadot-session)
-       (message "%s" error))))))
+	(when (fi::pop-metadot-session)
+	  (fi::show-error-text "%s" error))))))
 
 (defun fi:lisp-find-next-definition ()
   "Continue last tags search, started by fi:lisp-find-definition.
@@ -164,11 +163,11 @@ time."
    (lep::meta-dot-session)
    (:next)
    (() (pathname point n-more)
-    (fi::show-found-definition (lep::meta-dot-string) pathname point n-more
-			       nil (eq 0 n-more)))
+       (fi::show-found-definition (lep::meta-dot-string) pathname point n-more
+				  nil (eq 0 n-more)))
    (() (error)
-    (when (fi::pop-metadot-session)
-      (message "%s" error)))))
+       (when (fi::pop-metadot-session)
+	 (fi::show-error-text "%s" error)))))
 
 (defun scm::make-and-initialize-metadot-session (something
 						 &optional what from-fspec)
@@ -182,7 +181,7 @@ time."
 						(eq 0 n-more)))))
    (list (function (lambda (error something)
 		     (when (fi::pop-metadot-session)
-		       (message "%s: %s" something error))))
+		       (fi::show-error-text "%s: %s" something error))))
 	 (lep::meta-dot-string))))
 
 (defun fi::pop-metadot-session ()
@@ -370,7 +369,7 @@ information on how to send the mail."
       (mail-subject))
     ;; Error continuation
     (() (error)
-      (message "Cannot do a backtrace because: %s" error))))
+      (fi::show-error-text "Cannot do a backtrace because: %s" error))))
 
 ;;; Macroexpansion and walking
 
@@ -410,7 +409,7 @@ time."
     (() (expansion)
       (fi:show-some-text fi:package expansion))
     (() (error)
-      (message "Cannot macroexpand: %s" error))))
+      (fi::show-error-text "Cannot macroexpand: %s" error))))
 
 
 ;;; Symbol completion
@@ -509,30 +508,30 @@ beginning of words in target symbols."
 	      (mapcar 'cdr alist)))
 	   (message "Making completion list...done")))))
 
-(defun fi::lisp-complete-1 (pattern xpackage functions-only
-			    &optional ignore-keywords)
-  (condition-case nil
-      (let ((completions
-	     (car (lep::eval-session-in-lisp 
-		   'lep::list-all-completions-session
-		   ':pattern (fi::frob-case-to-lisp pattern)
-		   ':buffer-package (fi::string-to-keyword fi:package)
-		   ':package (progn
-			       (if (equal ":" xpackage)
-				   (setq xpackage "keyword"))
-			       (intern (fi::frob-case-to-lisp
-					xpackage)))
-		   ':functions-only-p (intern
-				       (fi::frob-case-to-lisp
-					functions-only))
-		   ':ignore-keywords (intern
-				      (fi::frob-case-to-lisp
-				       ignore-keywords))))))
-	(fi::lisp-complete-2 completions nil))
-    (quit
-     (fi:eval-in-lisp
-      "(when (fboundp 'lep::kill-list-all-completions-session)
-	 (lep::kill-list-all-completions-session))"))))
+(defvar fi::inside-lisp-complete-1 nil)
+
+(defun fi::lisp-complete-1 (pattern xpackage functions-only &optional ignore-keywords)
+  (unless fi::inside-lisp-complete-1	;return nil on recursion
+    (let ((fi::inside-lisp-complete-1 t))
+      (condition-case nil
+	  (let ((completions
+		 (car (lep::eval-session-in-lisp 
+		       'lep::list-all-completions-session
+		       ':pattern (fi::frob-case-to-lisp pattern)
+		       ':buffer-package (fi::string-to-keyword fi:package)
+		       ':package (progn
+				   (if (equal ":" xpackage)
+				       (setq xpackage "keyword"))
+				   (intern (fi::frob-case-to-lisp xpackage)))
+		       ':functions-only-p (intern
+					   (fi::frob-case-to-lisp functions-only))
+		       ':ignore-keywords (intern
+					  (fi::frob-case-to-lisp ignore-keywords))))))
+	    (fi::lisp-complete-2 completions nil))
+	(quit
+	 (fi:eval-in-lisp
+	  "(when (fboundp 'lep::kill-list-all-completions-session)
+	     (lep::kill-list-all-completions-session))"))))))
 
 (defun fi::lisp-complete-2 (completions &optional dont-strip-package)
   (if (consp completions)
@@ -552,10 +551,8 @@ beginning of words in target symbols."
 		   (cons name whole-name))))
 	      completions))))
 
-
-(defun lep::my-find-file (filename)
-  (find-file filename))
-
+(defun lep::find-file (filename)
+  (list (find-file filename)))
 
 (defun lep::display-string-in-buffer (string buffer)
   "Display a string in buffer"
@@ -565,6 +562,13 @@ beginning of words in target symbols."
   (insert string)
   (goto-char (point-min)))
 
+(defun lep::write-string-to-hidden-buffer (string buffer)
+  "Like lep::display-string-in-buffer, but don't display the buffer."
+  (save-excursion
+    (set-buffer (get-buffer-create buffer))
+    (erase-buffer)
+    (insert string)
+    (goto-char (point-min))))
 
 (defun lep::prompt-for-values (what prompt options)
   (list (case what
@@ -664,7 +668,7 @@ the package is parsed at file visit time."
 	(insert "\n")))
     (message "Killing definition...done."))
    (() (error)
-    (message "Cannot kill current definition: %s" error))))
+    (fi::show-error-text "Cannot kill current definition: %s" error))))
 
 
 (defun fi:toggle-trace-definition (string)
@@ -685,7 +689,7 @@ time."
 	     what))
    ;; Error continuation
    ((string) (error)
-	     (message "Cannot (un)trace %s: %s" string error))))
+	     (fi::show-error-text "Cannot (un)trace %s: %s" string error))))
 
 (defun fi:trace-definition (break)
   "Traces the definition that begins at point. This is especially useful
@@ -702,7 +706,7 @@ for tracing methods."
    (() (form)
     (message "Tracing definition...done."))
    (() (error)
-    (message "Cannot trace current definition: %s" error))))
+    (fi::show-error-text "Cannot trace current definition: %s" error))))
 
 
 ;;;; list and edit somethings
@@ -790,7 +794,7 @@ the next definition, if there is one."
 				  the-definitions
 				  (list 'lep::find-a-definition what fspec)))
    ((msg) (error)
-    (message msg error))))
+    (fi::show-error-text msg error))))
 
 (defun lep::find-a-definition (string type list-buffer what from-fspec)
   (fi::lisp-find-definition-common string t what from-fspec))
@@ -854,8 +858,7 @@ time."
     (fi:show-some-text nil what))
    ;; Error continuation
    ((fspec) (error)
-    (message "Cannot describe %s: %s" fspec error))))
-
+    (fi::show-error-text "Cannot describe %s: %s" fspec error))))
 
 
 ;;; Function documentation
@@ -870,19 +873,23 @@ time."
   (interactive (fi::get-default-symbol "Function documentation for symbol"
 				       nil t))
   (fi::make-request
-   (lep::function-documentation-session :package fi:package :fspec symbol)
-   ;; Normal continuation
-   ((symbol) (documentation)
-    (if documentation
-	(fi:show-some-text fi:package documentation)
-      (message "There is no documentation for %s" symbol)))
-   ;; Error continuation
-   ((symbol) (error)
-    (message "Cannot find documentation for %s: %s"
-	     symbol error))))
-
+      (lep::function-documentation-session :package fi:package :fspec symbol)
+    ;; Normal continuation
+    ((symbol) (documentation)
+     (if documentation
+	 (fi:show-some-text fi:package documentation)
+       (fi::show-error-text "There is no documentation for %s" symbol)))
+    ;; Error continuation
+    ((symbol) (error)
+     (fi::show-error-text "Cannot find documentation for %s: %s"
+			  symbol error))))
 
 (defun fi:compile-file (file)
+  "Compile FILE without loading the result into the Lisp environment."
+  (interactive "fFile to compile:")
+  (fi::compile-or-load-file file ':compile))
+
+(defun fi:compile-and-load-file (file)
   "Compile FILE and load the result of this compilation into the Lisp
 environment."
   (interactive "fFile to compile and load:")
@@ -908,13 +915,16 @@ environment."
     (fi::note-background-request compilep)
     (message "%s" msg-start)
     (fi::make-request
-	(lep::compile/load-file-request :pathname file :operation operation)
+	(lep::compile/load-file-request :pathname file :operation operation
+					;; smh testing -- This won't work until 4.3.
+					:warnings-buffer "*ACL Warnings*"
+					)
       ((compilep msg-start) (res)
        (fi::note-background-reply (list compilep))
        (message "%sdone." msg-start))
       ((compilep) (error)
        (fi::note-background-reply (list compilep))
-       (message "Could not :%s" error)))))
+       (fi::show-error-text "Could not :%s" error)))))
 
 
 (defun fi:list-undefined-functions ()
@@ -935,7 +945,7 @@ EXCL:*RECORD-XREF-INFO*."
        undeffuncs
        (list 'lep::edit-undefined-function-callers)))
     (() (error)
-      (message "error: %s" error))))
+      (fi::show-error-text "error: %s" error))))
 
 (defun lep::edit-undefined-function-callers (fspec &rest ignore)
   (lep::edit-somethings fspec 'lep::who-calls t))
@@ -962,7 +972,7 @@ the Allegro CL variable EXCL:*RECORD-XREF-INFO*."
        funcs
        (list 'lep::find-a-definition "unused function" nil)))
     (() (error)
-      (message "error: %s" error))))
+      (fi::show-error-text "error: %s" error))))
 
 (defun lep::eval-from-lisp (string)
   (list (eval (car (read-from-string string)))))
@@ -983,4 +993,4 @@ the Allegro CL variable EXCL:*RECORD-XREF-INFO*."
 		    (format "symbol-file %s\n" symbol-file))))
     ;; Error continuation
     (() (error)
-     (message "Cannot get pathname and pid: %s" error))))
+     (fi::show-error-text "Cannot get pathname and pid: %s" error))))

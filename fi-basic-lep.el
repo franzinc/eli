@@ -8,12 +8,18 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.34 1993/09/02 22:34:10 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.35 1994/08/01 22:48:06 smh Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
 (defvar fi::lep-debug nil)		; for debugging
 (defvar fi::trace-lep-filter nil)	; for debugging
+
+(defun fi::show-error-text (format-string &rest args)
+  (if (cdr fi:pop-up-temp-window-behavior)
+      (apply 'fi:show-some-text nil format-string args)
+    (let ((fi:pop-up-temp-window-behavior (cons (car fi:pop-up-temp-window-behavior) 't)))
+      (apply 'fi:show-some-text nil format-string args))))
 
 (defvar fi:pop-up-temp-window-behavior '(other . t)
   "*The value of this variable determines the behavior of the popup
@@ -292,9 +298,8 @@ versions of the emacs-lisp interface.
 	 (condition-case error
 	     (apply (fi::intern-it (second form)) (cddr form))
 	   (error 
-	    (message (concat "Request error: " (fi::prin1-to-string error))))))
+	    (fi::show-error-text "Request error: " (fi::prin1-to-string error)))))
 	(t (error "Funny request received: %s" form))))
-
 
 
 (defun fi::make-session (id oncep &optional fn args error-fn error-args)
@@ -384,31 +389,27 @@ versions of the emacs-lisp interface.
     session))
 
 (defmacro fi::make-request (type-and-options continuation
-			    &optional error-continuation
-				      ignore-package)
+			    &optional error-continuation ignore-package)
   (list 'lep::send-request-in-new-session
 	(list 'quote (car type-and-options))
 	t
 	(cons 'list (fi::quote-every-other-one (cdr type-and-options)))
 	(list* 'list
 	       (list 'function
-		     (list* 'lambda
-			    (append (fi::listify (second continuation))
-				    (fi::listify (first continuation)))
+		     (list* 'lambda (append (fi::listify (second continuation))
+					    (fi::listify (first continuation)))
 			    (cddr continuation)))
 	       (first continuation))
 	(list* 'list (list 'function
-			   (list* 'lambda (append (fi::listify
-						   (second error-continuation))
-						  (fi::listify
-						   (first error-continuation)))
+			   (list* 'lambda (append (fi::listify (second error-continuation))
+						  (fi::listify (first error-continuation)))
 				  (cddr error-continuation)))
 	       (first error-continuation))
 	ignore-package))
 
 
 (defmacro fi::make-complex-request (type-and-options continuation
-				&optional error-continuation)
+				    &optional error-continuation)
   (list 'lep::send-request-in-new-session
 	(list 'quote (car type-and-options))
 	nil
@@ -417,14 +418,13 @@ versions of the emacs-lisp interface.
 			   (list* 'lambda
 				  (append (fi::listify (second continuation))
 					  (fi::listify (first continuation)))
-					 (cddr continuation)))
+				  (cddr continuation)))
 	       (first continuation))
 	(list* 'list (list 'function
 			   (list* 'lambda
-				  (append (fi::listify
-					   (second error-continuation))
+				  (append (fi::listify (second error-continuation))
 					  (fi::listify (first error-continuation)))
-					 (cddr error-continuation)))
+				  (cddr error-continuation)))
 	       (first error-continuation))))
 
 (defun lep::send-request-in-existing-session (session session-class oncep
@@ -435,8 +435,7 @@ versions of the emacs-lisp interface.
 	 (process (fi::connection-process connection)))
     (send-string process
 		 (fi::prin1-to-string
-		  (list* (fi::session-id session) session-class
-			 session-arguments)))
+		  (list* (fi::session-id session) session-class session-arguments)))
     (send-string process "\n")))
 
 (defun lep::kill-session (session)
@@ -477,9 +476,8 @@ versions of the emacs-lisp interface.
 	       (first continuation))
 	(list* 'list
 	       (list 'function 
-		     (list* 'lambda (append
-				     (fi::listify (second error-continuation))
-				     (fi::listify (first error-continuation)))
+		     (list* 'lambda (append (fi::listify (second error-continuation))
+					    (fi::listify (first error-continuation)))
 			    (cddr error-continuation)))
 	       (first error-continuation))))
 
@@ -511,7 +509,7 @@ versions of the emacs-lisp interface.
 				       (fi::prin1-to-string error))))
 	 
 		   (send-string process "\n"))
-	       (message (concat "Error occurred: " (fi::prin1-to-string error))))))
+	       (fi::show-error-text "Error occurred: " (fi::prin1-to-string error)))))
 	  (setq done t))
       (unless done
 	(send-string process 
@@ -547,14 +545,14 @@ lisp-eval-server has not been started, then this function starts it."
   (fi::eval-in-lisp-wait-for-connection)
   (let ((string (if args (apply 'format string args) string)))
     (fi::make-request
-     (lep::eval-from-emacs-session
-      :string (fi::frob-case-to-lisp string))
-     ;; Normal continuation
-     (() (value)
-      ;; ignore the value...
-      nil)
-     ((string) (error)
-      (message "error evaluating %s: %s" string error)))))
+	(lep::eval-from-emacs-session
+	 :string (fi::frob-case-to-lisp string))
+      ;; Normal continuation
+      (() (value)
+       ;; ignore the value...
+       nil)
+      ((string) (error)
+       (fi::show-error-text "error evaluating %s: %s" string error)))))
 
 (defvar fi:lisp-evalserver-number-reads 20
   "*The number of times the Lisp eval server tries to read from the

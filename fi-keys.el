@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.86 1993/08/31 23:25:59 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.87 1994/08/01 22:48:17 smh Exp $
 
 (cond ((eq fi::emacs-type 'lemacs19)
        (require 'tags "etags"))
@@ -845,7 +845,7 @@ the paragraph as well."
       (fill-paragraph arg))))
 
 (defun fi:extract-list (arg)
-  "Take the list after the point and and remove the surrounding list.  With
+  "Take the list after the point and remove the surrounding list.  With
 argument ARG do it that many times." 
   (interactive "p")
   (let ((string (progn
@@ -864,6 +864,8 @@ When calling from a program, arguments are START and END, both buffer
 positions, and UNCOMMENT."
   (interactive "r\nP")
   (save-excursion
+    (if (< end start)
+	(let ((x end)) (setq end start start x)))
     (let ((start (progn (goto-char (max start (point-min)))
 			(skip-chars-forward " \t\n") ;skip blank lines
 			(beginning-of-line)

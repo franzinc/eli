@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.17 1993/09/13 20:50:13 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.18 1994/08/01 22:48:10 smh Exp $
 
 (defun composer::make-listener (new-screen-p)
   (when (and new-screen-p (fboundp 'create-screen))
@@ -57,12 +57,12 @@ Composer loaded and initialized."
 
 (defun fi::inspect-something (something function descr)
   (fi::make-request
-   (composer::inspect-something-session :fspec something :function function)
-   ;; Normal continuation
-   (() ())
-   ;; Error continuation
-   ((something) (error)
-    (message "Cannot inspect %s: %s" something error))))
+      (composer::inspect-something-session :fspec something :function function)
+    ;; Normal continuation
+    (() ())
+    ;; Error continuation
+    ((something) (error)
+     (fi::show-error-text "Cannot inspect %s: %s" something error))))
 
 ;;;Todo?
 ;;; show-callers
@@ -94,11 +94,11 @@ Composer loaded and initialized."
 
 (defun fi::show-calls (function direction msg)
   (fi::make-request
-   (composer::show-calls-session
-    :direction direction :fspec (fi::frob-case-to-lisp function))
-   (() () ())
-   ((msg) (error)
-    (message msg error))))
+      (composer::show-calls-session
+       :direction direction :fspec (fi::frob-case-to-lisp function))
+    (() () ())
+    ((msg) (error)
+     (fi::show-error-text msg error))))
 
 ;;;
 
@@ -120,11 +120,11 @@ Composer loaded and initialized."
 
 (defun fi::show-subsuper-classes (class direction msg)
   (fi::make-request
-   (composer::show-classes-session 
-    :direction direction :fspec (fi::frob-case-to-lisp class))
-   (() () ())
-   ((msg) (error)
-    (message msg error))))
+      (composer::show-classes-session 
+       :direction direction :fspec (fi::frob-case-to-lisp class))
+    (() () ())
+    ((msg) (error)
+     (fi::show-error-text msg error))))
   
 ;;; Perhaps with Epoch we should create buttons such that mousing invokes.
 ;;; Should we think about drawing classes.

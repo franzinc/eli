@@ -1,6 +1,6 @@
 ;; gnu emacs v19 specific hacks for the Franz Inc. emacs-lisp interface
 ;;
-;; Copyright (c) 1993 Franz Inc, Berkeley, Ca.
+;; Copyright (c) 1993-1994 Franz Inc, Berkeley, Ca.
 ;;
 ;; Permission is granted to any individual or institution to use, copy,
 ;; modify, and distribute this software, provided that this complete
@@ -10,57 +10,59 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-emacs19.el,v 2.4 1994/06/13 22:52:11 georgej Exp $
+;; $Header: /repo/cvs.copy/eli/fi-emacs19.el,v 2.5 1994/08/01 22:48:14 smh Exp $
 
 (require (if (and (boundp 'emacs-minor-version)
-		  (> emacs-minor-version 22)) 
+		  (> emacs-minor-version 22))
 	     ;; change happened between 19.22 and 19.23
 	     'lmenu 'menubar)
 	 "lmenu")
 
+(defun fi::source-buffer-p ()
+  (and (fi::connection-open)
+       (eq major-mode 'fi:common-lisp-mode)))
+
+(defun fi::acl-buffer-p ()
+  (and (fi::connection-open)
+       (member major-mode '(fi:common-lisp-mode
+			    fi:inferior-common-lisp-mode
+			    fi:lisp-listener-mode))))
+
 (defconst fi:allegro-file-menu
     '("ACLFile"
+      ["Run/Restart Common Lisp" fi:menu-common-lisp (fi::connection-not-open)]
       ["Run/Restart Common Lisp, new window" fi:menu-common-lisp-new-screen
        (fi::connection-not-open)]
-      ["Run/Restart Common Lisp" fi:menu-common-lisp (fi::connection-not-open)]
-      ["Create Listener, new window" fi:menu-open-lisp-listener-new-screen
+      ["Create New Listener" fi:open-lisp-listener (fi::connection-open)]
+      ["Create New Listener, new window" fi:menu-open-lisp-listener-new-screen
        (fi::connection-open)]
-      ["Create Listener" fi:open-lisp-listener (fi::connection-open)]
       "----"
-      ["Compile region or form"
-       fi:lisp-compile-active-region-or-defun (fi::connection-open)]
+      ["Compile region or form" fi:lisp-compile-active-region-or-defun (fi::acl-buffer-p)]
       ("Compile other"
-       ["region" fi:lisp-compile-region (fi::connection-open)]
-       ["last s-exp" fi:lisp-compile-last-sexp (fi::connection-open)]
-       ["buffer" fi:lisp-compile-current-buffer (fi::connection-open)])
+       ["region" fi:lisp-compile-region (fi::acl-buffer-p)]
+       ["last s-exp" fi:lisp-compile-last-sexp (fi::acl-buffer-p)]
+       ["buffer" fi:lisp-compile-current-buffer (fi::source-buffer-p)])
       "----"
-      ("Changed definitions"
-       ["List all changed definitions" fi:list-changed-definitions
-	(fi::connection-open)]
-       ["List buffer changed definitions"
-	fi:list-buffer-changed-definitions
-	(fi::connection-open)]
-       ["Compile all changed definitions" fi:compile-changed-definitions
-	(fi::connection-open)]
-       ["Compile buffer changed definitions"
-	fi:compile-buffer-changed-definitions
-	(fi::connection-open)]
-       ["Eval all changed definitions" fi:eval-changed-definitions
-	(fi::connection-open)]
-       ["Eval buffer changed definitions"
-	fi:eval-buffer-changed-definitions
-	(fi::connection-open)]
-       ["Copy all changed definitions" fi:copy-changed-definitions
-	(fi::connection-open)]
-       ["Copy buffer changed definitions" fi:copy-buffer-changed-definitions
-	(fi::connection-open)]
-       ["Compare source files" fi:compare-source-files (fi::connection-open)]
-       )
+      ["Compile and load file" fi:compile-and-load-file (fi::connection-open)]
       ["Compile file" fi:compile-file (fi::connection-open)]
       ["Load file" fi:load-file (fi::connection-open)]
       "----"
-      ["List buffer definitions" fi:list-buffer-definitions
-       (fi::connection-open)]
+      ("Changed definitions"
+       ["List all changed definitions" fi:list-changed-definitions (fi::connection-open)]
+       ["List buffer changed definitions" fi:list-buffer-changed-definitions
+	(fi::source-buffer-p)]
+       ["Compile all changed definitions" fi:compile-changed-definitions (fi::connection-open)]
+       ["Compile buffer changed definitions" fi:compile-buffer-changed-definitions
+	(fi::source-buffer-p)]
+       ["Eval all changed definitions" fi:eval-changed-definitions (fi::connection-open)]
+       ["Eval buffer changed definitions" fi:eval-buffer-changed-definitions
+	(fi::source-buffer-p)]
+       ["Copy all changed definitions to kill ring" fi:copy-changed-definitions (fi::connection-open)]
+       ["Copy buffer changed definitions to kill ring" fi:copy-buffer-changed-definitions
+	(fi::source-buffer-p)]
+       ["Compare source files" fi:compare-source-files (fi::connection-open)]
+       )
+      ["List buffer definitions" fi:list-buffer-definitions (fi::source-buffer-p)]
       "----"
       ["Exit Allegro CL" fi:exit-lisp (fi::connection-open)]
       ))
@@ -68,16 +70,14 @@
 (defconst fi:allegro-edit-menu
     '("ACLEdit"
       ["Find definition" fi:lisp-find-definition (fi::connection-open)]
-      ["Find definition other window" fi:lisp-find-definition-other-window
-       (fi::connection-open)]
-      ["Find next definition" fi:lisp-find-next-definition
-       (fi::connection-open)]
+      ["Find definition other window" fi:lisp-find-definition-other-window (fi::connection-open)]
+      ["Find next definition" fi:lisp-find-next-definition (fi::connection-open)]
       "----"
       ["Center defun" fi:center-defun t]
-      ["Extract list" fi:extract-list t]
-      ["Close all parens" fi:super-paren t]
-      ["Comment region" fi:comment-region t]
-      ["Uncomment region" fi:uncomment-region t]
+      ;; ["Extract list" fi:extract-list t]
+      ["Close all parens" fi:super-paren (fi::acl-buffer-p)]
+      ["Comment region or form" fi:comment-region-or-form (fi::source-buffer-p)]
+      ["Uncomment region or form" fi:uncomment-region-or-form (fi::source-buffer-p)]
       ))
 
 (defconst fi:allegro-help-menu
@@ -85,8 +85,7 @@
       ["Arglist" fi:lisp-arglist (fi::connection-open)]
       ["Describe" fi:describe-symbol (fi::connection-open)]
       ["Apropos" fi:lisp-apropos (fi::connection-open)]
-      ["Function Documentation" fi:lisp-function-documentation
-       (fi::connection-open)]
+      ["Function Documentation" fi:lisp-function-documentation (fi::connection-open)]
       "----"
       ["CL reference manual" fi:clman t]
       ))
@@ -95,18 +94,14 @@
     '("ACLDebug"
       ["Toggle trace" fi:toggle-trace-definition (fi::connection-open)]
       ["Debug process" fi:scan-stack (fi::connection-open)]
-      ["Macroexpand" fi:lisp-macroexpand (fi::connection-open)]
-      ["Recursive macroexpand" fi:lisp-macroexpand-recursively
-       (fi::connection-open)]
-      ["List undefined functions" fi:list-undefined-functions
-       (fi::connection-open)]
+      ["Macroexpand" fi:lisp-macroexpand (fi::acl-buffer-p)]
+      ["Recursive macroexpand" fi:lisp-macroexpand-recursively (fi::acl-buffer-p)]
+      ["List undefined functions" fi:list-undefined-functions (fi::connection-open)]
       ["List unused functions" fi:list-unused-functions (fi::connection-open)]
-      ["Kill definition" fi:kill-definition (fi::connection-open)]
+      ;; ["Kill definition" fi:kill-definition (fi::connection-open)]
       "----"
-      ["List generic function methods" fi:list-generic-function-methods
-       (fi::connection-open)]
-      ["Edit generic function methods" fi:edit-generic-function-methods
-       (fi::connection-open)]
+      ["List generic function methods" fi:list-generic-function-methods (fi::connection-open)]
+      ["Edit generic function methods" fi:edit-generic-function-methods (fi::connection-open)]
       ("Cross reference"
        ["List calls to" fi:list-who-calls (fi::connection-open)]
        ["List callers of" fi:list-who-is-called-by (fi::connection-open)]
@@ -116,57 +111,46 @@
 
 (defconst fi:composer-menu
     '("Composer"
-      ["Start Composer" fi:start-composer
-       (fi::connection-open-composer-loaded-and-stopped)]
-      ["Start Composer w/mouse line" fi:start-composer-mouse-line
+      ["Start Composer" fi:start-composer (fi::connection-open-composer-loaded-and-stopped)]
+      ["Start Composer with Podium" fi:start-composer-mouse-line
        (fi::connection-open-composer-loaded-and-stopped)]
       "----"
+      ["Inspect" fi:inspect-value (fi::composer-connection-open)]
       ("CLOS"
        ["Inspect class" fi:inspect-class (fi::composer-connection-open)]
-       ["Inspect generic function" fi:inspect-function
-	(fi::composer-connection-open)]
-       ["Show class subclasses" fi:show-subclasses
-	(fi::composer-connection-open)]
-       ["Show class superclasses" fi:show-superclasses
-	(fi::composer-connection-open)]
+       ["Inspect generic function" fi:inspect-function (fi::composer-connection-open)]
+       ["Show class subclasses" fi:show-subclasses (fi::composer-connection-open)]
+       ["Show class superclasses" fi:show-superclasses (fi::composer-connection-open)]
        )
       ("Xref"
        ["Show calls to" fi:show-calls-to (fi::composer-connection-open)]
        ["Show calls from" fi:show-calls-from (fi::composer-connection-open)]
-       ["Show calls to and from" fi:show-calls-to-and-from
-	(fi::composer-connection-open)]
-       ["Discard info" fi:discard-xref-info (fi::connection-open)]
+       ["Show calls to and from" fi:show-calls-to-and-from (fi::composer-connection-open)]
+       "----"
+       ["Discard Xref info" fi:discard-xref-info (fi::connection-open)]
        )
       ("Profiler"
-       ["Start time profiler" fi:composer-start-time-profiler
-	(fi::composer-connection-open)]
-       ["Start space profiler" fi:composer-start-space-profiler
-	(fi::composer-connection-open)]
-       ["Stop profiler" fi:composer-stop-profiler
-	(fi::composer-connection-open)]
-       ["Display time" fi:composer-display-time-profiler
-	(fi::composer-connection-open)]
-       ["Display space" fi:composer-display-space-profiler
-	(fi::composer-connection-open)]
+       ["Start time profiler" fi:composer-start-time-profiler (fi::composer-connection-open)]
+       ["Start space profiler" fi:composer-start-space-profiler (fi::composer-connection-open)]
+       ["Stop profiler" fi:composer-stop-profiler (fi::composer-connection-open)]
+       ["Display time" fi:composer-display-time-profiler (fi::composer-connection-open)]
+       ["Display space" fi:composer-display-space-profiler (fi::composer-connection-open)]
        ["Options" fi:composer-profiler-options (fi::composer-connection-open)]
        )
+      ["Options" fi:composer-other-options (fi::composer-connection-open)]
       ("Other"
-       ["Inspect" fi:inspect-value (fi::composer-connection-open)]
-;;       ["Presenting Listener" composer::make-presenting-listener
-;;	(fi::composer-connection-open)]
-       ["Processes" fi:composer-process-browser (fi::composer-connection-open)]
-       ["Systems" fi:composer-defsys-browser (fi::composer-connection-open)]
-       ["Reinitialize resources" fi:composer-reinitialize-resources
+;      ["Presenting Listener" composer::make-presenting-listener (fi::composer-connection-open)]
+       ["Process Browser" fi:composer-process-browser (fi::composer-connection-open)]
+       ["System Browser" fi:composer-defsys-browser (fi::composer-connection-open)]
+       ["Reinitialize Composer resources" fi:composer-reinitialize-resources
 	(fi::composer-connection-open)]
-       ["Options" fi:composer-other-options (fi::composer-connection-open)]
        )
       ("Help"
        ["Help" fi:composer-help (fi::composer-connection-open)]
        ["Current pointer gesture bindings" fi:composer-help-gesture-bindings
 	(fi::composer-connection-open)])
       "----"
-      ["Exit Composer/Common Windows" fi:composer-exit
-       (fi::composer-connection-open)]
+      ["Exit Composer/Common Windows" fi:composer-exit (fi::composer-connection-open)]
       ))
 
 (defun fi::connection-open ()
@@ -262,12 +246,34 @@
 	(fi:new-screen-for-common-lisp-buffer t))
     (call-interactively 'fi:open-lisp-listener)))
 
+(defun fi::region-active ()
+  (and transient-mark-mode mark-active))
+
 (defun fi:lisp-compile-active-region-or-defun ()
   (interactive)
-  (if (and (eq fi::emacs-type 'lemacs19) zmacs-regions (mark-marker))
-      ;; region is active
+  (if (fi::region-active)
       (fi:lisp-compile-region)
     (fi:lisp-compile-defun)))
+
+(defun fi:comment-region-or-form ()
+  (interactive)
+  (if (fi::region-active)
+      (fi:comment-region (point) (mark))
+    (let* ((end (save-excursion (end-of-defun) (point)))
+	   (start (save-excursion
+		    (fi:beginning-of-defun)
+		    (point))))
+      (fi:comment-region start end))))
+
+(defun fi:uncomment-region-or-form ()
+  (interactive)
+  (if (fi::region-active)
+      (fi:comment-region (point) (mark) t)
+    (let* ((end (save-excursion (end-of-defun) (point)))
+	   (start (save-excursion
+		    (fi:beginning-of-defun)
+		    (point))))
+      (fi:comment-region start end t))))
 
 (defun fi:exit-lisp ()
   (interactive)
@@ -313,11 +319,15 @@
   (message "Discarding cross reference info...")
   (fi:eval-in-lisp "(progn(xref:discard-all-xref-info)nil)")
   (message "Discarding cross reference info...done."))
-  
+
 (defun fi:composer-other-options ()
   (interactive)
   (message "Creating Composer options dialog...")
-  (fi:eval-in-lisp "(progn(wt::set-options-command t)nil)")
+  (fi:eval-in-lisp
+   "wt:(progn
+	(unless(and(composer-initialized-p)*mouse-line*)(start-mouse-line-process))
+	(do()((and(composer-initialized-p)*mouse-line*)) (sleep 2))
+	(run-motif-application 'make-main-options)nil)")
   (message "Creating Composer options dialog...done."))
 
 (defun fi:composer-help ()
@@ -386,7 +396,10 @@
   (interactive)
   (message "Creating profiler options dialog...")
   (fi:eval-in-lisp
-   "(progn(wt::run-motif-application 'wt::make-profiler-options)nil)")
+   "wt:(progn
+	(unless(and(composer-initialized-p)*mouse-line*)(start-mouse-line-process))
+	(do()((and(composer-initialized-p)*mouse-line*)) (sleep 2))
+	(run-motif-application 'make-profiler-options)nil)")
   (message "Creating profiler options dialog...done."))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -396,8 +409,7 @@
       ["Compile region or form"
        fi:lisp-compile-active-region-or-defun
        (fi::connection-open)]
-      ["Compile and load file" fi:menu-compile-and-load-file
-       (fi::connection-open)]
+      ["Compile and load file" fi:menu-compile-and-load-file (fi::connection-open)]
       "----"
       ["Find definition" fi:menu-lisp-find-definition (fi::connection-open)]
       ["Find next definition" fi:lisp-find-next-definition
@@ -427,7 +439,7 @@
 (defun fi:menu-compile-and-load-file ()
   (interactive)
   (when (buffer-file-name)
-    (fi:compile-file (buffer-file-name))))
+    (fi:compile-and-load-file (buffer-file-name))))
 
 (defun fi:menu-load-file ()
   (interactive)
@@ -514,17 +526,11 @@
   (let ((menu-bar
 	 (cond
 	  ((eq major-mode 'fi:common-lisp-mode)
-	   (if (eq fi::emacs-type 'lemacs19)
-	       (define-key fi:common-lisp-mode-map 'button3
-		 'fi:common-lisp-mode-popup-menu)
-	     (define-key fi:common-lisp-mode-map [down-mouse-3]
-	       'fi:common-lisp-mode-popup-menu)))
+	   (define-key fi:common-lisp-mode-map [down-mouse-3]
+	     'fi:common-lisp-mode-popup-menu))
 	  ((eq major-mode 'fi:inferior-common-lisp-mode)
-	   (if (eq fi::emacs-type 'lemacs19)
-	       (define-key fi:inferior-common-lisp-mode-map 'button3
-		 'fi:inferior-common-lisp-mode-popup-menu)
-	     (define-key fi:inferior-common-lisp-mode-map [down-mouse-3]
-	       'fi:inferior-common-lisp-mode-popup-menu))))))))
+	   (define-key fi:inferior-common-lisp-mode-map [down-mouse-3]
+	     'fi:inferior-common-lisp-mode-popup-menu)))))))
 
 (add-hook 'fi:inferior-common-lisp-mode-hook 'fi::install-mode-menus)
 (add-hook 'fi:common-lisp-mode-hook 'fi::install-mode-menus)

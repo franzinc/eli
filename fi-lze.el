@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.31 1993/09/01 23:12:24 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.32 1994/08/01 22:48:24 smh Exp $
 ;;
 ;; Code the implements evaluation in via the backdoor
 
@@ -162,7 +162,12 @@ with this buffer."
     (fi::make-request
 	(lep::evaluation-request
 	 :transaction-directory fi:emacs-to-lisp-transaction-directory
-	 :text (buffer-substring start end)
+	 ;; The addition of the format wrapper in the next line works
+	 ;; around the incredible bogosity of fsf emacs 19.x that prints
+	 ;; strings with non-null fontification using vector syntax.
+	 ;; The format call reliably if inefficiently strips the font data.
+	 ;; bug3330 smh 22jun94
+	 :text (format "%s" (buffer-substring start end))
 	 :echo fi:echo-evals-from-buffer-in-listener-p
 	 :partialp (not (and (eq (max start end) (point-max))
 			     (eq (min start end) (point-min))))

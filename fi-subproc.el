@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.155 1993/09/08 00:22:02 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.156 1994/08/01 22:48:36 smh Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -253,15 +253,15 @@ connection.")
 
 ;;;; the rest are buffer local:
 
-(defvar fi::lisp-host nil 
+(defvar fi::lisp-host nil
 "Host that is running the lisp in this buffer.  Buffer local.")
 (make-variable-buffer-local 'fi::lisp-host)
 
-(defvar fi::lisp-port nil 
+(defvar fi::lisp-port nil
 "Port to use in getting new listeners from remote lisp.  Buffer local.")
 (make-variable-buffer-local 'fi::lisp-port)
 
-(defvar fi::lisp-password nil 
+(defvar fi::lisp-password nil
 "Password to use in getting new listeners from remote lisp.  Buffer local.")
 (make-variable-buffer-local 'fi::lisp-password)
 
@@ -286,6 +286,10 @@ buffer local.")
   (fi:verify-emacs-support)
   (setq fi::common-lisp-backdoor-main-process-name (process-name proc))
   (fi::reset-metadot-session))
+
+(defvar fi::common-lisp-connection-type nil
+  "When creating an inferior cl process, the value to bind
+process-connection-type (q.v.).")
 
 (defun fi:common-lisp (&optional buffer-name directory image-name
 				 image-args host)
@@ -349,7 +353,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	 (host (if (interactive-p)
 		   host
 		 (or host fi:common-lisp-host (system-name))))
-	 
+
 	 (local (or (string= "localhost" host) ; the convention on many
 					       ; machines, except HP (argh!!)
 		    (string= host (system-name))))
@@ -387,6 +391,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	   (format "  in directory `%s'\n" directory)
 	   (format "  on machine `%s'.\n" host)
 	   "\n"))
+	 (process-connection-type fi::common-lisp-connection-type)	;bug3033
 	 (proc (fi::make-subprocess
 		startup-message
 		"common-lisp"
@@ -429,9 +434,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	  fi:common-lisp-host host)
     proc))
 
-(defun fi:open-lisp-listener (&optional buffer-number
-					buffer-name
-					setup-function)
+(defun fi:open-lisp-listener (&optional buffer-number buffer-name setup-function)
   "Open a connection to an existing Common Lisp process, started with the
 function fi:common-lisp, and create a Lisp Listener (a top-level
 interaction).  The Common Lisp can be either local or remote.  The name of
@@ -444,28 +447,23 @@ the buffer name is the second optional argument."
 	  (not (fi:process-running-p
 		(get-process fi::common-lisp-backdoor-main-process-name))))
       (error "Common Lisp must be running to open a lisp listener."))
-  (unless setup-function
-    (setq setup-function 'fi::setup-tcp-connection))
-  (let* ((buffer
-	  (process-buffer
-	   (get-process fi::common-lisp-backdoor-main-process-name)))
-	 (proc (fi::make-tcp-connection (or buffer-name "lisp-listener")
-					buffer-number
-					'fi:lisp-listener-mode
-					fi:common-lisp-prompt-pattern
-					(fi::get-buffer-host buffer)
-					(fi::get-buffer-port buffer)
-					(fi::get-buffer-password buffer)
-					(fi::get-buffer-ipc-version buffer)
-					setup-function)))
-    proc))
+  (let* ((buffer (process-buffer
+		  (get-process fi::common-lisp-backdoor-main-process-name))))
+    (fi::make-tcp-connection (or buffer-name "lisp-listener")
+			     buffer-number
+			     'fi:lisp-listener-mode
+			     fi:common-lisp-prompt-pattern
+			     (fi::get-buffer-host buffer)
+			     (fi::get-buffer-port buffer)
+			     (fi::get-buffer-password buffer)
+			     (fi::get-buffer-ipc-version buffer)
+			     (or setup-function 'fi::setup-tcp-connection))))
 
 (defun fi::setup-tcp-connection (proc)
   (format
    "(progn
-      (setf (getf (mp:process-property-list mp:*current-process*) %s) %d)
+      (setf (getf (mp:process-property-list mp:*current-process*) ':emacs-listener-number) %d)
       (values))\n"
-   ':emacs-listener-number
    (fi::tcp-listener-generation proc)))
 
 (defun fi:franz-lisp (&optional buffer-name directory image-name
@@ -571,7 +569,8 @@ the first \"free\" buffer name and start a subprocess in that buffer."
     host
     "sh"
     "-c"
-    (format "%s%s if test -d %s; then cd %s; fi; %s %s%s"
+    (format "%s%s if test -d %s; then cd %s; fi; exec %s %s%s"
+	    ;; exec added to remove sh process - smh 27jun94
 	    (if (fi:member-equal (file-name-nondirectory fi::rsh-command)
 				 '("remsh" "rsh"))
 		"'"
@@ -684,7 +683,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	      ;; This is optional also
 	      (setq fi::lisp-ipc-version
 		(condition-case ()
-		    (if (not (eq (cdr xx) (length command))) 
+		    (if (not (eq (cdr xx) (length command)))
 			(car (setq xx (read-from-string
 				       (fi::frob-case-from-lisp command)
 				       (cdr xx)))))
@@ -739,10 +738,13 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	      (setq default-directory directory))
 	  (if process (delete-process process))
 	  (fi::set-environment fi:subprocess-env-vars)
-	  (setq process
-	    (apply 'start-process
-		   (append (list buffer-name buffer image-file)
-			   image-args)))
+	  (let (
+		;;(process-connection-type nil) ;bug3033
+		)
+	    (setq process
+	      (apply 'start-process
+		     (append (list buffer-name buffer image-file)
+			     image-args))))
 	  (set-process-sentinel process 'fi::subprocess-sentinel)
 
 	  ;; do the following after the sentinel is established so we don't get
@@ -750,7 +752,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	  ;;
 	  (when (not (fi:process-running-p process))
 	    (error "Couldn't startup %s" image-file))
-      
+
 	  (set-process-filter process (or filter 'fi::subprocess-filter))
 	  (setq start-up-feed-name
 	    (if image-file
@@ -783,7 +785,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
     (condition-case nil
 	(funcall fi:display-buffer-function buffer)
       (error (fi::switch-to-buffer buffer)))
-    
+
     (goto-char (point-max))
 
     process))
@@ -813,23 +815,21 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 					  setup-function)
   (if (not fi::common-lisp-backdoor-main-process-name)
       (error "A Common Lisp subprocess has not yet been started."))
-  (let* ((buffer-name
-	  (fi::buffer-number-to-buffer (concat "*" buffer-name "*")
-				     buffer-number))
+  (let* ((buffer-name (fi::buffer-number-to-buffer (concat "*" buffer-name "*")
+						   buffer-number))
 	 (buffer (or (get-buffer buffer-name)
 		     (get-buffer-create buffer-name)))
 	 (default-dir default-directory)
 	 (buffer-name (buffer-name buffer))
 	 (process-buffer
-	  (if (get-process fi::common-lisp-backdoor-main-process-name)
-	      (process-buffer
-	       (get-process fi::common-lisp-backdoor-main-process-name))))
+	  (and (get-process fi::common-lisp-backdoor-main-process-name)
+	       (process-buffer (get-process fi::common-lisp-backdoor-main-process-name))))
 	 (host (or given-host (fi::get-buffer-host process-buffer)))
 	 (service (or given-service (fi::get-buffer-port process-buffer)))
 	 (password (or given-password
 		       (fi::get-buffer-password process-buffer)))
 	 (proc (get-buffer-process buffer)))
-    
+
     (unless (fi:process-running-p proc)
       (save-excursion
 	(save-window-excursion
@@ -852,25 +852,28 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 
 	  (when setup-function
 	    (process-send-string proc (funcall setup-function proc)))
-      
+
 	  (goto-char (point-max))
 	  (set-marker (process-mark proc) (point))
 	  (let ((saved-input-ring fi::input-ring)
 		(saved-input-ring-yank-pointer fi::input-ring-yank-pointer))
 	    (funcall mode)
 	    (setq fi::input-ring saved-input-ring)
-	    (setq fi::input-ring-yank-pointer saved-input-ring-yank-pointer))      
+	    (setq fi::input-ring-yank-pointer saved-input-ring-yank-pointer))
 	  (make-local-variable 'subprocess-prompt-pattern)
 	  (setq subprocess-prompt-pattern image-prompt)
 	  (fi::make-subprocess-variables))))
-    
+
     ;; display last so we can do proper screen creation on lemacs
     (condition-case nil
 	(funcall fi:display-buffer-function buffer)
       (error (fi::switch-to-buffer buffer)))
-    
+
+    ;; The recenter fixes the behavior of initial display with FSF 19.23, but
+    ;; needs to be checked across other Emacs.
     (goto-char (point-max))
-    
+    (recenter (- (window-height) 2))
+
     proc))
 
 (defun fi::subprocess-sentinel (process status)
@@ -900,7 +903,7 @@ probably succeed."
       (fi:error "
 It appears that %s to host %s exited abnormally.
 This is probably due to the host you specified to fi:common-lisp (%s)
-being inaccessible.  Check that 
+being inaccessible.  Check that
 
     %s%% rsh %s date
 
@@ -1166,7 +1169,7 @@ to your `.cshrc' after the `set cdpath=(...)' in the same file."
 			       (fi::new-directory
 				(car fi::shell-directory-stack)
 				directory)))))
-	    
+
 	    ;; check $cdpath
 	    (unless fi::cdpath (setq fi::cdpath (fi::listify-cdpath)))
 	    (let ((cdpath fi::cdpath)
