@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.12 1990/09/05 23:04:32 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.13 1991/01/11 10:10:21 layer Exp $
 
 (defvar fi:clman-package-info nil
   "*A list of (PRODUCT DIRECTORY) which tells where the manual pages are (in
@@ -468,7 +468,7 @@ Return the full pathname of the file the symbol is in. "
 	      ("math" "matrix/")
 	      ("lisp" "cl/")
 	      ("mp" "mp/")
-	      ("about" "abouts/")
+	      ("about" "about/")
 	      ("compiler" "compiler/")
 	      ("excl" "excl/")
 	      ("foreign" "foreign/")
