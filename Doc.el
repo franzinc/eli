@@ -1,4 +1,26 @@
-;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.20 1991/02/28 23:09:38 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.21 1991/03/12 18:30:11 layer Exp $
+
+(require 'cl)
+
+(defun member-equal (item list)
+  "same as common lisp (member item list :test #'equal)"
+  (let ((ptr list)
+        (done nil)
+        (result '()))
+    (while (not (or done (atom ptr)))
+      (cond ((equal item (car ptr))
+             (setq done t)
+             (setq result ptr)))
+      (setq ptr (cdr ptr)))
+    result))
+
+(setq args (cdr (member-equal "--" command-line-args)))
+(setq input-file (car args))
+(setq output-file (car (cdr args)))
+;;(setq input-file "ug.n")
+;;(setq output-file "ug.out")
+
+(message "input-file %s, output-file %s" input-file output-file)
 
 (setq load-path
   (cons (file-name-directory (directory-file-name default-directory))
@@ -12,9 +34,9 @@
   (erase-buffer)
 
   (fi:common-lisp-mode)
+  (fi:inferior-common-lisp-mode)
   (fi:franz-lisp-mode)
-  (fi:tcp-common-lisp-mode)
-  (fi:tcp-common-lisp-mode)
+  (fi:lisp-listener-mode)
   (fi:clman-mode)
   (fi:emacs-lisp-mode)
   (fi:shell-mode)
@@ -23,7 +45,7 @@
   (fi:rlogin-mode)
   (fundamental-mode)
 
-  (insert-file "spec.n")
+  (insert-file input-file)
 
   (beginning-of-buffer)
 
@@ -31,8 +53,7 @@
     (beginning-of-line)
     (cond
       ((looking-at "^%% ")
-       (let* ( ;;(debug-on-error nil)
-	      (bol (point))
+       (let* ((bol (point))
 	      (xx (re-search-forward
 		   "^%% \\([^ \t]+\\)[ \t]*\\([^ \t]+\\)?$"
 		   (save-excursion (end-of-line) (point))))
@@ -45,7 +66,7 @@
 	      (mode (when (and mode-string (not (string= "" mode-string)))
 		      (intern mode-string)))
 	      (xmode-name
-	       (when mode
+	       (when mode-string
 		 (if (string-match "\\(.*\\)-map" mode-string)
 		     (substring mode-string (match-beginning 1)
 				(match-end 1)))))
@@ -58,20 +79,23 @@
 			"[interactive function]"
 		      "[function]"))
 	      val doc)
-	 ;;(message "%s" var)
+	 ;;(message "var: %s, mode: %s, xmode-name: %s" var mode xmode-name)
 	 (cond
 	   ((fboundp var)
-	    (insert-char ?. (- 78 (length func)
-			       (length var-string)))
-	    (when (symbol-value mode)
-	      (setq current-local-map-var (symbol-value mode)))
-	    (let ((key (substitute-command-keys
-			(format "\\<current-local-map-var>\\[%s]" var))))
+	    (insert-char ?. (- 78 (length func) (length var-string)))
+	    (setq current-local-map-var
+	      (cond ((symbol-value mode))
+		    (t nil)))
+	    (let ((key (when current-local-map-var
+			 (substitute-command-keys
+			  (format "\\<current-local-map-var>\\[%s]" var)))))
 	      (insert func)
 	      (insert "\n")
-	      (if (/= 0 (or (string-match "M-x" key) 1))
-		  (insert (format "   Invoke with \"%s\" in %s.\n"
-				  key xmode-name)))
+	      (when key
+		(insert (format "   Invoke with \"%s\"" key))
+		(if (and key (null (string-match "M-x" key)))
+		    (insert (format " in %s" xmode-name)))
+		(insert ".\n"))
 	      (insert (format "   %s")
 		      (or (documentation var)
 			  "NO DOCUMENTATION AVAILABLE"))))
@@ -94,7 +118,7 @@
 			       (format "\\{%s}" var)))))
 		    (t
 		     (insert (format "%s\n   Value: %s\n   %s" type
-				     (prin1-to-string val)
+				     (frob-newlines (prin1-to-string val))
 				     doc)))))))
 	 (insert "\n\n")))
       ((looking-at "^%eval: ")
@@ -115,7 +139,20 @@
 	 (funcall mode)
 	 (delete-region start (progn (forward-char 1) (point)))))))
 
-  (write-region (point-min) (point-max) "spec.out")
+  (write-region (point-min) (point-max) output-file)
   )
+
+(defun frob-newlines (string)
+  (let ((i 0)
+	(max (length string))
+	(res nil)
+	c)
+    (while (< i max)
+      (if (= 10 (setq c (aref string i)))
+	  (progn (setq res (cons ?\\ res))
+		 (setq res (cons ?n res)))
+	(setq res (cons c res)))
+      (setq i (+ i 1)))
+    (concat (nreverse res))))
 
 (xxx-doc-xxx)
