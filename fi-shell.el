@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-shell.el,v 1.26 1996/10/03 21:17:41 layer Exp $
+;; $Id: fi-shell.el,v 1.27 1998/02/04 22:19:41 layer Exp $
 
 (defvar fi:shell-mode-map nil
   "The shell major-mode keymap.")
@@ -107,16 +107,20 @@ buffer with no process attached to it.
 The shell image file and image arguments are taken from the variables
 `fi:shell-image-name' and `fi:shell-image-arguments'."
   (interactive "p")
-  (fi::make-subprocess nil
-		       "shell"
-		       buffer-number
-		       default-directory
-		       'fi:shell-mode
-		       fi:shell-prompt-pattern
-		       fi:shell-image-name
-		       fi:shell-image-arguments
-		       (when (on-ms-windows)
-			 'fi::subprocess-dos-filter)))
+  (let (
+;;;; these are for Windows 95 only:
+	(binary-process-input t)
+	(binary-process-ouput nil))
+    (fi::make-subprocess nil
+			 "shell"
+			 buffer-number
+			 default-directory
+			 'fi:shell-mode
+			 fi:shell-prompt-pattern
+			 fi:shell-image-name
+			 fi:shell-image-arguments
+			 (when (on-ms-windows)
+			   'fi::subprocess-dos-filter))))
 
 (defun fi::subprocess-dos-filter (process output &optional stay cruft)
   (fi::subprocess-filter process output stay t))

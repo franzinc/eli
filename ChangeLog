@@ -7,6 +7,15 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.pre-beta.17
+
+Tue Feb 03 09:58:17 1998    <layer@HOBART>
+
+	* fi-shell.el: for windows 95: new bindings around
+	fi::make-subprocess call: (binary-process-ouput nil) and
+	(binary-process-input t)
+
+*******************************************************************************
 2.0.21.pre-beta.16
 
 Mon Jan 12 14:20:50 1998    <layer@HOBART>
