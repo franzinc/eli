@@ -1,5 +1,5 @@
 ;;
-;; copyright (C) 1987, 1988, 1989, 1990 Franz Inc, Berkeley, Ca.
+;; copyright (C) 1987, 1988, 1989, 1990, 1991 Franz Inc, Berkeley, Ca.
 ;;
 ;; The software, data and information contained herein are the property 
 ;; of Franz, Inc. 
@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.15 1991/03/29 11:32:30 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.16 1991/04/22 16:12:57 layer Exp $
 
 (defun fi::setup-default-clman-package-info ()
   ;;  Returns a list that 
@@ -33,25 +33,30 @@
 	     (let* ((p load-path)
 		    (string "fi/manual/")
 		    (done nil)
-		    res)
+		    (res nil))
 	       (while (and (not done) p)
-		 (if (file-exists-p (setq res (concat (car p) "/" string)))
+		 (if (file-exists-p
+		      (setq res (concat (file-name-as-directory (car p))
+					string)))
 		     (setq done t)
 		   (setq res nil))
 		 (setq p (cdr p)))
 	       (rplaca (cdr xxx) (format "%s%s" res (car (cdr xxx))))
 	       xxx)))
 	    
-	  '(("xcw" "xcw/")
-	    ("math" "matrix/")
-	    ("lisp" "cl/")
-	    ("mp" "mp/")
-	    ("about" "about/")
+	  '(("about" "about/")
+	    ("clos" "clos/")
 	    ("compiler" "compiler/")
+	    ("cond" "cond/")
 	    ("excl" "excl/")
 	    ("foreign" "foreign/")
+	    ("graph" "graph/")
+	    ("inspect" "inspect/")
+	    ("mp" "mp/")
 	    ("sys" "sys/")
-	    ("tpl" "toplevel/"))))
+	    ("tpl" "tpl/")
+	    ("xcw" "xcw/")
+	    ("xref" "xref") )))
 
 (defvar fi:clman-package-info 
     (fi::setup-default-clman-package-info)
