@@ -24,20 +24,25 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.8 1991/04/17 16:12:40 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.9 1991/04/20 23:25:13 layer Exp $
 ;;
 
 ;; Create a mode in which each line is a definition and . on that
 ;; definition brings up the definition in another window
 
 (defvar lep::definition-mode-saved-window-configuration nil)
+(defvar lep::inverse-definition-mode-saved-window-configuration nil)
 
 (defvar fi:definition-mode-map nil)
+(defvar fi:inverse-definition-mode-map nil)
 
 (defvar fi:definition-mode-mouse-map nil)
+(defvar fi:inverse-definition-mode-mouse-map nil)
 
 (defvar fi:definition-mode-hook nil
   "*A hook run from fi:definition-mode.")
+(defvar fi:inverse-definition-mode-hook nil
+  "*A hook run from fi:inverse-definition-mode.")
 
 (defun fi:definition-mode ()
   "A major mode for viewing definitions of objects defined in the Common
@@ -67,8 +72,9 @@ Entry to this mode runs the fi:definition-mode-hook."
   (make-local-variable 'lep::definition-other-args)
   (make-local-variable 'lep::definition-finding-function)
 
-  (if (null fi:definition-mode-map )
+  (if (null fi:definition-mode-map)
       (let ((map (make-keymap)))
+	(define-key map "\C-_" 'fi::dmode-undo)
 	(define-key map "\e."  'fi:lisp-find-tag)
 	(define-key map "."    'fi:definition-mode-goto-definition)
 	(define-key map "n"    'fi:definition-mode-goto-next)
@@ -79,15 +85,57 @@ Entry to this mode runs the fi:definition-mode-hook."
 
   (use-local-map fi:definition-mode-map)
 
-  ;;(if fi:definition-mode-mouse-map
-  ;;    nil
-  ;;  (setq fi:definition-mode-mouse-map (create-mouse-map))
-  ;;  (define-mouse fi:definition-mode-mouse-map mouse-left mouse-down
-  ;;		'lep::dmode-mouse-select))
+  (when (fboundp 'create-mouse-map)
+    (if fi:definition-mode-mouse-map
+      nil
+    (setq fi:definition-mode-mouse-map (create-mouse-map))
+    (define-mouse fi:definition-mode-mouse-map mouse-left mouse-down
+  		'lep::dmode-mouse-select)))
   (when fi:definition-mode-mouse-map
     (use-local-mouse-map fi:definition-mode-mouse-map))
 
   (run-hooks 'fi:definition-mode-hook))
+
+(defun fi:inverse-definition-mode ()
+  (interactive)
+  (kill-all-local-variables)
+  (setq major-mode 'fi:inverse-definition-mode)
+  (setq mode-name "Inverse Definition Mode")
+
+  (make-local-variable 'lep::definitions)
+  (make-local-variable 'lep::definition-types)
+  (make-local-variable 'lep::definition-other-args)
+
+  (if (null fi:inverse-definition-mode-map)
+      (let ((map (make-keymap)))
+	(define-key map "\C-_" 'fi::dmode-undo)
+	(define-key map "\e."  'fi:lisp-find-tag)
+	(define-key map "."    nil)
+	(define-key map "n"    nil)
+	(define-key map "c"    'fi:inverse-definition-who-calls)
+	(define-key map "p"    nil)
+	(define-key map "q"    'fi:inverse-definition-mode-quit)
+	(setq fi:inverse-definition-mode-map map)))
+
+  (use-local-map fi:inverse-definition-mode-map)
+
+  (when (fboundp 'create-mouse-map)
+    (if fi:inverse-definition-mode-mouse-map
+      nil
+    (setq fi:inverse-definition-mode-mouse-map (create-mouse-map))
+    (define-mouse fi:inverse-definition-mode-mouse-map mouse-left mouse-down
+  		'lep::dmode-mouse-select)))
+  (when fi:inverse-definition-mode-mouse-map
+    (use-local-mouse-map fi:inverse-definition-mode-mouse-map))
+
+  (run-hooks 'fi:inverse-definition-mode-hook))
+
+(defun fi::dmode-undo ()
+  "Perform the undo in the dmode buffer.  We have to first make the buffer
+writeable."
+  (interactive)
+  (let ((buffer-read-only nil))
+    (undo)))
 
 (defun fi:list-buffer-definitions ()
   "List the definition for all the objects in the current buffer.  That is,
@@ -107,10 +155,11 @@ use the current buffer and display all the definitions contained in it."
 		   (message "Cannot find the definitions of buffer %s: %s"
 			    buffer error)))))
 
-;;(defun lep::dmode-mouse-select (info)
-;;  (goto-char (car info))
-;;  (beginning-of-line)
-;;  (fi:definition-mode-goto-definition))
+(defun lep::dmode-mouse-select (info)
+  (pop-to-buffer (second info))
+  (goto-char (car info))
+  (beginning-of-line)
+  (fi:definition-mode-goto-definition))
 
 (defun fi:definition-mode-quit ()
   "Quit definition mode and restore the window configuration as it was
@@ -118,6 +167,14 @@ before definition mode was entered."
   (interactive)
   (bury-buffer)
   (set-window-configuration lep::definition-mode-saved-window-configuration))
+
+(defun fi:inverse-definition-mode-quit ()
+  "Quit inverse-definition mode and restore the window configuration as it
+was before inverse-definition mode was entered."
+  (interactive)
+  (bury-buffer)
+  (set-window-configuration
+   lep::inverse-definition-mode-saved-window-configuration))
 
 (defun fi:definition-mode-goto-definition ()
   "Find the definition associated with the entry on the current line."
@@ -141,6 +198,15 @@ before definition mode was entered."
 	 (type (nth n lep::definition-types)))
     (when (not (equal type '(nil)))
       (fi:toggle-trace-definition def))))
+
+(defun fi:inverse-definition-who-calls ()
+  (interactive)
+  (let* ((n (count-lines (point-min)
+			 (save-excursion (beginning-of-line) (point))))
+	 (def (nth n lep::definitions))
+	 (type (nth n lep::definition-types)))
+    (when (not (equal type '(nil)))
+      (fi:list-who-calls def))))
 
 (defun fi:definition-mode-goto-next ()
   "Find the definition on the next line.  Equivalent to ``\\<global-map>\\[next-line]''
@@ -183,7 +249,10 @@ in definition mode."
 				     &optional buffer-name)
   (setq lep::definition-mode-saved-window-configuration
     (current-window-configuration))
-  (switch-to-buffer-other-window (or buffer-name "*definitions*"))
+  (let* ((bn (or buffer-name "*definitions*"))
+	(bb (get-buffer bn)))
+    (unless (eq bb (current-buffer))
+      (switch-to-buffer-other-window (or bb bn))))
   (setq buffer-read-only nil)
   (erase-buffer)
   (mapcar '(lambda (x) 
@@ -202,5 +271,35 @@ in definition mode."
   (setq lep::definition-finding-function fn-and-arguments)
   (setq fi:package package)
   (let ((height (window-height)))
-    (when (> height 5) (shrink-window (- height 5))))
+    (when (and (> height 5) (not (one-window-p)))
+      (shrink-window (- height 5))))
+  (beginning-of-buffer))
+
+(defun lep:display-some-inverse-definitions (package buffer-definitions
+					     &optional buffer-name)
+  (setq lep::inverse-definition-mode-saved-window-configuration
+    (current-window-configuration))
+  (let* ((bn (or buffer-name "*inverse-definitions*"))
+	 (bb (get-buffer bn)))
+    (unless (eq bb (current-buffer))
+      (switch-to-buffer-other-window (or bb bn))))
+  (setq buffer-read-only nil)
+  (erase-buffer)
+  (mapcar '(lambda (x) 
+	    (princ (car x) (current-buffer))
+	    (unless (equal '(nil) (second x))
+	      (insert ", ")
+	      (princ (second x) (current-buffer)))
+	    (insert "\n"))
+	  buffer-definitions)
+  (fi:inverse-definition-mode)
+  (not-modified)
+  (setq buffer-read-only t)
+  (setq lep::definitions (mapcar 'car buffer-definitions))
+  (setq lep::definition-types (mapcar 'second buffer-definitions))
+  (setq lep::definition-other-args (mapcar 'third buffer-definitions))
+  (setq fi:package package)
+  (let ((height (window-height)))
+    (when (and (> height 5) (not (one-window-p)))
+      (shrink-window (- height 5))))
   (beginning-of-buffer))
