@@ -9,6 +9,16 @@ Documentation changes:	<`none' or give pointer to them>
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.pre-alpha.9
+
+Documentation changes:	no new features
+
+Mon Mar 24 16:08:15 1997  Kevin Layer  <layer@ultra>
+
+	* fi-subproc.el: if no lisp image name (or nil when
+	non-interactive), then don't pass -I for backward compat
+
+*******************************************************************************
 2.0.21.pre-alpha.8
 
 Documentation changes:	no new features

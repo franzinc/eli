@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.186 1997/03/11 20:29:09 layer Exp $
+;; $Id: fi-subproc.el,v 1.187 1997/03/25 00:09:35 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -140,7 +140,8 @@ fit, or otherwise in a popup buffer.")
        (let ((args (list "-e" (format "(excl:start-emacs-lisp-interface %s)"
 				      use-background-streams))))
 	 (when lisp-image-name
-	   (setq args (append (list "-I" lisp-image-name) args)))
+	   (setq args (append (list "-I" (expand-file-name lisp-image-name))
+			      args)))
 	 args)))
   "*This value of this variable determines whether or not the emacs-lisp
 interface is started automatically when fi:common-lisp is used to run
@@ -390,13 +391,12 @@ be a string. Use 6th argument for image file."))
 		    (car fi:common-lisp-image-name)
 		  fi:common-lisp-image-name))))
 	 (executable-image-file
-	  (expand-file-name
-	   (if (interactive-p)
-	       executable-image-file
-	     (or executable-image-file
-		 (if (consp fi:common-lisp-image-name)
-		     (cdr fi:common-lisp-image-name)
-		   fi:common-lisp-image-name)))))
+	  (if (interactive-p)
+	      executable-image-file
+	    (or executable-image-file
+		(if (consp fi:common-lisp-image-name)
+		    (cdr fi:common-lisp-image-name)
+		  fi:common-lisp-image-name))))
 	 (image-args
 	  (if (interactive-p)
 	      image-args
@@ -795,6 +795,9 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		  (expand-file-name
 		   (read-file-name "Lisp image: " image-file image-file
 				   nil)))
+		(when (string= image-file default-directory)
+		  ;; null answer:
+		  (setq image-file nil))
 		(setq file-name
 		  (if (string-match "[\$~]" file-name)
 		      (expand-file-name file-name)
