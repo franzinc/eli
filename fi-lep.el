@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.55 1993/08/11 17:06:35 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.56 1993/09/02 22:34:20 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -427,7 +427,7 @@ separator that causes the substring before the hyphen to be matched at the
 beginning of words in target symbols."
   (interactive)
   (let* ((end (point))
-	 package real-beg
+	 xpackage real-beg
 	 (beg (save-excursion
 		(backward-sexp 1)
 		(while (= (char-syntax (following-char)) ?\')
@@ -435,7 +435,7 @@ beginning of words in target symbols."
 		(setq real-beg (point))
 		(let ((opoint (point)))
 		  (if (re-search-forward ":?:" end t)
-		      (setq package
+		      (setq xpackage
 			(concat ":"
 				(buffer-substring opoint
 						  (match-beginning 0))))))
@@ -443,7 +443,7 @@ beginning of words in target symbols."
 	 (pattern (buffer-substring beg end))
 	 (functions-only (if (eq (char-after (1- real-beg)) ?\() t nil))
 	 (downcase (not (fi::all-upper-case-p pattern)))
-	 (xalist (fi::lisp-complete-1 pattern package functions-only))
+	 (xalist (fi::lisp-complete-1 pattern xpackage functions-only))
 	 (alist (if downcase
 		    (mapcar 'fi::downcase-alist-elt xalist)
 		  xalist))
@@ -504,7 +504,7 @@ beginning of words in target symbols."
 	      (mapcar 'cdr alist)))
 	   (message "Making completion list...done")))))
 
-(defun fi::lisp-complete-1 (pattern package functions-only
+(defun fi::lisp-complete-1 (pattern xpackage functions-only
 			    &optional ignore-keywords)
   (condition-case nil
       (let ((completions
@@ -513,10 +513,10 @@ beginning of words in target symbols."
 		   ':pattern (fi::frob-case-to-lisp pattern)
 		   ':buffer-package (fi::string-to-keyword fi:package)
 		   ':package (progn
-			       (if (equal ":" package)
-				   (setq package "keyword"))
+			       (if (equal ":" xpackage)
+				   (setq xpackage "keyword"))
 			       (intern (fi::frob-case-to-lisp
-					package)))
+					xpackage)))
 		   ':functions-only-p (intern
 				       (fi::frob-case-to-lisp
 					functions-only))
@@ -565,12 +565,12 @@ beginning of words in target symbols."
 	   (let* ((string (read-string
 			   prompt (fi::getf-property options ':initial-input)))
 		  (colonp (string-match ":?:" string nil))
-		  (package (or (fi::getf-property options ':package)
+		  (xpackage (or (fi::getf-property options ':package)
 			       fi:package)))
 	     ;; symbol-point
 	     (if colonp
 		 string
-	       (if package
+	       (if xpackage
 		   (concat fi:package "::" string)
 		 string))))
 	  (:file-name (read-file-name 
@@ -595,11 +595,11 @@ beginning of words in target symbols."
   (let* ((inhibit-quit nil)
 	 (matchp (string-match ":?:" pattern))
 
-	 (package (and matchp (substring pattern 0 matchp)))
+	 (xpackage (and matchp (substring pattern 0 matchp)))
 	 (string (if matchp 
 		     (substring pattern (match-end 0))
 		   pattern))
-	 (package-prefix (and package
+	 (package-prefix (and xpackage
 			      (substring pattern matchp (match-end 0))))
 	 (alist
 	  (fi::lisp-complete-2
@@ -608,16 +608,16 @@ beginning of words in target symbols."
 	     session
 	     ':complete
 	     (fi::frob-case-to-lisp string)
-	     (and package 
+	     (and xpackage 
 		  (intern
 		  (fi::frob-case-to-lisp 
 		   (concat ":" 
-			   (if (equal "" package)
+			   (if (equal "" xpackage)
 			       "keyword"
-			     package)))))))))
+			     xpackage)))))))))
 	 (completion (and alist (try-completion string alist))))
-    (when (and package (stringp completion))
-      (setq completion (concat package package-prefix completion)))
+    (when (and xpackage (stringp completion))
+      (setq completion (concat xpackage package-prefix completion)))
     (ecase what
       ((nil) completion)
       ((t) (mapcar (function cdr) alist))

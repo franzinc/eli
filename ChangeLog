@@ -1,5 +1,15 @@
 Thu Sep  2 11:32:57 1993  Kevin Layer  (layer at sole)
 
+	* fi-utils.el:
+	* fi-lep.el:
+	* fi-dmode.el:
+	* fi-changes.el:
+	* fi-basic-lep.el:
+	  change all `package' local variables to `xpackage', because
+	  `package' is often local (due to the file mode line) and
+	  set-buffer undoes dynamic bindings of local variables when
+	  switching from one buffer to another.  Foo!
+
 	* fi-lemacs.el: just found out that the active-p menu predicates
 	run with the locals from the buffer in the screen where the
 	menubar resides.  If fi:package is something, like :pclos, that

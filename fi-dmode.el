@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.23 1993/07/23 03:48:44 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.24 1993/09/02 22:34:16 layer Exp $
 
 ;; Create a mode in which each line is a definition and . on that
 ;; definition brings up the definition in another window
@@ -279,7 +279,7 @@ in definition mode."
     (error "Cannot find the definition of %s in %s: %s"
 	   string buffer error))))
 
-(defun lep:display-some-definitions (package buffer-definitions
+(defun lep:display-some-definitions (xpackage buffer-definitions
 				     fn-and-arguments
 				     &optional buffer-name)
   (let ((buffer (get-buffer-create (or buffer-name "*definitions*"))))
@@ -304,10 +304,10 @@ in definition mode."
       (setq lep::definition-types (mapcar 'second buffer-definitions))
       (setq lep::definition-other-args (mapcar 'third buffer-definitions))
       (setq lep::definition-finding-function fn-and-arguments)
-      (setq fi:package package)
+      (setq fi:package xpackage)
       (beginning-of-buffer))))
 
-(defun lep:display-some-inverse-definitions (package buffer-definitions
+(defun lep:display-some-inverse-definitions (xpackage buffer-definitions
 					     fn-and-arguments
 					     &optional buffer-name)
   (let ((buffer (get-buffer-create (or buffer-name "*inverse-definitions*"))))
@@ -332,7 +332,7 @@ in definition mode."
       (setq lep::definition-types (mapcar 'second buffer-definitions))
       (setq lep::definition-other-args (mapcar 'third buffer-definitions))
       (setq lep::definition-finding-function fn-and-arguments)
-      (setq fi:package package)
+      (setq fi:package xpackage)
       (beginning-of-buffer))))
 
 (defun fi::goto-definitions-buffer (buffer config-var)

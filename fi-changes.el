@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-changes.el,v 1.13 1993/08/31 19:03:39 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-changes.el,v 1.14 1993/09/02 22:34:13 layer Exp $
 ;;
 ;; Support for changed definitions
 
@@ -105,16 +105,16 @@ in NEW-FILE which have been added, deleted or changed with respect to
 OLD-FILE."
   (interactive "fNew file: \nfOld file: ")
   (find-file new-file)
-  (let ((package fi:package))
+  (let ((xpackage fi:package))
     (fi::make-request
 	(scm::list-changed-definitions
 	 :transaction-directory fi:emacs-to-lisp-transaction-directory
 	 :operation ':list
 	 :old-file old-file
 	 :new-file new-file)
-     ((package) (changes)
+     ((xpackage) (changes)
       (if changes
-	  (fi::show-changes changes nil package)
+	  (fi::show-changes changes nil xpackage)
 	(message "There are no changes.")))
      (() (error)
       (error "Cannnot list changed definitions: %s" error)))))
@@ -129,7 +129,7 @@ OLD-FILE."
 			     (format "%s/%s.cl"
 				     fi:emacs-to-lisp-transaction-directory
 				     (make-temp-name "EtoL"))))
-	(package fi:package))
+	(xpackage fi:package))
     (if all-buffers
 	(let ((args nil))
 	  (save-excursion
@@ -202,8 +202,8 @@ OLD-FILE."
        (:compile "Cannnot compile changed definitions: %s"))
      error))))
 
-(defun fi::show-changes (changes &optional buffer-name package)
-  (lep:display-some-definitions (or package fi:package)
+(defun fi::show-changes (changes &optional buffer-name xpackage)
+  (lep:display-some-definitions (or xpackage fi:package)
 				changes
 				(list 'lep::find-buffer-definition)
 				(or buffer-name "*changes*")))

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.33 1993/09/01 03:24:29 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.34 1993/09/02 22:34:10 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -28,12 +28,12 @@ the current window to be replaced with the help buffer.  The reason for
 specifying a CDR of nil is so that a window is always used--messages
 printed in the minibuffer can easily be erased.")
 
-(defun fi:show-some-text (package text &rest args)
+(defun fi:show-some-text (xpackage text &rest args)
   (when args (setq text (apply (function format) text args)))
   (let ((n (string-match "[\n]+\\'" text)))
     (when n (setq text (substring text 0 n))))
   (if (null (cdr fi:pop-up-temp-window-behavior))
-      (fi::show-some-text-1 text (or package fi:package))
+      (fi::show-some-text-1 text (or xpackage fi:package))
     (let* ((window (minibuffer-window))
 	   (height (1- (window-height window)))
 	   (width (window-width window))
@@ -49,7 +49,7 @@ printed in the minibuffer can easily be erased.")
 	(fi::show-some-text-1
 	 (cond (fi:package (format "[package: %s]\n%s" fi:package text))
 	       (t text))
-	 (or package fi:package))))))
+	 (or xpackage fi:package))))))
 
 (defun fi::frob-string (text)
   (let ((start 0)

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.48 1993/09/01 23:12:39 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.49 1993/09/02 22:34:23 layer Exp $
 
 ;;; Misc utilities
 
@@ -281,8 +281,8 @@ that starts with ~."
        (or (eq (car plist) prop)
 	   (fi::member-plist prop (cddr plist)))))
 
-(defun fi::string-to-keyword (package)
-  (and package (intern (concat ":" package))))
+(defun fi::string-to-keyword (xpackage)
+  (and xpackage (intern (concat ":" xpackage))))
 
 (defun fi::listify (x)
   (and x
@@ -377,15 +377,15 @@ at the beginning of the line."
   ;; HACK HACK HACK HACK
   
   (let ((fi:package fi::original-package))
-    (let (package deletion)
+    (let (xpackage deletion)
       (if (string-match ":?:" pattern)
-	  (setq package
+	  (setq xpackage
 	    (concat
 	     ":" (substring pattern 0 (match-beginning 0)))
 	    deletion (substring pattern 0 (match-end 0))
 	    pattern
 	    (substring pattern (match-end 0))))
-      (let* ((alist (fi::lisp-complete-1 pattern package nil ignore-keywords))
+      (let* ((alist (fi::lisp-complete-1 pattern xpackage nil ignore-keywords))
 	     (completion (and alist (try-completion pattern alist))))
 	(ecase what
 	  ((nil) (cond ((eq completion t) t)
