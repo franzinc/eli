@@ -3,7 +3,7 @@
 	      Franz Inc. GNU Emacs/Common Lisp Interface
 			   Release 2.0alpha
 
-;; $Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.55 1991/02/27 13:30:36 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.56 1991/02/27 16:20:41 layer Exp $
 
 ****** Common Lisp Mode *******************************************************
 
@@ -16,11 +16,11 @@
 %% fi:fill-paragraph
 %% fi:find-unbalanced-parenthesis
 %% fi:indent-code-rigidly
+%% fi:indent-methods-case-sensitive
 %% fi:indent-sexp			fi:common-lisp-mode-map
 %% fi:lisp-arglist			fi:common-lisp-mode-map
 %% fi:lisp-atom-p
 %% fi:lisp-body-indent
-%% fi:lisp-case-sensitive
 %% fi:lisp-comment-indent
 %% fi:lisp-comment-indent-specification
 %% fi:lisp-complete-symbol 		fi:common-lisp-mode-map
