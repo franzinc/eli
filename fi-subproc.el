@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.193 1997/12/11 00:28:29 layer Exp $
+;; $Id: fi-subproc.el,v 1.194 1997/12/11 01:21:04 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -796,12 +796,13 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		     (read-file-name "Executable image name: "
 				     image-name image-name nil)))
 		(setq image-file
-		  (expand-file-name
-		   (read-file-name "Lisp image: " image-file image-file
-				   nil)))
+		  (read-file-name "Lisp image: " image-file image-file
+				  nil))
 		(when (string= image-file default-directory)
-		  ;; null answer:
+		  ;; the null answer:
 		  (setq image-file nil))
+		(when image-file
+		  (setq image-file (expand-file-name image-file)))
 		(setq file-name
 		  (if (string-match "[\$~]" file-name)
 		      (expand-file-name file-name)
