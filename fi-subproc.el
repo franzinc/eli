@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.68 1990/09/11 16:50:43 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.69 1990/09/13 23:28:27 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -557,9 +557,9 @@ are read from the minibuffer."
   (send-string
    process
    (if fi:unix-domain
-       "(progn(require :ipc)(require :emacs))
+       "(progn(excl::require :ipc)(excl::require :emacs))
 	(progn(setq ipc::*unix-domain* t)(ipc:start-lisp-listener-daemon))\n"
-     "(progn(require :ipc)(require :emacs))
+     "(progn(excl::require :ipc)(excl::require :emacs))
       (ipc:start-lisp-listener-daemon)\n")))
 
 (defun fi::make-subprocess-variables ()
