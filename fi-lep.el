@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 1.71 1996/08/01 22:36:09 layer Exp $
+;; $Id: fi-lep.el,v 1.72 1996/10/29 19:09:07 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -179,6 +179,8 @@ time."
    (() (error)
        (when (fi::pop-metadot-session)
 	 (fi::show-error-text "%s" error)))))
+
+(defvar session) ;; bad name, but changing it is too complicated right now
 
 (defun scm::make-and-initialize-metadot-session (something
 						 &optional what from-fspec)
@@ -479,7 +481,7 @@ beginning of words in target symbols."
 	   (insert (fi::abbrev-to-symbol pattern alist))
 
 	   (message "Making completion list...")
-	   (with-output-to-temp-buffer "*Help*"
+	   (with-output-to-temp-buffer "*Completions*"
 	     (display-completion-list (mapcar 'cdr alist)))
 	   (message "Making completion list...done"))
 
@@ -494,7 +496,7 @@ beginning of words in target symbols."
 	   (delete-region beg end)
 	   (insert completion)
 	   (message "Making completion list...")
-	   (with-output-to-temp-buffer "*Help*"
+	   (with-output-to-temp-buffer "*Completions*"
 	     (display-completion-list
 	      (mapcar 'cdr alist))))
 ;;;;
@@ -511,7 +513,7 @@ beginning of words in target symbols."
 	       (message "Completion is unique.")))
 	  (t
 	   (message "Making completion list...")
-	   (with-output-to-temp-buffer "*Help*"
+	   (with-output-to-temp-buffer "*Completions*"
 	     (display-completion-list
 	      (mapcar 'cdr alist)))
 	   (message "Making completion list...done")))))

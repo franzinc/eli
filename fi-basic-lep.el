@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-basic-lep.el,v 1.40 1996/08/08 03:36:29 layer Exp $
+;; $Id: fi-basic-lep.el,v 1.41 1996/10/29 19:09:05 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -491,6 +491,9 @@ versions of the emacs-lisp interface.
 
 (defun fi::intern-it (s)
   (if (stringp s) (intern s) s))
+
+(defvar connection) ;; ugly, but necessary
+(defvar process) ;; this, too
 
 (defun lep::make-session-for-lisp (session-id replyp oncep function &rest args)
   (let ((session (fi::make-session session-id nil))
