@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.17 1991/01/31 14:47:45 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.18 1991/02/12 14:55:56 layer Exp $
 
 (defvar fi:rlogin-mode-map nil
   "The rlogin major-mode keymap.")
@@ -99,12 +99,15 @@ The image file and image arguments are taken from the variables
 
 See fi:explicit-shell."
   (interactive "p\nsRemote login to host: ")
-  (fi::make-subprocess buffer-number host 'fi:rlogin-mode
-		       fi:rlogin-prompt-pattern
-		       (format "%senv" exec-directory)
-		       (append (list "TERM=dumb" fi:rlogin-image-name host)
-			       fi:rlogin-image-arguments)
-		       'fi::rlogin-filter))
+  (let ((fi:subprocess-env-vars
+	 '(("EMACS" . "t")
+	   ("TERM" . "dumb")
+	   ("DISPLAY" . (getenv "DISPLAY")))))
+    (fi::make-subprocess buffer-number host 'fi:rlogin-mode
+			 fi:rlogin-prompt-pattern
+			 fi:rlogin-image-name
+			 (cons host fi:rlogin-image-arguments)
+			 'fi::rlogin-filter)))
 
 (defun fi:explicit-rlogin (&optional buffer-number host
 				     image-name image-arguments)
@@ -112,12 +115,15 @@ See fi:explicit-shell."
 are read from the minibuffer."
   (interactive
    "p\nsRemote login to host: \nsImage name: \nxImage arguments (a list): ")
-  (fi::make-subprocess buffer-number host 'fi:rlogin-mode
-		       fi:rlogin-prompt-pattern
-		       (format "%senv" exec-directory)
-		       (append (list "TERM=dumb" image-name host)
-			       image-arguments)
-		       'fi::rlogin-filter))
+  (let ((fi:subprocess-env-vars
+	 '(("EMACS" . "t")
+	   ("TERM" . "dumb")
+	   ("DISPLAY" . (getenv "DISPLAY")))))
+    (fi::make-subprocess buffer-number host 'fi:rlogin-mode
+			 fi:rlogin-prompt-pattern
+			 image-name
+			 (cons host image-arguments)
+			 'fi::rlogin-filter)))
 
 (defun fi::rlogin-filter (process output)
   "Filter for `fi:rlogin' subprocess buffers.
