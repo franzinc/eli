@@ -1,10 +1,9 @@
-# $Header: /repo/cvs.copy/eli/Attic/Makefile.fi,v 2.4 1993/06/30 04:35:13 layer Exp $
+# $Header: /repo/cvs.copy/eli/Attic/Makefile.fi,v 2.5 1993/07/01 20:21:46 layer Exp $
 
 # removed: girls biggie fax
 hosts = ox akbar clay hyper sole fridge
-
-eli = /usr/fi/lib/eli
-to = $(eli)/master
+elib_root = /usr/fi/emacs-lib
+to = $(elib_root)/fi
 
 # /usr/ucb/rdist on Suns has a very serious bug: the special command does
 # not expand rdist variables in the command string.  This one works, however:
@@ -13,22 +12,24 @@ rdist = /usr/ucb/rdist
 
 rdist: all
 	rm -fr DIST
+	rm -f manual
+	ln -s /net/vapor/scm/emacs-lib/clman manual
 	${rdist} -qc Makefile Makefile.fi ChangeLog *.n *.doc *.el *.elc \
-		 "`hostname`:`pwd`/DIST"
+		 manual "`hostname`:`pwd`/DIST"
 	(cd DIST; ${rdist} -Rc . "{`echo ${hosts} | sed 's/ /,/g'`}:$(to)")
 	rm -fr DIST
 
 save_version:
 	@if test -z "$(version)"; then echo version= is null; exit 1; fi
 	@for host in ${hosts}; do\
-		echo rsh $$host -n mv $(eli)/master $(eli)/fi-$(version);\
+		echo rsh $$host -n mv $(to) $(elib_root)/fi-$(version);\
 	done
 
 ###############################################################################
 
 release_files = ChangeLog [a-z]*.el [a-z]*.elc Makefile *.doc *.n \
 		examples/*.el TAGS
-release_root = /net/vapor/scm/emacs/eli/Dists
+release_root = /net/vapor/scm/emacs-lib/eli/Dists
 release_directory = $(release_root)/dist-$(version)
 release_tar = $(release_root)/eli-$(version).tar
 

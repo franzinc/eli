@@ -8,19 +8,18 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 2.4 1993/04/29 18:53:59 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 2.5 1993/07/01 20:21:48 layer Exp $
 
-(defun fi::figure-out-mandir ()
-  (do* ((path load-path (cdr path))
-	(pa (car path) (car path))
-	(result nil))
-      ((or result (null path))
-       (or result (error "Couldn't find fi/manual/")))
-    (if (file-exists-p 
-	 (concat pa "/fi/manual/"))
-	(setq result (concat pa "/fi/manual/")))))
-
-(defvar fi::manual-dir (fi::figure-out-mandir))
+(defvar fi::manual-dir
+    (do* ((path load-path (cdr path))
+	  (pa (car path) (car path))
+	  (result nil)
+	  (d nil))
+	((or result (null path))
+	 (or result (error "Couldn't find manual/")))
+      (setq d (concat pa (if (string-match "/$" pa) "manual/" "/manual/")))
+      (when (file-exists-p (concat d "OBLIST.el"))
+	(setq result d))))
 
 (if (not (boundp 'fi::clman-big-oblist))
     (load (concat fi::manual-dir "OBLIST")))
