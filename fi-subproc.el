@@ -19,7 +19,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.133 1991/11/21 18:29:56 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.134 1991/11/27 17:34:07 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -122,7 +122,7 @@ fi:lisp-eval-* functions will be echoed by Common Lisp.")
     (function
      (lambda (use-background-streams)
        (list "-e"
-	     (format "(start-emacs-lisp-interface %s)"
+	     (format "(excl:start-emacs-lisp-interface %s)"
 		     use-background-streams))))
   "*This value of this variable determines whether or not the emacs-lisp
 interface is started automatically when fi:common-lisp is used to run
@@ -578,7 +578,8 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		    (if (= ?/ (aref dir (- (length dir) 1)))
 			dir
 		      (concat dir "/")))))
-	      (read-file-name "Image name: " image-name image-name nil)
+	      (expand-file-name
+	       (read-file-name "Image name: " image-name image-name nil))
 	      (setq image-args
 		(fi::listify-string
 		 (read-from-minibuffer
