@@ -1,4 +1,4 @@
-;;					-[Mon May 22 15:10:39 1989 by layer]-
+;;					-[Fri Jul  7 16:59:38 1989 by layer]-
 ;;
 ;; Allegro CL IPC interface
 ;;
@@ -16,7 +16,7 @@
 ;; at private expense as specified in DOD FAR 52.227-7013 (c) (1) (ii).
 ;;
 ;;
-;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.21 1989/05/22 15:33:14 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.22 1989/07/11 18:19:23 layer Exp $
 ;; $Locker: layer $
 
 (provide :ipc)
@@ -136,111 +136,115 @@ listener ever completes, it makes sure files are closed."
 	't))))
 
 (defun lisp-listener-socket-daemon ()
-  (let (listen-socket-fd
-	(listen-sockaddr
-	 (if *unix-domain*
-	     (make-cstruct 'sockaddr-un)
-	   (make-cstruct 'sockaddr-in)))
-	(timeval (make-cstruct 'timeval))
-	(mask-obj (make-cstruct 'unsigned-long))
-	(int (make-cstruct 'unsigned-long))
-	mask
-	stream
-	proc-name
-	fd)
+  (block bad-news
+    (let (listen-socket-fd
+	  (listen-sockaddr
+	   (if *unix-domain*
+	       (make-cstruct 'sockaddr-un)
+	     (make-cstruct 'sockaddr-in)))
+	  (timeval (make-cstruct 'timeval))
+	  (mask-obj (make-cstruct 'unsigned-long))
+	  (int (make-cstruct 'unsigned-long))
+	  mask
+	  stream
+	  proc-name
+	  fd)
     
-    (unless *socket-pathname*
-      (setq *socket-pathname*
-	(format nil "~a/~a" (sys:getenv "HOME") ".excl_to_emacs")))
+      (unless *socket-pathname*
+	(setq *socket-pathname*
+	  (format nil "~a/~a" (sys:getenv "HOME") ".excl_to_emacs")))
 
-    (setf (timeval-sec timeval) 0
-	  (timeval-usec timeval) 0)
-    (unwind-protect
-	 (progn
-	  (if *unix-domain* (errorset (delete-file *socket-pathname*)))
-	  (setq listen-socket-fd (socket
-				  (if *unix-domain* *af-unix* *af-inet*)
-				  *sock-stream*
-				  0))
-	  (when (< listen-socket-fd 0)
-	    (perror "socket")
-	    (setq listen-socket-fd nil)
-	    (return-from lisp-listener-socket-daemon nil))
-	  (mp::mpwatchfor listen-socket-fd)
+      (setf (timeval-sec timeval) 0
+	    (timeval-usec timeval) 0)
+      (unwind-protect
+	  (progn
+	    (if *unix-domain* (errorset (delete-file *socket-pathname*)))
+	    (setq listen-socket-fd (socket
+				    (if *unix-domain* *af-unix* *af-inet*)
+				    *sock-stream*
+				    0))
+	    (when (< listen-socket-fd 0)
+	      (perror "socket")
+	      (setq listen-socket-fd nil)
+	      (return-from bad-news))
+	    (mp::mpwatchfor listen-socket-fd)
 
-	  ;; Compute a select mask for the daemon's socket.
-	  (setq mask (ash 1 listen-socket-fd))
+	    ;; Compute a select mask for the daemon's socket.
+	    (setq mask (ash 1 listen-socket-fd))
 
-	  (if* *unix-domain*
-	     then (setf (sockaddr-un-family listen-sockaddr) *af-unix*)
-		  ;; Set pathname.
-		  (dotimes (i (length *socket-pathname*)
-			     (setf (sockaddr-un-path listen-sockaddr i) 0))
-		    (setf (sockaddr-un-path listen-sockaddr i)
-		      (char-int (elt *socket-pathname* i))))
-	     else ;; a crock:
-		  (bzero listen-sockaddr (ff::cstruct-len 'sockaddr-in))
-		  (setf (sockaddr-in-family listen-sockaddr) *af-inet*
-			(sockaddr-in-port listen-sockaddr) *inet-port*))
-	  
-	  (unless (zerop (bind listen-socket-fd
-			       listen-sockaddr
-			       (if *unix-domain*
-				   (+ (length *socket-pathname*) 2)
-				 (ff::cstruct-len 'sockaddr-in))))
-	    (perror "bind")
-	    (return-from lisp-listener-socket-daemon nil))
-
-	  (unless (zerop (unix-listen listen-socket-fd 5))
-	    (perror "listen")
-	    (return-from lisp-listener-socket-daemon nil))
-	  (loop
-	    (process-wait "waiting for a connection"
-	     #'(lambda (mask mask-obj timeout)
-		 (setf (unsigned-long-unsigned-long mask-obj) mask)
-		 (not (zerop (select 32 mask-obj 0 0 timeout))))
-	     mask mask-obj timeval)
-	    (setf (unsigned-long-unsigned-long int)
-	      (if *unix-domain*
-		  (ff::cstruct-len 'sockaddr-un)
-		(ff::cstruct-len 'sockaddr-in)))
-	    (setq fd (accept listen-socket-fd listen-sockaddr int))
-	    (finish-output *standard-output*)
-	    (finish-output *error-output*)
-	    (when (< fd 0)
-	      (perror "accept")
-	      (return-from lisp-listener-socket-daemon nil))
-	    
-	    (setq stream (excl::make-buffered-terminal-stream fd fd t t))
-	   
-	    ;; the first thing that comes over the stream is the name of the
-	    ;; emacs buffer which was created--we name the process the same.
-	    (setq proc-name (read stream))
-	   
 	    (if* *unix-domain*
-	       then (process-run-function
-		     proc-name
-		     'lisp-listener-with-stream-as-terminal-io
-		     stream)
-	       else (let ((hostaddr (logand
-				     (sockaddr-in-addr listen-sockaddr) #xff)))
-		      (format t ";;; starting listener-~d (host ~d)~%" fd
-			      hostaddr)
-		      (if* (and nil
-				;; the next line checks that the connection
-				;; is coming from the current machine
-				(not (eql 1 hostaddr)))
-			 then (format t ";;; access denied for addr ~s~%"
-				      hostaddr)
-			      (refuse-connection fd)
-			 else (process-run-function
-			       proc-name
-			       'lisp-listener-with-stream-as-terminal-io
-			       stream))))))
-      (when listen-socket-fd
-	(mp::mpunwatchfor listen-socket-fd)
-	(unix-close listen-socket-fd)
-	(setq .lisp-listener-daemon. nil)))))
+	       then (setf (sockaddr-un-family listen-sockaddr) *af-unix*)
+		    ;; Set pathname.
+		    (dotimes (i (length *socket-pathname*)
+			       (setf (sockaddr-un-path listen-sockaddr i) 0))
+		      (setf (sockaddr-un-path listen-sockaddr i)
+			(char-int (elt *socket-pathname* i))))
+	       else ;; a crock:
+		    (bzero listen-sockaddr (ff::cstruct-len 'sockaddr-in))
+		    (setf (sockaddr-in-family listen-sockaddr) *af-inet*
+			  (sockaddr-in-port listen-sockaddr) *inet-port*))
+	  
+	    (unless (zerop (bind listen-socket-fd
+				 listen-sockaddr
+				 (if *unix-domain*
+				     (+ (length *socket-pathname*) 2)
+				   (ff::cstruct-len 'sockaddr-in))))
+	      (perror "bind")
+	      (return-from bad-news))
+
+	    (unless (zerop (unix-listen listen-socket-fd 5))
+	      (perror "listen")
+	      (return-from bad-news))
+	    (loop
+	      (process-wait "waiting for a connection"
+			    #'(lambda (mask mask-obj timeout)
+				(setf (unsigned-long-unsigned-long
+				       mask-obj)
+				  mask)
+				(not (zerop (select 32 mask-obj 0 0 timeout))))
+			    mask mask-obj timeval)
+	      (setf (unsigned-long-unsigned-long int)
+		(if *unix-domain*
+		    (ff::cstruct-len 'sockaddr-un)
+		  (ff::cstruct-len 'sockaddr-in)))
+	      (setq fd (accept listen-socket-fd listen-sockaddr int))
+	      (finish-output *standard-output*)
+	      (finish-output *error-output*)
+	      (when (< fd 0)
+		(perror "accept")
+		(return-from bad-news))
+	    
+	      (setq stream (excl::make-buffered-terminal-stream fd fd t t))
+	   
+	      ;; the first thing that comes over the stream is the name of the
+	      ;; emacs buffer which was created--we name the process the same.
+	      (setq proc-name (read stream))
+	   
+	      (if* *unix-domain*
+		 then (process-run-function
+		       proc-name
+		       'lisp-listener-with-stream-as-terminal-io
+		       stream)
+		 else (let ((hostaddr
+			     (logand (sockaddr-in-addr listen-sockaddr) #xff)))
+			(format t ";;; starting listener-~d (host ~d)~%" fd
+				hostaddr)
+			(if* (and nil
+				  ;; the next line checks that the connection
+				  ;; is coming from the current machine
+				  (not (eql 1 hostaddr)))
+			   then (format t ";;; access denied for addr ~s~%"
+					hostaddr)
+				(refuse-connection fd)
+			   else (process-run-function
+				 proc-name
+				 'lisp-listener-with-stream-as-terminal-io
+				 stream))))))
+	(when listen-socket-fd
+	  (mp::mpunwatchfor listen-socket-fd)
+	  (unix-close listen-socket-fd)
+	  (setq .lisp-listener-daemon. nil)))))
+  (error "couldn't start listener daemon"))
 
 (defun refuse-connection (fd &aux s)
   (setq s (excl::make-buffered-terminal-stream fd fd t t))
