@@ -2,7 +2,7 @@
 			      User Guide
 			     Release 2.0.1
 
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.28 1992/07/21 11:23:47 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.29 1992/08/19 07:20:13 layer Exp $
 
 			     Introduction
 
@@ -1325,6 +1325,7 @@ Miscellaneous programming aids
 
 %% fi:shell
 %% fi:shell-mode
+%% fi:shell-mode-bang
 %% fi:shell-command-completion
 %% fi:shell-do-completion
 %% fi:shell-file-name-completion
