@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.25 1991/03/15 20:53:26 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.26 1991/03/15 21:04:42 layer Exp $
 
 (require 'cl)
 
@@ -78,7 +78,18 @@
 			  "^%% \\([^ \t]+\\)[ \t]*\\([^ \t]+\\)?$"
 			  (save-excursion (end-of-line) (point)))
 			 (replace-match "\\1")))
-	      (func " [command]")
+	      (xfunc (and (fboundp var) (symbol-function var)))
+	      (func (if (and xfunc
+			     (consp xfunc)
+			     (or (and (stringp (third xfunc))
+				      (not
+				       (eq 'interactive
+					   (car (fourth xfunc)))))
+				 (and (not (stringp (third xfunc)))
+				      (not (eq 'interactive
+					       (car (third xfunc)))))))
+			" [function]"
+		      " [command]"))
 	      val doc)
 	 (cond
 	  ((fboundp var)
