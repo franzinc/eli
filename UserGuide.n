@@ -2,7 +2,7 @@
 			      User Guide
 			   Release 2.0beta
 
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.18 1991/07/30 20:57:54 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.19 1991/08/22 21:40:36 layer Exp $
 
 			     Introduction
 
@@ -473,7 +473,7 @@ Functions and Variables for Interacting with a Common Lisp subprocess
 %% fi:subprocess-suspend		fi:inferior-common-lisp-mode-map
 
 %% fi:lisp-listener-mode
-%% fi:tcp-lisp-listener-interrupt-process	fi:lisp-listener-mode-map
+%% fi:interrupt-listener			fi:lisp-listener-mode-map
 %% fi:tcp-lisp-listener-kill-process		fi:lisp-listener-mode-map
 %% fi:tcp-lisp-listener-send-eof		fi:lisp-listener-mode-map
 
@@ -738,6 +738,7 @@ Functions and Variables for editing Common Lisp programs:
 %% fi:lisp-find-definition		fi:common-lisp-mode-map
 %% fi:lisp-find-definition-other-window	fi:common-lisp-mode-map
 %% fi:lisp-find-next-definition		fi:common-lisp-mode-map
+%% fi:maintain-definition-stack
 %% fi:lisp-function-documentation	fi:common-lisp-mode-map
 %% fi:lisp-indent-line			fi:common-lisp-mode-map
 %% fi:lisp-macroexpand			fi:common-lisp-mode-map
