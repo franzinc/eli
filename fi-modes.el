@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.46 1991/06/27 15:26:17 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.47 1991/09/27 00:58:58 layer Exp $
 
 ;;;; Mode initializations
 
@@ -476,8 +476,7 @@ package."
       (modify-syntax-entry ?\( "()  " fi:emacs-lisp-mode-syntax-table)
       (modify-syntax-entry ?\) ")(  " fi:emacs-lisp-mode-syntax-table)
       (modify-syntax-entry ?\[ "(]  " fi:emacs-lisp-mode-syntax-table)
-      (modify-syntax-entry ?\] ")[  " fi:emacs-lisp-mode-syntax-table)
-      ))
+      (modify-syntax-entry ?\] ")[  " fi:emacs-lisp-mode-syntax-table)))
 
 (if (not fi:lisp-mode-syntax-table)
     (progn
@@ -486,6 +485,11 @@ package."
       ;;(modify-syntax-entry ?_   "w   " fi:lisp-mode-syntax-table)
       ;;(modify-syntax-entry ?-   "w   " fi:lisp-mode-syntax-table)
       (modify-syntax-entry ?*   "w   " fi:lisp-mode-syntax-table)
+      ;; The next syntax entry doesn't work with these forms:
+      ;;  `,.foo
+      ;;  #.foo
+      ;; but it works better with variables with .'s in them
+      (modify-syntax-entry ?. "w   " fi:emacs-lisp-mode-syntax-table)
       (modify-syntax-entry ?\| "\"   " fi:lisp-mode-syntax-table)
       (modify-syntax-entry ?\[ "_   " fi:lisp-mode-syntax-table)
       (modify-syntax-entry ?\] "_   " fi:lisp-mode-syntax-table)))
