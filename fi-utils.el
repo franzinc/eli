@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.4 1989/05/19 11:43:16 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.5 1989/06/01 22:33:15 layer Exp $
 
 ;;; Misc utilities
 
@@ -101,8 +101,9 @@ nil if non-exists.  Yes, a value of nil and no local value are the same."
       (setq p (cdr p)))
     res))
 
-(defun fi::fast-parse-partial-sexp (from to targetdepth stopbefore state
-				    &optional result)
+(defun fi::fast-parse-partial-sexp (from to
+				    &optional targetdepth stopbefore state
+					      result)
   "Fast version of fi::parse-partial-sexp which doesn't cons if sixth arg
 is given, which should be a list of length seven.  This requires a hacked
 version of parse-partial-sexp.  This function is automagically selected
@@ -113,8 +114,9 @@ six arguments."
 	(parse-partial-sexp from to targetdepth stopbefore state))
     (parse-partial-sexp from to targetdepth stopbefore state)))
 
-(defun fi::slow-parse-partial-sexp (from to targetdepth stopbefore state
-				    &optional result)
+(defun fi::slow-parse-partial-sexp (from to
+				    &optional targetdepth stopbefore state
+					      result)
   "Slow version of fi::parse-partial-sexp which conses like mad, no matter
 what the optional sixth argument is.  This is used if parse-partial-sexp
 hasn't been hacked.  This function is automagically selected based on
