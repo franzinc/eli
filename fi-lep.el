@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.29 1991/06/19 22:17:47 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.30 1991/06/19 22:41:25 layer Exp $
 ;;
 
 (defvar fi:always-in-a-window nil)
@@ -430,7 +430,13 @@ the Common Lisp) with function definitions are considered.  Otherwise all
 symbols are considered.  fi:package is used to determine from which Common
 Lisp package the operation is done.  In a subprocess buffer, the package is
 tracked automatically.  In source buffer, the package is parsed at file
-visit time."
+visit time.
+
+Abbreviations are also expanded.  For example, in the initial `user'
+package, which inherits symbols from the `common-lisp' package, ``m-p-d-''
+will expand to ``most-positive-double-float''.  The hyphen (-) is a
+separator that causes the substring before the hyphen to be matched at the
+beginning of words in target symbols."
   (interactive)
   (let* ((end (point))
 	 package real-beg
