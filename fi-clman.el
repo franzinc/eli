@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.24 1991/11/25 10:58:35 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.25 1991/12/12 14:21:13 layer Exp $
 
 (defun fi::setup-default-clman-package-info ()
   ;;  Returns a list that 
@@ -81,9 +81,14 @@ math:).  The buffer that is displayed will be in CLMAN mode."
 	  (null fi:clman-package-info))
       (fi::setup-clman-oblist))
   (setq fi::clman-window-configuration (current-window-configuration))
-  (let* ((doc-page nil)(sym nil)
-         (done nil)(found-it nil)(pack nil)(sym-pack-pair nil)
-	 (pack-dir nil)(info-item nil))
+  (let* ((doc-page nil)
+	 (sym nil)
+         (done nil)
+	 (found-it nil)
+	 (pack nil)
+	 (sym-pack-pair nil)
+	 (pack-dir nil)
+	 (info-item nil))
     (setq sym (or (and symbol
 		       (setq symbol 
 			 (fi::clman-check-for-package symbol)))
@@ -91,13 +96,13 @@ math:).  The buffer that is displayed will be in CLMAN mode."
     (if (not sym)
 	(setq sym-pack-pair (list "" ""))
       (setq  sym-pack-pair (fi::clman-strip-leading-package-name sym)))
-    (setq pack (car  sym-pack-pair))
-    (setq sym (car (cdr  sym-pack-pair)))
+    (setq pack (car sym-pack-pair))
+    (setq sym (car (cdr sym-pack-pair)))
     (setq info-item (assoc pack fi:clman-package-info))
     ;; they did not specify a package
     (if (not info-item)
-	(fi::retrieve-doc-page-no-pack-specified) 
-      (fi::retrieve-doc-page-yes-pack-specified info-item))))
+	(fi::retrieve-doc-page-no-pack-specified sym) 
+      (fi::retrieve-doc-page-yes-pack-specified info-item sym))))
 
 (defun fi:clman-apropos ()
   "Prompts for a string on which an apropos search is done.  Displays a
@@ -108,11 +113,14 @@ buffer will be in CLMAN mode."
 	  (null fi::clman-oblist)
 	  (null fi:clman-package-info))
       (fi::setup-clman-oblist))
+  (setq fi::clman-window-configuration (current-window-configuration))
   (let* ((string (downcase (read-string "clman apropos: ")))
+	 (temp-buffer-show-hook 'fi::clman-temp-buffer-show)
 	 (apropos-buffer-name "*clman-apropos*"))
     (with-output-to-temp-buffer apropos-buffer-name
       (let ((package-name-list (fi:clman-package-nicknames))
-	    (item nil)(package nil))
+	    (item nil)
+	    (package nil))
 	(while package-name-list
 	  (setq package (car package-name-list))
 	  (setq lis (eval 
@@ -127,9 +135,15 @@ buffer will be in CLMAN mode."
 	      (setq lis (cdr lis))))
 	  (setq package-name-list (cdr package-name-list)))))
       
-    (switch-to-buffer-other-window apropos-buffer-name)
+    (set-buffer apropos-buffer-name)
     (replace-string "\"" "")
-    (fi:clman-mode)(goto-char (point-min))))
+    (fi:clman-mode)
+    (goto-char (point-min))))
+
+(defun fi::clman-temp-buffer-show (buffer)
+  (cond ((eq buffer (current-buffer))
+	 nil)
+	(t (pop-to-buffer buffer))))
 
 (defun fi:clman-mode ()
   "Major mode for viewing Allegro manual pages.  text-mode-syntax-table and
@@ -192,7 +206,7 @@ clman buffer, from anywhere in the buffer."
 ;;;; Internal stuff
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun fi::retrieve-doc-page-no-pack-specified ()
+(defun fi::retrieve-doc-page-no-pack-specified (sym)
   (let ((temp-info fi:clman-package-info)
 	(info-item nil)
 	(names nil))
@@ -220,7 +234,7 @@ clman buffer, from anywhere in the buffer."
 	  (setq temp-info (cdr temp-info)))
 	found-it))))
 
-(defun fi::retrieve-doc-page-yes-pack-specified (info-item)
+(defun fi::retrieve-doc-page-yes-pack-specified (info-item sym)
   (let ((pack (car info-item))
 	(doc-dir (car (cdr info-item)))
 	(names nil))
@@ -293,17 +307,20 @@ clman buffer, from anywhere in the buffer."
 		      (string= (substring str 0 1) "(")
 		      (string= (substring str 0 1) "."))
 		  nil (read-from-string str)))
-    (if (listp (car sym))(setq str nil))
+    (if (listp (car sym))
+	(setq str nil))
     (if (fboundp 'epoch::mapraised-screen)
 	(epoch::mapraised-screen (minibuf-screen)))
     (setq ans (completing-read  
 	       (concat "Symbol (" str "): ") fi::clman-oblist))
-    (if (string=  ans "")(setq ans str))
-    (setq ans  (fi::clman-check-for-package ans))))
+    (if (string= ans "")
+	(setq ans str))
+    (setq ans (fi::clman-check-for-package ans))))
 
 (defun fi::clman-check-for-package (ans)
-  (let ((pack nil)(answer nil))
-    (if (setq pack  (assoc ans fi:clman-package-info))
+  (let ((pack nil)
+	(answer nil))
+    (if (setq pack (assoc ans fi:clman-package-info))
 	(progn 
 	  (setq oblist-name 
 	    (concat "fi::clman-" ans "-oblist"))
@@ -312,11 +329,8 @@ clman buffer, from anywhere in the buffer."
 	  (setq answer (completing-read 
 			(concat "Symbol (" ans ":): ") 
 			(eval (car (read-from-string oblist-name)))))
-	  (if (string= (substring answer 0 1) ":")
-	      (setq answer (concat ":" answer)))
 	  ;;  for keywords
-	  (setq ans 
-	    (concat ans ":" answer))
+	  (setq ans (concat ans ":" answer))
 	  ans)
       ans)))
 
@@ -327,10 +341,6 @@ clman buffer, from anywhere in the buffer."
 	;; There is a leading package qualifier
 	(let ((first-string (substring str 0 (+ 1 pos)))
 	      (second-string (substring str (+ 2 pos) (length str))))
-;;	  (if (not (string= second-string ""))
-;;	      (if (string= (substring second-string 0 1) ":")
-;;		  (setq second-string 
-;;		    (substring second-string 1 (length second-string)))))
 	  (list first-string second-string))
       (list "" str))))
 
