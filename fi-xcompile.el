@@ -1,8 +1,10 @@
-;; $Id: fi-xcompile.el,v 1.1 1997/02/27 17:35:40 layer Exp $
+;; $Id: fi-xcompile.el,v 1.1.24.1 1999/01/19 00:28:03 layer Exp $
 
 (require 'cl)
 
-(setq byte-compile-compatibility t)
+;;We're going with emacs 20.x now, and the following doesn't variable
+;;having a non-nil value doesn't work compiling eli... 
+;;(setq byte-compile-compatibility t)
 
 (require 'font-lock) ;; makes some compiler warnings go away
 (require 'comint) ;; makes some compiler warnings go away

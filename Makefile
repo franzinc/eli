@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.138.4.6 1998/07/21 02:57:11 layer Exp $
+# $Id: Makefile,v 1.138.4.7 1999/01/19 00:28:03 layer Exp $
 # This makefile requires GNU make.
 
 include version.mak
@@ -13,7 +13,7 @@ emacs = $(emacsdir)/bin/emacs.exe
 pwd = $(shell ../bin/pwd)
 else
 xemacs = xemacs
-emacs = emacs
+emacs = emacs20
 pwd = $(shell pwd)
 endif
 

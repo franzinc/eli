@@ -1,8 +1,11 @@
-;; $Id: fi-compile.el,v 2.6.20.6 1999/01/19 00:17:00 layer Exp $
+;; $Id: fi-compile.el,v 2.6.20.7 1999/01/19 00:28:03 layer Exp $
 
 (require 'cl)
 
+;;We're going with emacs 20.x now, and the following doesn't variable
+;;having a non-nil value doesn't work compiling eli... 
 ;;(setq byte-compile-compatibility t) ;; emacs 19
+
 ;; doesn't work:
 ;;(setq byte-compile-emacs19-compatibility t) ;; xemacs 20
 

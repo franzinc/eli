@@ -9,13 +9,21 @@ For more detailed instructions on filling in the ChangeLog form, see
 *******************************************************************************
 2.0.21.16.5
 
+1999-01-18  Kevin Layer  <layer@ultra>
+
+	* Makefile: use emacs20
+	* fi-compile.el: add comment
+	* fi-subproc.el: use frame-width not screen-width; rfe3358:
+	fi:connect-to-windows implementation; rfe3391:
+	fi:common-lisp-subprocess-wait-forever
+	* fi-xcompile.el: turn off byte-compile-compatibility
+
 1999-01-18    <layer@HOBART>
 
 	* fi-compile.el: turn off byte-compile-compatibility due to
 	problems with new versions of emacs
 	* fi-keys.el: bug7565: new version of fi:toggle-to-lisp, which
 	isn't quite ready
-
 
 *******************************************************************************
 2.0.21.16.4
