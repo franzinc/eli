@@ -12,6 +12,7 @@ For more detailed instructions on filling in the ChangeLog form, see
 Wed Dec 10 17:20:21 1997  Kevin Layer  <layer@ultra>
 
 	* fi-subproc.el: fix reading/handling of image (-I) argument
+	* RelNotes.txt: removed
 
 *******************************************************************************
 2.0.21.pre-beta.6

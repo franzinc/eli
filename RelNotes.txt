@@ -1,4 +1,0 @@
-		  User-visible changes to eli module
-$Id: RelNotes.txt,v 2.1 1996/11/20 22:50:42 layer Exp $
-
-1. ...
