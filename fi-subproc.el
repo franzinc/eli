@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.123 1991/09/10 11:19:45 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.124 1991/09/11 15:22:23 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -392,18 +392,6 @@ the first \"free\" buffer name and start a subprocess in that buffer."
     (fi::reset-metadot-session)
     proc))
 
-(defun fi:goto-common-lisp ()
-  "This interactive function is meant to be bound to a global key, so that
-getting to the *common-lisp* buffer can be done with a minimum of key
-strokes.  You can, for example, put the following form in your ~/.emacs
-file:
-
-	(define-key global-map \"\\C-xl\" 'fi:goto-common-lisp)
-
-and typing ``C-x l'' provide an easy way to start a Common Lisp and go to it."
-  (interactive)
-  (call-interactively 'fi:common-lisp))
-
 (defun fi:open-lisp-listener (&optional buffer-number
 					buffer-name
 					setup-function)
@@ -602,54 +590,56 @@ the first \"free\" buffer name and start a subprocess in that buffer."
       (list buffer-name directory image-name image-args host))))
 
 (defun fi::common-lisp-subprocess-filter (process output &optional stay cruft)
+  (case (catch 'cl-subproc-filter-foo (fi::common-lisp-subprocess-filter-1))
+    (error (switch-to-buffer "*Help*"))
+    (t (fi::subprocess-filter process output stay cruft))))
+
+(defun fi::common-lisp-subprocess-filter-1 ()
   (save-excursion
     (set-buffer (process-buffer process))
     (if (not (fi::lep-open-connection-p))
-	(setq output
-	  (if (and (fi::fast-search-string 1 output)
-		   (string-match
-		    "\\([^\0]*\\)\\(.*\\)\\([^\0]*\\)"
-		    output))
-	      (let* ((res (concat
-			   (substring output (match-beginning 1)
-				      (match-end 1))
-			   (substring output (match-beginning 3)
-				      (match-end 3))))
-		     (command (substring output (match-beginning 2)
-					 (match-end 2)))
-		     (xx nil)
-		     (host nil))
-		(setq fi::lisp-port
-		  (car (setq xx (read-from-string command nil))))
-		(setq fi::lisp-password
-		  (car (setq xx (read-from-string command (cdr xx)))))
-		(setq fi::lisp-case-mode
-		  (car (setq xx
-			 (read-from-string (downcase command) (cdr xx)))))
-		;; the following "argument" is optional in that a previous
-		;; version of the ipc.cl didn't provide it
-		(if (setq host
-		      (condition-case ()
-			  (car (setq xx (read-from-string
-					 (fi::frob-case-from-lisp command)
-					 (cdr xx))))
-			(error nil)))
-		    nil)
-		;; This is optional also
-		(setq fi::lisp-ipc-version
-		  (condition-case ()
-		      (if (not (eq (cdr xx) (length command))) 
-			  (car (setq xx (read-from-string
-					 (fi::frob-case-from-lisp command)
-					 (cdr xx)))))
-		    (error nil)))
-		(cond ((consp fi:start-lisp-interface-hook)
-		       (mapcar 'funcall fi:start-lisp-interface-hook))
-		      (fi:start-lisp-interface-hook
-		       (funcall fi:start-lisp-interface-hook)))
-		res)
-	    output))))
-  (fi::subprocess-filter process output stay cruft))
+	(if (and (fi::fast-search-string 1 output)
+		 (string-match "\\([^\0]*\\)\\(.*\\)\\([^\0]*\\)"
+			       output))
+	    (let* ((res (concat (substring output (match-beginning 1)
+					   (match-end 1))
+				(substring output (match-beginning 3)
+					   (match-end 3))))
+		   (command (substring output (match-beginning 2)
+				       (match-end 2)))
+		   (xx nil)
+		   (host nil))
+	      (setq fi::lisp-port
+		(car (setq xx (read-from-string command nil))))
+	      (setq fi::lisp-password
+		(car (setq xx (read-from-string command (cdr xx)))))
+	      (setq fi::lisp-case-mode
+		(car (setq xx
+		       (read-from-string (downcase command) (cdr xx)))))
+	      ;; the following "argument" is optional in that a previous
+	      ;; version of the ipc.cl didn't provide it
+	      (if (setq host
+		    (condition-case ()
+			(car (setq xx (read-from-string
+				       (fi::frob-case-from-lisp command)
+				       (cdr xx))))
+		      (error nil)))
+		  nil)
+	      ;; This is optional also
+	      (setq fi::lisp-ipc-version
+		(condition-case ()
+		    (if (not (eq (cdr xx) (length command))) 
+			(car (setq xx (read-from-string
+				       (fi::frob-case-from-lisp command)
+				       (cdr xx)))))
+		  (error nil)))
+	      (setq output res)
+	      (condition-case ()
+		  (cond ((consp fi:start-lisp-interface-hook)
+			 (mapcar 'funcall fi:start-lisp-interface-hook))
+			(fi:start-lisp-interface-hook
+			 (funcall fi:start-lisp-interface-hook)))
+		(error (throw 'cl-subproc-filter-foo 'error))))))))
 
 (defun fi::make-subprocess (startup-message process-name buffer-name
 			    directory mode-function image-prompt image-file
