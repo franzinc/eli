@@ -1,15 +1,9 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.69 1991/09/30 11:44:53 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.70 1991/10/03 12:50:38 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
 
 emacs = emacs
-
-cl = /usr/local/cl
-
-# if the following is null, then the .fasl files will be compiled into
-# excl::*library-code-pathname*
-cl_library = 
 
 elcs = modes.elc indent.elc subproc.elc sublisp.elc filec.elc ring.elc\
 	su.elc telnet.elc rlogin.elc shell.elc keys.elc\
@@ -31,17 +25,26 @@ leep.elc:
 	$(emacs) -nw -batch -q $(compile_time_env)\
 		-l `pwd`/leep0.elc -f batch-byte-compile $*.el
 
-all:	default docs fasls
+all:	clean default docs # fasls
+
+clean:
+	rm -f *.elc
 
 docs: UserGuide.doc RefMan.doc RefCard.doc
 
-fasls:	emacs.fasl ipc.fasl
-
-emacs.fasl:
-	./docompile.sh emacs ${cl} ${cl_library}
-
-ipc.fasl:
-	./docompile.sh ipc ${cl} ${cl_library}
+#cl = /usr/local/cl
+#
+# if the following is null, then the .fasl files will be compiled into
+# excl::*library-code-pathname*
+#cl_library = 
+#
+#fasls:	emacs.fasl ipc.fasl
+#
+#emacs.fasl:
+#	./docompile.sh emacs ${cl} ${cl_library}
+#
+#ipc.fasl:
+#	./docompile.sh ipc ${cl} ${cl_library}
 
 elcs: ${elcs}
 
