@@ -10,7 +10,7 @@
 
 <h1 align="center"><small><small>ELI Version __VERSION__</small></small></h1>
 
-<h1 align="center"><small><small>$Revision: 1.3 $</small></small></h1>
+<h1 align="center"><small><small>$Revision: 1.4 $</small></small></h1>
 
 <hr>
 
@@ -1231,6 +1231,9 @@ Functions and variables for Interacting with a CL subprocess</a></h3>
 
 <pre>
 %% fi:common-lisp
+%% fi:open-lisp-listener
+%% fi:emacs-lisp-interface-version
+%% fi:verify-emacs-support
 </pre>
 
 <p>Below is an example .emacs file that defines a function run-common-lisp, which will
@@ -1242,9 +1245,6 @@ uses the same Lisp.&nbsp; (This is eli/examples/emacs.el.)</p>
 </pre>
 
 <pre>
-%% fi:open-lisp-listener
-%% fi:toggle-to-lisp			fi:common-lisp-mode-map
-%% fi:define-global-lisp-mode-bindings
 %% fi:common-lisp-buffer-name
 %% fi:common-lisp-directory
 %% fi:common-lisp-image-name
@@ -1254,10 +1254,18 @@ uses the same Lisp.&nbsp; (This is eli/examples/emacs.el.)</p>
 %% fi:common-lisp-prompt-pattern
 %% fi:common-lisp-subprocess-timeout
 %% fi:common-lisp-subprocess-wait-forever
+
+%% fi:legacy-keybindings
+%% fi:define-global-lisp-mode-bindings
+%% fi:menu-bar-single-item
+%% fi:compile-at-load-time
+
+%% fi:toggle-to-lisp			fi:common-lisp-mode-map
 %% fi:connect-to-windows
 %% fi:start-lisp-interface-arguments
 %% fi:use-background-streams
 %% fi:start-lisp-interface-hook
+%% fi:start-interface-via-file
 %% fi:reset-lep-connection
 %% fi:in-package-regexp
 %% fi:default-in-package-regexp
@@ -1266,6 +1274,7 @@ uses the same Lisp.&nbsp; (This is eli/examples/emacs.el.)</p>
 %% fi:inferior-lisp-input-list		fi:inferior-common-lisp-mode-map
 %% fi:inferior-lisp-input-sexp		fi:inferior-common-lisp-mode-map
 %% fi:inferior-lisp-newline		fi:inferior-common-lisp-mode-map
+%% fi:inferior-lisp-send-input		fi:inferior-common-lisp-mode-map
 %% fi:lisp-sync-current-working-directory fi:inferior-common-lisp-mode-map
 %% fi:list-input-ring			fi:inferior-common-lisp-mode-map
 %% fi:pop-input				fi:inferior-common-lisp-mode-map
@@ -1281,6 +1290,7 @@ uses the same Lisp.&nbsp; (This is eli/examples/emacs.el.)</p>
 %% fi:subprocess-kill-input		fi:inferior-common-lisp-mode-map
 %% fi:subprocess-kill-output		fi:inferior-common-lisp-mode-map
 %% fi:subprocess-quit			fi:inferior-common-lisp-mode-map
+%% fi:subprocess-send-input		fi:inferior-common-lisp-mode-map
 %% fi:subprocess-send-eof		fi:inferior-common-lisp-mode-map
 %% fi:subprocess-send-flush		fi:inferior-common-lisp-mode-map
 %% fi:subprocess-show-output		fi:inferior-common-lisp-mode-map
@@ -1305,6 +1315,7 @@ uses the same Lisp.&nbsp; (This is eli/examples/emacs.el.)</p>
 %% fi:subprocess-continuously-show-output-in-visible-buffer
 %% fi:subprocess-enable-superkeys
 %% fi:subprocess-env-vars
+%% fi:subprocess-max-buffer-lines
 %% fi:superkey-shadow-universal-argument
 </pre>
 
@@ -1601,6 +1612,10 @@ functions and variables</a></h3>
 <pre>
 %% fi:common-lisp-mode
 %% fi:center-defun			fi:common-lisp-mode-map
+%% fi:beginning-of-defun		fi:common-lisp-mode-map
+%% fi:next-top-level-form		fi:common-lisp-mode-map
+%% fi:previous-top-level-form		fi:common-lisp-mode-map
+%% fi:lisp-semicolon			fi:common-lisp-mode-map
 %% fi:comment-region			fi:common-lisp-mode-map
 %% fi:uncomment-region 
 %% fi:end-of-defun			fi:common-lisp-mode-map
@@ -1608,6 +1623,9 @@ functions and variables</a></h3>
 %% fi:indent-sexp			fi:common-lisp-mode-map
 %% fi:lisp-apropos			fi:common-lisp-mode-map
 %% fi:lisp-arglist			fi:common-lisp-mode-map
+%% fi:arglist-lisp-space
+%% fi:arglist-on-space
+%% fi:auto-arglist-pop-up-style
 %% fi:lisp-complete-symbol 		fi:common-lisp-mode-map
 %% fi:describe-symbol			fi:common-lisp-mode-map
 %% fi:lisp-evals-always-compile
@@ -1626,6 +1644,7 @@ functions and variables</a></h3>
 %% fi:lisp-find-definition		fi:common-lisp-mode-map
 %% fi:lisp-find-definition-other-window	fi:common-lisp-mode-map
 %% fi:lisp-find-next-definition		fi:common-lisp-mode-map
+%% fi:pop-definition-mark		fi:common-lisp-mode-map
 %% fi:lisp-function-documentation	fi:common-lisp-mode-map
 %% fi:lisp-indent-line			fi:common-lisp-mode-map
 %% fi:lisp-macroexpand			fi:common-lisp-mode-map
@@ -1636,6 +1655,7 @@ functions and variables</a></h3>
 %% fi:super-paren			fi:common-lisp-mode-map
 %% fi:trace-definition
 %% fi:toggle-trace-definition		fi:common-lisp-mode-map
+%% fi:trace-definer			fi:common-lisp-mode-map
 </pre>
 
 <hr>
@@ -1707,6 +1727,7 @@ of frob.</p>
 %% fi:find-unbalanced-parenthesis
 %% fi:indent-code-rigidly
 %% fi:indent-methods-case-sensitive
+%% fi:lisp-package
 %% fi:kill-definition
 %% fi:lisp-do-indentation
 %% fi:lisp-electric-semicolon
@@ -2177,6 +2198,7 @@ typing SPC. The commands in this mode can be grouped according to functionality:
 %% fi:ss-restart			fi:scan-stack-mode-map
 %% fi:ss-return				fi:scan-stack-mode-map
 %% fi:ss-revert-stack			fi:scan-stack-mode-map
+%% fi:ss-set-current			fi:scan-stack-mode-map
 %% fi:ss-toggle-all			fi:scan-stack-mode-map
 %% fi:ss-unhide-help-text		fi:scan-stack-mode-map
 </pre>
@@ -2328,6 +2350,7 @@ interface are described below:
 
 <pre>
 %% fi:rlogin
+%% fi:rlogin-new-user
 %% fi:rlogin-mode
 %% fi:rlogin-image-arguments
 %% fi:rlogin-image-name
@@ -2347,6 +2370,7 @@ interface are described below:
 
 <pre>
 %% fi:define-emacs-lisp-mode
+%% fi:emacs-lisp-mode
 </pre>
 
 <hr>

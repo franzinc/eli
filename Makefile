@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.146 2003/01/15 04:57:16 layer Exp $
+# $Id: Makefile,v 1.147 2003/09/29 23:28:23 layer Exp $
 # This makefile requires GNU make.
 
 include version.mak
@@ -50,8 +50,8 @@ fi-vers.el: Makefile version.mak
 	echo ';; automatically generate file--do not edit.' > fi-vers.el
 	echo '(defvar fi:emacs-lisp-interface-version)' >> fi-vers.el
 	echo '(setq fi:emacs-lisp-interface-version "$(VERSION)")' >> fi-vers.el
-	echo '(defvar fi:compiled-with-version)' >> fi-vers.el
-	echo '(setq fi:compiled-with-version (eval-when-compile (cons emacs-major-version emacs-minor-version)))' >> fi-vers.el
+	echo '(defvar fi::compiled-with-version)' >> fi-vers.el
+	echo '(setq fi::compiled-with-version (eval-when-compile (cons emacs-major-version emacs-minor-version)))' >> fi-vers.el
 
 #readme.htm: readme0.htm
 #	sed -e 's/__VERSION__/$(VERSION)/g' < readme0.htm > readme.htm

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-basic-lep.el,v 1.50 2003/09/29 23:23:25 layer Exp $
+;; $Id: fi-basic-lep.el,v 1.51 2003/09/29 23:28:23 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -19,48 +19,58 @@
 (defun fi::show-error-text (format-string &rest args)
   (if (cdr fi:pop-up-temp-window-behavior)
       (apply 'fi:show-some-text nil format-string args)
-    (let ((fi:pop-up-temp-window-behavior (cons (car fi:pop-up-temp-window-behavior) 't)))
+    (let ((fi:pop-up-temp-window-behavior
+	   (cons (car fi:pop-up-temp-window-behavior) 't)))
       (apply 'fi:show-some-text nil format-string args))))
-
-(defvar fi:pop-up-temp-window-behavior '(other . t)
-  "*The value of this variable determines the behavior of the popup
-temporary buffers used to display information which is the result of
-queries of the Lisp environment.  The value is a cons of the style and a
-boolean of whether or not the minibuffer should be used for displaying the
-result.  The possible values for the CAR of the cons are the symbols
-SPLIT, OTHER, and REPLACE.  SPLIT causes the largest window to be split
-and the new window to be minimal in size.  OTHER causes the other window to
-be used, spliting the screen if there is only one window.  REPLACE causes
-the current window to be replaced with the help buffer.  The reason for
-specifying a CDR of nil is so that a window is always used--messages
-printed in the minibuffer can easily be erased.")
 
 (defun fi:show-some-text (xpackage text &rest args)
   (when args (setq text (apply (function format) text args)))
   (let ((n (string-match "[\n]+\\'" text)))
     (when n (setq text (substring text 0 n))))
-  (if (null (cdr fi:pop-up-temp-window-behavior))
+  (if (and (not (eq 'minibuffer (car fi:pop-up-temp-window-behavior)))
+	   (null (cdr fi:pop-up-temp-window-behavior)))
       (fi::show-some-text-1 text (or xpackage fi:package))
     (let* ((window (minibuffer-window))
-	   ;;(height (1- (window-height window)))
 	   (width (window-width window))
-	   (text-try
-	    ;; cond clause commented 18oct94 smh.
-	    ;; Now that package is indicated in the mode line, the real estate
-	    ;; can be saved.
-	    (cond ;; (fi:package (format "[package: %s] %s" fi:package text))
-	     (t text)))
-	   (lines/len (fi::frob-string text-try)))
-      (if (and (< (car lines/len) 2)
-	       (<= (second lines/len) width))
+	   (lines/len (fi::frob-string text)))
+      (if (or (and (eq 'minibuffer (car fi:pop-up-temp-window-behavior))
+		   (fi::will-fit-in-minibuffer-p text))
+	      (and (< (car lines/len) 2)
+		   (<= (second lines/len) width)))
 	  (progn
-	    (message "%s" text-try)
+	    (message "%s" text)
 	    (fi::note-background-reply))
 	(fi::show-some-text-1
 	 ;; cond clause commented 18oct94 smh.  See above.
 	 (cond ;; (fi:package (format "[package: %s]\n%s" fi:package text))
 	  (t text))
 	 (or xpackage fi:package))))))
+
+;; Why are these necessary????
+(defvar resize-mini-windows)
+(defvar max-mini-window-height)
+
+;; would have been nice to use display-message-or-buffer...
+(defun fi::will-fit-in-minibuffer-p (string)
+  (let ((lines (fi::count-lines-in-string string)))
+    (if (or (<= lines 1)
+	    (<= lines
+		(if (and (boundp 'resize-mini-windows)
+			 resize-mini-windows)
+		    (cond ((floatp max-mini-window-height)
+			   (* (frame-height) max-mini-window-height))
+			  ((integerp max-mini-window-height)
+			   max-mini-window-height)
+			  (t 1))
+		  1)))
+	t
+      nil)))
+
+(defun fi::count-lines-in-string (string)
+  (with-temp-buffer
+      (progn
+	(insert string)
+	(count-lines (point-min) (point-max)))))
 
 (defun fi::frob-string (text)
   (let ((start 0)
@@ -83,6 +93,8 @@ printed in the minibuffer can easily be erased.")
 
 (defvar fi::show-some-text-1-first-time t)
 
+(defvar fi::*show-some-text-buffer-name* "*CL-temp*")
+
 (defun fi::show-some-text-1 (text apackage &optional hook &rest args)
   ;;A note from cer:
   ;;  I think there is some buffer local variable called package
@@ -90,7 +102,7 @@ printed in the minibuffer can easily be erased.")
   ;;  Inside it has the value of NIL.
   ;;  Consequently fi:package ends up as NIL in *CL-temp* buffers.
   ;;  I renamed package to apackage and that seemed to fix it.
-  (let ((buffer (get-buffer-create "*CL-temp*")))
+  (let ((buffer (get-buffer-create fi::*show-some-text-buffer-name*)))
     ;; fill the buffer
     (save-excursion
       (set-buffer buffer)
@@ -105,7 +117,9 @@ printed in the minibuffer can easily be erased.")
     (message
      "%s"
      (substitute-command-keys
-      "Type \\[fi:lisp-delete-pop-up-window] to remove *CL-temp* window."))
+      (format
+       "Type \\[fi:lisp-delete-pop-up-window] to remove %s window."
+       fi::*show-some-text-buffer-name*)))
     (setq fi::show-some-text-1-first-time nil)))
 
 ;;;;;;;;;;;;;;;;;;;;;;TODO
@@ -147,7 +161,8 @@ printed in the minibuffer can easily be erased.")
 (defun fi:reset-lep-connection ()
   "Reset the Lisp-editor protocol connection."
   (interactive)
-  (set-menubar-dirty-flag)		;smh 31oct94
+  (when (fboundp 'set-menubar-dirty-flag)
+    (set-menubar-dirty-flag))
   (setq fi::*connection* nil))
 
 ;;; Start up a connection as soon as we know where to connect to.
@@ -228,7 +243,8 @@ emacs-lisp interface cannot be started.
     (prog1
 	(setq fi::*connection*
 	  (fi::make-connection (current-buffer) host process))
-      (set-menubar-dirty-flag))))
+      (when (fboundp 'set-menubar-dirty-flag)
+	(set-menubar-dirty-flag)))))
 
 (defvar fi::debug-subprocess-filter nil)
 (defvar fi::debug-subprocess-filter-output nil)

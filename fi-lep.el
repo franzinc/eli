@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 1.88 2003/09/29 23:23:25 layer Exp $
+;; $Id: fi-lep.el,v 1.89 2003/09/29 23:28:23 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -90,6 +90,19 @@ exhausted.")
   (if fi:maintain-definition-stack
       (car lep::meta-dot-session)
     lep::meta-dot-session))
+
+(defvar lep::show-def-marker-ring (make-ring 16))
+
+(defun fi:pop-definition-mark ()
+  "Pop back to where the find definition was last invoked."
+  (interactive)
+  (if (ring-empty-p lep::show-def-marker-ring)
+      (error "No previous locations for show-found-definition invocation"))
+  (let ((marker (ring-remove lep::show-def-marker-ring 0)))
+    (fi::switch-to-buffer (or (marker-buffer marker)
+			      (error "The marked buffer has been deleted")))
+    (goto-char (marker-position marker))
+    (set-marker marker nil nil)))
 
 (defun fi:lisp-find-definition (tag &optional next)
   "Find TAG using information in the Common Lisp environment, in the current
@@ -258,6 +271,7 @@ time."
 	      (pathname (fi::ensure-translated-pathname pathname)))
 	  (when fi:filename-frobber-hook
 	    (setq pathname (funcall fi:filename-frobber-hook pathname)))
+	  (ring-insert lep::show-def-marker-ring (point-marker))
 	  (setq xb (get-file-buffer pathname))
 	  (if other-window-p
 	      (find-file-other-window pathname)
@@ -825,7 +839,7 @@ for tracing methods."
 function defined by the top-level form around the cursor position.  The
 form can be a defun, defgeneric, defmethod, define-compiler-macro, or
 deftype.  The defmethod case is most useful, as the function spec for
-the particular method is extraced from the qualifiers and specializers.
+the particular method is extracted from the qualifiers and specializers.
 If tracing is already turned on, then it will be turned off.  With a
 prefix arg, cause the debugger to be invoked via a call to BREAK when
 the function is called.  fi:package is used to determine from which
@@ -1084,9 +1098,7 @@ environment."
     (message "%s" msg-start)
     (fi::make-request
 	(lep::compile/load-file-request :pathname file :operation operation
-					;; smh testing -- This won't work until 4.3.
-					:warnings-buffer "*ACL Warnings*"
-					)
+					:warnings-buffer "*ACL Warnings*")
       ((compilep msg-start) (res)
        (fi::note-background-reply (list compilep))
        (message "%sdone." msg-start))

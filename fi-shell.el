@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-shell.el,v 1.29 2002/07/09 22:15:31 layer Exp $
+;; $Id: fi-shell.el,v 1.30 2003/09/29 23:28:23 layer Exp $
 
 (defvar fi:shell-mode-map nil
   "The shell major-mode keymap.")
@@ -67,22 +67,8 @@ any other mode setup."
   (if mode-hook (funcall mode-hook))
   (setq major-mode 'fi:shell-mode)
   (setq mode-name "Shell")
-
-  (if (null fi:shell-mode-super-key-map)
-      (progn
-	(setq fi:shell-mode-super-key-map (make-keymap))
-	(fi::subprocess-mode-super-keys fi:shell-mode-super-key-map 'shell)))
-
-  (if (null fi:shell-mode-map)
-      (progn
-	(setq fi:shell-mode-map
-	  (fi::subprocess-mode-commands (make-keymap)
-					fi:shell-mode-super-key-map
-					'shell))
-	(when fi:shell-mode-use-history
-	  (define-key fi:shell-mode-map "!" 'fi:shell-mode-bang))))
+  (fi::initialize-mode-map 'fi:shell-mode-map 'fi:shell-super-key-map 'shell)
   (use-local-map fi:shell-mode-map)
-  (setq fi:subprocess-super-key-map fi:shell-mode-super-key-map)
   (run-hooks 'fi:subprocess-mode-hook 'fi:shell-mode-hook))
 
 (defun fi:shell-mode-bang (&optional arg)
@@ -108,20 +94,16 @@ buffer with no process attached to it.
 The shell image file and image arguments are taken from the variables
 `fi:shell-image-name' and `fi:shell-image-arguments'."
   (interactive "p")
-  (let (
-;;;; these are for Windows 95 only:
-	(binary-process-input t)
-	(binary-process-ouput nil))
-    (fi::make-subprocess nil
-			 "shell"
-			 buffer-number
-			 default-directory
-			 'fi:shell-mode
-			 fi:shell-prompt-pattern
-			 fi:shell-image-name
-			 fi:shell-image-arguments
-			 (when (on-ms-windows)
-			   'fi::subprocess-dos-filter))))
+  (fi::make-subprocess nil
+		       "shell"
+		       buffer-number
+		       default-directory
+		       'fi:shell-mode
+		       fi:shell-prompt-pattern
+		       fi:shell-image-name
+		       fi:shell-image-arguments
+		       (when (on-ms-windows)
+			 'fi::subprocess-dos-filter)))
 
 (defun fi::subprocess-dos-filter (process output &optional stay cruft)
   (fi::subprocess-filter process output stay t))

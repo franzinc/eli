@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-modes.el,v 1.75 2002/07/09 22:15:31 layer Exp $
+;; $Id: fi-modes.el,v 1.76 2003/09/29 23:28:23 layer Exp $
 
 ;;;; Mode initializations
 
@@ -133,19 +133,10 @@ but before doing any other mode setup."
   (setq mode-name "Inferior Common Lisp")
   (set-syntax-table fi:lisp-mode-syntax-table)
   (fi::lisp-subprocess-mode-variables)
-  (if (null fi:inferior-common-lisp-mode-super-key-map)
-      (progn
-	(setq fi:inferior-common-lisp-mode-super-key-map
-	  (make-keymap))
-	(fi::subprocess-mode-super-keys
-	 fi:inferior-common-lisp-mode-super-key-map 'sub-lisp)))
-  (if (null fi:inferior-common-lisp-mode-map)
-      (setq fi:inferior-common-lisp-mode-map
-	(fi::inferior-lisp-mode-commands
-	 (make-keymap)
-	 fi:inferior-common-lisp-mode-super-key-map)))
+  (fi::initialize-mode-map 'fi:inferior-common-lisp-mode-map
+			   'fi:inferior-common-lisp-mode-super-key-map
+			   'sub-lisp)
   (use-local-map fi:inferior-common-lisp-mode-map)
-  (setq fi:subprocess-super-key-map fi:inferior-common-lisp-mode-super-key-map)
   (setq fi:lisp-indent-hook-property 'fi:common-lisp-indent-hook)
   (run-hooks 'fi:lisp-mode-hook 'fi:subprocess-mode-hook
 	     'fi:inferior-common-lisp-mode-hook))
@@ -173,19 +164,10 @@ but before doing any other mode setup."
   (setq mode-name "Inferior Franz Lisp")
   (set-syntax-table fi:lisp-mode-syntax-table)
   (fi::lisp-subprocess-mode-variables)
-  (if (null fi:inferior-franz-lisp-mode-super-key-map)
-      (progn
-	(setq fi:inferior-franz-lisp-mode-super-key-map
-	  (make-keymap))
-	(fi::subprocess-mode-super-keys
-	 fi:inferior-franz-lisp-mode-super-key-map 'sub-lisp)))
-  (if (null fi:inferior-franz-lisp-mode-map)
-      (setq fi:inferior-franz-lisp-mode-map
-	(fi::inferior-lisp-mode-commands
-	 (make-keymap)
-	 fi:inferior-franz-lisp-mode-super-key-map)))
+  (fi::initialize-mode-map 'fi:inferior-franz-lisp-mode-map
+			   'fi:inferior-franz-lisp-mode-super-key-map
+			   'sub-lisp)
   (use-local-map fi:inferior-franz-lisp-mode-map)
-  (setq fi:subprocess-super-key-map fi:inferior-franz-lisp-mode-super-key-map)
   (setq fi:lisp-indent-hook-property 'fi:franz-lisp-indent-hook)
   (run-hooks 'fi:lisp-mode-hook 'fi:subprocess-mode-hook
 	     'fi:inferior-franz-lisp-mode-hook))
@@ -213,18 +195,10 @@ any other mode setup."
   (setq mode-name "TCP Common Lisp")
   (set-syntax-table fi:lisp-mode-syntax-table)
   (fi::lisp-subprocess-mode-variables)
-  (if (null fi:lisp-listener-mode-super-key-map)
-      (progn
-	(setq fi:lisp-listener-mode-super-key-map (make-keymap))
-	(fi::subprocess-mode-super-keys
-	 fi:lisp-listener-mode-super-key-map 'tcp-lisp)))
-  (if (null fi:lisp-listener-mode-map)
-      (setq fi:lisp-listener-mode-map
-	(fi::lisp-listener-mode-commands
-	 (make-keymap)
-	 fi:lisp-listener-mode-super-key-map)))
+  (fi::initialize-mode-map 'fi:lisp-listener-mode-map
+			   'fi:lisp-listener-mode-super-key-map
+			   'tcp-lisp)
   (use-local-map fi:lisp-listener-mode-map)
-  (setq fi:subprocess-super-key-map fi:lisp-listener-mode-super-key-map)
   (setq fi:lisp-indent-hook-property 'fi:common-lisp-indent-hook)
   (run-hooks 'fi:lisp-mode-hook 'fi:subprocess-mode-hook
 	     'fi:lisp-listener-mode-hook))
@@ -252,10 +226,7 @@ any other mode setup."
   (set-syntax-table fi:lisp-mode-syntax-table)
   (fi::lisp-edit-mode-setup)
   (fi:parse-mode-line-and-package)
-  (if (null fi:common-lisp-mode-map)
-      (progn
-	(setq fi:common-lisp-mode-map (make-keymap))
-	(fi::lisp-mode-commands fi:common-lisp-mode-map nil nil)))
+  (fi::initialize-mode-map 'fi:common-lisp-mode-map)
   (use-local-map fi:common-lisp-mode-map)
   (setq fi::process-name fi::common-lisp-backdoor-main-process-name)
   (setq fi:lisp-indent-hook-property 'fi:common-lisp-indent-hook)
@@ -298,10 +269,7 @@ any other mode setup."
   (set-syntax-table fi:lisp-mode-syntax-table)
   (fi::lisp-edit-mode-setup)
   (fi:parse-mode-line-and-package)
-  (if (null fi:franz-lisp-mode-map)
-      (progn
-	(setq fi:franz-lisp-mode-map (make-keymap))
-	(fi::lisp-mode-commands fi:franz-lisp-mode-map nil nil)))
+  (fi::initialize-mode-map 'fi:franz-lisp-mode-map)
   (use-local-map fi:franz-lisp-mode-map)
   (setq fi::process-name fi:franz-lisp-process-name)
   (setq fi:lisp-indent-hook-property 'fi:franz-lisp-indent-hook)
@@ -324,10 +292,7 @@ any other mode setup."
   (setq mode-name "Emacs Lisp")
   (set-syntax-table fi:emacs-lisp-mode-syntax-table)
   (fi::lisp-edit-mode-setup)
-  (if (null fi:emacs-lisp-mode-map)
-      (progn
-	(setq fi:emacs-lisp-mode-map (make-keymap))
-	(fi::lisp-mode-commands fi:emacs-lisp-mode-map nil nil)))
+  (fi::initialize-mode-map 'fi:emacs-lisp-mode-map)
   (use-local-map fi:emacs-lisp-mode-map)
   (setq fi:lisp-indent-hook-property 'fi:emacs-lisp-indent-hook)
   (run-hooks 'fi:emacs-lisp-mode-hook))
@@ -538,7 +503,7 @@ the readtable used for evaluations given to Lisp from emacs."
 	'fi:common-lisp-mode)
     (setq list (cdr list))))
 
-(defvar fi:define-emacs-lisp-mode t
+(defvar fi:define-emacs-lisp-mode nil
   "*If non-nil, then use the FI supplied mode for editing .el files.")
 
 (when fi:define-emacs-lisp-mode

@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-xemacs.el,v 2.12 2002/07/09 22:15:31 layer Exp $
+;; $Id: fi-xemacs.el,v 2.13 2003/09/29 23:28:23 layer Exp $
 
 (defun fi-find-buffer-visiting (filename)
   (get-file-buffer filename))
@@ -274,19 +274,20 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun fi::install-menubar (menu-bar)
-  (add-menu nil (car menu-bar) (cdr menu-bar) nil))
+(defun fi::install-menubar (where menu-bar)
+  (add-submenu where menu-bar))
 
 (defun fi::install-buffer-local-xemacs-acl-menubar ()
   (when (eq current-menubar (default-value 'current-menubar))
     ;; current-menubar isn't yet buffer local
     (set-buffer-menubar current-menubar)
-    (fi::install-menubar fi:allegro-file-menu)
-    (fi::install-menubar fi:allegro-edit-menu)
-    (fi::install-menubar fi:allegro-debug-menu)
-    (fi::install-menubar fi:allegro-help-menu)
-    (when (and fi:composer-menu (not (on-ms-windows)))
-      (fi::install-menubar fi:composer-menu))))
+    (let ((where (if fi:menu-bar-single-item '("ACL") nil)))
+      (fi::install-menubar where fi:allegro-file-menu)
+      (fi::install-menubar where fi:allegro-edit-menu)
+      (fi::install-menubar where fi:allegro-debug-menu)
+      (fi::install-menubar where fi:allegro-help-menu)
+      (when (and fi:composer-menu (not (on-ms-windows)))
+	(fi::install-menubar where fi:composer-menu)))))
 
 (defvar fi::menubar-initialization)
 (setq fi::menubar-initialization

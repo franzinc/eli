@@ -1,6 +1,8 @@
-;; $Id: fi-site-init.el,v 1.119 2003/09/29 23:23:25 layer Exp $
+;; $Id: fi-site-init.el,v 1.120 2003/09/29 23:28:23 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
+
+(setq fi::*debug* nil)
 
 (require 'cl)
 
@@ -193,7 +195,7 @@ exists.")
 
 (fi::load "fi-vers")
 
-(when (and (= 20 (car fi:compiled-with-version))
+(when (and (= 20 (car fi::compiled-with-version))
 	   (= 19 emacs-major-version)
 	   (eq 'emacs19 fi::emacs-type))
   (delete-other-windows)
@@ -215,7 +217,7 @@ On Windows, just remove all .elc files and restart emacs.")
   (beep)
   (error "You must byte-recompile the .el files for GNU Emacs 19.x."))
 
-(when (and (= 19 (car fi:compiled-with-version))
+(when (and (= 19 (car fi::compiled-with-version))
 	   (eq 'xemacs20 fi::emacs-type)
 	   (>= emacs-major-version 20))
   (delete-other-windows)
@@ -239,11 +241,11 @@ On Windows, just remove all .elc files and restart xemacs.")
   (beep)
   (error "You must byte-recompile the .el files for XEmacs 20.x."))
 
+(fi::load "fi-utils")
 (fi::load "fi-keys")			; load before fi-modes
 (fi::load "fi-modes")
 (when fi:lisp-do-indentation
   (fi::load "fi-indent"))
-(fi::load "fi-utils")
 (fi::load "fi-gnu")
 
 (unless fi::load-subprocess-files
@@ -295,9 +297,15 @@ On Windows, just remove all .elc files and restart xemacs.")
   (cond ((or (eq fi::emacs-type 'xemacs19)
 	     (eq fi::emacs-type 'xemacs20))
 	 (fi::load "fi-xemacs"))
+	
+	((and (boundp 'emacs-major-version)
+	      (>= emacs-major-version 21))
+	 (fi::load "fi-emacs21"))
+	
 	((or (eq fi::emacs-type 'emacs19)
 	     (eq fi::emacs-type 'emacs20))
 	 (fi::load "fi-emacs19"))
+	
 	(t (fi::load "fi-emacs18"))))
 
 (defun fi::top-level ()

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-su.el,v 1.19 2002/07/09 22:15:31 layer Exp $
+;; $Id: fi-su.el,v 1.20 2003/09/29 23:28:23 layer Exp $
 
 (defvar fi:su-mode-map nil
   "The su major-mode keymap.")
@@ -52,19 +52,8 @@ any other mode setup."
   (if mode-hook (funcall mode-hook))
   (setq major-mode 'fi:su-mode)
   (setq mode-name "Su")
-
-  (if (null fi:su-mode-super-key-map)
-      (progn
-	(setq fi:su-mode-super-key-map (make-keymap))
-	(fi::subprocess-mode-super-keys fi:su-mode-super-key-map 'shell)))
-
-  (if (null fi:su-mode-map)
-      (setq fi:su-mode-map
-	(fi::subprocess-mode-commands (make-keymap)
-				      fi:su-mode-super-key-map
-				      'shell)))
+  (fi::initialize-mode-map 'fi:su-mode-map 'fi:su-super-key-map 'shell)
   (use-local-map fi:su-mode-map)
-  (setq fi:subprocess-super-key-map fi:su-mode-super-key-map)
   (run-hooks 'fi:subprocess-mode-hook 'fi:su-mode-hook))
 
 (defun fi:remote-su-mode (&optional mode-hook)
@@ -87,20 +76,9 @@ any other mode setup."
   (if mode-hook (funcall mode-hook))
   (setq major-mode 'fi:remote-su-mode)
   (setq mode-name "Remote Su")
-
-  (if (null fi:remote-su-mode-super-key-map)
-      (progn
-	(setq fi:remote-su-mode-super-key-map (make-keymap))
-	(fi::subprocess-mode-super-keys fi:remote-su-mode-super-key-map
-					'rlogin)))
-
-  (if (null fi:remote-su-mode-map)
-      (setq fi:remote-su-mode-map
-	(fi::subprocess-mode-commands (make-keymap)
-				      fi:remote-su-mode-super-key-map
-				      'rlogin)))
+  (fi::initialize-mode-map 'fi:remote-su-mode-map 'fi:remote-su-super-key-map
+			   'rlogin)
   (use-local-map fi:remote-su-mode-map)
-  (setq fi:subprocess-super-key-map fi:remote-su-mode-super-key-map)
   (run-hooks 'fi:subprocess-mode-hook 'fi:rlogin-mode-hook))
 
 (defun fi:su (&optional buffer-number)

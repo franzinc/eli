@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-telnet.el,v 1.17 2002/07/09 22:15:31 layer Exp $
+;; $Id: fi-telnet.el,v 1.18 2003/09/29 23:28:23 layer Exp $
 
 (defvar fi:telnet-mode-map nil
   "The telnet major-mode keymap.")
@@ -56,20 +56,9 @@ any other mode setup."
   (if mode-hook (funcall mode-hook))
   (setq major-mode 'fi:telnet-mode)
   (setq mode-name "Telnet")
-
-  (if (null fi:telnet-mode-super-key-map)
-      (let ((map (make-keymap)))
-	(setq map (fi::subprocess-mode-super-keys map 'rlogin))
-	(define-key map "m"	'fi:telnet-start-garbage-filter)
-	(setq fi:telnet-mode-super-key-map map)))
-
-  (if (null fi:telnet-mode-map)
-      (setq fi:telnet-mode-map
-	(fi::subprocess-mode-commands (make-keymap)
-				      fi:telnet-mode-super-key-map
-				      'telnet)))
+  (fi::initialize-mode-map 'fi:telnet-mode-map 'fi:telnet-super-key-map
+			   'telnet)
   (use-local-map fi:telnet-mode-map)
-  (setq fi:subprocess-super-key-map fi:telnet-mode-super-key-map)
   (setq fi:shell-popd-regexp nil)
   (setq fi:shell-pushd-regexp nil)
   (setq fi:shell-cd-regexp nil)
