@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.59 1993/09/23 18:08:26 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.60 1994/06/13 22:52:15 georgej Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -25,7 +25,7 @@
   (when fi::initialization-forms
     (dolist (form (nreverse fi::initialization-forms))
       (eval form))
-    (setq fi::initialization-forms)))
+    (setq fi::initialization-forms nil)))
 
 (load "fi-modes.elc")
 (when fi:lisp-do-indentation

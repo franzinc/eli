@@ -10,9 +10,13 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-emacs19.el,v 2.3 1994/02/25 19:43:35 georgej Exp $
+;; $Header: /repo/cvs.copy/eli/fi-emacs19.el,v 2.4 1994/06/13 22:52:11 georgej Exp $
 
-(require 'menubar "lmenu")
+(require (if (and (boundp 'emacs-minor-version)
+		  (> emacs-minor-version 22)) 
+	     ;; change happened between 19.22 and 19.23
+	     'lmenu 'menubar)
+	 "lmenu")
 
 (defconst fi:allegro-file-menu
     '("ACLFile"

@@ -1,5 +1,9 @@
 Mon Jun 13 15:42:15 1994  George Jacob  (georgej@lava)
 
+	* fi-site-init.el: (setq initialization-forms nil), for lemacs19.10
+
+	* fi-emacs19.el: Modified "require lmenu" for versions > 22
+
 	* Makefile: Added hefty to rdist list
 
 Fri Feb 25 11:34:27 1994  George Jacob  (georgej@louie)
