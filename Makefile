@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.98 1993/09/17 06:11:06 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.99 1993/09/17 06:17:38 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -126,7 +126,7 @@ clman:	clman.o clmanaux.o
 release_root = /net/vapor/scm/emacs-lib/Dists
 
 fi_release_files = ChangeLog fi-*.el fi-*.elc Makefile *.doc examples/*.el
-fi_release_gztar = $(release_root)/eli-$(version).tar.gz
+fi_release_gztar = $(release_root)/eli-`cat version`.tar.gz
 
 acl_release_files = ChangeLog fi-*.el fi-*.elc Makefile *.doc examples/*.el \
 	$(acl_clman_release_files)
@@ -139,7 +139,7 @@ fi-dist:	all
 	rm -f version
 	emacs -batch -l `pwd`/fi-inc-vers > version
 	@echo new emacs-lisp interface version: `cat version`
-#	cvs commit -m "`cat version`" fi-site-init.el ChangeLog
+	cvs commit -m "`cat version`" fi-site-init.el ChangeLog
 	@if test -d "$(release_root)/fi-`cat version`"; then\
 	  echo $(release_root)/fi-`cat version` exists; exit 1;\
 	fi
@@ -155,7 +155,7 @@ fi-dist:	all
 	  (cd $(release_root)/fi-`cat version`; tar xf -)
 	(cd $(release_root); \
 	 tar cf - fi-`cat version`| gzip -9 > $(fi_release_gztar))
-	(version=`cat version`; cvs tag fi_$$version | sed s/\\\\./_/g'`)
+	(version=`cat version`; cvs tag `echo fi_$$version | sed s/\\\\./_/g'`)
 
 clman_version = 4.1-v2
 
