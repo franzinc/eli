@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.26 1991/11/11 14:43:21 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.27 1992/02/21 14:36:38 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -95,12 +95,13 @@ printed in the minibuffer can easily be erased.")
 ;;; The filter should not abort because of errors. Some how the errors
 ;;; should be printed.
 
-(defun fi::make-connection (host process)
+(defun fi::make-connection (buffer host process)
   (list ':connection
 	process 
 	nil				; sessions
 	-1				; session id counter
-	host))
+	host
+	buffer))
 
 (defun fi::connection-process (c) (second c))
 
@@ -111,6 +112,8 @@ printed in the minibuffer can easily be erased.")
 (defun fi::set-connection-session-id (c nv) (setf (fourth c) nv))
 
 (defun fi::connection-host (c) (fifth c)) ; not used, apparently
+
+(defun fi::connection-buffer (c) (sixth c))
 
 (defvar fi::*connection* nil)
 
@@ -189,7 +192,8 @@ emacs-lisp interface cannot be started.
 	   ;; This might affect something!
 	   ;; For example, gnu 19 has some good features.
 	   (send-string process (format "\"%s\"\n" (emacs-version)))
-	   (setq fi::*connection* (fi::make-connection host process))))
+	   (setq fi::*connection*
+	     (fi::make-connection (current-buffer) host process))))
 	(t
 	 (fi:error
 	  "
