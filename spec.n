@@ -3,7 +3,7 @@
 	      Franz Inc. GNU Emacs/Common Lisp Interface
 			   Release 2.0alpha
 
-;; $Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.54 1991/02/21 21:59:59 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.55 1991/02/27 13:30:36 layer Exp $
 
 ****** Common Lisp Mode *******************************************************
 
@@ -116,8 +116,6 @@
 %% fi:subprocess-send-flush		fi:inferior-common-lisp-mode-map
 %% fi:subprocess-show-output		fi:inferior-common-lisp-mode-map
 %% fi:subprocess-suspend		fi:inferior-common-lisp-mode-map
-%% fi:unix-domain
-%% fi:unix-domain-socket
 
 ****** TCP Common Lisp Mode ***************************************************
 

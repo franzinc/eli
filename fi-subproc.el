@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.86 1991/02/21 22:00:24 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.87 1991/02/27 13:30:45 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -413,7 +413,7 @@ BUFFER-NUMBER is not given it defaults to 1.  If BUFFER-NUMBER is >= 0,then
 the buffer is named `*BUFFER-NAME*<BUFFER-NUMBER>'.  If BUFFER-NUMBER is <
 0, then the first available buffer name is chosen.
 
-See `fi:unix-domain' and `fi:explicit-tcp-common-lisp'."
+See `fi:explicit-tcp-common-lisp'."
   (interactive "p")
   (if (null fi::freshest-common-sublisp-name)
       (error "must start a Lisp subprocess first"))
@@ -430,17 +430,14 @@ See `fi:unix-domain' and `fi:explicit-tcp-common-lisp'."
 (defun fi:explicit-tcp-common-lisp (&optional buffer-number
 					      host service password ipc-version)
   "The same as fi:tcp-common-lisp, except the buffer name of the Lisp onto
-which the listener is disired is read from the minibuffer.  Use port 0 if
-fi:unix-domain is non-nil."
+which the listener is disired is read from the minibuffer."
   (interactive
    (let ((buffer (read-buffer "Buffer with Lisp subprocess: ")))
-     (if fi:unix-domain
-	 (list current-prefix-arg)
-       (list current-prefix-arg
-	     (fi::get-buffer-host buffer)
-	     (fi::get-buffer-port buffer)
-	     (fi::get-buffer-password buffer)
-	     (fi::get-buffer-ipc-version buffer)))))
+     (list current-prefix-arg
+	   (fi::get-buffer-host buffer)
+	   (fi::get-buffer-port buffer)
+	   (fi::get-buffer-password buffer)
+	   (fi::get-buffer-ipc-version buffer))))
   (let ((proc (fi::make-tcp-connection
 	       buffer-number "tcp-common-lisp" 'fi:tcp-common-lisp-mode
 	       fi:common-lisp-prompt-pattern
@@ -633,15 +630,18 @@ are read from the minibuffer."
 (defun fi::start-tcp-lisp-interface (process)
   (send-string
    process
-   (format "(progn
-              (princ \";Starting socket daemon\n\")
-              (force-output)
-              (excl::require :ipc)
-	      (excl::require :emacs (merge-pathnames excl::*library-code-pathname* \"emacs\"))
-              (set (find-symbol (symbol-name :*unix-domain*) :ipc) %s)
-              (funcall (find-symbol (symbol-name :start-lisp-listener-daemon) :ipc) #+:allegro-v4.1 :use-lep #+:allegro-v4.1 t )
-              (values))\n"
-	   fi:unix-domain)))
+   "(progn
+      (princ \";; Starting socket daemon\n\")
+      (force-output)
+      (excl::require :ipc
+                     (merge-pathnames excl::*library-code-pathname* \"ipc\"))
+      (excl::require :emacs
+                     (merge-pathnames excl::*library-code-pathname* \"emacs\"))
+      (apply
+       (find-symbol (symbol-name :start-lisp-listener-daemon) :ipc)
+       #+allegro-v4.1 '(:use-lep t :unix-domain nil)
+       #-allegro-v4.1 nil)
+      (values))\n"))
 
 
 (defun fi::make-subprocess-variables ()
@@ -761,8 +761,7 @@ info from Lisp in the Lisp subprocess buffer.")
 				 (fi::frob-case-from-lisp command)
 				 (cdr xx))))
 		(error nil)))
-	    nil ; (setq fi:unix-domain-socket (setq fi::remote-host host))
-	  )
+	    nil)
 	;; This is optional also
 	(setq fi::ipc-version
 	  (condition-case ()
