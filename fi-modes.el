@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.33 1990/08/31 23:47:07 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.34 1990/09/02 18:35:03 layer Exp $
 
 ;;;; Mode initializations
 
@@ -283,14 +283,15 @@ value is non-nil."
 				 (forward-char -1)
 			       (goto-char end))
 			     (skip-chars-backward " \t")
-			     (setq fi:package
-			       (car (read-from-string
-				     (buffer-substring beg (point)))))
-			     (setq fi:package
-			       (downcase
-				(format "%s" (if (consp fi:package)
-						 (car fi:package)
-					       fi:package))))))))
+			     (let ((package
+				    (if (= (string-to-char "(")
+					   (char-after beg))
+					(buffer-substring (+ 1 beg) (point))
+				      (buffer-substring beg (point)))))
+			       (setq fi:package
+				 (downcase
+				  (symbol-name
+				   (car (read-from-string package))))))))))
 		 fi:package))
 	  fi:package
 	(let* ((case-fold-search t)
