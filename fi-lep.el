@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.31 1991/06/20 20:02:30 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.32 1991/06/27 15:25:34 layer Exp $
 ;;
 
 (defvar fi:always-in-a-window nil)
@@ -363,7 +363,7 @@ is obtained from the \"Initial Lisp Listener\".  See M-x mail for more
 information on how to send the mail." 
   (interactive)
   (make-request (lep::bug-report-session
-		 :process-name (lep::read-lisp-process-name
+		 :process-name (fi::read-lisp-process-name
 				"Process for stack :zoom: "))
 		;; Normal continuation
 		(() (error-message stack lisp-info)
