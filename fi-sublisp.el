@@ -1,7 +1,7 @@
 ;;; subprocess-lisp.el
 ;;;   functions to send lisp source code to the sublisp process
 ;;;
-;;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.7 1988/02/21 21:26:55 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.8 1988/02/26 12:16:51 layer Exp $
 
 (defun inferior-lisp-newline ()
   (interactive)
@@ -345,6 +345,13 @@ Does not yet have provision for signals (e.g. ^C)."
 (defvar sublisp-returns "")
 (defvar sublisp-returns-state nil)
 
+(defvar source-info-not-found-hook
+  '(lambda (tagname) (find-tag name))
+  "The value of this variable is funcalled when source information is not
+present for a symbol.  The function is given one argument, the name for
+which source is desired.  The null string means use the word at the dot as
+the search word.")
+
 (defun sublisp-backdoor-filter (proc string)
   ;; This collects everything returned until a ^A\n prompt is seen,
   ;; then displays it.  The first time is special cased to throw away
@@ -381,8 +388,11 @@ Does not yet have provision for signals (e.g. ^C)."
 		      (setq sublisp-returns "")
 		      (if (cdr form)
 			  (find-source-from-info (car form) (cdr form))
-			(message "The source location of `%s' is unknown."
-				 (car form)))))
+			(if source-info-not-found-hook
+			    (funcall source-info-not-found-hook
+				     (symbol-name (car form)))
+			  (message "The source location of `%s' is unknown."
+				   (car form))))))
 		   (t  
 		    (if (or (> (length sublisp-returns) 78)
 			    ;; should be mbuf width
