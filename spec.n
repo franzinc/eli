@@ -1,7 +1,7 @@
 	      Franz Inc. GNU Emacs/Common Lisp Interface
 			     Release 1.5
 
-;; $Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.46 1990/10/13 19:37:20 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.47 1990/10/16 22:02:47 layer Exp $
 
 This document is a specification of the Franz Inc. GNU Emacs interface
 to Common Lisp, which is written entirely in GNU Emacs Lisp (for GNU
@@ -316,6 +316,7 @@ plus the following miscellaneous variables:
 %% fi:default-explicit-common-lisp-image-name
 %% fi:default-explicit-common-lisp-image-arguments
 %% fi:default-remote-common-lisp-host
+%% fi:default-remote-common-lisp-directory
 
 %% fi:lisp-case-sensitive
 %% fi:echo-evals-from-buffer-in-listener-p
