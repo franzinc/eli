@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.187 1997/03/25 00:09:35 layer Exp $
+;; $Id: fi-subproc.el,v 1.188 1997/09/11 18:55:38 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -629,6 +629,7 @@ the buffer name is the second optional argument."
    "(progn
       (setf (getf (mp:process-property-list mp:*current-process*)
                   ':emacs-listener-number) %d)
+      (setf (excl::interactive-stream-p *terminal-io*) t)
       (values))\n"
    (fi::tcp-listener-generation proc)))
 

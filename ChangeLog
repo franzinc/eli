@@ -1,3 +1,8 @@
+Wed Sep 10 12:57:25 1997  Kevin Layer  <layer@ultra>
+
+	* fi-subproc.el: (from smh) on Windows make *terminal-io* in the
+	*common-lisp* buffer interactive 
+
 For more detailed instructions on filling in the ChangeLog form, see 
 `/fi/doc/procedures/changelogs.txt'.
 *******************************************************************************
