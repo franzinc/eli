@@ -1,7 +1,6 @@
-clman
-makeman
-clman.oblist
 test.out
 *.doc
 RefMan.n
 RefCard.n
+fi-vers.el
+*.tar.gz

@@ -7,6 +7,14 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.pre-beta.6
+
+Wed Dec 10 16:53:53 1997  Kevin Layer  <layer@ultra>
+
+	* Makefile: default doesn't do test.out and docs now
+	* local.mak: fix dist
+
+*******************************************************************************
 2.0.21.pre-beta.5
 
 Wed Dec 10 16:24:55 1997  Kevin Layer  <layer@ultra>

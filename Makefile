@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.132 1997/12/11 00:28:29 layer Exp $
+# $Id: Makefile,v 1.133 1997/12/11 00:55:31 layer Exp $
 # This makefile requires GNU make.
 
 include version.mak
@@ -20,7 +20,7 @@ has_xemacs = t
 
 xemacs = xemacs
 
-default:	fi-vers.el compile test.out docs
+default:	fi-vers.el compile
 
 all:	fi-vers.el compile test.out tags docs
 

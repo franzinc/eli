@@ -1,26 +1,25 @@
-# $Id: local.mak,v 2.1 1997/12/11 00:28:30 layer Exp $
+# $Id: local.mak,v 2.2 1997/12/11 00:55:31 layer Exp $
 
 TGZFILE = eli-$(VERSION).tar.gz
 DIR = eli-$(VERSION)
 
-release_files = Makefile version.mak fi-*.el fi-*.elc *.doc \
+release_files = Makefile version.mak Doc.el Doc.elc fi-*.el fi-*.elc *.doc \
 	examples/emacs.el
 
 echo_release_files:
 	@echo $(release_files)
 
-dist = eli-$(VERSION)
-
 dist:	FORCE
-	rm -fr $(dist)
-	mkdir $(dist)
+	rm -fr eli-$(VERSION)
+	mkdir eli-$(VERSION)
 	sed -e 's/%%VERSION%%/$(VERSION)/g' \
 	    -e 's/%%TGZFILE%%/$(TGZFILE)/g' \
 	    -e 's/%%DIR%%/$(DIR)/g' \
 		< relnotes.txt \
-		> $(dist)/README
-	cp -p $(release_files) $(dist)
-	gtar zcf $(dist).tar.gz $(dist)
+		> README-$(VERSION)
+	cp -p $(release_files) eli-$(VERSION)
+	echo '# intentionally empty' > eli-$(VERSION)/local.mak
+	gtar zcf eli-$(VERSION).tar.gz eli-$(VERSION)
 
 ###############################################################################
 
