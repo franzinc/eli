@@ -1,6 +1,11 @@
+Thu Aug  1 21:38:59 1996  Kevin Layer  <layer@freezer>
+
+	* fi-subproc.el: fix bug introduced while reducing the number of
+	special variables.
+
 Thu Aug  1 15:34:55 1996  Kevin Layer  <layer@freezer>
 
-	* change $Header: /repo/cvs.copy/eli/ChangeLog,v 2.94 1996/08/01 22:35:25 layer Exp $ to $Id: ChangeLog,v 2.94 1996/08/01 22:35:25 layer Exp $
+	* change rcs Header to Id
 
 	* Makefile: don't run `docs' rule, since it's broken; test
 	`updates' rule that uses `rsync' (which itself doesn't work yet)

@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.163 1996/08/01 22:36:26 layer Exp $
+;; $Id: fi-subproc.el,v 1.164 1996/08/02 04:40:00 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -649,69 +649,67 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 								   cruft)
   (let ((val (catch 'cl-subproc-filter-foo
 	       (fi::common-lisp-subprocess-filter-1 process output))))
-    (case val
+    (case (car val)
       (normal
-       (fi::subprocess-filter process output stay cruft)
+       (fi::subprocess-filter process (cdr val) stay cruft)
        (set-process-filter process 'fi::subprocess-filter))
+      (error
+       (message "%s" (cdr val))
+       (fi::switch-to-buffer "*Help*"))
       (t
-       (if (and (consp val) (eq 'error (car val)))
-	   (progn
-	     (message "%s" (cdr val))
-	     (fi::switch-to-buffer "*Help*"))
-	 (fi::subprocess-filter process output stay cruft))))))
+       (fi::subprocess-filter process output stay cruft)))))
 
 (defun fi::common-lisp-subprocess-filter-1 (process output)
   ;; This is a temporary filter, which is used until the rendezvous with
   ;; Lisp is made.
   (save-excursion
     (set-buffer (process-buffer process))
-    (if (not (fi::lep-open-connection-p))
-	(if (and (fi::fast-search-string 1 output)
-		 (string-match "\\([^\0]*\\)\\(.*\\)\\([^\0]*\\)"
-			       output))
-	    (let* ((res (concat (substring output (match-beginning 1)
-					   (match-end 1))
-				(substring output (match-beginning 3)
-					   (match-end 3))))
-		   (command (substring output (match-beginning 2)
-				       (match-end 2)))
-		   (xx nil)
-		   (host nil))
-	      (setq fi::lisp-port
-		(car (setq xx (read-from-string command nil))))
-	      (setq fi::lisp-password
-		(car (setq xx (read-from-string command (cdr xx)))))
-	      (setq fi::lisp-case-mode
-		(car (setq xx
-		       (read-from-string (downcase command) (cdr xx)))))
-	      ;; the following "argument" is optional in that a previous
-	      ;; version of the ipc.cl didn't provide it
-	      (if (setq host
-		    (condition-case ()
-			(car (setq xx (read-from-string
-				       (fi::frob-case-from-lisp command)
-				       (cdr xx))))
-		      (error nil)))
-		  nil)
-	      ;; This is optional also
-	      (setq fi::lisp-ipc-version
-		(condition-case ()
-		    (if (not (eq (cdr xx) (length command)))
-			(car (setq xx (read-from-string
-				       (fi::frob-case-from-lisp command)
-				       (cdr xx)))))
-		  (error nil)))
-	      (setq output res)
+    (when (and (not (fi::lep-open-connection-p))
+	       (fi::fast-search-string 1 output)
+	       (string-match "\\([^\0]*\\)\\(.*\\)\\([^\0]*\\)"
+			     output)) 
+      (let* ((res (concat (substring output (match-beginning 1)
+				     (match-end 1))
+			  (substring output (match-beginning 3)
+				     (match-end 3))))
+	     (command (substring output (match-beginning 2) (match-end 2)))
+	     (xx nil)
+	     (host nil))
+	(setq fi::lisp-port
+	  (car (setq xx (read-from-string command nil))))
+	(setq fi::lisp-password
+	  (car (setq xx (read-from-string command (cdr xx)))))
+	(setq fi::lisp-case-mode
+	  (car (setq xx
+		 (read-from-string (downcase command) (cdr xx)))))
+	;; the following "argument" is optional in that a previous
+	;; version of the ipc.cl didn't provide it
+	(if (setq host
+	      (condition-case ()
+		  (car (setq xx (read-from-string
+				 (fi::frob-case-from-lisp command)
+				 (cdr xx))))
+		(error nil)))
+	    nil)
+	;; This is optional also
+	(setq fi::lisp-ipc-version
+	  (condition-case ()
+	      (if (not (eq (cdr xx) (length command)))
+		  (car (setq xx (read-from-string
+				 (fi::frob-case-from-lisp command)
+				 (cdr xx)))))
+	    (error nil)))
 
-	      (condition-case condition
-		  (progn
-		    (cond ((consp fi:start-lisp-interface-hook)
-			   (mapcar 'funcall fi:start-lisp-interface-hook))
-			  (fi:start-lisp-interface-hook
-			   (funcall fi:start-lisp-interface-hook)))
-		    (throw 'cl-subproc-filter-foo 'normal))
-		(error (throw 'cl-subproc-filter-foo
-			 (cons 'error condition)))))))))
+	(condition-case condition
+	    (progn
+	      (cond ((consp fi:start-lisp-interface-hook)
+		     (mapcar 'funcall fi:start-lisp-interface-hook))
+		    (fi:start-lisp-interface-hook
+		     (funcall fi:start-lisp-interface-hook)))
+	      (throw 'cl-subproc-filter-foo
+		(cons 'normal res)))
+	  (error (throw 'cl-subproc-filter-foo
+		   (cons 'error condition))))))))
 
 (defun fi::make-subprocess (startup-message process-name buffer-name
 			    directory mode-function image-prompt image-file
