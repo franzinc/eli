@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.3 1991/01/30 10:38:42 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.4 1991/01/31 14:48:01 layer Exp $
 ;;
 ;;;;;; This LEP file redefines many of the fi:functions in the fi/keys.el file
 
@@ -552,7 +552,7 @@ from the sexp around the point."
 		 (message "Cannot undefine current definition %s" error))))
 
 
-(defun lep::toggle-trace-definition (string)
+(defun fi:toggle-trace-definition (string)
   "Trace or untrace the specified function"
   (interactive (fi::get-default-symbol "(un)trace"))
   (make-request (lep::toggle-trace :fspec string)
