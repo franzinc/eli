@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 1.117.6.4.8.9 2003/08/14 22:22:25 layer Exp $
+;; $Id: fi-keys.el,v 1.117.6.4.8.10 2003/08/14 23:53:38 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -40,6 +40,9 @@ If the value is T, then ask whether or not the file should be written ``as
 is'' if there are too many or few parens--answering no leaves the point at
 the place of error.  If the value is 'warn, then a warning is issued and
 the file is written.")
+
+(defvar fi:define-global-lisp-mode-bindings t
+  "*This variable is obsolete.  Use fi:legacy-keybindings instead.")
 
 (defvar fi:legacy-keybindings t
   "*If non-nil then define the global, legacy keybindings, which in some
@@ -556,19 +559,25 @@ other than at the end of the buffer."
       (ding))))
 
 (defun fi:subprocess-beginning-of-line (arg)
-  "Moves point to beginning of line, just like
-	(beginning-of-line arg),
+  "Moves point to beginning of line, just like (beginning-of-line ARG),
 except that if the pattern at the beginning of the line matches the
 current subprocess prompt pattern, this function skips over it.
+Successive calls to this function toggle between the real beginning of line
+and the beginning of input (after the prompt).  If there is no prompt on
+the line, then successive calls toggle between the real beginning of line
+and the first non-whitespace character.
+
 With argument ARG non nil or 1, move forward ARG - 1 lines first."
   (interactive "p")
   (let ((old (point))
+	(bol (bolp))
 	new)
     (beginning-of-line arg)
-    (when (looking-at fi::prompt-pattern)
-      (if (= old (second (setq new (match-data 0))))
-	  (goto-char (first new))
-	(goto-char (second new))))))
+    (cond ((looking-at fi::prompt-pattern)
+	   (if (= old (second (setq new (match-data 0))))
+	       (goto-char (first new))
+	     (goto-char (second new))))
+	  (bol (while (looking-at "[ \t]") (forward-char))))))
 
 (defun fi:subprocess-backward-kill-word (arg)
   "Kill previous word in current subprocess input line.  This function

@@ -11,6 +11,12 @@ post-6.2 release changes:
 
 2003-08-14  Kevin Layer  <layer@crikey>
 
+	* fi-keys.el: improve fi:subprocess-beginning-of-line for
+	  non-prompt lines
+	* local.mak: add examples/eval.el
+	* (NEW) examples/eval.el: from Bill_Clementson@jdedwards.com
+	* doc/eli.htm: add missing stuff
+
 	* README: internal info
 	* fi-keys.el,
 	* fi-lep.el,
