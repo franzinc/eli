@@ -1,5 +1,5 @@
 ;;
-;; copyright (C) 1989 Franz Inc, Berkeley, Ca.
+;; copyright (C) 1989, 1990 Franz Inc, Berkeley, Ca.
 ;;
 ;; The software, data and information contained herein are the property 
 ;; of Franz, Inc.  
@@ -21,10 +21,10 @@
 ;;	Berkeley, CA 94704
 ;;	(415) 548-3600
 ;; or
-;;	emacs-info%franz.uucp@Berkeley.EDU
-;;	ucbvax!franz!emacs-info
+;;	emacs-info@franz.com
+;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-su.el,v 1.1 1990/08/31 23:46:50 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-su.el,v 1.2 1990/09/05 22:10:02 layer Exp $
 
 (defvar fi:su-mode-map nil
   "The su major-mode keymap.")

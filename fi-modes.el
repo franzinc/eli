@@ -1,5 +1,5 @@
 ;;
-;; copyright (C) 1987, 1988 Franz Inc, Berkeley, Ca.
+;; copyright (C) 1987, 1988, 1989, 1990 Franz Inc, Berkeley, Ca.
 ;;
 ;; The software, data and information contained herein are the property 
 ;; of Franz, Inc.  
@@ -21,10 +21,10 @@
 ;;	Berkeley, CA 94704
 ;;	(415) 548-3600
 ;; or
-;;	emacs-info%franz.uucp@Berkeley.EDU
-;;	ucbvax!franz!emacs-info
+;;	emacs-info@franz.com
+;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.34 1990/09/02 18:35:03 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.35 1990/09/05 22:09:45 layer Exp $
 
 ;;;; Mode initializations
 

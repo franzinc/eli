@@ -1,5 +1,5 @@
 ;;
-;; copyright (C) 1987, 1988 Franz Inc, Berkeley, Ca.
+;; copyright (C) 1987, 1988, 1989, 1990 Franz Inc, Berkeley, Ca.
 ;;
 ;; The software, data and information contained herein are the property 
 ;; of Franz, Inc.  
@@ -21,14 +21,22 @@
 ;;	Berkeley, CA 94704
 ;;	(415) 548-3600
 ;; or
-;;	emacs-info%franz.uucp@Berkeley.EDU
-;;	ucbvax!franz!emacs-info
+;;	emacs-info@franz.com
+;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.26 1990/09/03 21:51:31 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.27 1990/09/05 22:09:48 layer Exp $
+
+(defvar fi:subprocess-super-key-map nil
+  "Used by fi:subprocess-superkey as the place where super key bindings are
+kept.  Buffer local.")
+
+(make-variable-buffer-local 'fi:subprocess-super-key-map)
+
 
 ;;;;
 ;;; Key defs
 ;;;;
+
 
 (defun fi::subprocess-mode-super-keys (map mode)
   "Setup keys in MAP as a subprocess super-key map.  MODE is either

@@ -44,7 +44,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-ring.el,v 1.8 1988/07/15 18:32:33 layer Rel $
+;; $Header: /repo/cvs.copy/eli/fi-ring.el,v 1.9 1990/09/05 22:09:57 layer Exp $
 
 ;; This code is very similar to the kill-ring implementation
 ;; and implements the fi::subprocess input ring.  Each fi::subprocess buffer
@@ -56,17 +56,27 @@
 (defvar fi::input-ring nil
   "A list of previous input to a subprocess.")
 
+(make-variable-buffer-local 'fi::input-ring)
+
 (defvar fi::input-ring-max fi:default-input-ring-max
   "Maximum length of input ring before oldest elements are thrown away.")
+
+(make-variable-buffer-local 'fi::input-ring-max)
 
 (defvar fi::input-ring-yank-pointer nil
   "The tail of the input ring whose car is the last thing yanked.")
 
+(make-variable-buffer-local 'fi::input-ring-yank-pointer)
+
 (defvar fi::last-input-search-string ""
   "Last input search string in each fi::subprocess buffer.")
 
+(make-variable-buffer-local 'fi::last-input-search-string)
+
 (defvar fi::last-command-was-successful-search nil
   "Switch to indicate that last command was a successful input re-search.")
+
+(make-variable-buffer-local 'fi::last-command-was-successful-search)
 
 (defun fi::input-append (string before-p)
   (setq fi::last-command-was-successful-search nil)

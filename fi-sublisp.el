@@ -1,5 +1,5 @@
 ;;
-;; copyright (C) 1987, 1988 Franz Inc, Berkeley, Ca.
+;; copyright (C) 1987, 1988, 1989, 1990 Franz Inc, Berkeley, Ca.
 ;;
 ;; The software, data and information contained herein are the property 
 ;; of Franz, Inc.  
@@ -21,8 +21,8 @@
 ;;	Berkeley, CA 94704
 ;;	(415) 548-3600
 ;; or
-;;	emacs-info%franz.uucp@Berkeley.EDU
-;;	ucbvax!franz!emacs-info
+;;	emacs-info@franz.com
+;;	uunet!franz!emacs-info
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -45,7 +45,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.38 1990/09/01 20:15:09 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.39 1990/09/05 22:09:36 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -68,6 +68,8 @@ which names a package in the Lisp world (ie, in a Lisp subprocess running
 as an inferior of Emacs in some buffer).  It is used when expressions are
 sent from an Emacs buffer to a Lisp process so that the symbols are read
 into the correct Lisp package.")
+
+(make-variable-buffer-local 'fi:package)
 
 (defvar fi:echo-evals-from-buffer-in-listener-p nil
   "*If non-NIL, forms evalutated directly from a lisp buffer by the

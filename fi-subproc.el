@@ -1,5 +1,5 @@
 ;;
-;; copyright (C) 1987, 1988 Franz Inc, Berkeley, Ca.
+;; copyright (C) 1987, 1988, 1989, 1990 Franz Inc, Berkeley, Ca.
 ;;
 ;; The software, data and information contained herein are the property 
 ;; of Franz, Inc.  
@@ -21,10 +21,10 @@
 ;;	Berkeley, CA 94704
 ;;	(415) 548-3600
 ;; or
-;;	emacs-info%franz.uucp@Berkeley.EDU
-;;	ucbvax!franz!emacs-info
+;;	emacs-info@franz.com
+;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.63 1990/09/05 16:58:53 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.64 1990/09/05 22:09:50 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -826,17 +826,3 @@ This function implements continuous output to visible buffers."
   (save-excursion
     (set-buffer buffer)
     fi::remote-password))
-
-;;;;
-;;; Initializations
-;;;;
-
-(mapcar 'make-variable-buffer-local
-	'(fi:package
-	  fi:subprocess-super-key-map
-	  
-	  
-	  fi::input-ring
-	  fi::input-ring-max
-	  fi::input-ring-yank-pointer
-	  fi::last-input-search-string))
