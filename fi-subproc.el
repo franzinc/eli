@@ -1,16 +1,4 @@
-;; If you have any comments or questions on this interface, please feel
-;; free to contact Franz Inc. at
-;;	Franz Inc.
-;;	Attn: Kevin Layer
-;;	1995 University Ave
-;;	Suite 275
-;;	Berkeley, CA 94704
-;;	(415) 548-3600
-;; or
-;;	emacs-info@franz.com
-;;	uunet!franz!emacs-info
-
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.79 1990/12/27 13:06:35 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.80 1991/01/29 15:29:14 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -227,6 +215,12 @@ the directory in which the remote Lisp should execute (%s).")
 
 (defvar fi::lisp-case-mode ':unknown
   "The case in which the ACL we are connected to lives.")
+
+(defvar fi::ipc-version nil
+  "The version of the IPC to which will connect. Buffer local")
+
+(make-variable-buffer-local 'fi::ipc-version)
+
 
 ;;;;
 ;;; User visible functions
@@ -401,13 +395,13 @@ arguments are read from the minibuffer."
     (setq fi::freshest-common-sublisp-name (process-name proc))
     proc))
 
-(defun fi:tcp-common-lisp (&optional buffer-number)
+(defun fi:tcp-common-lisp (&optional buffer-number buffer-name)
   "In a buffer whose name is determined from the optional prefix argument
-BUFFER-NAME, connect to a Common Lisp using either a UNIX domain socket
-file or internet port number.  Common Lisp buffer names start with
-`*common-lisp' and end with `*', with an optional `-N' in between.  If
+BUFFER-NUMBER, and the optional argument BUFFER-NAME,  connect to a Common Lisp using either a UNIX domain socket
+file or internet port number.  BUFFER-NAME defaults to tcp-common-lisp. Common Lisp buffer names start with
+`*BUFFER-NAME' and end with `*', with an optional `-N' in between.  If
 BUFFER-NUMBER is not given it defaults to 1.  If BUFFER-NUMBER is >= 0,then
-the buffer is named `*common-lisp*<BUFFER-NUMBER>'.  If BUFFER-NUMBER is <
+the buffer is named `*BUFFER-NAME*<BUFFER-NUMBER>'.  If BUFFER-NUMBER is <
 0, then the first available buffer name is chosen.
 
 See `fi:unix-domain' and `fi:explicit-tcp-common-lisp'."
@@ -415,15 +409,17 @@ See `fi:unix-domain' and `fi:explicit-tcp-common-lisp'."
   (if (null fi::freshest-common-sublisp-name)
       (error "must start a Lisp subprocess first"))
   (let ((proc (fi::make-tcp-connection
-	       buffer-number "tcp-common-lisp" 'fi:tcp-common-lisp-mode
+	       buffer-number 
+	       (or buffer-name "tcp-common-lisp") 'fi:tcp-common-lisp-mode
 	       fi:common-lisp-prompt-pattern
 	       (fi::get-buffer-host fi::freshest-common-sublisp-name)
 	       (fi::get-buffer-port fi::freshest-common-sublisp-name)
-	       (fi::get-buffer-password fi::freshest-common-sublisp-name))))
+	       (fi::get-buffer-password fi::freshest-common-sublisp-name)
+	       (fi::get-buffer-ipc-version fi::freshest-common-sublisp-name))))
     proc))
 
 (defun fi:explicit-tcp-common-lisp (&optional buffer-number
-					      host service password)
+					      host service password ipc-version)
   "The same as fi:tcp-common-lisp, except the buffer name of the Lisp onto
 which the listener is disired is read from the minibuffer.  Use port 0 if
 fi:unix-domain is non-nil."
@@ -434,7 +430,8 @@ fi:unix-domain is non-nil."
        (list current-prefix-arg
 	     (fi::get-buffer-host buffer)
 	     (fi::get-buffer-port buffer)
-	     (fi::get-buffer-password buffer)))))
+	     (fi::get-buffer-password buffer)
+	     (fi::get-buffer-ipc-version buffer)))))
   (let ((proc (fi::make-tcp-connection
 	       buffer-number "tcp-common-lisp" 'fi:tcp-common-lisp-mode
 	       fi:common-lisp-prompt-pattern
@@ -555,10 +552,16 @@ are read from the minibuffer."
       (if initial-func (funcall initial-func process)))
     process))
 
+;; Modified to send the protocol :listener
+
+(defvar fi::listener-protocol ':listener)
+
 (defun fi::make-tcp-connection (buffer-number buffer-name mode image-prompt
-				    &optional given-host
-					      given-service
-					      given-password)
+				&optional given-host
+					  given-service
+					  given-password
+					  ipc-version)
+
   (if (not fi::freshest-common-sublisp-name)
       (error "A Common Lisp subprocess has not yet been started."))
   (let* ((buffer (fi::make-process-buffer buffer-name buffer-number))
@@ -588,6 +591,7 @@ are read from the minibuffer."
       ;; of the process.  This is so that the processes are named similarly
       ;; in Emacs and Lisp.
       ;;
+      (when ipc-version (process-send-string fi::backdoor-process (format "%s\n" (prin1-to-string fi::listener-protocol))))
       (process-send-string proc (format "\"%s\"\n" (buffer-name buffer)))
       (process-send-string proc (format " %d \n" password))
       
@@ -635,9 +639,10 @@ are read from the minibuffer."
               (require :ipc)
               (require :emacs)
               (set (find-symbol (symbol-name :*unix-domain*) :ipc) %s)
-              (funcall (find-symbol (symbol-name :start-lisp-listener-daemon) :ipc))
+              (funcall (find-symbol (symbol-name :start-lisp-listener-daemon) :ipc) #+:allegro-v4.1 :use-lep #+:allegro-v4.1 t )
               (values))\n"
 	   fi:unix-domain)))
+
 
 (defun fi::make-subprocess-variables ()
   (setq fi::input-ring-max fi:default-input-ring-max)
@@ -678,7 +683,7 @@ are read from the minibuffer."
 				  (+ start
 				     (min size
 					  fi:subprocess-write-quantum))))
-		      t)
+		      t)		    
 		  (error
 		   (message "Error writing to subprocess.")
 		   nil)))
@@ -790,7 +795,15 @@ This function implements continuous output to visible buffers."
 				 (fi::frob-case-from-lisp command)
 				 (cdr xx))))
 		(error nil)))
-	    (setq fi:unix-domain-socket (setq fi::remote-host host)))
+	    nil ; (setq fi:unix-domain-socket (setq fi::remote-host host))
+	  )
+	;; This is optional also
+	(setq fi::ipc-version
+	  (condition-case ()
+	      (if (not (eq (cdr xx) (length command))) 
+		  (car (setq xx (read-from-string command (cdr xx)))))
+	  (error nil)))
+	(if (eq fi::ipc-version 'NIL) (setq fi::ipc-version nil))
 	res)
     string))
 
@@ -926,3 +939,11 @@ This function implements continuous output to visible buffers."
   (save-excursion
     (set-buffer buffer)
     fi::remote-password))
+
+
+(defun fi::get-buffer-ipc-version (buffer)
+  "Given BUFFER returns the values in this buffer of fi::remote-password"
+  (save-excursion
+    (set-buffer buffer)
+    fi::ipc-version))
+
