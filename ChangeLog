@@ -26,6 +26,7 @@ post-6.2 release changes:
 	* fi-su.el,
 	* fi-telnet.el: support for keybinding reorg
 	* fi-site-init.el: new file, fi-emacs21
+	* fi-vers.el: update
     rfe5529: C-c *
 	* fi-lep.el: add fi:pop-definition-mark
 
