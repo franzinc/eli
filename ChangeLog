@@ -7,6 +7,14 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+<no version change>
+
+2000-10-03  Kevin Layer  <layer@ultra>
+
+	* move RELNOTES entries to RELNOTES.60, since I filed an rfe on
+	them
+
+*******************************************************************************
 2.1.2
 
 2000-09-26  Kevin Layer  <layer@ultra>
