@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.17 1991/03/13 15:02:53 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.18 1991/03/13 21:42:00 layer Exp $
 ;;
 
 (defvar fi:always-in-a-window nil)
@@ -548,9 +548,9 @@ s-expression around the point."
   (make-request (lep::list-fspecs-session
 		 :function function :fspec (fi::frob-case-to-lisp symbol))
 		((symbol fi:package) (the-definitions)
-		 (display-some-definitions fi:package
-					   the-definitions
-					   (list 'find-a-definition)))
+		 (lep:display-some-definitions fi:package
+					       the-definitions
+					       (list 'find-a-definition)))
 		((msg) (error)
 		 (message msg error))))
 
