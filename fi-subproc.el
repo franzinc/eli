@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.117 1991/07/24 14:02:13 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.118 1991/07/30 20:50:06 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -318,11 +318,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 				       fi:common-lisp-image-name
 				       fi:common-lisp-image-arguments
 				       fi:common-lisp-host))
-  (let* ((buffer-name (or buffer-name fi:common-lisp-buffer-name))
-	 (directory (expand-file-name (or directory fi:common-lisp-directory)))
-	 (image-name (or image-name fi:common-lisp-image-name))
-	 (image-args (or image-args fi:common-lisp-image-arguments))
-	 (host (or host fi:common-lisp-host))
+  (let* ((directory (expand-file-name directory))
 	 (local (or (string= "localhost" host)
 		    (string= host (system-name))))
 	 (startup-message
@@ -447,12 +443,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 				       fi:franz-lisp-image-name
 				       fi:franz-lisp-image-arguments
 				       fi:franz-lisp-host))
-  (let* ((buffer-name (or buffer-name fi:franz-lisp-buffer-name))
-	 (directory (or directory fi:franz-lisp-directory))
-	 (image-name (or image-name fi:franz-lisp-image-name))
-	 (image-args (or image-args fi:franz-lisp-image-arguments))
-	 (host (or host fi:franz-lisp-host))
-	 
+  (let* ((directory (expand-file-name directory))
 	 (local (or (string= "localhost" host)
 		    (string= host (system-name))))
 	 (proc (fi::make-subprocess
