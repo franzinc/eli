@@ -19,7 +19,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.40 1992/09/11 14:49:40 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.41 1992/09/17 10:49:22 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If non-nil, semicolons that begin comments are indented as they are
@@ -409,7 +409,7 @@ of the start of the containing expression."
 
       (when (and (setq temp (nth 3 state)) (= ?| temp))
 	;; in a #||# comment
-	(indent-relative nil)
+	(indent-relative t)
 	(setq desired-indent (current-column))
 	(setq comment-hack t))
 
