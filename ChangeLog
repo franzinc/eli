@@ -1,3 +1,7 @@
+2004-07-18  Kevin Layer  <layer@gemini>
+
+	* fi-keys.el (fi:arglist-lisp-space): rfe5988
+
 *******************************************************************************
 6/7/04 - join from acl70beta branch onto acl7 branch
 *******************************************************************************
@@ -4954,4 +4958,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.9.2.2 $
+$Revision: 3.9.2.3 $

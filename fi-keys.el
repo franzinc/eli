@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 3.3 2004/04/29 22:35:54 layer Exp $
+;; $Id: fi-keys.el,v 3.3.2.1 2004/07/19 18:32:21 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -1250,7 +1250,8 @@ information stays around long enough to be used.")
   "Display the value of the argument list of a symbol followed by
 SPC.  This function is intended to be bound to the SPC key so
 that, after being enabled it will display the arglist or value of a
-specific symbol after the symbol has been typed in followed by SPC."
+specific symbol after the symbol has been typed in followed by SPC.
+See the variable `fi:auto-arglist-pop-up-style'."
   (interactive)
   (if (fi::lep-open-connection-p)
       (fi::arglist-lisp-space-1)
