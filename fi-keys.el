@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 3.1 2004/01/16 19:27:49 layer Exp $
+;; $Id: fi-keys.el,v 3.2 2004/04/29 00:16:41 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -958,14 +958,15 @@ If they are not, position the point at the first syntax error found."
 	   (memq major-mode '(fi:common-lisp-mode fi:emacs-lisp-mode
 			      fi:franz-lisp-mode)))
       (if (eq 'warn fi:check-unbalanced-parentheses-when-saving)
-	  (condition-case nil
-	      (progn (fi:find-unbalanced-parenthesis) nil)
-	    (error
-	     (message "Warning: parens are not balanced in this buffer.")
-	     (ding)
-	     (sit-for 2)
-	     ;; so the file is written:
-	     nil))
+	  (save-excursion
+	    (condition-case nil
+		(progn (fi:find-unbalanced-parenthesis) nil)
+	      (error
+	       (message "Warning: parens are not balanced in this buffer.")
+	       (ding)
+	       (sit-for 1)
+	       ;; so the file is written:
+	       nil)))
 	(condition-case nil
 	    (progn (fi:find-unbalanced-parenthesis) nil)
 	  (error
