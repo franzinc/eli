@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/examples/Package.el,v 1.1 1991/04/26 09:45:32 layer Exp $
+;; $Header: /repo/cvs.copy/eli/examples/Package.el,v 1.2 1992/01/13 11:42:55 layer Exp $
 
 ;;;; Subprocess mode-line
 
@@ -27,11 +27,3 @@
     (if (string= "rsh" (car arglist))
 	(format "remote on %s" (car (cdr arglist)))
       (car arglist))))
-
-;;;; Editing mode-line
-
-(setq fi:lisp-mode-hook
-  (function
-   (lambda ()
-     (if (and (boundp 'fi:package) fi:package)
-	 (setq mode-line-process '("; package: " fi:package))))))
