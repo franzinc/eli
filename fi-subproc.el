@@ -19,7 +19,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.135 1992/01/12 11:48:26 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.136 1992/02/21 13:51:15 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -342,8 +342,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	 (local (or (string= "localhost" host)
 		    (string= host (system-name))))
 	 (real-args
-	  (if (and (not (fi::lep-open-connection-p))
-		   fi:start-lisp-interface-arguments)
+	  (if fi:start-lisp-interface-arguments
 	      (append (funcall fi:start-lisp-interface-arguments
 			       fi:use-background-streams)
 		      image-args)
