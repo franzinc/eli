@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.29 1991/03/16 12:41:49 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.30 1991/03/18 13:10:15 layer Exp $
 
 (require 'cl)
 
@@ -174,12 +174,14 @@
   (let* ((start (point))
 	 (end (progn
 		(insert string)
+		(if (not (bolp)) (forward-line 1))
 		(point)))
-	 )
+	 (lines (count-lines start end)))
     (goto-char start)
-    (while (< (point) end)
+    (while (> lines 0)
       (insert "   ")
-      (forward-line 1))))
+      (forward-line 1)
+      (setq lines (- lines 1)))))
 
 (defun frob-newlines (string)
   (let ((i 0)
