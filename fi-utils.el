@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.7 1990/08/31 23:48:37 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.8 1990/09/02 18:34:22 layer Exp $
 
 ;;; Misc utilities
 
@@ -216,10 +216,8 @@ arguments."
 	      )
 	    (error "couldn't connect to ACL in the UNIX domain."))))))
      (t
-      (if (null fi:local-host-name)
-	  (error "fi:local-host-name doesn't have a non-nil value."))
-      (if (null fi:excl-service-name)
-	  (error "fi:excl-service-name doesn't have a non-nil value."))
+      (if (null fi:inet-host-name)
+	  (error "fi:inet-host-name doesn't have a non-nil value."))
       (if (null (fi::background-sublisp-process))
 	  (progn
 	    (with-output-to-temp-buffer "*Help*"
@@ -235,7 +233,7 @@ arguments."
 		"   agree on the port number.\n"))
 	      (princ
 	       (format
-		"3. Check that fi:local-host-name (in GNU Emacs) has the correct value.\n"))
+		"3. Check that fi:inet-host-name (in GNU Emacs) has the correct value.\n"))
 	      (princ
 	       (format
 		"   This is the name of the host on the net to which you want to connect.\n"))
