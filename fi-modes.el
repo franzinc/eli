@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.22 1988/05/11 14:48:03 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.23 1988/05/12 10:16:44 layer Exp $
 
 ;;;; Mode initializations
 
@@ -49,9 +49,9 @@
 (defvar fi:inferior-franz-lisp-mode-super-key-map nil
   "Used for super-key processing in inferior-franz-lisp mode.")
 
-(defvar fi:tcp-lisp-mode-map nil
+(defvar fi:tcp-common-lisp-mode-map nil
   "The tcp-lisp major-mode keymap.")
-(defvar fi:tcp-lisp-mode-super-key-map nil
+(defvar fi:tcp-common-lisp-mode-super-key-map nil
   "Used for super-key processing in tcp-lisp mode.")
 
 (defvar fi:common-lisp-mode-map nil
@@ -116,29 +116,29 @@ modes.")
   (run-hooks 'fi:indent-setup-hook 'fi:lisp-mode-hook
 	     'fi:subprocess-mode-hook 'fi:inferior-franz-lisp-mode-hook))
 
-(defun fi:tcp-lisp-mode ()
+(defun fi:tcp-common-lisp-mode ()
   "Major mode for interacting with a Common Lisp over a TCP/IP socket."
   (interactive)
   (kill-all-local-variables)
-  (setq major-mode 'fi:tcp-lisp-mode)
-  (setq mode-name "TCP Lisp")
+  (setq major-mode 'fi:tcp-common-lisp-mode)
+  (setq mode-name "TCP Common Lisp")
   (set-syntax-table lisp-mode-syntax-table)
   (setq local-abbrev-table lisp-mode-abbrev-table)
   (fi::lisp-subprocess-mode-variables)
-  (if (null fi:tcp-lisp-mode-super-key-map)
+  (if (null fi:tcp-common-lisp-mode-super-key-map)
       (progn
-	(setq fi:tcp-lisp-mode-super-key-map (make-sparse-keymap))
+	(setq fi:tcp-common-lisp-mode-super-key-map (make-sparse-keymap))
 	(fi::subprocess-mode-super-keys
-	 fi:tcp-lisp-mode-super-key-map 'tcp-lisp)))
-  (if (null fi:tcp-lisp-mode-map)
-      (setq fi:tcp-lisp-mode-map
-	(fi::tcp-lisp-mode-commands (make-sparse-keymap)
-				    fi:tcp-lisp-mode-super-key-map)))
-  (use-local-map fi:tcp-lisp-mode-map)
-  (setq fi:subprocess-super-key-map fi:tcp-lisp-mode-super-key-map)
+	 fi:tcp-common-lisp-mode-super-key-map 'tcp-lisp)))
+  (if (null fi:tcp-common-lisp-mode-map)
+      (setq fi:tcp-common-lisp-mode-map
+	(fi::tcp-common-lisp-mode-commands
+	 (make-sparse-keymap) fi:tcp-common-lisp-mode-super-key-map)))
+  (use-local-map fi:tcp-common-lisp-mode-map)
+  (setq fi:subprocess-super-key-map fi:tcp-common-lisp-mode-super-key-map)
 
   (run-hooks 'fi:indent-setup-hook 'fi:lisp-mode-hook
-	     'fi:subprocess-mode-hook 'fi:tcp-lisp-mode-hook))
+	     'fi:subprocess-mode-hook 'fi:tcp-common-lisp-mode-hook))
 
 (defun common-lisp-mode ()
   "Same as fi:common-lisp-mode, for -*- mode definitions."

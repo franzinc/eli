@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.27 1988/05/11 14:48:49 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.28 1988/05/12 10:16:04 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -186,19 +186,19 @@ BUFFER-NUMBER is < 0, then the first available buffer name is choosen."
     (setq fi::freshest-common-sublisp-name (process-name proc))
     proc))
 
-(defun fi:tcp-lisp (&optional buffer-number)
+(defun fi:tcp-common-lisp (&optional buffer-number)
   (interactive "p")
   (let ((proc (fi::make-tcp-connection
-	       buffer-number "tcp-lisp" 'fi:tcp-lisp-mode
+	       buffer-number "tcp-common-lisp" 'fi:tcp-common-lisp-mode
 	       fi:common-lisp-prompt-pattern)))
     (setq fi::freshest-common-sublisp-name (process-name proc))
     proc))
 
-(defun fi:explicit-tcp-lisp (&optional buffer-number host service)
+(defun fi:explicit-tcp-common-lisp (&optional buffer-number host service)
   (interactive
    "p\nsHost name: \nnService port number (0 for UNIX domain): ")
   (let ((proc (fi::make-tcp-connection
-	       buffer-number "common-lisp" 'fi:tcp-lisp-mode
+	       buffer-number "tcp-common-lisp" 'fi:tcp-common-lisp-mode
 	       fi:common-lisp-prompt-pattern
 	       host service)))
     (setq fi::freshest-common-sublisp-name (process-name proc))
@@ -334,13 +334,6 @@ BUFFER-NUMBER is < 0, then the first available buffer name is choosen."
     (or (get-buffer buffer-name)
 	(get-buffer-create buffer-name))))
 
-(defun fi::process-running (buffer-name)
-  (let (temp)
-    (and (setq temp (get-buffer buffer-name))
-	 (setq temp (get-buffer-process temp))
-	 (setq temp (process-status temp))
-	 (or (eq 'run temp) (eq 'open temp)))))
-
 (defun fi::make-subprocess-variables ()
   (if (null fi::input-ring)
       (progn
@@ -465,25 +458,6 @@ This function implements continuous output to visible buffers."
       (in-buffer nil)
       (stay old-buffer)
       (t (set-buffer old-buffer)))))
-
-(defun fi::remove-chars-from-string (char-list string)
-  "Remove characters in CHAR-LIST from string STRING and return the result."
-  (mapconcat '(lambda (char)
-	       (if (memq char char-list)
-		   nil
-		 (char-to-string char)))
-	     string
-	     nil))
-
-(defun fi::substitute-chars-in-string (char-assoc-list string)
-  "Substitute character pairs of CHAR-ASSOC-LIST in STRING."
-  (let (pair)
-    (mapconcat '(lambda (char)
-		 (if (setq pair (assq char char-assoc-list))
-		     (char-to-string (cdr pair))
-		   (char-to-string char)))
-	       string
-	       nil)))
 
 (defun fi::subprocess-hack-directory ()
   ;; Even if we get an error trying to hack the working directory,

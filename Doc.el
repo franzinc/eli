@@ -6,7 +6,7 @@
 
   (fi:common-lisp-mode)
   (fi:franz-lisp-mode)
-  (fi:tcp-lisp-mode)
+  (fi:tcp-common-lisp-mode)
   (fundamental-mode)
 
   (insert-file "spec.n")
