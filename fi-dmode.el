@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.7 1991/03/15 21:05:13 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.8 1991/04/17 16:12:40 layer Exp $
 ;;
 
 ;; Create a mode in which each line is a definition and . on that
@@ -70,10 +70,10 @@ Entry to this mode runs the fi:definition-mode-hook."
   (if (null fi:definition-mode-map )
       (let ((map (make-keymap)))
 	(define-key map "\e."  'fi:lisp-find-tag)
-	(define-key map "\C-." 'fi:definition-mode-goto-definition)
 	(define-key map "."    'fi:definition-mode-goto-definition)
 	(define-key map "n"    'fi:definition-mode-goto-next)
 	(define-key map "p"    'fi:definition-mode-goto-previous)
+	(define-key map "t"    'fi:definition-mode-toggle-trace)
 	(define-key map "q"    'fi:definition-mode-quit)
 	(setq fi:definition-mode-map map)))
 
@@ -132,6 +132,15 @@ before definition mode was entered."
       (apply (car lep::definition-finding-function)
 	     def type buffer
 	     (append other (cdr lep::definition-finding-function))))))
+
+(defun fi:definition-mode-toggle-trace ()
+  (interactive)
+  (let* ((n (count-lines (point-min)
+			 (save-excursion (beginning-of-line) (point))))
+	 (def (nth n lep::definitions))
+	 (type (nth n lep::definition-types)))
+    (when (not (equal type '(nil)))
+      (fi:toggle-trace-definition def))))
 
 (defun fi:definition-mode-goto-next ()
   "Find the definition on the next line.  Equivalent to ``\\<global-map>\\[next-line]''
