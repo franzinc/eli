@@ -10,267 +10,354 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/Attic/fi-lemacs.el,v 2.2 1993/07/15 00:02:05 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-lemacs.el,v 2.3 1993/07/22 23:05:01 layer Exp $
 
-;; does lemacs have dialogs?
-
-(defvar fi:allegro-menubar-name "Allegro")
-(defvar fi:composer-menubar-name "Allegro Composer")
-
-(defconst fi:allegro-global-menu
-    (list
-     fi:allegro-menubar-name
-     ["Run Common Lisp" fi:common-lisp t]
-     ["New Listener" fi:open-lisp-listener t]
-     ["Restart Common Lisp" fi:restart-common-lisp t]))
-
-(defconst fi:common-lisp-mode-menu
-    (append
-     fi:allegro-global-menu
-     (list
+(defconst fi:allegro-file-menu
+    '("ACLFile"
+      ["Run Common Lisp" fi:common-lisp fi::connection-not-open]
+      ["New Listener" fi:open-lisp-listener fi::connection-open]
+      ["Restart Common Lisp" fi:restart-common-lisp fi::connection-once-open]
       "----"
-      (list
-       "Compile"
-       ["top-level form" fi:lisp-compile-defun t]
-       ["region" fi:lisp-compile-region t]
-       ["last s-exp" fi:lisp-compile-last-sexp t]
-       ["buffer" fi:lisp-compile-current-buffer t])
-      (list
-       "Evaluate"
-       ["top-level form" fi:lisp-eval-defun t]
-       ["region" fi:lisp-eval-region t]
-       ["last s-exp" fi:lisp-eval-last-sexp t]
-       ["buffer" fi:lisp-eval-current-buffer t])
-      (list
-       "On fspec at point"
-       ["Find definition" fi:lisp-find-definition t]
-       ["Find definition other window" fi:lisp-find-definition-other-window t]
-       ["Arglist" fi:lisp-arglist t]
-       ["Describe" fi:describe-symbol t]
-       ["Apropos" fi:lisp-apropos t]
-       ["Function Documentation" fi:lisp-function-documentation t]
-       ["Who calls" fi:lisp-who-calls t]
-       ["Toggle trace" fi:toggle-trace-definition t]
-       ["Kill definition" fi:kill-definition t])
+      ("Compile"
+       ["top-level form" fi:lisp-compile-defun fi::connection-open]
+       ["region" fi:lisp-compile-region fi::connection-open]
+       ["last s-exp" fi:lisp-compile-last-sexp fi::connection-open]
+       ["buffer" fi:lisp-compile-current-buffer fi::connection-open])
+      ("Evaluate"
+       ["top-level form" fi:lisp-eval-defun fi::connection-open]
+       ["region" fi:lisp-eval-region fi::connection-open]
+       ["last s-exp" fi:lisp-eval-last-sexp fi::connection-open]
+       ["buffer" fi:lisp-eval-current-buffer fi::connection-open])      
+      ["Compile file" fi:compile-file fi::connection-open]
+      ["Load file" fi:compile-file fi::connection-open]
       "----"
-      ["Find next definition" fi:lisp-find-next-definition t]
-      ["Macroexpand" fi:lisp-macroexpand t]
-      ["Recursive macroexpand" fi:lisp-macroexpand-recursively t]
-      ["Comment region" fi:comment-region t]
-      ["Uncomment region" fi:uncomment-region t]
-      ["Delete *CL-temp* window" fi:lisp-delete-pop-up-window t]
-      )))
-
-(defconst fi:inferior-common-lisp-mode-menu
-    (append
-     fi:allegro-global-menu
-     (list
+      ["List buffer definitions" fi:list-buffer-definitions
+       fi::connection-open]
       "----"
-      ["Interrupt listener" fi:interrupt-listener t]
-      ["Interrupt process" fi:interrupt-xxxx t]
-      "----"
-      ["Previous input" fi:pop-input t]
-      ["Next input" fi:push-input t]
-      ["Search previous input" fi:re-search-backward-input t]
-      ["Search next input" fi:re-search-forward-input t]
-      "----"
-      ["Debug current process" fi:scan-stack t]
-      ["Debug process" fi:scan-stack t]
-      )))
-
-(defconst fi:composer-global-menu
-    (list
-     fi:composer-menubar-name
-     ;; all the mouse line stuff should be duplicated here
-     ;; when fi:common-lisp starts up it should automatically cause this
-     ;; menubar to be added globally
-     ["Profiler options" fi:scan-stack t]
-     ))
-
-(defconst fi:clim-menu
-    '("CLIM"
+      ["Exit Allegro CL" fi:exit-lisp fi::connection-open]
       ))
 
-(defun fi:common-lisp-mode-menu (e)
-  (interactive "@e")
-  (mouse-set-point e)
-  (fi::sensitize-allegro-menus-hook)
-  (popup-menu fi:common-lisp-mode-menu))
-  
-(defun fi:inferior-common-lisp-mode-menu (e)
-  (interactive "@e")
-  (mouse-set-point e)
-  (fi::sensitize-allegro-menus-hook)
-  (popup-menu fi:inferior-common-lisp-mode-menu))
-  
+(defconst fi:allegro-edit-menu
+    '("ACLEdit"
+      ["Find definition" fi:lisp-find-definition fi::connection-open]
+      ["Find definition other window" fi:lisp-find-definition-other-window
+       fi::connection-open]
+      ["Find next definition" fi:lisp-find-next-definition fi::connection-open]
+      "----"
+      ["Center defun" fi:center-defun t]
+      ["Extract list" fi:extract-list t]
+      ["Close all parens" fi:super-paren t]
+      ["Comment region" fi:comment-region t]
+      ["Uncomment region" fi:uncomment-region t]
+      ))
+
+(defconst fi:allegro-help-menu
+    '("ACLHelp"
+      ["Arglist" fi:lisp-arglist fi::connection-open]
+      ["Describe" fi:describe-symbol fi::connection-open]
+      ["Apropos" fi:lisp-apropos fi::connection-open]
+      ["Function Documentation" fi:lisp-function-documentation
+       fi::connection-open]
+      "----"
+      ["CL reference manual" fi:clman t]
+      ))
+
+(defconst fi:allegro-debug-menu
+    '("ACLDebug"
+      ["Toggle trace" fi:toggle-trace-definition fi::connection-open]
+      ["Debug process" fi:scan-stack fi::connection-open]
+      ["Macroexpand" fi:lisp-macroexpand fi::connection-open]
+      ["Recursive macroexpand" fi:lisp-macroexpand-recursively
+       fi::connection-open]
+      ["List undefined functions" fi:list-undefined-functions
+       fi::connection-open]
+      ["List unused functions" fi:list-unused-functions fi::connection-open]
+      ["Kill definition" fi:kill-definition fi::connection-open]
+      "----"
+      ["List generic function methods" fi:list-generic-function-methods
+       fi::connection-open]
+      ["Edit generic function methods" fi:edit-generic-function-methods
+       fi::connection-open]
+      "----"
+      ("Changed definitions"
+       ["List all changed definitions" fi:list-changed-definitions
+	fi::connection-open]
+       ["List buffer changed definitions"
+	fi:list-buffer-changed-definitions
+	fi::connection-open]
+       ["Compile all changed definitions" fi:compile-changed-definitions
+	fi::connection-open]
+       ["Compile buffer changed definitions"
+	fi:compile-buffer-changed-definitions
+	fi::connection-open]
+       ["Eval all changed definitions" fi:eval-changed-definitions
+	fi::connection-open]
+       ["Eval buffer changed definitions"
+	fi:eval-buffer-changed-definitions
+	fi::connection-open]
+       ["Copy all changed definitions" fi:copy-changed-definitions
+	fi::connection-open]
+       ["Copy buffer changed definitions" fi:copy-buffer-changed-definitions
+	fi::connection-open]
+       ["Compare source files" fi:compare-source-files fi::connection-open]
+       )
+      ("Cross reference"
+       ["List calls to" fi:list-who-calls fi::connection-open]
+       ["List callers of" fi:list-who-is-called-by fi::connection-open]
+       ["Edit calls to" fi:edit-who-calls fi::connection-open]
+       ["Edit callers of" fi:edit-who-is-called-by fi::connection-open])
+      ))
+
+(defconst fi:composer-menu
+    '("Composer"
+      ["Start Composer" fi:start-composer t]
+      ["Start Composer w/mouse line" fi:start-composer-mouse-line t]
+      "----"
+      ("CLOS"
+       ["Inspect class" fi:inspect-class fi::connection-open]
+       ["Inspect generic function" fi:inspect-function fi::connection-open]
+       ["Show class subclasses" fi:show-subclasses fi::connection-open]
+       ["Show class superclasses" fi:show-superclasses fi::connection-open]
+       )
+      ("Xref"
+       ["Show calls to" fi:show-calls-to fi::connection-open]
+       ["Show calls from" fi:show-calls-from fi::connection-open]
+       ["Show calls to and from" fi:xxx fi::connection-open]
+       ["Discard info" fi:xxx fi::connection-open]
+       )
+      ("Profiler"
+       ["Start time profiler" fi:composer-start-time-profiler
+	fi::connection-open]
+       ["Start space profiler" fi:composer-start-space-profiler
+	fi::connection-open]
+       ["Stop profiler" fi:composer-stop-profiler fi::connection-open]
+       ["Display time" fi:composer-display-time-profiler
+	fi::connection-open]
+       ["Display space" fi:composer-display-space-profiler
+	fi::connection-open]
+       ["Options" fi:composer-profiler-options fi::connection-open]
+       )
+      ("Other"
+       ["Inspect" fi:inspect-value fi::connection-open]
+       ["Presenting Listener" composer::make-presenting-listener
+	fi::connection-open]
+       ["Processes" fi:composer-process-browser fi::connection-open]
+       ["Systems" fi:composer-defsys-browser fi::connection-open]
+       ["Reinitialize resources" fi:composer-reinitialize-resources
+	fi::connection-open]
+       ["Options" fi:composer-other-options fi::connection-open]
+       )
+      ("Help"
+       ["Help" fi:composer-help fi::connection-open]
+       ["Current pointer gesture bindings" fi:composer-help-gesture-bindings
+	fi::connection-open])
+      "----"
+      ["Exit Composer/Common Windows" fi:composer-exit
+       fi::connection-open]
+      ))
+
+(defun fi::connection-open ()
+  (fi::lep-open-connection-p))
+
+(defun fi::connection-not-open ()
+  (not (fi::lep-open-connection-p)))
+
+(defun fi::connection-once-open ()
+  (and (not (fi::lep-open-connection-p))
+       (not fi::common-lisp-first-time)))
+
 (defun fi::install-menubar (menu-bar)
   (set-menubar (delete (assoc (car menu-bar) current-menubar)
 		       (copy-sequence current-menubar)))
   (add-menu nil (car menu-bar) (cdr menu-bar)))
 
+(push '(progn
+	(fi::install-menubar fi:allegro-file-menu)
+	(fi::install-menubar fi:allegro-edit-menu)
+	(fi::install-menubar fi:allegro-debug-menu)
+	(fi::install-menubar fi:allegro-help-menu)
+	(when fi:composer-menu
+	  (fi::install-menubar fi:composer-menu)))
+      fi::initialization-forms)
+
+(defun fi:exit-lisp ()
+  (interactive)
+  (fi:eval-in-lisp "(exit 0 :quiet t)"))
+
+(defun fi:start-composer ()
+  (interactive)
+  (fi:eval-in-lisp "(progn(wt::start-composer :mouse-line nil)nil)"))
+
+(defun fi:start-composer-mouse-line ()
+  (interactive)
+  (fi:eval-in-lisp "(progn(wt::start-composer :mouse-line t)nil)"))
+  
+(defun fi:composer-other-options ()
+  (interactive)
+  (fi:eval-in-lisp
+   "(progn(wt::set-options-command t)nil)"))
+
+(defun fi:composer-help ()
+  (interactive)
+  (fi:eval-in-lisp "(progn(composer::print-startup-help)nil)"))
+
+(defun fi:composer-help-gesture-bindings ()
+  (interactive)
+  (fi:eval-in-lisp "(progn(wt::composer-report-gestures-command t)nil)"))
+
+(defun fi:composer-exit ()
+  (interactive)
+  (fi:eval-in-lisp "(progn(composer:stop-composer :kill-cw t)nil)"))
+
+(defun fi:composer-process-browser ()
+  (interactive)
+  (fi:eval-in-lisp "(progn(composer::process-browser)nil)"))
+
+(defun fi:composer-reinitialize-resources ()
+  (interactive)
+  (fi:eval-in-lisp "(progn(composer::init-resource-database)nil)"))
+
+(defun fi:composer-defsys-browser ()
+  (interactive)
+  (fi:eval-in-lisp "(progn(composer::defsys-browser)nil)"))
+
+(defun fi:composer-start-time-profiler ()
+  (interactive)
+  (fi:eval-in-lisp "(progn(composer::start-profiler-command-1 :time)nil)"))
+
+(defun fi:composer-start-space-profiler ()
+  (interactive)
+  (fi:eval-in-lisp "(progn(composer::start-profiler-command-1 :space)nil)"))
+
+(defun fi:composer-display-time-profiler ()
+  (interactive)
+  (fi:eval-in-lisp "(progn(composer::display-profile-command-1 :time)nil)"))
+
+(defun fi:composer-display-space-profiler ()
+  (interactive)
+  (fi:eval-in-lisp "(progn(composer::display-profile-command-1 :space)nil)"))
+
+(defun fi:composer-stop-profiler ()
+  (interactive)
+  (fi:eval-in-lisp "(progn(composer::stop-profiler-command-1)nil)"))
+
+(defun fi:composer-profiler-options ()
+  (interactive)
+  (fi:eval-in-lisp
+   "(progn(wt::run-motif-application 'wt::make-profiler-options)nil)"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defconst fi:common-lisp-mode-popup-menu
+    '("common lisp mode popup menu"
+      ["Find definition" fi:menu-lisp-find-definition fi::connection-open]
+      ["Find next definition" fi:lisp-find-next-definition fi::connection-open]
+      ["Arglist" fi:menu-lisp-arglist fi::connection-open]
+      ["Toggle trace" fi:menu-toggle-trace-definition fi::connection-open]
+      ["Recursive macroexpand" fi:lisp-macroexpand-recursively
+       fi::connection-open]
+      ))
+
+(defun fi:menu-lisp-find-definition ()
+  (interactive)
+  (let ((fi::use-symbol-at-point t))
+    (call-interactively 'fi:lisp-find-definition)))
+
+(defun fi:menu-lisp-arglist ()
+  (interactive)
+  (let ((fi::use-symbol-at-point t))
+    (call-interactively 'fi:lisp-arglist)))
+
+(defun fi:menu-toggle-trace-definition ()
+  (interactive)
+  (let ((fi::use-symbol-at-point t))
+    (call-interactively 'fi:toggle-trace-definition)))
+
+(defun fi:common-lisp-mode-popup-menu (e)
+  (interactive "@e")
+  (mouse-set-point e)
+  (popup-menu fi:common-lisp-mode-popup-menu))
+
+(defconst fi:inferior-common-lisp-mode-popup-menu
+    '("inferior common lisp mode popup menu"
+      ["Zoom" fi:debug-menu-zoom fi::connection-open]
+      ["Down frame" fi:debug-menu-down-frame fi::connection-open]
+      ["Up frame" fi:debug-menu-up-frame fi::connection-open]
+      ["Edit frame" fi:debug-menu-edit-frame fi::connection-open]
+      ["Locals for frame" fi:debug-menu-locals fi::connection-open]
+      "----"
+      ["Continue" fi:debug-menu-continue fi::connection-open]
+      ["Restart" fi:debug-menu-restart fi::connection-open]
+      ["Pop" fi:debug-menu-pop fi::connection-open]
+      ["Reset" fi:debug-menu-reset fi::connection-open]
+      "----"
+      ["List processes" fi:debug-menu-processes fi::connection-open]
+      ))
+
+(defun fi:debug-menu-reset ()
+  (interactive)
+  (insert ":reset")
+  (fi:inferior-lisp-newline))
+
+(defun fi:debug-menu-pop ()
+  (interactive)
+  (insert ":pop")
+  (fi:inferior-lisp-newline))
+
+(defun fi:debug-menu-restart ()
+  (interactive)
+  (insert ":restart")
+  (fi:inferior-lisp-newline))
+
+(defun fi:debug-menu-continue ()
+  (interactive)
+  (insert ":continue")
+  (fi:inferior-lisp-newline))
+
+(defun fi:debug-menu-zoom ()
+  (interactive)
+  (insert ":zoom")
+  (fi:inferior-lisp-newline))
+
+(defun fi:debug-menu-down-frame ()
+  (interactive)
+  (insert ":dn")
+  (fi:inferior-lisp-newline))
+
+(defun fi:debug-menu-up-frame ()
+  (interactive)
+  (insert ":up")
+  (fi:inferior-lisp-newline))
+
+(defun fi:debug-menu-edit-frame ()
+  (interactive)
+  (insert ":edit")
+  (fi:inferior-lisp-newline))
+
+(defun fi:debug-menu-locals ()
+  (interactive)
+  (insert ":local")
+  (fi:inferior-lisp-newline))
+
+(defun fi:debug-menu-processes ()
+  (interactive)
+  (insert ":processes")
+  (fi:inferior-lisp-newline))
+
+(defun fi:inferior-common-lisp-mode-popup-menu ()
+  (interactive "@")
+  (goto-char (point-max))
+  (popup-menu fi:inferior-common-lisp-mode-popup-menu))
+
 (defun fi::install-mode-menus ()
-  (fi::install-menubar fi:allegro-global-menu)
   (let ((menu-bar
-	 (cond ((eq major-mode 'fi:common-lisp-mode)
-		(define-key fi:common-lisp-mode-map 'button3
-		  'fi:common-lisp-mode-menu)
-		fi:common-lisp-mode-menu)
-	       ((eq major-mode 'fi:inferior-common-lisp-mode)
-		(define-key fi:inferior-common-lisp-mode-map 'button3
-		  'fi:inferior-common-lisp-mode-menu)
-		fi:inferior-common-lisp-mode-menu))))
-    (when menu-bar
-      (set-buffer-menubar (delete (assoc (car menu-bar) current-menubar)
-				  (copy-sequence current-menubar)))
-      (add-menu nil (car menu-bar) (cdr menu-bar)))))
+	 (cond
+	  ((eq major-mode 'fi:common-lisp-mode)
+	   (define-key fi:common-lisp-mode-map 'button3
+	     'fi:common-lisp-mode-popup-menu))
+	  ((eq major-mode 'fi:inferior-common-lisp-mode)
+	   (define-key fi:inferior-common-lisp-mode-map 'button3
+	     'fi:inferior-common-lisp-mode-popup-menu)))))))
 
-(add-hook 'fi:common-lisp-mode-hook 'fi::install-mode-menus)
 (add-hook 'fi:inferior-common-lisp-mode-hook 'fi::install-mode-menus)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defun fi::install-mouse-tracker ()
-  (require 'mode-motion)
-  (setq mode-motion-hook 'mode-motion-highlight-sexp))
-
-(add-hook 'fi:common-lisp-mode-hook 'fi::install-mouse-tracker)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(defun fi::sensitize-allegro-menus-hook ()
-  (let* ((allegro-menu
-	  (cdr (car (find-menu-item current-menubar
-				    (list fi:allegro-menubar-name)))))
-	 (run-common-lisp
-	  (car (find-menu-item allegro-menu '("Run Common Lisp"))))
-	 (new-listener
-	  (car (find-menu-item allegro-menu '("New Listener"))))
-	 (restart-common-lisp
-	  (car (find-menu-item allegro-menu '("Restart Common Lisp"))))
-	 (on-fspec-at-point
-	  (car (find-menu-item allegro-menu '("On fspec at point"))))
-
-	 (find-next
-	  (car (find-menu-item allegro-menu '("Find next definition"))))
-	 (macroexpand
-	  (car (find-menu-item allegro-menu '("Macroexpand"))))
-	 (recursive-macroexpand
-	  (car (find-menu-item allegro-menu '("Recursive macroexpand"))))
-	 
-	 (compile-menu
-	  (cdr (car (find-menu-item allegro-menu '("Compile")))))
-	 (eval-menu
-	  (cdr (car (find-menu-item allegro-menu '("Evaluate")))))
-
-	 (changes nil)
-	 (connection-open (fi::lep-open-connection-p)))
-    
-    (when on-fspec-at-point
-      (setq changes (fi::deactivate-menu on-fspec-at-point connection-open)))
-
-    (when run-common-lisp
-      ;; when lisp is running, we make sure the menu item is deactivated.
-      ;; when lisp is not running, we make sure the menu item is activated.
-      (cond ((and connection-open (aref run-common-lisp 2))
-	     (aset run-common-lisp 2 nil)
-	     (setq changes t))
-	    ((and (not connection-open) (not (aref run-common-lisp 2)))
-	     (aset run-common-lisp 2 t)
-	     (setq changes t))))
-    
-    (when new-listener
-      ;; when lisp is running, we make sure the menu item is activated.
-      ;; when lisp is not running, we make sure the menu item is deactivated.
-      (cond ((and connection-open (not (aref new-listener 2)))
-	     (aset new-listener 2 t)
-	     (setq changes t))
-	    ((and (not connection-open) (aref new-listener 2))
-	     (aset new-listener 2 nil)
-	     (setq changes t))))
-    
-    (when restart-common-lisp
-      ;; when lisp is running, we make sure the menu item is deactivated.
-      ;; when lisp is not running, we make sure the menu item is activated.
-      (cond (fi::common-lisp-first-time
-	     (when (aref restart-common-lisp 2)
-	       (aset restart-common-lisp 2 nil)
-	       (setq changes t)))
-	    ((and connection-open (aref restart-common-lisp 2))
-	     (aset restart-common-lisp 2 nil)
-	     (setq changes t))
-	    ((and (not connection-open) (not (aref restart-common-lisp 2)))
-	     (aset restart-common-lisp 2 t)
-	     (setq changes t))))
-
-    (when find-next
-      (cond ((and connection-open (not (aref find-next 2)))
-	     (aset find-next 2 t)
-	     (aset macroexpand 2 t)
-	     (aset recursive-macroexpand 2 t)
-	     (setq changes t))
-	    ((and (not connection-open) (aref find-next 2))
-	     (aset find-next 2 nil)
-	     (aset macroexpand 2 nil)
-	     (aset recursive-macroexpand 2 nil)
-	     (setq changes t))))
-    
-    (when compile-menu
-      (let ((compile-defun
-	     (car (find-menu-item compile-menu '("top-level form"))))
-	    (compile-region
-	     (car (find-menu-item compile-menu '("region"))))
-	    (compile-last-sexp
-	     (car (find-menu-item compile-menu '("last s-exp"))))
-	    (compile-buffer
-	     (car (find-menu-item compile-menu '("buffer")))))
-	(cond ((and connection-open (not (aref compile-defun 2)))
-	       (aset compile-defun 2 t)
-	       (aset compile-region 2 t)
-	       (aset compile-last-sexp 2 t)
-	       (aset compile-buffer 2 t)
-	       (setq changes t))
-	      ((and (not connection-open) (aref compile-defun 2))
-	       (aset compile-defun 2 nil)
-	       (aset compile-region 2 nil)
-	       (aset compile-last-sexp 2 nil)
-	       (aset compile-buffer 2 nil)
-	       (setq changes t)))))
-    
-    (when eval-menu
-      (let ((eval-defun
-	     (car (find-menu-item eval-menu '("top-level form"))))
-	    (eval-region
-	     (car (find-menu-item eval-menu '("region"))))
-	    (eval-last-sexp
-	     (car (find-menu-item eval-menu '("last s-exp"))))
-	    (eval-buffer
-	     (car (find-menu-item eval-menu '("buffer")))))
-	(cond ((and connection-open (not (aref eval-defun 2)))
-	       (aset eval-defun 2 t)
-	       (aset eval-region 2 t)
-	       (aset eval-last-sexp 2 t)
-	       (aset eval-buffer 2 t)
-	       (setq changes t))
-	      ((and (not connection-open) (aref eval-defun 2))
-	       (aset eval-defun 2 nil)
-	       (aset eval-region 2 nil)
-	       (aset eval-last-sexp 2 nil)
-	       (aset eval-buffer 2 nil)
-	       (setq changes t)))))
-    
-    ;; if we made any changes, return nil
-    ;; otherwise return t to indicate that we haven't done anything.
-    (not changes)))
-
-(defun fi::deactivate-menu (menu &optional activate)
-  (let ((items (cdr menu))
-	(changes nil))
-    (while items
-      (when (arrayp (car items))
-	(unless (eq activate (aref (car items) 2))
-	  (aset (car items) 2 activate)
-	  (setq changes t)))
-      (setq items (cdr items)))
-    changes))
-
-(add-hook 'activate-menubar-hook 'fi::sensitize-allegro-menus-hook)
+(add-hook 'fi:common-lisp-mode-hook 'fi::install-mode-menus)

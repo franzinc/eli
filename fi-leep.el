@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-leep.el,v 1.8 1992/10/02 09:08:40 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-leep.el,v 1.9 1993/07/22 23:04:59 layer Exp $
 
 ;; The epoch side of presentations in a lisp-listener window.
 
@@ -70,8 +70,8 @@
     (epoch::set-attribute-style fi::highlighted-zone-style
 				fi::highlighted-style)))
 
-(when (boundp 'epoch::version)
-  (fi::initialize-for-presenting-listeners))
+(push '(if (boundp 'epoch::version) (fi::initialize-for-presenting-listeners))
+      fi::initialization-forms)
 
 (defun composer::setup-buffer-for-presentations (buffer)
   (set-buffer buffer)
@@ -142,7 +142,7 @@ The function should be defined in this way:
       (force-output)
       (values))\n")
 
-(defun composer::make-presenting-listener (new-screen-p)
+(defun composer::make-presenting-listener (&optional new-screen-p)
   (when (and new-screen-p (fboundp 'create-screen))
     (let ((screen (create-screen "*listener*" epoch::screen-properties)))
       (epoch::map-screen screen)

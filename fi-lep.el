@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.51 1993/07/15 00:02:08 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.52 1993/07/22 23:05:04 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -555,7 +555,8 @@ beginning of words in target symbols."
   (fi:lisp-push-window-configuration)
   (switch-to-buffer (get-buffer-create buffer))
   (erase-buffer)
-  (insert string))
+  (insert string)
+  (goto-char (point-min)))
 
 
 (defun lep::prompt-for-values (what prompt options)

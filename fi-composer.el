@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.14 1991/10/21 20:04:21 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.15 1993/07/22 23:04:52 layer Exp $
 
 (defun composer::make-listener (new-screen-p)
   (when (and new-screen-p (fboundp 'create-screen))
@@ -120,4 +120,3 @@ Composer loaded and initialized."
   
 ;;; Perhaps with Epoch we should create buttons such that mousing invokes.
 ;;; Should we think about drawing classes.
-

@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.41 1993/07/15 00:02:10 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.42 1993/07/22 23:05:07 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -8,6 +8,13 @@
 (defvar fi::build-time nil)
 
 (require 'cl)
+
+(defvar fi::initialization-forms nil)
+(defun fi::initialize-emacs-lisp-interface ()
+  (when fi::initialization-forms
+    (dolist (form (nreverse fi::initialization-forms))
+      (eval form))
+    (setq fi::initialization-forms)))
 
 (load "fi-modes.elc")
 (when fi:lisp-do-indentation
@@ -53,3 +60,11 @@
        (load "fi-lemacs"))
       ((string-match "GNU Emacs 19\." emacs-version)
        (load "fi-emacs19")))
+
+(if fi::build-time
+    (setq top-level
+      (list
+       'lambda nil
+       '(fi::initialize-emacs-lisp-interface)
+       top-level))
+  (fi::initialize-emacs-lisp-interface))

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.42 1993/07/15 00:02:19 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.43 1993/07/22 23:05:10 layer Exp $
 
 ;;; Misc utilities
 
@@ -330,12 +330,14 @@ at the beginning of the line."
 ;; the problem.
 (defvar fi::original-package nil)
 
+(defvar fi::use-symbol-at-point nil
+  ;; fi-lemacs.el uses this to cause the fi:common-lisp-mode specific menu
+  ;; to be able to grab the thing at the point.
+  )
+
 (defun fi::get-default-symbol (prompt &optional up-p ignore-keywords)
   (let ((symbol-at-point (fi::get-symbol-at-point up-p)))
-    (if (and (boundp 'last-command-event)
-	     (or (menu-event-p last-command-event)
-		 (button-press-event-p last-command-event)
-		 (button-release-event-p last-command-event)))
+    (if fi::use-symbol-at-point
 	(list symbol-at-point)
       (let ((read-symbol
 	     (let ((fi::original-package fi:package))

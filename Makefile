@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.79 1993/07/15 00:01:58 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.80 1993/07/22 23:04:35 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -37,7 +37,7 @@ test.out:	$(elcs) fi-test.el
 	@date > test.out
 
 clean:
-	rm -f *.elc
+	rm -f *.elc *.doc
 
 docs: UserGuide.doc RefMan.doc RefCard.doc
 

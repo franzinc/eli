@@ -19,7 +19,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.45 1993/07/13 18:54:57 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.46 1993/07/22 23:04:55 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If non-nil, semicolons that begin comments are indented as they are
@@ -697,7 +697,7 @@ of the start of the containing expression."
 	 (fi:lisp-indent-keyword-list depth count state indent-point t nil t
 				      nil nil nil "&optional" "&rest" "&key"
 				      "&allow-other-keys" "&aux" "&body"
-				      "&whole" "&env"))
+				      "&whole" "&environment"))
 	(method (error "can't handle method %s" method))))
 
 (defun fi::lisp-indent-struct (methods depth count state indent-point)

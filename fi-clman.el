@@ -8,21 +8,17 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 2.5 1993/07/01 20:21:48 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 2.6 1993/07/22 23:04:50 layer Exp $
+
+(defvar fi::clman-prog (fi::find-path "clman"))
+(defvar fi::clman-data (fi::find-path "clman.data"))
 
 (defvar fi::manual-dir
-    (do* ((path load-path (cdr path))
-	  (pa (car path) (car path))
-	  (result nil)
-	  (d nil))
-	((or result (null path))
-	 (or result (error "Couldn't find manual/")))
-      (setq d (concat pa (if (string-match "/$" pa) "manual/" "/manual/")))
-      (when (file-exists-p (concat d "OBLIST.el"))
-	(setq result d))))
+    (or (fi::find-path "manual/")
+	(error "Couldn't find the manual directory in load-path")))
 
-(if (not (boundp 'fi::clman-big-oblist))
-    (load (concat fi::manual-dir "OBLIST")))
+(unless (boundp 'fi::clman-big-oblist)
+  (load (concat fi::manual-dir "OBLIST")))
 
 (defvar fi:clman-mode-map nil
   "*Major mode key definitions for viewing a clman page.")
@@ -50,12 +46,26 @@ math:).  The buffer that is displayed will be in CLMAN mode."
 	       symbol-at-point
 	     res))))
   (setq fi::clman-window-configuration (current-window-configuration))
-  (let ((files (cdr (assoc symbol fi::clman-big-oblist))))
-    (if files
-	(progn
-	  (fi::clman-display-file fi:clman-displaying-buffer files)
-	  (length files))
-      (error "couldn't find entry for %s" symbol))))
+  (cond
+   ((and fi::clman-data fi::clman-prog)
+    (let (exit-status)
+      (with-output-to-temp-buffer fi:clman-displaying-buffer
+	(buffer-flush-undo standard-output)
+	(save-excursion
+	  (set-buffer standard-output)
+	  (setq exit-status
+	    (call-process fi::clman-prog nil t nil fi::clman-data symbol))
+	  (fi:clman-mode)))
+      (when (> exit-status 1)
+	(message "%d additional clman pages at end of buffer"
+		 (- exit-status 1)))))
+   (t
+    (let ((files (cdr (assoc symbol fi::clman-big-oblist))))
+      (if files
+	  (progn
+	    (fi::clman-display-file fi:clman-displaying-buffer files)
+	    (length files))
+	(error "couldn't find entry for %s" symbol))))))
     
 (defun fi:clman-apropos ()
   "Prompts for a string on which an apropos search is done.  Displays a
@@ -114,18 +124,21 @@ clman buffer, from anywhere in the buffer."
 
 (defun fi::clman-display-file (buf names)
   (with-output-to-temp-buffer buf
-    (let ((first t))
-      (dolist (name names)
-	(when (not first)
-	  (princ
-	   "===============================================================================\n"))
-	(princ (fi::file-contents (concat fi::manual-dir name)))
-	(setq first nil))))
-  (save-excursion
-    (set-buffer buf)
-    (fi:clman-mode))
-  (message "%d additional clman pages at end of buffer"
-	   (- (length names) 1)))
+    (buffer-flush-undo standard-output)
+    (save-excursion
+      (set-buffer buf)
+      (let ((first t))
+	(dolist (name names)
+	  (when (not first)
+	    (princ
+	     "===============================================================================\n"))
+	  (princ (fi::file-contents (concat fi::manual-dir name)))
+	  (setq first nil)))
+      (fi:clman-mode)))
+  (let ((additional (- (length names) 1)))
+    (when (> additional 1)
+      (message "%d additional clman pages at end of buffer"
+	       additional))))
 
 (defun fi::file-contents (file)
   (let ((buffer (find-file-noselect file)))

@@ -1,3 +1,26 @@
+Wed Jul 21 14:56:03 1993  Kevin Layer  (layer at sole)
+
+	* Makefile.fi: local rdist rules; new rules for makeman, et al
+
+	* clman.c, clman.h, clmanaux.c, makeman.c
+
+	* fi-clman.el: use new clman.data, if it exists
+
+	* fi-indent.el: &env -> &environment
+
+	* fi-lemacs.el: redesign menus, looks better but still not done
+
+	* fi-utils.el: fi::get-default-symbol looks at new variable,
+	fi::use-symbol-at-point, to determine whether the user is asked
+	for a symbol--mode-specific menus bind this to `t'.
+
+	* fi-leep.el: push forms onto fi::initialization-forms that need
+	to be eval'd at interface startup time
+
+	* fi-site-init.el: new variable, fi::initialization-forms, used to
+	store forms during loading that need to be evaluated at interface
+	startup time.
+
 Wed Jul 14 16:58:12 1993  Kevin Layer  (layer at sole)
 
 	* Makefile: add fi-emacs19.elc
