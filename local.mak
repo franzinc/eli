@@ -1,4 +1,4 @@
-# $Id: local.mak,v 2.9 1998/10/08 18:36:45 layer Exp $
+# $Id: local.mak,v 2.10 1998/11/10 22:07:59 layer Exp $
 
 TGZFILE = eli-$(VERSION).tar.gz
 DISTDIR = eli-$(VERSION)
@@ -17,7 +17,7 @@ dist:	FORCE
 	mkdir dists/$(DISTDIR)
 	rm -fr tmp/$(DISTDIR)
 	mkdir tmp/$(DISTDIR)
-	cp -p $(release_files) tmp/$(DISTDIR)
+	tar cf - $(release_files) | (cd tmp/$(DISTDIR); tar xf -)
 	sed -e 's/__VERSION__/$(VERSION)/g' \
 	    -e 's/__TGZFILE__/$(TGZFILE)/g' \
 	    -e 's/__README_HTM__/$(README_HTM)/g' \
@@ -33,7 +33,7 @@ dist:	FORCE
 ###############################################################################
 
 hosts = news corba beast romeo beta tiger freezer \
-	sole sparky akbar louie hefty \
+	sole sparky louie hefty \
 	killer biggie boys high baby
 
 elib_root = /usr/fi/emacs-lib
