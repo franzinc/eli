@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 1.112 1997/12/11 00:28:29 layer Exp $
+;; $Id: fi-keys.el,v 1.112.20.1 1998/07/16 16:47:43 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -1102,8 +1102,8 @@ Type `q' to proceed.
   (fset 'find-tag-other-window (symbol-function 'fi:disabled-once-find-tag)))
 
 (defun fi:center-defun ()
-  "Put the first line of the current definition at on the first line of the
-window, leaving the point unchanged"
+  "Put the first line of the current definition on the first line of the
+window, leaving the point unchanged."
   (interactive)
   (let ((p (point)))
     (fi:beginning-of-defun)

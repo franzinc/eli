@@ -1,6 +1,6 @@
 ;; A sample ~/.emacs file.
 ;;
-;; $Id: emacs.el,v 1.6 1997/12/18 00:17:00 layer Exp $
+;; $Id: emacs.el,v 1.6.20.1 1998/07/16 16:47:45 layer Exp $
 
 (defvar *eli-directory*)
 (setq *eli-directory* (expand-file-name "~/cl-ultra/src/eli/"))
@@ -8,12 +8,11 @@
 (when (and (not (string-match "xemacs" emacs-version))
 	   (= emacs-major-version 20)
 	   (<= emacs-minor-version 2))
-  (setq load-path
-    (cons *eli-directory* load-path)))
+  (setq load-path (cons *eli-directory* load-path)))
 
 (load (format "%sfi-site-init" *eli-directory*))
 
-(setq fi:common-lisp-image-name "/usr/fi/cl-4.3.1")
+(setq fi:common-lisp-image-name "/usr/local/cl-5.0")
 (setq fi:common-lisp-host "ultra")
 
 ;; This function starts up lisp with your defaults.

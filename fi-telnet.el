@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-telnet.el,v 1.15.24.1 1998/06/24 23:06:55 layer Exp $
+;; $Id: fi-telnet.el,v 1.15.24.2 1998/07/16 16:47:44 layer Exp $
 
 (defvar fi:telnet-mode-map nil
   "The telnet major-mode keymap.")
@@ -39,6 +39,7 @@ is seen.")
 (defun fi:telnet-mode (&optional mode-hook)
   "Major mode for interacting with an inferior telnet.
 The keymap for this mode is bound to fi:telnet-mode-map:
+
 <font face=\"Courier New\">\\{fi:telnet-mode-map}</font>
 Entry to this mode runs the following hooks:
 
@@ -80,7 +81,7 @@ prefix argument BUFFER-NUMBER and the HOST.  Telnet buffer names start with
 `*HOST*' and end with an optional \"<N>\".  If BUFFER-NUMBER is not given
 it defaults to 1.  If BUFFER-NUMBER is 1, then the trailing \"<1>\" is
 omited.  If BUFFER-NUMBER is < 0, then the first available buffer name is
-chosen (a buffer with no process attached to it.
+chosen (a buffer with no process attached to it).
 
 The host name is read from the minibuffer.
 

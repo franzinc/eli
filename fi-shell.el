@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-shell.el,v 1.27.18.1 1998/06/24 23:06:54 layer Exp $
+;; $Id: fi-shell.el,v 1.27.18.2 1998/07/16 16:47:43 layer Exp $
 
 (defvar fi:shell-mode-map nil
   "The shell major-mode keymap.")
@@ -50,6 +50,7 @@ history list into the current command line.")
 (defun fi:shell-mode (&optional mode-hook)
   "Major mode for interacting with an inferior shell.
 The keymap for this mode is bound to fi:shell-mode-map:
+
 <font face=\"Courier New\">\\{fi:shell-mode-map}</font>
 Entry to this mode runs the following hooks:
 

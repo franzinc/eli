@@ -1,4 +1,4 @@
-;; $Id: Doc0.el,v 1.1.2.3 1998/06/24 23:42:34 layer Exp $
+;; $Id: Doc0.el,v 1.1.2.4 1998/07/16 16:47:42 layer Exp $
 
 (defvar current-local-map-var)
 
@@ -16,6 +16,7 @@
   (fi:emacs-lisp-mode)
   (fi:shell-mode)
   (fi:su-mode)
+  (fi:remote-su-mode)
   (fi:telnet-mode)
   (fi:rlogin-mode)
   (fundamental-mode)
@@ -104,7 +105,8 @@
 	      (if key
 		  (format "%s%s" key
 			  (if (and key (null (string-match "M-x" key)))
-			      (format " in %s" xmode-name)))
+			      (format " in %s" xmode-name)
+			    ""))
 		(format "M-x %s" var))
 	      (or (frob-docstring (documentation var))
 		  (error "no documentation available for %s" var))))))
@@ -183,7 +185,7 @@
   <li>Invoke with %s.</li>
   <li><pre><font face=\"Times New Roman\"><big>%s</big></font></pre></li>
 </ul><pre>"
-	  name type arglist invoke-with description))
+	  name type arglist (if invoke-with invoke-with "") description))
 
 (defun value-to-string (value name)
   (cond ((syntax-table-p value) "")

@@ -10,7 +10,7 @@
 
 <h1 align="center"><small><small>Version __VERSION__</small></small></h1>
 
-<h1 align="center"><small><small>$Revision: 1.1.2.6 $</small></small></h1>
+<h1 align="center"><small><small>$Revision: 1.1.2.7 $</small></small></h1>
 
 <hr>
 
@@ -469,18 +469,17 @@ specifying the missing feature(s).</p>
 Emacs-Lisp interface</a></h3>
 
 <p>Previous versions of the Emacs-Lisp interface have been distributed with Allegro CL and
-also via anonymous FTP. The version at the time this document was written was 2.0.7 and
-this document describes versions 2.0.7 and (perhaps) later. Versions before 2.0 contain
-substantially less functionality than version 2.0.7 and later.</p>
+also via anonymous FTP. The version at the time this document was written was 2.0.21 and
+this document describes this version only. Versions before 2.0 contain substantially less
+functionality.</p>
 
 <p>Versions of this interface prior to 2.0 worked (for the most part, at least) on a
 variety of implementations of Common Lisp. This latest version is much more specific to
 Allegro CL and uses internal features of Allegro CL which are not available in other Lisp
 implementations. Therefore, many features in version 2.0 and later of the Emacs-Lisp
 interface will not work on implementations other than Allegro Common Lisp. The Emacs
-variable fi:emacs-lisp-interface-version contains the version information. Note further
-that Allegro Common Lisp, version 3.1 does not have many of the internal features
-necessary to support version 2.0 and later of the Emacs-Lisp interface.</p>
+variable <font face="Courier New">fi:emacs-lisp-interface-version</font> contains the
+version information.</p>
 
 <h3><a name="What should be in your .emacs file">What should be in your .emacs file</a></h3>
 
@@ -489,17 +488,17 @@ up. The simplest way to ensure that the interface is loaded is to have the prope
 your $HOME/.emacs file (that is, the .emacs file in your home directory). The exact forms
 depend on where Allegro CL was installed on your system (since starting with Allegro CL
 4.3, the Emacs-Lisp interface code is not merged into the standard Emacs library).
-Assuming that the Allegro CL distribution tape was read into /usr/acl4.3. here are the
-correct forms to place in .emacs:</p>
+Assuming that Allegro CL was installed into <em>/usr/acl50</em>. Here is the correct form
+to place in <em>.emacs:</em></p>
 
 <blockquote>
   <pre>(load &quot;/usr/acl50/eli/fi-site-init&quot;)</pre>
 </blockquote>
 
-<p>Note: replace /usr/acl50 with the correct directory if that is not where Allegro CL was
-installed. (/usr/acl50 is the suggested directory in the Installation Guide but any
-directory may have been used. Your system administrator -- or whoever installed Allegro CL
--- should be able to provide this information.)</p>
+<p>Note: replace <em>/usr/acl50</em> with the correct directory if that is not where
+Allegro CL was installed. (<em>/usr/acl50</em> is the suggested directory in the
+Installation Guide but any directory may have been used. Your system administrator -- or
+whoever installed Allegro CL -- should be able to provide this information.)</p>
 
 <h3><a name="Emacs Documentation">Emacs Documentation</a></h3>
 
@@ -507,7 +506,7 @@ directory may have been used. Your system administrator -- or whoever installed 
 GNU Emacs Manual (mentioned above) and the GNU Emacs Lisp Reference Manual. The latter
 manual describes the version of Lisp used internally by Emacs (called Emacs Lisp, which is
 not Common Lisp). Both are available from the Free Software Foundation, whose address can
-be found above.</p>
+be found above in the section <a href="#If you are new to Emacs">If you are new to Emacs</a>.</p>
 
 <p>All of the documentation available in the Emacs Info program may be printed on
 hardcopy, including the GNU Emacs Manual. To start the Emacs Info program, type C-h i. For
@@ -642,17 +641,17 @@ section is really about ensuring that the interface is loaded into Emacs.</p>
 your $HOME/.emacs file (that is, the .emacs file in your home directory). The exact forms
 depend on where Allegro CL was installed on your system (since starting with Allegro CL
 4.3, the Emacs-Lisp interface code is not merged into the standard Emacs library).
-Assuming that the Allegro CL distribution tape was read into /usr/acl4.3. here are the
-correct forms to place in .emacs:</p>
+Assuming that Allegro CL was installed into <em>/usr/acl50</em>. Here is the correct form
+to place in <em>.emacs</em>:</p>
 
 <blockquote>
   <pre>(load &quot;/usr/acl50/eli/fi-site-init&quot;)</pre>
 </blockquote>
 
-<p>Note: replace /usr/acl50 with the correct directory if that is not where Allegro CL was
-installed. (/usr/acl50 is the suggested directory in the Installation Guide but any
-directory may have been used. Your system administrator -- or whoever installed Allegro CL
--- should be able to provide this information.</p>
+<p>Note: replace <em>/usr/acl50</em> with the correct directory if that is not where
+Allegro CL was installed. (<em>/usr/acl50</em> is the suggested directory in the
+Installation Guide but any directory may have been used. Your system administrator -- or
+whoever installed Allegro CL -- should be able to provide this information.</p>
 
 <p>These forms cause the interface to be loaded when Emacs starts up. Note that in the
 following sections, we discuss many variables that customize the Emacs-Lisp programming
@@ -758,9 +757,9 @@ for trouble involving your personal .emacs and .clinit.cl files.
   <li>Start up a Common Lisp image with the -qq option: M-x fi:common-lisp Answer the
     question: Image arguments (separate by spaces): with -qq This will start up Common Lisp
     without reading any .clinit.cl files.</li>
-  <li>Try the Emacs-Lisp interface command that tests the interface: M-x
-    fi:verify-emacs-support See Previous versions of Emacs in section 14-1 for more
-    information about this command.</li>
+  <li>Try the Emacs-Lisp interface command that tests the interface: <font face="Courier New">M-x
+    fi:verify-emacs-support</font>. See <a href="#Previous versions of Emacs">Previous
+    versions of Emacs</a> for more information about this command.</li>
 </ol>
 
 <h4><a name="Other strange or unexplained behavior">Other strange or unexplained behavior</a></h4>
@@ -792,20 +791,22 @@ names.)</p>
 
 <p>Interacting with Common Lisp occurs in an Emacs subprocess buffer. This interaction can
 even occur between Emacs and Common Lisp processes that reside on different machines.
-Common Lisp must be started with the function fi:common-lisp. You cannot start Common Lisp
-in an Emacs shell and then initiate the interface. Most of the Emacs-Lisp interface will
-not work with a Lisp image started in an Emacs shell.</p>
+Common Lisp must be started with the function <font face="Courier New">fi:common-lisp</font>.
+You cannot start Common Lisp in an Emacs shell and then initiate the interface. Most of
+the Emacs-Lisp interface will not work with a Lisp image started in an Emacs shell.</p>
 
-<p>When called for the first time in an emacs session, fi:common-lisp prompts in the
-minibuffer for information on how you wish to invoke Lisp (see section 2.1.2 Running Lisp
-as a subprocess of Emacs or below in section 3.3 Functions and variables for interacting
-with a CL subprocess for details on what questions are asked). Subsequent calls use the
-previous answers unless qualified with C-u. Once it knows what to invoke, fi:common-lisp
-makes a Common Lisp subprocess in a buffer named (in the default) *common-lisp*. After
-start-up, *common-lisp* might have contents which look similar to this:</p>
+<p>When called for the first time in an emacs session, <font face="Courier New">fi:common-lisp</font>
+prompts in the minibuffer for information on how you wish to invoke Lisp (see section <a
+href="#3.3. Functions and variables for Interacting with a CL subprocess">3.3 Functions
+and variables for interacting with a CL subprocess</a> for details on what questions are
+asked). Subsequent calls use the previous answers unless qualified with <font
+face="Courier New">C-u</font>. Once it knows what to invoke, <font face="Courier New">fi:common-lisp</font>
+makes a Common Lisp subprocess in a buffer named (in the default) <font face="Courier New">*common-lisp*</font>.
+After start-up, <font face="Courier New">*common-lisp*</font> might have contents which
+look similar to this:</p>
 
 <blockquote>
-  <pre>Allegro CL 5.0 [SPARC; R1] (12/10/97 21:17)
+  <pre>Allegro CL 5.0 [SPARC; R1] (7/15/98 00:00)
 Copyright (C) 1985-1998, Franz Inc., Berkeley, CA, USA
 ;; Optimization settings: safety 1, space 1, speed 1,
 ;; debug 2. For a complete description of all compiler
@@ -1148,16 +1149,17 @@ Common Lisp. This allows editing of incomplete, multi-line expressions before Co
 sees them.</p>
 
 <p>To accomplish the advanced input features, Emacs needs to know the form of the Common
-Lisp prompt. The prompt in Allegro CL is defined by the value of the variable
-top-level:*prompt*. This value must be a string acceptable as the second argument to
-format. Although the prompt can be changed at any time, it is typically set in the file
-$HOME/.clinit.cl. But however the prompt is changed, the Emacs user option
-fi:common-lisp-prompt-pattern must be changed as well -- so that the default value of
-top-level:*prompt* (in Common Lisp) and fi:common-lisp-prompt-pattern (in Emacs Lisp) are
-in agreement.</p>
+Lisp prompt. The prompt in Allegro CL is defined by the value of the variable <font
+face="Courier New">top-level:*prompt*</font>. This value must be a string acceptable as
+the second argument to format. Although the prompt can be changed at any time, it is
+typically set in the file <font face="Courier New">$HOME/.clinit.cl</font>. But however
+the prompt is changed, the Emacs user option <font face="Courier New">fi:common-lisp-prompt-pattern</font>
+must be changed as well -- so that the default value of <font face="Courier New">top-level:*prompt*</font>
+(in Common Lisp) and <font face="Courier New">fi:common-lisp-prompt-pattern</font> (in
+Emacs Lisp) are in agreement.</p>
 
-<p>See the file home/misc/clinit.cl for examples of other prompts. See Section 4.2
-Interaction and the prompt for information on the prompt itself.</p>
+<p>See the file <em>misc/prompts.cl</em> in the Allegro directory for examples of other
+prompts. See <a href="toplevel.htm">toplevel.htm</a> for information on the prompt itself.</p>
 
 <h4>Input rings</h4>
 
@@ -1184,51 +1186,22 @@ counterparts do: print the directory stack and current working directory.</p>
 
 <h4>Tracking package changes</h4>
 
-<p>Another Common Lisp top-level command, :package, is tracked by the Emacs-Lisp
-interface. When package changes are done either via the top-level command :package or the
-macro in-package, Emacs tracks the current package of the *common-lisp* buffer. The
-current package is used by many Emacs-Lisp interface functions that query the Common Lisp
-environment, such as fi:lisp-arglist.</p>
+<p>Another Common Lisp top-level command, <font face="Courier New">:package</font>, is
+tracked by the Emacs-Lisp interface. When package changes are done either via the
+top-level command <font face="Courier New">:package</font> or the macro <font
+face="Courier New">in-package</font>, Emacs tracks the current package of the <font
+face="Courier New">*common-lisp*</font> buffer. The current package is used by many
+Emacs-Lisp interface functions that query the Common Lisp environment, such as <font
+face="Courier New">fi:lisp-arglist</font>.</p>
 
-<p>The following addition to $HOME/.emacs will cause the current package to be displayed
-in the mode-line for the *common-lisp* buffer (the following can be found in the Emacs
-library file fi/examples/Package.el):</p>
-
-<pre>   (make-variable-buffer-local 'package-mode-info)
-   (setq package-mode-info nil)</pre>
-
-<pre>   (setq fi:subprocess-mode-hook
-     (function
-      (lambda ()
-	(interactive)
-	(setq mode-line-buffer-identification
-	  (list (buffer-name)
-		(let* ((proc (get-buffer-process (current-buffer)))
-		       (name (and proc (calculate-process-name proc))))
-		  (if name
-		      (format &quot; (%s)&quot; (file-name-nondirectory name))))
-		'package-mode-info)))))</pre>
-
-<pre>   (setq fi:inferior-common-lisp-mode-hook
-     '(lambda ()
-       (interactive)
-       (setq package-mode-info (list &quot; {&quot; 'fi:package &quot;}&quot;))))</pre>
-
-<pre>   (defun calculate-process-name (process)
-     (let ((arglist (process-command process)))
-       (if (string= &quot;rsh&quot; (car arglist))
-	   (format &quot;remote on %s&quot; (car (cdr arglist)))
-	 (car arglist))))</pre>
-
-<p>So, when</p>
+<p>The current package is displayed in the mode-line.&nbsp; So, when</p>
 
 <pre>    :package foo</pre>
 
-<p>is entered in the *common-lisp* buffer, the mode-line will be updated to contain the
-string {foo} after the buffer name. Additionally, the above code causes the image name to
-be displayed in the mode-line, and an indication of the host on which Common Lisp is being
-executed, if different than the machine on which Emacs is being executed. See 4.2 Packages
-and readtables for more information.</p>
+<p>is entered in the <font face="Courier New">*common-lisp*</font> buffer, the mode-line
+will be updated to contain the string <em>pkg:foo</em> after the mode identifier. &nbsp;
+See <a href="#4.2. Packages and readtables">4.2 Packages and readtables</a> for more
+information.</p>
 
 <h4>Lisp Listeners</h4>
 

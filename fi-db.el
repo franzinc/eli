@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-db.el,v 1.31.24.1 1998/06/24 23:06:54 layer Exp $
+;; $Id: fi-db.el,v 1.31.24.2 1998/07/16 16:47:43 layer Exp $
 
 (defvar fi::ss-help
     "Debugger commands:\\<fi:scan-stack-mode-map>
@@ -109,6 +109,7 @@ process. With argument ALL, do a \":zoom :all t\"."
 (defun fi:scan-stack-mode (&optional from-buffer process-name)
   "Major mode for debugging a Common Lisp process.
 The keymap for this mode is bound to fi:scan-stack-mode-map
+
 <font face=\"Courier New\">\\{fi:scan-stack-mode-map}</font>
 Entry to this mode runs the fi:scan-stack-mode-hook hook."
   (let ((saved-from-buffer
