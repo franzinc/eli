@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.19 1991/09/30 11:39:21 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.20 1991/10/15 11:40:25 layer Exp $
 
 ;; Create a mode in which each line is a definition and . on that
 ;; definition brings up the definition in another window
@@ -63,7 +63,6 @@ Entry to this mode runs the fi:definition-mode-hook."
   (if (null fi:definition-mode-map)
       (let ((map (make-keymap)))
 	(define-key map "\C-_" 'fi:definition-mode-undo)
-	(define-key map "\e."  'fi:lisp-find-definition)
 	(define-key map "."    'fi:definition-mode-goto-definition)
 	(define-key map "n"    'fi:definition-mode-goto-next)
 	(define-key map "p"    'fi:definition-mode-goto-previous)
@@ -126,7 +125,6 @@ Entry to this mode runs the fi:inverse-definition-mode-hook."
   (if (null fi:inverse-definition-mode-map)
       (let ((map (make-keymap)))
 	(define-key map "\C-_" 'fi:definition-mode-undo)
-	(define-key map "\e."  'fi:lisp-find-definition)
 	(define-key map "."    'fi:definition-mode-goto-definition)
 	(define-key map "n"    'fi:definition-mode-goto-next)
 	(define-key map "c"    'fi:inverse-definition-who-calls)
@@ -205,7 +203,9 @@ was before inverse-definition mode was entered."
    lep::inverse-definition-mode-saved-window-configuration))
 
 (defun fi:definition-mode-goto-definition ()
-  "Find the definition associated with the entry on the current line."
+  "Find the definition associated with the entry on the current line.  This
+uses the same mechanism as fi:lisp-find-definition, using dynamic
+information in the Common Lisp environment."
   (interactive)
   (message "Finding%s definition..."
 	   (if lep::inverse-definitions " inverse" ""))
@@ -282,63 +282,57 @@ in definition mode."
 (defun lep:display-some-definitions (package buffer-definitions
 				     fn-and-arguments
 				     &optional buffer-name)
-  (let* ((bn (or buffer-name "*definitions*"))
-	 (bb (get-buffer bn)))
-    (unless (eq bb (current-buffer))
-      (setq lep::definition-mode-saved-window-configuration
-	(current-window-configuration))  
-      (fi:lisp-push-window-configuration)
-      (switch-to-buffer-other-window (or bb bn))))
-  (setq buffer-read-only nil)
-  (erase-buffer)
-  (mapcar '(lambda (x) 
-	    (princ (car x) (current-buffer))
-	    (unless (equal '(nil) (second x))
-	      (insert ", ")
-	      (princ (second x) (current-buffer)))
-	    (insert "\n"))
-	  buffer-definitions)
-  (fi:definition-mode)
-  (set-buffer-modified-p nil)
-  (setq buffer-read-only t)
-  (setq lep::definitions (mapcar 'car buffer-definitions))
-  (setq lep::definition-types (mapcar 'second buffer-definitions))
-  (setq lep::definition-other-args (mapcar 'third buffer-definitions))
-  (setq lep::definition-finding-function fn-and-arguments)
-  (setq fi:package package)
-  (let ((height (window-height)))
-    (when (and (> height 5) (not (one-window-p)))
-      (shrink-window (- height 5))))
-  (beginning-of-buffer))
+  (let ((buffer (get-buffer-create (or buffer-name "*definitions*"))))
+    (fi::goto-definitions-buffer buffer)
+    (save-excursion
+      (set-buffer buffer)
+      (setq buffer-read-only nil)
+      (erase-buffer)
+      (mapcar '(lambda (x) 
+		(princ (car x) (current-buffer))
+		(unless (equal '(nil) (second x))
+		  (insert ", ")
+		  (princ (second x) (current-buffer)))
+		(insert "\n"))
+	      buffer-definitions)
+      (fi:definition-mode)
+      (set-buffer-modified-p nil)
+      (setq buffer-read-only t)
+      (setq lep::definitions (mapcar 'car buffer-definitions))
+      (setq lep::definition-types (mapcar 'second buffer-definitions))
+      (setq lep::definition-other-args (mapcar 'third buffer-definitions))
+      (setq lep::definition-finding-function fn-and-arguments)
+      (setq fi:package package)
+      (beginning-of-buffer))))
 
 (defun lep:display-some-inverse-definitions (package buffer-definitions
 					     fn-and-arguments
 					     &optional buffer-name)
-  (let* ((bn (or buffer-name "*inverse-definitions*"))
-	 (bb (get-buffer bn)))
-    (unless (eq bb (current-buffer))
-      (setq lep::inverse-definition-mode-saved-window-configuration
-	(current-window-configuration))  
-      (fi:lisp-push-window-configuration)
-      (switch-to-buffer-other-window (or bb bn))))
-  (setq buffer-read-only nil)
-  (erase-buffer)
-  (mapcar '(lambda (x) 
-	    (princ (car x) (current-buffer))
-	    (unless (equal '(nil) (second x))
-	      (insert ", ")
-	      (princ (second x) (current-buffer)))
-	    (insert "\n"))
-	  buffer-definitions)
-  (fi:inverse-definition-mode)
-  (set-buffer-modified-p nil)
-  (setq buffer-read-only t)
-  (setq lep::definitions (mapcar 'car buffer-definitions))
-  (setq lep::definition-types (mapcar 'second buffer-definitions))
-  (setq lep::definition-other-args (mapcar 'third buffer-definitions))
-  (setq lep::definition-finding-function fn-and-arguments)
-  (setq fi:package package)
-  (let ((height (window-height)))
-    (when (and (> height 5) (not (one-window-p)))
-      (shrink-window (- height 5))))
-  (beginning-of-buffer))
+  (let ((buffer (get-buffer-create (or buffer-name "*inverse-definitions*"))))
+    (fi::goto-definitions-buffer buffer)
+    (save-excursion
+      (set-buffer buffer)
+      (setq buffer-read-only nil)
+      (erase-buffer)
+      (mapcar '(lambda (x) 
+		(princ (car x) (current-buffer))
+		(unless (equal '(nil) (second x))
+		  (insert ", ")
+		  (princ (second x) (current-buffer)))
+		(insert "\n"))
+	      buffer-definitions)
+      (fi:inverse-definition-mode)
+      (set-buffer-modified-p nil)
+      (setq buffer-read-only t)
+      (setq lep::definitions (mapcar 'car buffer-definitions))
+      (setq lep::definition-types (mapcar 'second buffer-definitions))
+      (setq lep::definition-other-args (mapcar 'third buffer-definitions))
+      (setq lep::definition-finding-function fn-and-arguments)
+      (setq fi:package package)
+      (beginning-of-buffer))))
+
+(defun fi::goto-definitions-buffer (buffer)
+  (unless (eq buffer (current-buffer))
+    (setq lep::definition-mode-saved-window-configuration
+      (current-window-configuration))  
+    (fi::display-pop-up-window buffer)))
