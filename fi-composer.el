@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.2 1991/01/29 17:19:53 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.3 1991/02/12 17:17:52 layer Exp $
 ;;
 ;;;;;;;;;;;;;;;;;; Composer 2 related stuff
 ;;; Perhaps some of this is generally useful
@@ -145,8 +145,7 @@
 
 ;;; show-callers
 ;;; show-callees
-;;; show-superclasses
-;;; show-subclasses
+
 
 (defun show-subclasses (class)
   (interactive (fi::get-default-symbol "Class"))
@@ -157,7 +156,7 @@
   (show-subsuper-classes class ':parent "Could not show superclasses: %s"))
 
 (defun show-subsuper-classes (class direction msg)
-  (make-request (composer::show-classes--session 
+  (make-request (composer::show-classes-session 
 		 :direction direction :fspec (fi::frob-case-to-lisp class))
 		(() () ())
 		((msg) (error)
