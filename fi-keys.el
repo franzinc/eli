@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.39 1991/01/31 14:47:46 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.40 1991/01/31 22:05:30 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -53,6 +53,7 @@ shell, rlogin, sub-lisp or tcp-lisp."
   (define-key map "\C-u" 'fi:subprocess-kill-input)
   (define-key map "\C-v" 'fi:subprocess-show-output)
   (define-key map "\C-w" 'fi:subprocess-backward-kill-word)
+  (define-key map "\C-y" 'fi:pop-input)	; for compatibility with shell-mode
   (cond ((memq mode '(sub-lisp tcp-lisp))
 	 (define-key map "." 'fi:lisp-sync-current-working-directory))
 	(t
@@ -139,8 +140,11 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
      (define-key map "\eD"	'fi:lisp-describe)
      (define-key map "\eF"	'fi:lisp-function-documentation)
      (define-key map "\eM"	'fi:lisp-macroexpand)
-     (define-key map "\eT"	'lep::toggle-trace-definition)
-     (define-key map "\eW"	'fi:lisp-walk)))
+     (define-key map "\eT"	'fi:toggle-trace-definition)
+     (define-key map "\eW"	'fi:lisp-walk)
+     (let ((4-map (make-sparse-keymap)))
+       (define-key map "\C-x4" 4-map)
+       (define-key 4-map "." 	'fi:lisp-find-tag-other-window))))
   (cond
     ((eq major-mode 'fi:emacs-lisp-mode)
      (define-key map "\e\C-x"	'eval-defun))
@@ -187,7 +191,9 @@ and send to Lisp."
 	  (while (and (not (eobp))
 		      (condition-case ()
 			  (progn (forward-sexp 1) t)
-			(error (setq send-that-sexp nil))))))
+			(error (setq send-that-sexp nil))))
+	    (while (looking-at ")")
+	      (delete-char 1))))
 	(end-of-buffer)
 	(if send-that-sexp
 	    (fi:subprocess-send-input)
