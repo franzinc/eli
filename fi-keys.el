@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.12 1988/07/15 18:32:30 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.13 1988/07/16 16:25:23 layer Exp $
 
 ;;;;
 ;;; Key defs
@@ -277,7 +277,7 @@ With a prefix argument, the source sent to the subprocess is compiled."
 ;;;;;;;;;;;;;;;;;;;;; TCP lisp mode related functions
 
 (defun fi::get-default-symbol (prompt &optional up-p)
-  (let* ((sdefault
+  (let* ((symbol-at-point
 	  (condition-case ()
 	      (save-excursion
 		(if up-p
@@ -298,11 +298,18 @@ With a prefix argument, the source sent to the subprocess is compiled."
 				   (point))))
 		  nil))
 	    (error nil)))
-	 (spec (read-string
-		(if sdefault
-		    (format "%s: (default %s) " prompt sdefault)
-		  (format "%s: " prompt)))))
-    (list (if (equal spec "") sdefault spec))))
+	 (read-symbol
+	  (read-string
+	   (if symbol-at-point
+	       (format "%s: (default %s) " prompt symbol-at-point)
+	     (format "%s: " prompt))))
+	 (symbol (if (string= read-symbol "")
+		     symbol-at-point
+		   read-symbol))
+	 (colonp (string-match ":?:" symbol nil)))
+    (if (and (not colonp) fi:package)
+	(setq symbol (format "%s::%s" fi:package symbol)))
+    (list symbol)))
 
 (defun fi:lisp-find-tag (tag &optional next)
   "Find the Common Lisp source for a symbol, using the characters around
