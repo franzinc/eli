@@ -1,9 +1,9 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.30 1989/02/17 19:35:17 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.31 1989/05/19 11:45:14 layer Exp $
 
 cl = /usr/local/cl3.0
 emacs = /usr/local/emacs
 
-elc-files = modes.elc subproc.elc sublisp.elc filec.elc ring.elc\
+elc-files = modes.elc indent.elc subproc.elc sublisp.elc filec.elc ring.elc\
 	    rlogin.elc shell.elc keys.elc tcplisp.elc\
 	    utils.elc ltags.elc clman.elc clman-oblist.elc\
 	    ../tools/doc.elc
