@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.30 1988/05/19 23:48:34 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.31 1988/05/25 13:48:52 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -55,7 +55,7 @@ into the correct Lisp package.")
 commands (those which send expressions from Emacs to Lisp) to use
 BUFFER-NAME as the buffer which contains a Lisp subprocess.  If evaluated
 when not in a Lisp source buffer, then the process type is read from the
-minibuffer ("common-lisp" or "franz-lisp").  The buffer name is
+minibuffer (\"common-lisp\" or \"franz-lisp\").  The buffer name is
 interactively read and must be the name of an existing buffer.  New buffers
 with the same mode as the current buffer will also use BUFFER-NAME for
 future `eval' commands."
