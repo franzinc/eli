@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.124 1996/10/30 17:59:46 layer Exp $
+# $Id: Makefile,v 1.125 1996/11/22 17:22:17 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -167,8 +167,8 @@ clman-dist:	all_clman
 
 ###############################################################################
 
-hosts = tiger freezer sole sparky akbar fridge girls louie hefty \
-	romeo vapor biggie clay
+hosts = beta tiger freezer sole sparky akbar fridge girls louie hefty \
+	romeo vapor biggie
 # make of clman fails on these systems:
 #	fridge, girls, hefty, biggie, clay
 

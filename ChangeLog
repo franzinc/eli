@@ -1,3 +1,4 @@
+
 For more detailed instructions on filling in the ChangeLog form, see 
 `/fi/doc/procedures/changelogs.txt'.
 *******************************************************************************
@@ -13,6 +14,10 @@ Tests for new features:	<`no new features', `no tests for new features', or
 *******************************************************************************
 Documentation changes:	none
 Tests for new features:	no new features
+
+Fri Nov 22 09:21:33 1996  Kevin Layer  <layer@ultra>
+
+	* Makefile: add beta to rdist
 
 Thu Nov 21 13:42:48 1996  Kevin Layer  <layer@ultra>
 
