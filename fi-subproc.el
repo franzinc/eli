@@ -19,7 +19,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.139 1992/05/11 14:56:55 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.140 1992/05/19 08:23:01 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -72,7 +72,7 @@ a buffer, which is used to display a buffer when a subprocess is created.")
 (defconst fi:subprocess-env-vars
     '(("EMACS" . "t")
       ("TERM" . "emacs")
-      ("DISPLAY" . (getenv "DISPLAY"))
+      ("DISPLAY" . (or (getenv "DISPLAY") (format "%s:0.0" (system-name))))
       ("TERMCAP" . (format "emacs:co#%d:tc=unknown:" (screen-width))))
   "*An alist containing the environment variables to pass to newly created
 subprocesses.")
@@ -324,8 +324,8 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		 (error "fi:common-lisp aborted.")))
     (setq fi::shell-buffer-for-common-lisp-interaction-host-name nil))
   (let* ((buffer-name (if (interactive-p)
-			  (or buffer-name fi:common-lisp-buffer-name)
-			fi:common-lisp-buffer-name))
+			  fi:common-lisp-buffer-name
+			(or buffer-name fi:common-lisp-buffer-name)))
 	 (directory (if (interactive-p)
 			(expand-file-name directory)
 		      (or directory fi:common-lisp-directory)))
