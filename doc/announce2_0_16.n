@@ -1,5 +1,7 @@
 Subject: new release of the Franz Inc Emacs-Lisp interface
 
+[Note: 2.0.17 is an incremental minor bugfix release based on 2.0.16.]
+
 Version 2.0.16 of Franz Inc's GNU Emacs-Allegro CL interface is now
 available.  This is the first general release since 2.0.11, which was
 (and is still) the version shipped with Allegro CL version 4.2.
