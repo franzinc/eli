@@ -1,8 +1,41 @@
-;;; $Header: /repo/cvs.copy/eli/fi-ring.el,v 1.3 1988/03/04 09:10:29 layer Exp $
-;;;
-;;; This code is very similar to the kill-ring implementation
-;;; and implements the fi::subprocess input ring.  Each fi::subprocess buffer
-;;; has its own input ring.
+;;
+;; copyright (C) 1987, 1988 Franz Inc, Berkeley, Ca.
+;;
+;; The software, data and information contained herein are proprietary
+;; to, and comprise valuable trade secrets of, Franz, Inc.  They are
+;; given in confidence by Franz, Inc. pursuant to a written license
+;; agreement, and stored only in accordance with the terms of such license.
+;;
+;; Restricted Rights Legend
+;; ------------------------
+;; Use, duplication, and disclosure by the Government are subject to
+;; restrictions of Restricted Rights for Commercial Software developed
+;; at private expense as specified in DOD FAR 52.227-7013 (c) (1) (ii).
+;;
+;; This file may be distributed without further permission from
+;; Franz Inc. as long as
+;;
+;;	* it is not part of a product for sale,
+;;	* no charge is made for the distribution, and
+;;	* all copyright notices and this notice are preserved.
+;;
+;; If you have any comments or questions on this package, please feel
+;; free to contact Franz Inc. at
+;;
+;;	Franz Inc.
+;;	Attn: Emacs Group Manager
+;;	1995 University Ave
+;;	Suite 275
+;;	Berkeley, CA 94704
+;; or
+;;	emacs-info%franz.uucp@Berkeley.EDU
+;;	ucbvax!franz!emacs-info
+
+;; $Header: /repo/cvs.copy/eli/fi-ring.el,v 1.4 1988/04/25 15:15:53 layer Exp $
+
+;; This code is very similar to the kill-ring implementation
+;; and implements the fi::subprocess input ring.  Each fi::subprocess buffer
+;; has its own input ring.
 
 (defvar fi:default-input-ring-max 50
   "Default maximum length of input rings.")
@@ -31,14 +64,11 @@
 
 (defun fi:input-region (beg end)
   "Delete text between point and mark and save in input ring.
-The command fi::yank-input can retrieve it from there.
-
 This is the primitive for programs to kill text into the input ring.
-Supply two arguments, character numbers indicating the stretch of text
-  to be killed.
-If the previous command was also a kill command,
-  the text killed this time appends to the text killed last time
-  to make one entry in the fi::subprocess input ring."
+Supply two arguments, character numbers indicating the stretch of text to
+be killed.  If the previous command was also a kill command, the text
+killed this time appends to the text killed last time to make one entry in
+the subprocess input ring." 
   (interactive "*r")
   (setq fi::last-command-was-successful-search nil)
   (fi::input-ring-save beg end)
@@ -76,10 +106,8 @@ If the previous command was also a kill command,
 		    fi::input-ring))))))
 
 (defun fi:pop-input (arg)
-  "Yank text from input ring.
-Cycle through input ring with each
-successive invocation.  Just like fi::yank-input-pop except that it
-does not have to be called only after fi::yank-input."
+  "Yank text from input ring.  Cycle through input ring with each
+successive invocation."
   (interactive "*p")
   (setq fi::last-command-was-successful-search nil)
   (if (not (memq last-command '(fi::yank-input
@@ -98,10 +126,8 @@ does not have to be called only after fi::yank-input."
 	     (if before (exchange-point-and-mark))))))
 
 (defun fi:push-input (arg)
-  "Yank text from input ring.
-Cycle through input ring in reverse
-order with each successive invocation.  Just like fi:pop-input except
-that it goes through the ring in the other direction."
+  "Yank text from input ring.  Cycle through input ring in reverse
+order with each successive invocation."
   (interactive "*p")
   (setq fi::last-command-was-successful-search nil)
   (if (not (memq last-command '(fi::yank-input
@@ -136,9 +162,9 @@ See also the command fi::yank-input-pop."
       (exchange-point-and-mark)))
 
 (defun fi:list-input-ring (arg &optional reflect)
-  "Display contents of input ring, starting at arg.
-The list is displayed in reverse order if the optional second
-parameter is non-nil."
+  "Display contents of input ring, starting at arg.  The list is displayed
+in reverse order if call from a program and the optional second parameter
+is non-nil."
   (interactive "p")
   (let* ((input-ring-for-list fi::input-ring)
 	 (input-ring-max-for-list fi::input-ring-max)
