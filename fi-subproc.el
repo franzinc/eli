@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.98 1991/03/16 12:34:21 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.99 1991/03/16 13:51:45 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -645,6 +645,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	(goto-char (point-max))
       (setq default-directory default-dir)
       (setq proc (open-network-stream buffer-name buffer host service))
+      (set-process-sentinel proc 'fi::tcp-sentinel)
       ;;
       ;; The first input the new (Common Lisp) process is sent is the name
       ;; of the process.  This is so that the processes are named similarly
@@ -669,9 +670,16 @@ the first \"free\" buffer name and start a subprocess in that buffer."
       (fi::make-subprocess-variables))
     proc))
 
-;;; Sentinel and filter for subprocesses.  The sentinel is currently
-;;;   not used.
 (defun fi::subprocess-sentinel (process status)
+  ;; Sentinel and filter for subprocesses.  The sentinel currently
+  ;; does nothing, other than prevent the status change message when the
+  ;; process dies.
+  t)
+
+(defun fi::tcp-sentinel (process status)
+  ;; Sentinel and filter for network connections.  The sentinel currently
+  ;; does nothing, other than prevent the status change message when the
+  ;; connection is closed.
   t)
 
 (defun fi::subprocess-filter (process output &optional stay cruft)
