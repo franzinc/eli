@@ -45,7 +45,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.5 1989/03/23 22:32:10 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.6 1989/03/24 16:07:56 layer Exp $
 
 (defvar lisp-electric-semicolon nil
   "*If `t', semicolons that begin comments are indented as they are typed.")
@@ -577,7 +577,17 @@ consing as possible.")
 	(setq i (+ i d))))
     n))
 
-(defun lisp-invoke-method (form-start method depth count state indent-point)
+(defun lisp-invoke-method (form-start method depth count state
+			   indent-point)
+  (cond ((consp method)
+	 (cond ((eq 'like (car method))
+		(setq method
+		  (lisp-get-method (symbol-name (car (cdr method))))))
+	       ((eq 'if (car method))
+;;;;(message "depth %s, method %s" depth method)(sit-for 2)
+		(setq method
+		  (apply 'lisp-if-indent depth count state indent-point
+			 (cdr method)))))))
   (cond ((and form-start
 	      (or (eq (char-after (- form-start 1)) ?\#) ;; Vectors.
 		  (and (eq (char-after (- form-start 1)) ?\') ;; Quoted lists.
@@ -586,28 +596,16 @@ consing as possible.")
 	((integerp method)
 	 (lisp-indent-specform method depth count state indent-point))
 	((consp method)
-	 (cond
-	  ((eq 'like (car method))
-	   ;; indent this form like (cadr method)
-	   (lisp-invoke-method form-start
-			       (lisp-get-method
-				(symbol-name (car (cdr method))))
-			       depth count state indent-point))
-	  ((eq 'funcall (car method))
-	   (funcall (car (cdr method)) depth count state indent-point))
-	  ((eq (car method) 'recursive)
-	   (lisp-invoke-method form-start (nth 1 method)
-			       0 count state indent-point))
-	  ((eq 'if (car method))
-	   (lisp-invoke-method form-start
-			       (apply 'lisp-if-indent
-				      depth count state indent-point
-				      (cdr method))
-			       depth count state indent-point))
-	  ((and (symbolp (car method)) (fboundp (car method)))
-	   (apply (car method) depth count state indent-point
-		  (cdr method)))
-	  (t (lisp-indent-struct method depth count state indent-point))))
+	 (cond ((eq 'funcall (car method))
+		(funcall (car (cdr method)) depth count state indent-point))
+	       ((eq (car method) 'recursive)
+		(lisp-invoke-method form-start (nth 1 method) 0 count state
+				    indent-point))
+	       ((and (symbolp (car method)) (fboundp (car method)))
+		(apply (car method) depth count state indent-point
+		       (cdr method)))
+	       (t (lisp-indent-struct
+		   method depth count state indent-point))))
 	((eq method 'quote)
 	 (lisp-indent-quoted-list depth count state indent-point))
 	((memq method '(tag tagbody))
@@ -1096,10 +1094,7 @@ THEN-SPEC is used, otherwise the indentation specification given by
 ELSE-SPEC is used."
   (if (apply (car test) depth count state indent-point
 	     (cdr test))
-      (progn
-	(message "%s then-spec" depth) (sleep-for 2)
-	then-spec)
-    (message "%s else-spec" depth) (sleep-for 2)
+      then-spec
     else-spec))
 
 (defun lisp-atom-p (depth count state indent-point element)
@@ -1118,12 +1113,14 @@ atomic or if the s-expression is not a list or if the s-expression
 is a list but does not contain enough elements.  The second element of
 the returned list will be non-NIL if the specified element was found,
 NIL otherwise.  The ELEMENT is the number of the element, zero indexed."
-  (let ((containing-form-start (car (cdr state)))
-	(atomic nil)
+  (let ((atomic nil)
 	(found nil)
 	(count 0))
-    (goto-char containing-form-start)
-    (forward-char 1)
+    ;; find the beginning of the form that has the method which triggered
+    ;; us:
+    (up-list (- (- depth) 1))
+    (forward-char 1)		; get inside the sexp
+    ;; now look for our sexp and see if it is atomic:
     (while (and
 	    (not found)
 	    (< (point) indent-point)
@@ -1390,6 +1387,28 @@ if matched at the beginning of a line, means don't indent that line."
 ;;;   any indentation specified with the property stored under the
 ;;;   indicator `lisp-indent-hook'.
 
+;;A note on indenting methods:
+;;
+;; Triples are: depth, count and method.  In the following example, the
+;; indentation method is a list of two lists, (1 (2 t)((1 0 quote)(0 t nil)))
+;; and (0 t 1).  The first triple is for sexps at level 1 (ie, the arguments
+;; to CASE).  The second triple is for the CASE sexp itself (ie, the
+;; indentation applies to the elements of the CASE expression, not the
+;; indentation of the individual elements within the CASE).  Note also that
+;; triples for deeper sexps come first (ie, ordered depending on descending
+;; depth).  For depth 1, the count is (2 t), which means apply the method
+;; to all but the elements 0 and 1 of the CASE (0 is CASE and 1 is the
+;; first argument to the CASE).  The method, ((1 0 quote) (0 t nil))
+;; recursively defines what happens inside each of these elements in the
+;; CASE (ie, refered to by a count of (2 t)): at depth 1 and count 0, the
+;; elements are indented as quoted lists (aligned under the CAR); at depth
+;; 0 for any element the standard indentation applies.
+;;
+;;(put 'case 'lisp-indent-hook
+;;     '((1 (2 t) ((1 0 quote)
+;;		 (0 t nil)))
+;;       (0 t 1)))
+
 (let ((tag 'lisp-indent-hook))
   (put 'assert tag '((1 2 quote) (0 t 2)))
   (put 'block tag 1)
@@ -1491,7 +1510,6 @@ if matched at the beginning of a line, means don't indent that line."
 
   ;; CLOS
 
-  ;;(put 'defmethod 'lisp-indent-hook '((1 2 lambda-list) (0 t 2)))
   (put 'defmethod tag 
        '(if (lisp-atom-p 2)
 	    ((1 3 lambda-list) (0 t 3))
