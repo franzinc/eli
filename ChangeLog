@@ -7,6 +7,13 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.pre-beta.15
+
+Wed Jan  7 10:21:59 1998  Kevin Layer  <layer@ultra>
+
+	* fi-basic-lep.el: fix xemacs 20.x compat problem
+
+*******************************************************************************
 2.0.21.pre-beta.14
 
 Fri Dec 19 16:29:00 1997  Kevin Layer  <layer@ultra>

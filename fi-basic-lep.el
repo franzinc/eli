@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-basic-lep.el,v 1.44 1997/12/06 19:54:10 layer Exp $
+;; $Id: fi-basic-lep.el,v 1.45 1998/01/07 18:43:28 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -212,7 +212,13 @@ emacs-lisp interface cannot be started.
 	   ;; For example, gnu 19 has some good features.
 	   (process-send-string
 	    process
-	    (format "\"%s\"\n" (remove ?\" (emacs-version))))
+	    (format "\"%s\"\n"
+;;;; The following works in xemacs 20.x when this file is compiled
+;;;; with emacs 19.x, but we don't want to install this hack since
+;;;; there are hundreds of other places a similar hack would have to
+;;;; be installed.
+		    ;;(remove (aref "\"" 0) (emacs-version))
+		    (remove ?\" (emacs-version))))
 	   (prog1
 	       (setq fi::*connection*
 		 (fi::make-connection (current-buffer) host process))

@@ -11,7 +11,7 @@
 <p align="center">version __VERSION__</p>
 
 <p><!--webbot bot="PurpleText"
-PREVIEW="$Id: readme.htm,v 2.2 1997/12/18 18:38:50 layer Exp $" --></p>
+PREVIEW="$Id: readme.htm,v 2.3 1998/01/07 18:43:29 layer Exp $" --></p>
 
 <p>This document describes how to obtain, install and use emacs-lisp interface version
 __VERSION__.&nbsp; This version of eli works with the following versions of emacs: 
@@ -40,7 +40,7 @@ href="ftp://ftp.franz.com/pub/emacs/eli/__DISTDIR__/__README_TXT__">ftp://ftp.fr
 <p>To install it do this:</p>
 
 <blockquote>
-  <pre>gzip -d &lt; __TGZFILE__ | tar xf -</pre>
+  <pre>% gzip -d &lt; __TGZFILE__ | tar xf -</pre>
 </blockquote>
 
 <p>to create <em>__DISTDIR__</em> in the directory where the above command is executed.</p>
@@ -52,6 +52,20 @@ href="ftp://ftp.franz.com/pub/emacs/eli/__DISTDIR__/__README_TXT__">ftp://ftp.fr
 </blockquote>
 
 <p>in your <em>~/.emacs</em>.</p>
+
+<p><big><strong>XEmacs users only:</strong></big></p>
+
+<p>You must recompile the <em>.el</em> files because of incompatibilities between GNU
+Emacs and XEmacs.&nbsp; You can do this by:</p>
+
+<blockquote>
+  <pre>% cd __DISTDIR__
+% rm *.elc
+% make emacs=<em>xemacs</em> xemacs=<em>xemacs</em></pre>
+</blockquote>
+
+<p>You will need GNU Make to execute the above command, and you should substitute the real
+name of your XEmacs for <em>xemacs</em>.</p>
 
 <p>If you have questions or comments, please direct them to <a
 href="mailto:bugs@franz.com">bugs@franz.com</a>. Thank you.</p>
@@ -79,6 +93,9 @@ __VERSION__:
     too.</li>
   <li>New Lisp mode binding: <font face="Courier New">C-cC-t</font> is bound to <font
     face="Courier New">fi:trace-definer</font>.</li>
+  <li>New variable, <font face="Courier New">fi:auto-fill</font>, controls whether or not
+    auto-fill minor mode is used in Lisp editing modes.&nbsp; The default value is <font
+    face="Courier New">nil</font>.</li>
 </ul>
 
 <hr>
