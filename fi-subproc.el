@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.39 1988/07/15 18:33:27 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.40 1988/07/21 23:49:57 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -224,8 +224,8 @@ arguments are read from the minibuffer."
 	       'fi:inferior-common-lisp-mode
 	       fi:common-lisp-prompt-pattern
 	       "rsh"
-	       (append (list host image-name))
-	       image-arguments)))
+	       (append (list host image-name)
+		       image-arguments))))
     (setq fi::freshest-common-sublisp-name (process-name proc))
     proc))
 
@@ -549,66 +549,78 @@ This function implements continuous output to visible buffers."
 	(cond
 	  ((and fi:shell-popd-regexp (looking-at fi:shell-popd-regexp))
 	   (goto-char (match-end 0))
-	   (let ((n (if (looking-at "[ \t]+\\+\\([0-9]*\\)")
-			(car
-			 (read-from-string
-			  (buffer-substring (match-beginning 1)
-					    (match-end 1)))))))
-	     (if (null n)
-		 (cd (car (setq fi::shell-directory-stack
-			    (cdr fi::shell-directory-stack))))
-	       ;; pop n'th entry
-	       (if (> n (length fi::shell-directory-stack))
-		   (message "Directory stack not that deep.")
-		 (let ((tail (nthcdr (+ n 1) fi::shell-directory-stack)))
-		   (rplacd (nthcdr (- n 1) fi::shell-directory-stack)
-			   nil)
-		   (setq fi::shell-directory-stack
-		     (append fi::shell-directory-stack tail)))))))
+	   (cond
+	     ((looking-at ".*&[ \t]*$")
+	      ;; "popd ... &" executes in a subshell!
+	      )
+	     (t
+	      (let ((n (if (looking-at "[ \t]+\\+\\([0-9]*\\)")
+			   (car
+			    (read-from-string
+			     (buffer-substring (match-beginning 1)
+					       (match-end 1)))))))
+		(if (null n)
+		    (cd (car (setq fi::shell-directory-stack
+			       (cdr fi::shell-directory-stack))))
+		  ;; pop n'th entry
+		  (if (> n (length fi::shell-directory-stack))
+		      (message "Directory stack not that deep.")
+		    (let ((tail (nthcdr (+ n 1) fi::shell-directory-stack)))
+		      (rplacd (nthcdr (- n 1) fi::shell-directory-stack)
+			      nil)
+		      (setq fi::shell-directory-stack
+			(append fi::shell-directory-stack tail)))))))))
 	  ((and fi:shell-pushd-regexp (looking-at fi:shell-pushd-regexp))
 	   (goto-char (match-end 0))
-	   (cond ((looking-at "[ \t]+\\+\\([0-9]+\\)[ \t]*[;\n]")
-		  ;; pushd +n
-		  (let ((n (car (read-from-string
-				 (buffer-substring (match-beginning 1)
-						   (match-end 1))))))
-		    (if (< n 1)
-			(message "Illegal stack element: %s" n)
-		      (if (> n (length fi::shell-directory-stack))
-			  (message "Directory stack not that deep.")
-			(let ((head (nthcdr n fi::shell-directory-stack)))
-			  (rplacd (nthcdr (- n 1) fi::shell-directory-stack)
-				  nil)
-			  (setq fi::shell-directory-stack
-			    (append head fi::shell-directory-stack))
-			  (cd (car head)))))))
-		 ((looking-at "[ \t]+\\(.*\\)[;\n]")
-		  ;; pushd dir
-		  (let ((dir (expand-file-name
-			      (substitute-in-file-name
-			       (buffer-substring (match-beginning 1)
-						 (match-end 1))))))
-		    (if (file-directory-p dir)
-			(progn
-			  (setq fi::shell-directory-stack
-			    (cons dir fi::shell-directory-stack))
-			  (cd dir)))))
-		 ((looking-at "[ \t]*[;\n]")
-		  ;; pushd
-		  (if (< (length fi::shell-directory-stack) 2)
+	   (cond
+	     ((looking-at ".*&[ \t]*$")
+	      ;; "pushd ... &" executes in a subshell!
+	      )
+	     ((looking-at "[ \t]+\\+\\([0-9]+\\)[ \t]*[;\n]")
+	      ;; pushd +n
+	      (let ((n (car (read-from-string
+			     (buffer-substring (match-beginning 1)
+					       (match-end 1))))))
+		(if (< n 1)
+		    (message "Illegal stack element: %s" n)
+		  (if (> n (length fi::shell-directory-stack))
 		      (message "Directory stack not that deep.")
-		    (setq fi::shell-directory-stack
-		      (append (list (car (cdr fi::shell-directory-stack))
-				    (car fi::shell-directory-stack))
-			      (cdr (cdr fi::shell-directory-stack))))
-		    (cd (car fi::shell-directory-stack))))))
+		    (let ((head (nthcdr n fi::shell-directory-stack)))
+		      (rplacd (nthcdr (- n 1) fi::shell-directory-stack)
+			      nil)
+		      (setq fi::shell-directory-stack
+			(append head fi::shell-directory-stack))
+		      (cd (car head)))))))
+	     ((looking-at "[ \t]+\\(.*\\)[;\n]")
+	      ;; pushd dir
+	      (let ((dir (expand-file-name
+			  (substitute-in-file-name
+			   (buffer-substring (match-beginning 1)
+					     (match-end 1))))))
+		(if (file-directory-p dir)
+		    (progn
+		      (setq fi::shell-directory-stack
+			(cons dir fi::shell-directory-stack))
+		      (cd dir)))))
+	     ((looking-at "[ \t]*[;\n]")
+	      ;; pushd
+	      (if (< (length fi::shell-directory-stack) 2)
+		  (message "Directory stack not that deep.")
+		(setq fi::shell-directory-stack
+		  (append (list (car (cdr fi::shell-directory-stack))
+				(car fi::shell-directory-stack))
+			  (cdr (cdr fi::shell-directory-stack))))
+		(cd (car fi::shell-directory-stack))))))
 	  ((and fi:shell-cd-regexp (looking-at fi:shell-cd-regexp))
 	   (goto-char (match-end 0))
 	   (cond
+	     ((looking-at ".*&[ \t]*$")
+	      ;; "cd foo &" executes in a subshell!
+	      )
 	     ((looking-at "[ \t]*[;\n]")
 	      ;; cd
 	      (cd (rplaca fi::shell-directory-stack (getenv "HOME"))))
-	     ((looking-at "[ \t]+\\(.*\\)[;\n]")
+	     ((looking-at "[ \t]+\\([^ \t]+\\)[ \t]*[;\n]")
 	      ;; cd dir
 	      (let ((dir (expand-file-name
 			  (substitute-in-file-name
