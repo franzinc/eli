@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.208.6.6 2002/02/07 16:41:34 layer Exp $
+;; $Id: fi-subproc.el,v 1.208.6.6.8.1 2002/10/24 17:18:11 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -202,7 +202,7 @@ line argument.")
 subprocess.  The default is the host on which emacs is running.")
 
 (defvar fi:common-lisp-prompt-pattern
-    "^\\(\\[[0-9]+i?c?\\] \\|\\[step\\] \\)?\\(<[-A-Za-z]* ?[0-9]*?>\\|[-A-Za-z0-9]+([0-9]+):\\) "
+    "^\\(\\[[0-9]+i?c?\\] \\|\\[step\\] \\)?\\(<[-A-Za-z.]* ?[0-9]*?>\\|[-A-Za-z.0-9]+([0-9]+):\\) "
   "*The regular expression which matches the Common Lisp prompt.
 Anything from beginning of line up to the end of what this pattern matches
 is deemed to be a prompt.")
