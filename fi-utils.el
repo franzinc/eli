@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.38 1993/03/23 10:14:08 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.39 1993/06/29 22:01:58 layer Exp $
 
 ;;; Misc utilities
 
@@ -656,3 +656,9 @@ created by fi:common-lisp."
              (setq result ptr)))
       (setq ptr (cdr ptr)))
     result))
+
+(if (boundp 'default-menubar)
+    ;; lemacs 19.6:
+    (defun fi::mark () (mark t))
+  ;; the rest of the world:
+  (defun fi::mark () (mark)))

@@ -17,7 +17,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-ring.el,v 1.14 1992/08/19 07:16:11 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-ring.el,v 1.15 1993/06/29 22:01:56 layer Exp $
 
 ;; This code is very similar to the kill-ring implementation
 ;; and implements the fi::subprocess input ring.  Each fi::subprocess buffer
@@ -115,8 +115,8 @@ each successive invocation.  With argument ARG, do it that many times."
 	(setq this-command 'fi::yank-input))
       (progn
 	(setq this-command 'fi::yank-input)
-	(let ((before (< (point) (mark))))
-	     (delete-region (point) (mark))
+	(let ((before (< (point) (fi::mark))))
+	     (delete-region (point) (fi::mark))
 	     (fi::rotate-yank-input-pointer arg)
 	     (set-mark (point))
 	     (insert (car fi::input-ring-yank-pointer))
@@ -125,10 +125,10 @@ each successive invocation.  With argument ARG, do it that many times."
 (defun fi:pop-input-last-word (&optional arg)
   (interactive "*p")
   (fi:pop-input arg)
-  (goto-char (mark))
+  (goto-char (fi::mark))
   (re-search-forward "[^ \t]*[ \t]*$")
   (goto-char (match-beginning 0))
-  (delete-region (point)(mark))
+  (delete-region (point)(fi::mark))
   (goto-char (point-max)))
 
 (defun fi:push-input (&optional arg)
@@ -145,8 +145,8 @@ times."
 	(setq this-command 'fi::yank-input))
       (progn
 	(setq this-command 'fi::yank-input)
-	(let ((before (< (point) (mark))))
-	     (delete-region (point) (mark))
+	(let ((before (< (point) (fi::mark))))
+	     (delete-region (point) (fi::mark))
 	     (fi::rotate-yank-input-pointer (- arg))
 	     (set-mark (point))
 	     (insert (car fi::input-ring-yank-pointer))

@@ -1,9 +1,9 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.73 1993/03/23 10:13:31 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.74 1993/06/29 22:01:48 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
 
-emacs = emacs
+emacs = /beat/emacs/lemacs-19.6/src/xemacs
 
 elcs = modes.elc indent.elc subproc.elc sublisp.elc filec.elc ring.elc\
 	su.elc telnet.elc rlogin.elc shell.elc keys.elc\

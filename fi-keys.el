@@ -8,7 +8,12 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.81 1993/06/18 20:02:32 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.82 1993/06/29 22:01:51 layer Exp $
+
+(condition-case nil
+    ;; lemacs doesn't have a tags to require...
+    (require 'tags)
+  (error nil))
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -844,10 +849,10 @@ argument ARG do it that many times."
   (interactive "p")
   (let ((string (progn
 		  (mark-sexp 1)
-		  (buffer-substring (point) (mark)))))
+		  (buffer-substring (point) (fi::mark)))))
     (backward-up-list (or arg 1))
     (mark-sexp 1)
-    (delete-region (point) (mark))
+    (delete-region (point) (fi::mark))
     (insert string)
     (backward-sexp 1)))
 
@@ -965,9 +970,6 @@ as it was before it was made visible."
     (let ((conf (car stack)))
       (rplacd s (cdr stack))
       (set-window-configuration conf))))
-
-
-(require 'tags)				; make sure not autoloaded
 
 (defvar fi::find-tag-lock-state nil)
 

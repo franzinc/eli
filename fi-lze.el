@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.28 1992/09/17 10:48:49 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.29 1993/06/29 22:01:54 layer Exp $
 ;;
 ;; Code the implements evaluation in via the backdoor
 
@@ -130,16 +130,16 @@ that starts in column 1."
   "Send for evaluation the region to the Lisp subprocess associated with
 this buffer."
   (interactive)
-  (fi::eval-region-internal (min (point) (mark))
-			    (max (point) (mark))
+  (fi::eval-region-internal (min (point) (fi::mark))
+			    (max (point) (fi::mark))
 			    nil))
 
 (defun fi:lisp-compile-region ()
   "Send for compilation the region to the Lisp subprocess associated with
 this buffer."
   (interactive)
-  (fi::eval-region-internal (min (point) (mark))
-			    (max (point) (mark))
+  (fi::eval-region-internal (min (point) (fi::mark))
+			    (max (point) (fi::mark))
 			    t))
 
 (defun fi:lisp-eval-last-sexp ()

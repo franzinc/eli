@@ -1,3 +1,12 @@
+Tue Jun 29 15:00:03 1993  Kevin Layer  (layer at sole)
+
+	* Makefile: use lemacs instead of emacs
+
+	* keys.el: put a condition-case around the require of 'tags,
+	fi::mark
+
+	* utils.el, ring.el, lze.el: fi::mark
+
 Fri Jun 18 13:00:20 1993  Kevin Layer  (layer@sole)
 
 	* modes.el: make mode line checking of "package: " more robust
