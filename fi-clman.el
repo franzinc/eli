@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 2.8 1993/07/27 20:12:16 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 2.9 1995/02/06 00:20:30 smh Exp $
 
 (defvar fi::clman-prog
     (or (fi::find-path load-path "clman")
@@ -33,7 +33,7 @@
 (defun fi:clman (symbol)
   "Look up SYMBOL in the online CL manual, with completion.  The optional
 argument SYMBOL is prompted for in the minibuffer, if not supplied.   To get
-completion for a symbol in a package other than the :lisp 
+completion for a symbol in a package other than the :lisp
 package, use the nickname of that package, followed by a colon (e.g. cw: or
 math:).  The buffer that is displayed will be in CLMAN mode."
   (interactive
@@ -62,7 +62,7 @@ math:).  The buffer that is displayed will be in CLMAN mode."
 	    (end-of-line)
 	    (error (buffer-substring 1 (point))))
 	  (fi:clman-mode)))
-      (when (> exit-status 1)
+      (when (and (numberp exit-status) (> exit-status 1))
 	(message "%d additional clman pages at end of buffer"
 		 (- exit-status 1)))))
    (t
@@ -72,7 +72,7 @@ math:).  The buffer that is displayed will be in CLMAN mode."
 	    (fi::clman-display-file fi:clman-displaying-buffer files)
 	    (length files))
 	(error "couldn't find entry for %s" symbol))))))
-    
+
 (defun fi:clman-apropos ()
   "Prompts for a string on which an apropos search is done.  Displays a
 buffer which lists all documented symbols which match the string.  The
@@ -117,7 +117,7 @@ clman buffer, from anywhere in the buffer."
   (interactive)
   (if (search-forward "DESCRIPTION" nil t)
       (progn (beginning-of-line)(forward-line 1))
-    (progn 
+    (progn
       (goto-char (point-min))
       (search-forward "DESCRIPTION" nil t)
       (beginning-of-line)(forward-line 1) )))
