@@ -1,10 +1,8 @@
-;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.37 1993/06/29 23:20:56 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.38 1993/06/29 23:50:51 layer Exp $
 
 (require 'cl)
 
-(setq load-path
-  (cons (file-name-directory (directory-file-name default-directory))
-	load-path))
+(setq load-path (cons default-directory load-path))
 
 (setq fi:lisp-do-indentation t)
 (load "fi-site-init.el")
@@ -13,8 +11,6 @@
 (setq args (cdr (fi:member-equal "--" command-line-args)))
 (setq input-file (car args))
 (setq output-file (car (cdr args)))
-;;(setq input-file "spec.n")
-;;(setq output-file "spec.out")
 
 (message "input-file %s, output-file %s" input-file output-file)
 
