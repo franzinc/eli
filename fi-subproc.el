@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.200 1998/03/18 20:28:54 layer Exp $
+;; $Id: fi-subproc.el,v 1.200.10.1 1998/04/22 18:13:02 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -492,6 +492,8 @@ be a string. Use the 6th argument for image file."))
 		    "\n====================================="
 		    "=========================\n"
 		    (format "Starting image `%s'\n" executable-image-name)
+		    (when image-file
+		      (format "  with image (dxl) file `%s'\n" image-file))
 		    (if image-args
 			(format "  with arguments `%s'\n" image-args)
 		      "  with no arguments\n")
@@ -777,57 +779,64 @@ the first \"free\" buffer name and start a subprocess in that buffer."
   (let ((buffer-name (or (and buffer (buffer-name buffer))
 			 buffer-name))
 	local)
-    (if (or first-time
-	    (and current-prefix-arg
-		 (or (null buffer)
-		     (not (get-buffer-process buffer))
-		     (not (fi:process-running-p
-			   (get-buffer-process buffer)
-			   buffer-name)))))
-	(list (setq buffer-name (read-buffer "Buffer: " buffer-name))
-	      (progn
-		(if (on-ms-windows)
-		    (setq host "localhost")
-		  (setq host (read-string "Host: " host)))
-		(setq local (or (string= "localhost" host)
-				(string= host (system-name))))
-		(let ((dir (expand-file-name
-			    (read-file-name "Process directory: "
-					    (or directory
-						default-directory)
-					    (or directory
-						default-directory)
-					    local))))
-		  (setq directory
-		    (if (= ?/ (aref dir (- (length dir) 1)))
-			dir
-		      (concat dir "/")))))
-	      (let ((file-name
-		     (read-file-name "Lisp program name: "
-				     image-name image-name nil)))
-		(setq image-file
-		  (read-file-name "Lisp image: " image-file image-file
-				  nil))
-		(when (string= image-file default-directory)
-		  ;; the null answer:
-		  (setq image-file nil))
-		(when (and image-file
-			   (or (string-match "\\$" image-file)
-			       (string-match "^~" image-file)))
-		  (setq image-file (expand-file-name image-file)))
-		(setq file-name
-		  (if (string-match "[\$~]" file-name)
-		      (expand-file-name file-name)
-		    file-name))
-		file-name)
-	      (setq image-args
-		(fi::listify-string
-		 (read-from-minibuffer
-		  "Image arguments (separate by spaces): "
-		  (mapconcat 'concat image-args " "))))
-	      host
-	      image-file)
-      (list buffer-name directory image-name image-args host image-file))))
+    (when (or first-time
+	      (and current-prefix-arg
+		   (or (null buffer)
+		       (not (get-buffer-process buffer))
+		       (not (fi:process-running-p
+			     (get-buffer-process buffer)
+			     buffer-name)))))
+
+      (setq buffer-name (read-buffer "Buffer: " buffer-name))
+      
+      (if (on-ms-windows)
+	  (setq host "localhost")
+	(setq host (read-string "Host: " host)))
+      
+      (setq local (or (string= "localhost" host)
+		      (string= host (system-name))))
+      
+      (let ((temp (expand-file-name
+		   (read-file-name "Process directory: "
+				   (or directory default-directory)
+				   (or directory default-directory)
+				   local))))
+	;; make sure it ends in a slash:
+	(setq directory
+	  (if (= ?/ (aref temp (- (length temp) 1)))
+	      temp
+	    (concat temp "/"))))
+
+      (let ((exe (read-file-name "Lisp executable program: "
+				 image-name image-name nil))
+	    (temp (read-file-name "Lisp image (dxl) file: "
+				  directory image-file nil image-file)))
+	
+	(if (or (and (null image-file)
+		     (string= temp default-directory))
+		(and image-file
+		     (string= temp image-file)))
+	    ;; the null answer:
+	    (setq image-file nil)
+	  (setq image-file temp))
+	
+	(when (and image-file
+		   (or (string-match "\\$" image-file)
+		       (string-match "^~" image-file)))
+	  (setq image-file (expand-file-name image-file)))
+
+	(setq image-name
+	  (if (string-match "[\$~]" exe)
+	      (expand-file-name exe)
+	    exe)))
+      
+      (setq image-args
+	(fi::listify-string
+	 (read-from-minibuffer
+	  "Image arguments (separate by spaces): "
+	  (mapconcat 'concat image-args " ")))))
+      
+    (list buffer-name directory image-name image-args host image-file)))
 
 (defun fi::common-lisp-subprocess-filter (process output &optional stay
 								   cruft)
