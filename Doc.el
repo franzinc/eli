@@ -1,3 +1,5 @@
+(setq load-path (list (expand-file-name "~/emacs/lisp")))
+
 (load "fi/site-init.el")
 
 (defun xxx-doc-xxx ()
@@ -30,12 +32,14 @@
 	   ((fboundp var)
 	    (insert-char ?. (- 78 (length "[function]")
 			       (length (symbol-name var))))
+	    (setq current-local-map-var (current-local-map))
 	    (insert
 	     (format "[function]\n   Invoke with: %s in %s mode.\n   %s"
-		     (substitute-command-keys (format "\\[%s]" var))
+		     (substitute-command-keys
+		      (format "\\<current-local-map-var>\\[%s]" var))
 		     mode-name
 		     (or (documentation var) "NO DOC"))))
-	   (t;; assume a bound variable
+	   (t ;; assume a bound variable
 	    (let* ((val (symbol-value var))
 		   (type (cond ((syntax-table-p val) "[syntax-table]")
 			       ((keymapp val) "[keymap]")
@@ -48,9 +52,10 @@
 	      (cond ((syntax-table-p val)
 		     (insert (format "%s\n   %s" type doc)))
 		    ((keymapp val)
-		     (insert (format "%s\n   %s\n%s" type doc
-				     (substitute-command-keys
-				      (format "\\{%s}" var)))))
+		     (insert
+		      (format "%s\n   %s\n%s" type doc
+			      (substitute-command-keys
+			       (format "\\{%s}" var)))))
 		    (t
 		     (insert (format "%s\n   Value: %s\n   %s" type
 				     (prin1-to-string val)

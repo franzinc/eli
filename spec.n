@@ -1,4 +1,4 @@
-$Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.3 1988/04/07 13:58:43 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.4 1988/04/08 13:31:34 layer Exp $
 
 		 Franz Inc. GNU Emacs/LISP Interface
 
@@ -79,6 +79,7 @@ editing Lisp source:
    Interactively called functions, variables and functions for
 interacting with Lisp:
 
+%mode: fi:common-lisp-mode
 %% fi:lisp-eval-current-buffer
 %% fi:lisp-eval-defun
 %% fi:lisp-eval-last-sexp
@@ -110,12 +111,13 @@ following in your .emacs file:
 
 3.2 File Name Completion
 
-%mode: fi:inferior-lisp-mode
+%mode: fi:inferior-common-lisp-mode
 %% fi:shell-file-name-completion
 %% fi:shell-token-pattern
 
 3.3 Input Ring
 
+%mode: fi:inferior-common-lisp-mode
 %% fi:input-region
 %% fi:re-search-backward-input
 %% fi:re-search-forward-input
@@ -126,13 +128,7 @@ following in your .emacs file:
 
 3.4 Miscellaneous Subprocess Features
 
-%% fi:subprocess-continuously-show-output-in-visible-buffer
-%% fi:subprocess-enable-superkeys
-%% fi:subprocess-map-nl-to-cr
-%% fi:subprocess-write-quantum
-
-%% fi:subprocess-superkey
-
+%mode: fi:inferior-common-lisp-mode
 %% fi:subprocess-kill-input
 %% fi:subprocess-beginning-of-line
 %% fi:subprocess-backward-kill-word
@@ -144,6 +140,13 @@ following in your .emacs file:
 %% fi:subprocess-send-flush
 %% fi:subprocess-show-output
 %% fi:subprocess-suspend
+
+%% fi:subprocess-superkey
+
+%% fi:subprocess-continuously-show-output-in-visible-buffer
+%% fi:subprocess-enable-superkeys
+%% fi:subprocess-map-nl-to-cr
+%% fi:subprocess-write-quantum
 
 %% fi:shell-cd-regexp
 %% fi:shell-popd-regexp
@@ -161,17 +164,6 @@ The TCP type
 %% fi:inferior-common-lisp-mode
 %% fi:inferior-common-lisp-mode-map
 %% fi:inferior-common-lisp-mode-super-key-map
-
-%mode: fi:inferior-franz-lisp-mode
-%% fi:inferior-franz-lisp-mode
-%% fi:inferior-franz-lisp-mode-map
-%% fi:inferior-franz-lisp-mode-super-key-map
-
-%mode: fi:inferior-lisp-mode
-%% fi:inferior-lisp-mode
-%% fi:inferior-lisp-mode-map
-%% fi:inferior-lisp-mode-super-key-map
-
 %% fi:common-lisp
 %% fi:another-common-lisp
 %% fi:common-lisp-prompt-pattern
@@ -180,6 +172,10 @@ The TCP type
 %% fi:explicit-common-lisp-file-name
 %% fi:explicit-common-lisp-image-arguments
 
+%mode: fi:inferior-franz-lisp-mode
+%% fi:inferior-franz-lisp-mode
+%% fi:inferior-franz-lisp-mode-map
+%% fi:inferior-franz-lisp-mode-super-key-map
 %% fi:franz-lisp
 %% fi:another-franz-lisp
 %% fi:franz-lisp-prompt-pattern
@@ -188,6 +184,10 @@ The TCP type
 %% fi:explicit-franz-lisp-file-name
 %% fi:explicit-franz-lisp-image-arguments
 
+%mode: fi:inferior-lisp-mode
+%% fi:inferior-lisp-mode
+%% fi:inferior-lisp-mode-map
+%% fi:inferior-lisp-mode-super-key-map
 %% fi:lisp
 %% fi:another-lisp
 %% fi:lisp-prompt-pattern
@@ -198,6 +198,7 @@ The TCP type
 
    Interactively called functions, variables, and functions:
 
+%mode: fi:inferior-common-lisp-mode
 %% fi:inferior-lisp-newline
 %% fi:inferior-lisp-send-input
 %% fi:inferior-lisp-send-list-input
