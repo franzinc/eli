@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-emacs19.el,v 2.21 1998/08/06 23:18:31 layer Exp $
+;; $Id: fi-emacs19.el,v 2.22 2000/03/13 00:43:09 layer Exp $
 
 (cond
  ((and (eq fi::emacs-type 'emacs19)
@@ -56,10 +56,10 @@
 (defconst fi:allegro-file-menu
     '("ACLFile"
       ["Run/Restart Common Lisp" fi:menu-common-lisp (fi::connection-not-open)]
-      ["Run/Restart Common Lisp, new window" fi:menu-common-lisp-new-screen
+      ["Run/Restart Common Lisp, new frame" fi:menu-common-lisp-new-screen
        (fi::connection-not-open)]
       ["Create New Listener" fi:menu-open-lisp-listener (fi::connection-open)]
-      ["Create New Listener, new window" fi:menu-open-lisp-listener-new-screen
+      ["Create New Listener, new frame" fi:menu-open-lisp-listener-new-screen
        (fi::connection-open)]
       "----"
       ;; Unfortunately, the region-or-form versions only work reasonably if the user is
@@ -596,10 +596,14 @@
       'fi:common-lisp-mode-popup-menu))
    ((eq major-mode 'fi:inferior-common-lisp-mode)
     (define-key fi:inferior-common-lisp-mode-map [down-mouse-3]
+      'fi:inferior-common-lisp-mode-popup-menu))
+   ((eq major-mode 'fi:lisp-listener-mode)
+    (define-key fi:lisp-listener-mode-map [down-mouse-3]
       'fi:inferior-common-lisp-mode-popup-menu))))
 
 (add-hook 'fi:inferior-common-lisp-mode-hook 'fi::install-mode-menus)
 (add-hook 'fi:common-lisp-mode-hook 'fi::install-mode-menus)
+(add-hook 'fi:lisp-listener-mode-hook 'fi::install-mode-menus)
 
 (require 'font-lock)
 

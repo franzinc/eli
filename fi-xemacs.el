@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-xemacs.el,v 2.9 1998/08/06 23:18:32 layer Exp $
+;; $Id: fi-xemacs.el,v 2.10 2000/03/13 00:43:09 layer Exp $
 
 (defun fi-find-buffer-visiting (filename)
   (get-file-buffer filename))
@@ -51,10 +51,10 @@
 (defconst fi:allegro-file-menu
     '("ACLFile"
       ["Run/Restart Common Lisp" fi:menu-common-lisp (fi::connection-not-open)]
-      ["Run/Restart Common Lisp, new window" fi:menu-common-lisp-new-screen
+      ["Run/Restart Common Lisp, new frame" fi:menu-common-lisp-new-screen
        (fi::connection-not-open)]
       ["Create New Listener" fi:menu-open-lisp-listener (fi::connection-open)]
-      ["Create New Listener, new window" fi:menu-open-lisp-listener-new-screen
+      ["Create New Listener, new frame" fi:menu-open-lisp-listener-new-screen
        (fi::connection-open)]
       "----"
       ;; Unfortunately, the region-or-form versions only work reasonably if the user is

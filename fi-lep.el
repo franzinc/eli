@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 1.82 1999/08/25 17:33:29 layer Exp $
+;; $Id: fi-lep.el,v 1.83 2000/03/13 00:43:09 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -132,11 +132,12 @@ at file visit time."
    something
    from-fspec
    (fi::make-complex-request
-    (scm::metadot-session :package (fi::string-to-keyword fi:package)
-			  :type t	; used to be (or type t), but
+    (excl.scm::metadot-session
+     :package (fi::string-to-keyword fi:package)
+     :type t				; used to be (or type t), but
 					; `type' is not bound in this
 					; context
-			  :fspec something)
+     :fspec something)
     ((something other-window-p what from-fspec)
      (pathname point n-more)
      (fi::show-found-definition (if (symbolp something)
@@ -181,8 +182,8 @@ time."
 
 (defvar session) ;; bad name, but changing it is too complicated right now
 
-(defun scm::make-and-initialize-metadot-session (something
-						 &optional what from-fspec)
+(defun excl.scm::make-and-initialize-metadot-session
+    (something &optional what from-fspec)
   (fi::push-metadot-session (or what "definition") something from-fspec
 			    session)
   (fi::modify-session-continuation
@@ -317,7 +318,7 @@ time."
 	   (t (return-from done)))))
       (point))))
 
-(defun scm::return-buffer-status (pathname write-if-modified)
+(defun excl.scm::return-buffer-status (pathname write-if-modified)
   "This returns information about the status of the buffer: whether it
 exists, if it is modified, last tick (when implemented), and optionally
 return the pathname of temp file."
@@ -343,7 +344,7 @@ return the pathname of temp file."
 	      (lep::buffer-modified-tick))
       (list ':does-not-exist))))
 
-(defun scm::signal-transaction-file-error (pathname)
+(defun excl.scm::signal-transaction-file-error (pathname)
   (fi:note "
 Can't find transaction file %s in %s, which is the directory that
 Emacs and Lisp use to communicate.  Most likely Emacs and Lisp are running
@@ -443,7 +444,7 @@ buffer, the package is parsed at file visit time."
   (interactive "P")
   (message "Recursively macroexpanding...")
   (fi::lisp-macroexpand-common
-   (if arg 'excl::compiler-walk 'clos::walk-form) "walk"))
+   (if arg 'excl::compiler-walk 'excl::walk-form) "walk"))
 
 (defun fi::lisp-macroexpand-common (expander type)
   (fi::make-request
@@ -481,7 +482,7 @@ separator that causes the substring before the hyphen to be matched at the
 beginning of words in target symbols."
   (interactive)
   (let* ((end (point))
-	 package-name xpackage real-beg
+	 xpackage real-beg
 	 (beg (save-excursion
 		(backward-sexp 1)
 		(while (= (char-syntax (following-char)) ?\')
@@ -491,9 +492,8 @@ beginning of words in target symbols."
 		  (if (re-search-forward ":?:" end t)
 		      (setq xpackage
 			(concat ":"
-				(setq package-name
-				  (buffer-substring opoint
-						    (match-beginning 0)))))))
+				(buffer-substring opoint
+						  (match-beginning 0))))))
 		(point)))
 	 (pattern (format "%s" (buffer-substring beg end)))
 	 (functions-only (if (eq (char-after (1- real-beg)) ?\() t nil))
@@ -888,7 +888,7 @@ package is parsed at file visit time."
   ;; Since this takes a while, tell the user that it has started.
   (message "Finding generic function methods of %s..." fspec)
   (lep::list-fspecs-common fspec
-			   'scm::generic-function-methods-function-specs
+			   'excl.scm::generic-function-methods-function-specs
 			   "Cannot find the generic function methods: %s"
 			   "generic function method"))
 
@@ -914,7 +914,7 @@ the next definition, if there is one."
   (interactive (fi::get-default-symbol "Edit generic function methods of" t t))
   (message "Editing generic function methods...")
   (lep::edit-somethings fspec
-			'scm::generic-function-methods-function-specs
+			'excl.scm::generic-function-methods-function-specs
 			nil
 			"generic function method"))
 
@@ -939,9 +939,10 @@ the next definition, if there is one."
    fspec
    nil
    (fi::make-complex-request
-    (scm::edit-sequence-session :generator generator
-				:package (fi::string-to-keyword fi:package)
-				:fspec fspec)
+    (excl.scm::edit-sequence-session
+     :generator generator
+     :package (fi::string-to-keyword fi:package)
+     :fspec fspec)
     ((other-window-p fspec what) (pathname point n-more)
      (fi::show-found-definition fspec pathname point n-more other-window-p)
      (if (or (null n-more) (= 0 n-more)) (fi::pop-metadot-session)))
@@ -969,7 +970,7 @@ operation is done.  In a subprocess buffer, the package is tracked
 automatically.  In source buffer, the package is parsed at file visit
 time."
   (interactive (fi::get-default-symbol "Class name" nil t))
-  (lep::describe-something fspec 'clos::find-class))
+  (lep::describe-something fspec 'common-lisp:find-class))
 
 
 (defun fi:describe-function (fspec)

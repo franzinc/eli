@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.204 1999/02/25 08:27:48 layer Exp $
+;; $Id: fi-subproc.el,v 1.205 2000/03/13 00:43:09 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -393,6 +393,7 @@ be a string. Use the 6th argument for image file."))
     (save-excursion
       (delete-other-windows)
       (switch-to-buffer "*Help*")
+      (when buffer-read-only (toggle-read-only))
       (erase-buffer)
       (insert "
 It is known that XEmacs 20 and a non-nil value of the variable

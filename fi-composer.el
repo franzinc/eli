@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-composer.el,v 1.21 1997/02/27 17:33:26 layer Exp $
+;; $Id: fi-composer.el,v 1.22 2000/03/13 00:43:09 layer Exp $
 
 (defun composer::make-listener (new-screen-p)
 ;;;; epoch specific:
@@ -38,7 +38,7 @@
 This command will only work in a Common Lisp image that has Allegro
 Composer loaded and initialized."
   (interactive (fi::get-default-symbol "Class name"))
-  (fi::inspect-something something 'clos::find-class "Class"))
+  (fi::inspect-something something 'common-lisp:find-class "Class"))
 
 (defun fi:inspect-function (something)
   "Inspect, using the grapher, a function object.

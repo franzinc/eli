@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 1.69 1999/02/25 08:27:48 layer Exp $
+;; $Id: fi-utils.el,v 1.70 2000/03/13 00:43:09 layer Exp $
 
 ;;; Misc utilities
 
@@ -341,6 +341,7 @@ Can't connect to host %s.  The error from open-network-stream was:
   (let ((string (apply 'format format-string args)))
     (delete-other-windows)
     (fi::switch-to-buffer "*Help*")
+    (when buffer-read-only (toggle-read-only))
     (erase-buffer)
     (insert string)
     (beginning-of-buffer)))

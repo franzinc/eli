@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-changes.el,v 1.18 1997/02/27 17:33:14 layer Exp $
+;; $Id: fi-changes.el,v 1.19 2000/03/13 00:43:09 layer Exp $
 ;;
 ;; Support for changed definitions
 
@@ -107,7 +107,7 @@ OLD-FILE."
   (find-file new-file)
   (let ((actual-file (buffer-file-name (find-buffer-visiting new-file)))
 	(xpackage fi:package))
-    (fi::make-request (scm::list-changed-definitions
+    (fi::make-request (excl.scm::list-changed-definitions
 		       :transaction-directory fi:emacs-to-lisp-transaction-directory
 		       :operation ':list
 		       :actual-file actual-file
@@ -180,7 +180,7 @@ OLD-FILE."
 (defun fi::do-buffer-changed-definitions-1 (operation since
 					    copy-file-name actual-file
 					    old-file new-file)
-  (fi::make-request (scm::list-changed-definitions
+  (fi::make-request (excl.scm::list-changed-definitions
 		     :operation operation
 		     :copy-file-name copy-file-name
 		     :actual-file actual-file

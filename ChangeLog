@@ -7,6 +7,25 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.20
+
+2000-03-12  Kevin Layer  <layer@ultra>
+
+	* Doc0.el: fixes for html generation
+	* fi-emacs19.el: handle fi:lisp-listener-mode
+	* fi-changes.el: scm -> excl.scm
+	* fi-composer.el: fix package reference
+	* fi-dmode.el: scm -> excl.scm
+	* fi-xemacs.el,
+	* fi-emacs19.el: fix menu names ("new frame" instead of "new window")
+	* fi-keys.el: improvement to C-cC-v from smh: toggle showing command
+	* fi-lep.el: deal with warning; scm -> excl.scm
+	* fi-modes.el: allow for qualified in-package symbol
+	* fi-site-init.el: protect against *Help* being read-only
+	* fi-subproc.el: protect against *Help* being read-only
+	* fi-utils.el: protect against *Help* being read-only
+
+*******************************************************************************
 2.0.21.19
 
 1999-08-25  Kevin Layer  <layer@ultra>

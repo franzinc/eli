@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 1.115 1999/02/25 08:27:48 layer Exp $
+;; $Id: fi-keys.el,v 1.116 2000/03/13 00:43:09 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -700,9 +700,15 @@ convenient way to delete the output from the last command."
 
 (defun fi:subprocess-show-output ()
   "Display the start of this batch of shell output at top of window.
-Also move the point there."
+Also move the point there.  Repeated executions toggle whether the
+previous input is also displayed."
   (interactive)
-  (set-window-start (selected-window) fi::last-input-end)
+  (set-window-start (selected-window)
+		    (if (eq (window-start) fi::last-input-end)
+			(save-excursion (goto-char fi::last-input-start)
+					(beginning-of-line)
+					(point))
+		      fi::last-input-end))
   (goto-char fi::last-input-end))
 
 (defun fi:subprocess-kill-input ()

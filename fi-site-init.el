@@ -1,4 +1,4 @@
-;; $Id: fi-site-init.el,v 1.115 1999/05/04 01:21:31 layer Exp $
+;; $Id: fi-site-init.el,v 1.116 2000/03/13 00:43:09 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -198,6 +198,7 @@ exists.")
 	   (eq 'emacs19 fi::emacs-type))
   (delete-other-windows)
   (switch-to-buffer "*Help*")
+  (when buffer-read-only (toggle-read-only))
   (erase-buffer)
   (insert "
 You must byte-recompile the .el files for GNU Emacs 19.x since there are
@@ -218,6 +219,7 @@ in the <acldir>/eli/ directory.")
 	   (>= emacs-major-version 20))
   (delete-other-windows)
   (switch-to-buffer "*Help*")
+  (when buffer-read-only (toggle-read-only))
   (erase-buffer)
   (insert "
 You must byte-recompile the .el files for XEmacs 20.x since there are

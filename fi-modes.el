@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-modes.el,v 1.71 1998/08/06 23:18:32 layer Exp $
+;; $Id: fi-modes.el,v 1.72 2000/03/13 00:43:09 layer Exp $
 
 ;;;; Mode initializations
 
@@ -84,7 +84,7 @@ buffers, but is nil elsewhere.")
 (make-variable-buffer-local 'fi:in-package-regexp)
 
 (defvar fi:default-in-package-regexp
-  "(in-package\\>\\|:pa\\>\\|:pac\\>\\|:pack\\>\\|:packa\\>\\|:packag\\>\\|:package\\>"
+  "(\\(cl:\\)?in-package\\>\\|:pa\\>\\|:pac\\>\\|:pack\\>\\|:packa\\>\\|:packag\\>\\|:package\\>"
   "*The regular expression matching the Lisp expression to change the
 current package.  The two things this must match are the IN-PACKAGE macro
 form and all the possible instances of the :package top-level command.
@@ -472,7 +472,7 @@ the readtable used for evaluations given to Lisp from emacs."
 
 (defun fi::parse-package-from-buffer ()
   (goto-char (point-min))
-  (let ((pos (re-search-forward "^(in-package[\t ]*#?" nil t))
+  (let ((pos (re-search-forward "^(\\(cl:\\)?in-package[\t ]*#?" nil t))
 	value)
     ;; find the `in-package' form, and snarf the package
     ;; that way
