@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.8 1988/05/19 16:24:20 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.9 1988/05/25 10:55:32 layer Exp $
 
 ;;;;
 ;;; Key defs
@@ -272,24 +272,26 @@ With a prefix argument, the source sent to the subprocess is compiled."
 
 (defun fi::get-default-symbol (prompt &optional up-p)
   (let* ((sdefault
-	  (save-excursion
-	    (if up-p
-		(progn
-		  (if (= (following-char) ?\() (forward-char 1))
-		  (if (= (preceding-char) ?\)) (forward-char -1))
-		  (up-list -1)
-		  (forward-char 1)))
-	    (while (looking-at "\\sw\\|\\s_")
-	      (forward-char 1))
-	    (if (re-search-backward "\\sw\\|\\s_" nil t)
-		(progn (forward-char 1)
-		       (buffer-substring
-			(point)
-			(progn (forward-sexp -1)
-			       (while (looking-at "\\s'")
-				 (forward-char 1))
-			       (point))))
-	      nil)))
+	  (condition-case ()
+	      (save-excursion
+		(if up-p
+		    (progn
+		      (if (= (following-char) ?\() (forward-char 1))
+		      (if (= (preceding-char) ?\)) (forward-char -1))
+		      (up-list -1)
+		      (forward-char 1)))
+		(while (looking-at "\\sw\\|\\s_")
+		  (forward-char 1))
+		(if (re-search-backward "\\sw\\|\\s_" nil t)
+		    (progn (forward-char 1)
+			   (buffer-substring
+			    (point)
+			    (progn (forward-sexp -1)
+				   (while (looking-at "\\s'")
+				     (forward-char 1))
+				   (point))))
+		  nil))
+	    (error nil)))
 	 (spec (read-string
 		(if sdefault
 		    (format "%s: (default %s) " prompt sdefault)
@@ -358,17 +360,20 @@ minibuffer.  The word around the point is used as the default."
 (defun fi:lisp-macroexpand ()
   "Print the macroexpansion of the form at the point."
   (interactive)
-  (fi::lisp-macroexpand-common "lisp:macroexpand"))
+  (fi::lisp-macroexpand-common "lisp:macroexpand" "macroexpand"))
 
 (defun fi:lisp-walk (arg)
   "Print the full macroexpansion the form at the point.
 With a prefix argument, macroexpand the code as the compiler would."
   (interactive "P")
   (fi::lisp-macroexpand-common
-   (if arg "excl::compiler-walk" "excl::walk")))
+   (if arg "excl::compiler-walk" "excl::walk")
+   "walk"))
 
-(defun fi::lisp-macroexpand-common (handler)
-  (let* ((start (fi::find-other-end-of-list))
+(defun fi::lisp-macroexpand-common (handler type)
+  (let* ((start (condition-case ()
+		    (fi::find-other-end-of-list)
+		  (error nil)))
 	 (filename (format "/tmp/%s,mexp" (user-login-name)))
 	 (string
 	  (format fi::lisp-macroexpand-command
@@ -378,7 +383,15 @@ With a prefix argument, macroexpand the code as the compiler would."
 		    "*package*")
 		  filename
 		  handler)))
-    (write-region start (point) filename nil 'nomessage)
+    (if start
+	(write-region start (point) filename nil 'nomessage)
+      (let ((form (read-string (format "form to %s: " type)))
+	    (obuf (current-buffer)))
+	(set-buffer "*cl-macroexpand-temp*")
+	(erase-buffer)
+	(insert form)
+	(write-region (point-min) (point-max) filename nil 'nomessage)
+	(set-buffer obuf)))
     (if (fi::background-sublisp-process)
 	(process-send-string fi::backdoor-process string)
       (fi::eval-string-send string nil t))))
