@@ -1,4 +1,4 @@
-;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.19 1988/04/08 09:41:00 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.20 1988/04/14 12:04:12 layer Exp $
 ;;;
 ;;; Low-level subprocess mode guts
 
@@ -129,9 +129,12 @@ through buffer *common-lisp*, otherwise try and connect to a Lisp Listener
 daemon (via a unix or internet domain socket, see `open-network-stream').
 Returns the name of the started subprocess."
   (interactive "P")
-  (let ((proc (fi::make-process "common-lisp" "common-lisp"
-				'fi:inferior-common-lisp-mode
-				nil nil nil tcp-lisp)))
+  (let ((proc (fi::make-process
+	       "common-lisp" "common-lisp"
+	       (if tcp-lisp
+		   'fi:tcp-lisp-mode
+		 'fi:inferior-common-lisp-mode)
+	       nil nil nil tcp-lisp)))
     (setq fi::freshest-common-sublisp-name (process-name proc))
     proc))
 
@@ -141,8 +144,12 @@ Returns the name of the started subprocess."
 function always creates a new subprocess and buffer.  See
 `fi::make-process'."
   (interactive "P")
-  (let ((proc (fi::make-process "common-lisp" "common-lisp"
-				'fi:inferior-common-lisp-mode nil t
+  (let ((proc (fi::make-process
+	       "common-lisp" "common-lisp"
+	       (if tcp-lisp
+		   'fi:tcp-lisp-mode
+		 'fi:inferior-common-lisp-mode)
+	       nil t
 				nil tcp-lisp)))
     (setq fi::freshest-common-sublisp-name (process-name proc))
     proc))
@@ -728,16 +735,15 @@ This function implements continuous output to visible buffers."
 	      (let (dir)
 		(skip-chars-forward "^ ")
 		(skip-chars-forward " \t")
-		(if (file-directory-p
-		     (setq dir 
-		       (expand-file-name
-			(substitute-in-file-name
-			 (buffer-substring
-			  (point)
-			  (progn
-			    (skip-chars-forward "^\n \t;")
-			    (point)))))))
-		    (cd dir))))))))
+		(let ((xdir (buffer-substring
+			     (point)
+			     (progn (skip-chars-forward "^\n \t;")
+				    (point)))))
+		  (if (equal "" xdir) (setq xdir "~"))
+		  (if (file-directory-p
+		       (setq dir
+			 (expand-file-name (substitute-in-file-name xdir))))
+		      (cd dir)))))))))
     (error nil)))
 
 ;;;;
