@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.200.10.4 1998/05/28 23:49:57 layer Exp $
+;; $Id: fi-subproc.el,v 1.200.10.5 1998/06/03 20:22:53 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -832,10 +832,12 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 
 (defun fi::read-file-name (prompt
 			   &optional directory default mustmatch initial)
-  (let ((temp (read-file-name prompt directory default mustmatch initial)))
+  (let ((temp (read-file-name prompt directory
+			      (if (null default) "" default)
+			      mustmatch initial)))
     (setq temp
       (cond ((string= temp "")
-	     ;; user deleted `initial' text
+	     ;; user deleted `initial' text or just hit RET
 	     nil)
 	    ((or (string-match "\\$" temp)
 		 (string-match "^~" temp))

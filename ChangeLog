@@ -7,6 +7,13 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.3
+
+Wed Jun  3 13:22:12 1998  Kevin Layer  <layer@ultra>
+
+	* fi-subproc.el: final tweak for bug6885?
+
+*******************************************************************************
 2.0.21.2
 
 Thu May 28 16:48:52 1998  Kevin Layer  <layer@ultra>
