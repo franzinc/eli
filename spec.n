@@ -123,7 +123,7 @@ handy retrieval of previously-typed input, filename completion,
 special handling of certain subprocess-specific keys (e.g., ^C or ^D),
 and continuously showing output from a subprocess in a visible buffer.
 
-2. Editing Common Lisp
+2. Editing Lisp
 
    This package modifies `auto-mode-alist' so that the major modes
 defined in this package are invoked when certain types of source files
@@ -227,6 +227,7 @@ require the TCP/IP communication channel to Lisp:
 %% fi:lisp-macroexpand
 %% fi:lisp-walk
 %% fi:lisp-who-calls
+%% fi:lisp-complete-symbol
 
 %% fi:set-associated-sublisp
 
@@ -246,63 +247,12 @@ enables auto-fill in Common Lisp mode:
 
 3. Running Lisp
 
-   This section discusses the functions, features and key bindings
-associated with inferior and TCP/IP Lisp modes.  The following is an
-overview of the entry points to these modes.
+   What follows is a discussion of the bindings, variables and
+functions allowing the user to interact with and manipulate a Lisp run
+as an inferior to Emacs.  A discussion on how to start up and use the
+interface is discussed in the next section.
 
-	M-x fi:common-lisp
 
-will start up an inferior Common Lisp in a buffer called
-`*common-lisp*'.  The image activated by Emacs is taken from the value
-of the symbol `fi:common-lisp-image-name' and the arguments from the
-value of the symbol `fi:common-lisp-image-arguments'.
-
-   After an inferior Lisp has been started, as in the above example,
-the following can be evaluated by the newly created Lisp process to
-initiate a Lisp listener daemon to which Emacs can connect:
-
-	(or (find-package :ipc) (load "ipc.fasl"))
-	(ipc:start-lisp-listener-daemon)
-
-Then after the above listener daemon is started, the following command
-to Emacs will open a second buffer onto the same Lisp:
-
-	M-x fi:tcp-common-lisp
-
-The resulting internal Lisp `lightweight' process will be talking to
-Emacs over a TCP/IP socket via a UNIX domain socket (using the file
-~/.excl_to_emacs).  The following command creates a separate Lisp
-process in a new buffer (called `*common-lisp-2*'):
-
-	C-u 2 M-x fi:common-lisp
-
-   To connect to a Lisp on another machine, say `akbar', using TCP/IP,
-put the following in ~/.emacs on the local machine
-
-	(setq fi:unix-domain nil)
-	(setq fi:local-host-name "akbar")	; the remote host name
-
-and start emacs.  On `akbar', put this in ~/.clinit.cl
-
-	(or (find-package :ipc) (load "ipc.fasl"))
-	(setq ipc::*unix-domain* nil)
-	(ipc:start-lisp-listener-daemon)
-
-and start a Common Lisp.  Now on the local machine, this
-
-	M-x fi:tcp-common-lisp
-
-will open a connection to the Lisp on `akbar'.  NOTE: this assumes
-that on both the local machine and on `akbar' /etc/services has an
-entry or the service named `excl' and that the port number is the same
-on both machines (the default in Emacs and Lisp is 1123).
-
-   It is also possible to run Common Lisp on another machine.  For
-example, typing the following to Emacs will start a Lisp process on
-host `akbar':
-
-	M-x fi:remote-common-lisp
-
 3.1 Bindings
 
    The initial local bindings for Inferior Common Lisp mode are:
@@ -362,6 +312,10 @@ with the name `fi:<IMAGE>-prompt-pattern' or from the following:
 %% fi:excl-service-name
 %% fi:local-host-name
 %% fi:source-info-not-found-hook
+
+plus the following miscellaneous variable:
+
+%% fi:lisp-evalserver-timeout
 
    The following are miscellaneous subprocess variables:
 
@@ -426,6 +380,10 @@ following functions retrieve input and manipulate the ring:
 %% fi:list-input-ring
 %% fi:re-search-backward-input
 %% fi:re-search-forward-input
+
+plus the following miscellaneous function:
+
+%% fi:eval-in-lisp
 
 3.4 Hooks
 
@@ -442,141 +400,161 @@ and for TCP Common Lisp mode are:
 	fi:subprocess-mode-hook
 	fi:tcp-common-lisp-mode-hook
 
-4. Using this Package
+4. Starting the Interface
 
-   The files are contained in the directory `fi', which is meant to be
-put in the `emacs/lisp' directory.  If this is the case, then the
-following expression in the file .emacs will load this package:
+   The two parts of the (full) interface which require user setup are:
 
-      (load "fi/site-init.el")
+	* running Lisp as an inferior of Emacs, with a "Lisp
+	  listener daemon" listening for connections from Emacs
+	* a set of Emacs bindings that query Lisp for information
+	
+In this sections the setup of these features will be discussed.
 
-Note that the byte-compiled files in this directory were compiled with
-version 18.50, and may not work with other versions of GNU Emacs.
+4.1 Setup
 
-   To use the TCP/IP related features, the following should be added
-to the file ~/.clinit.cl:
+   (After the installation procedure has been followed (see the file
+INSTALL in the main distribution directory) the interface will be in a
+subdirectory of the `lisp' directory.  Typically the location is
+/usr/local/lib/emacs, which is the pathname used throughout the rest
+of this document.)
 
-      (or (find-package :ipc) (load "ipc.fasl"))
-      (ipc:start-lisp-listener-daemon)
+   The Lisp part of the interface consists of a Lisp process called
+the "Lisp listener daemon" which lies dormant until Emacs tries to
+communicate with it.  When Emacs "connects" an interactive top level
+is started (called a "read-eval-print" loop) to which Emacs can send
+expressions for evaluation and from which Emacs receives the results
+of evaluation (see fi:eval-in-lisp).  The preferred method to start
+this daemon is to put the following in your .login file:
 
-After using `fi:common-lisp' to start up a Lisp, this will load and
-start the Lisp multiprocessing system and then start a Lisp process
-that waits for connections from Emacs.
+	setenv EMACSLIBRARY /usr/local/lib/emacs
+
+and to put the following in your .clinit.cl file in your home directory:
+
+	(defparameter *emacs-library*
+	  (let ((emacs-lib (si:getenv "EMACSLIBRARY")))
+	    (if emacs-lib (format nil "~a/lisp/fi/" emacs-lib))))
+
+	(and *emacs-library*
+	     (find "+ipc" (system:command-line-arguments) :test #'string=)
+	     (load (merge-pathnames "clinit.cl" *emacs-library*))
+	     (load-and-start-ipc-package))
+
+and to put the following in your .emacs file in your home directory:
+
+	(load "fi/site-init.el")
+
+	(setq fi:common-lisp-image-arguments '("+ipc"))
+
+	(setq fi:unix-domain-socket
+	  (format "/tmp/%s_emacs_to_acl" (user-login-name)))
+
+Now consider the following typed to Emacs:
+
+	M-x fi:common-lisp RET
+
+This will cause a Common Lisp (the default image name is `cl') to be
+started in a buffer called `*common-lisp*', as an inferior process of
+Emacs.  This Common Lisp will be passed a command line argument of
+`+ipc', which will cause Common Lisp to load and start the Lisp
+listener daemon.  Emacs and Common Lisp will communicate through a
+UNIX domain socket (a file) in /tmp called `USER_emacs_to_acl', where
+USER is the currently-logged-in-user's name.  All of the bindings and
+functions described above are now available.
+
+
+4.2 Examples
+
+   After fi:common-lisp has started a Common Lisp and all the above
+modifications to .emacs and .clinit.cl have been made, the following
+Emacs command will open a second buffer onto the same Lisp.  This
+listener is a separate Common Lisp process (as opposed to a separate
+Operating System process) and the entire Common Lisp environment
+available in the first listener is available in this one:
+
+	M-x fi:tcp-common-lisp RET
+
+To run a second Common Lisp and get a completely fresh Common Lisp:
+
+	C-u 2 M-x fi:common-lisp RET
+
+The former uses one Common Lisp for multiple purposes (compiling a
+program in one buffer while typing forms to another), while the latter
+starts two separate Common Lisp processes, and thus uses twice the
+memory and swap space.
+
+
+4.2.1 Remote Common Lisps using TCP/IP
+
+   It is possible, with the functions and bindings in this interface,
+to run an Emacs and Common Lisp on two different machines.  For
+example, to run Emacs on a machine called `snooze' and Common Lisp on
+one called `akbar', where both machines are accessible on the network,
+~/.emacs on `snooze' would contain:
+
+	(setq fi:unix-domain nil)
+	(setq fi:local-host-name "akbar")	; the remote host name
+
+and ~/.clinit.cl on `akbar' would contain the forms given in section
+4.1 with the call to load-and-start-ipc-package replaced with:
+
+	(load-and-start-ipc-package :unix-domain nil)
+
+Then, make sure the value of ipc::*inet-port* in ipc.cl and
+fi:excl-service-name in tcplisp.el (all in the lisp/fi directory)
+match what is in /etc/services.  For the interface as distributed, put
+the following line in /etc/services:
+
+	excl		1123/tcp
+
+on both `akbar' and `snooze'.
+
+Then, on `akbar', possibly in a shell buffer remotely logged into
+`akbar', startup Common Lisp with the +ipc argument:
+
+	akbar% cl +ipc
+
+(If you get the error "bind: Address already in use" then the port
+number you chose is already being used by another program.  In this
+case, use something other than 1123 (in the default case) or the one
+currently being used.)  Then, on `snooze' do:
+
+	M-x fi:tcp-common-lisp RET
+
+which will open a connection to the Lisp on `akbar' from `snooze'.
+
+
+4.2.2 Remote Common Lisps using `rsh'
+
+   It is also possible to run Common Lisp on another machine using
+`rsh'.  For example, typing the following to Emacs will start a Lisp
+process on host `akbar' without using the TCP/IP connection between
+Common Lisp and Emacs:
+
+	M-x fi:remote-common-lisp RET akbar RET
+
+NOTE: fi:remote-common-lisp uses fi:common-lisp-image-name to
+determine which image to activate.  If the image name is incorrect for
+the remote machine, then use fi:explicit-remote-common-lisp.
 
-			      APPENDIX A
-			       Examples
+			      Appendix A
+			    Sample .emacs
 
-A.1 Sample ~/.emacs and ~/.clinit.cl
-
-   Consider the following in ~/.emacs:
-
-    (load "fi/site-init.el")
-    ;; turn on superkeys in subprocess modes
-    (setq-default fi:subprocess-enable-superkeys t)
-    (setq fi:common-lisp-image-arguments '("+ipc"))
-
-    (fset 'old-kill-emacs (symbol-function 'kill-emacs))
-    (defun kill-emacs (&optional arg)
-      (interactive "P")
-      (fi:remove-all-temporary-lisp-transaction-files)
-      (old-kill-emacs arg))
-
-and the following in ~/.clinit.cl:
-
-    (or (find-package :ipc) (errorset (load "ipc.fasl")))
-    #+ipc
-    (if (find "+ipc" (system:command-line-arguments) :test #'string=)
-        (ipc:start-lisp-listener-daemon))
-
-When emacs is run, this will first load the package described in this
-document, enable superkeys, set the default Common Lisp image
-arguments to a value that will cause the ~/.clinit.cl file to
-automatically start a Lisp listener daemon, and redefine `kill-emacs'
-so that transaction files in /tmp are deleted when Emacs is exited.
-
-A.2 X11R2
-
-    ;; Put the this text in ~/.emacs to play with these
-    ;; toy mouse bindings when using Emacs compiled with the X window
-    ;; interface
-
-    (require 'x-mouse)
-
-    (defun x-lisp-find-tag (arg)
-      (x-mouse-set-point arg)
-      (cond ((eq major-mode 'fi:common-lisp-mode) (fi:lisp-find-tag))
-	    (t (find-tag-other-window (find-tag-default)))))
-
-    (defun x-lisp-eval-defun (arg)
-      (x-mouse-set-point arg)
-      (cond ((memq major-mode '(fi:common-lisp-mode fi:franz-lisp-mode
-				fi:lisp-mode))
-	     (fi:lisp-eval-defun nil))
-	    ((eq major-mode 'fi:emacs-lisp-mode) (eval-defun))))
-
-    (defun x-lisp-arglist (arg)
-      (x-mouse-set-point arg)
-      (cond ((eq major-mode 'fi:common-lisp-mode) (fi:lisp-arglist))
-	    (t (describe-function (intern (find-tag-default))))))
-
-    (define-key mouse-map x-button-left-up 'x-lisp-find-tag)
-    (define-key mouse-map x-button-middle-up 'x-lisp-eval-defun)
-    (define-key mouse-map x-button-right-up 'x-lisp-arglist)
-
-    ;; we ignore mouse button-down events, because if we put something
-    ;; on it the `up' event will cause the minibuffer output to disappear
-    (define-key mouse-map x-button-left 'x-mouse-ignore)
-    (define-key mouse-map x-button-middle 'x-mouse-ignore)
-    (define-key mouse-map x-button-right 'x-mouse-ignore)
-    (define-key mouse-map x-button-c-left 'x-mouse-ignore)
+%eval: (insert-file "dot.emacs")
 
-			      APPENDIX A
-			       Examples
+			      Appendix B
+			  Sample .clinit.cl
 
-A.3 Allegro CL top-level alias example
-
-   Putting the following expressions into ~/.clinit.cl will allow
-emacs, for buffers in fi:inferior-common-lisp-mode, to track the
-current working directory of the inferior Lisp process:
-
-    (defvar *directory-stack*
-      (list (namestring
-	     (setq *default-pathname-defaults* (current-directory)))))
-
-    (tpl:alias ("pushd" :string) (&optional dir)
-      (if* (string= "" dir)
-	 then (let ((old-top (pop *directory-stack*))
-		    (new-top (pop *directory-stack*)))
-		(push old-top *directory-stack*)
-		(push (chdir new-top) *directory-stack*))
-	 else (push (chdir dir) *directory-stack*))
-      (format t "~a~%" *directory-stack*))
-
-    (tpl:alias "popd" ()
-      (if (> (length *directory-stack*) 1)
-	  (pop *directory-stack*)
-	(format t "nothing to pop into~%"))
-      (chdir (car *directory-stack*))
-      (format t "~a~%" *directory-stack*))
-
-    (tpl:alias "dirs" ()
-      (format t "~a~%" *directory-stack*))
-
-    (tpl:alias ("cd" :string) (dir)
-      (setf (car *directory-stack*)
-	(apply #'chdir
-	       (if (string= "" dir) nil (list dir))))
-      (format t "~a~%" *directory-stack*))
-
-    (tpl:alias "pwd" ()
-      (format t "process cwd = ~a~%*default-pathname-defaults* = ~a~%"
-	      (namestring (current-directory))
-	      (namestring (truename *default-pathname-defaults*))))
+%eval: (insert-file "dot.clinit.cl")
 
-			      APPENDIX B
+			      Appendix C
+			Sample X11 interaction
+
+%eval: (insert-file "x11.el")
+
+			      Appendix D
 			  Franz Lisp Support
 
-B.1 Introduction
+D.1 Introduction
 
    Franz Lisp is handled very similar to Common Lisp, the only
 difference being that Franz Lisp does not support TCP/IP socket
@@ -584,7 +562,7 @@ communication.  In all other ways, the features, function and variable
 names mirror those of the corresponding Common Lisp functions and
 variables.
 
-B.2 Editing Franz Lisp
+D.2 Editing Franz Lisp
 
    As with Common Lisp, editing a Franz Lisp source file (.l
 extension) causes fi:franz-lisp-mode to be invoked.  The order of
@@ -595,50 +573,50 @@ fi:common-lisp-mode.
 
    Franz Lisp does not support the commands depending on TCP/IP.
 
-B.2.1 Bindings
+D.2.1 Bindings
 
 %mode: fi:franz-lisp-mode
 %% fi:franz-lisp-mode-map
 
-B.2.2 Variables
+D.2.2 Variables
 
    The buffer-local variable fi:package is set up as in
 fi:common-lisp-mode.
 
-B.2.3 Functions
+D.2.3 Functions
 
    The functions in the keymaps are a subset of those in Common Lisp
 mode--refer to the main document for a description of those commands.
 
-B.2.4 Hooks
+D.2.4 Hooks
 
    The hooks run are fi:lisp-mode-hook and fi:franz-lisp-mode-hook,
 and are done last in the mode initialization.
 
-B.3 Running Franz Lisp
+D.3 Running Franz Lisp
 
    As with Common Lisp, there are two entry points for running an
 inferior Franz Lisp. `M-x fi:franz-lisp' and `M-x fi:explicit-franz-lisp'
 create Franz Lisp processes.  The default name of the Franz Lisp image
 is `lisp'.
 
-B.3.1 Bindings
+D.3.1 Bindings
 
 %mode: fi:inferior-franz-lisp-mode
 %% fi:inferior-franz-lisp-mode-map
 
-B.3.2 Variables
+D.3.2 Variables
 
 %% fi:franz-lisp-image-name
 %% fi:franz-lisp-image-arguments
 %% fi:franz-lisp-prompt-pattern
 
-B.3.3 Functions
+D.3.3 Functions
 
 %% fi:franz-lisp
 %% fi:explicit-franz-lisp
 
-B.3.3 Hooks
+D.3.3 Hooks
 
    The following hooks are run when starting up an inferior Franz
 Lisp:
