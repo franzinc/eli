@@ -1,0 +1,2385 @@
+Fri Jun 18 13:00:20 1993  Kevin Layer  (layer@sole)
+
+	* modes.el: make mode line checking of "package: " more robust
+
+	* keys.el: deal with comment-start being a regexp
+
+	* subproc.el: print process separators on a line by themselves
+
+	* site-init.el:
+	* site-load.le: work in progress (to make eli loadable at build
+	time)
+
+===============================================================================
+public release 2.0.5 (with acl 4.2.beta2.0 on sun4 and hp700)
+===============================================================================
+
+Thu Apr 29 11:52:57 1993  Kevin Layer  (layer@sole)
+
+>>>	* lep.el: new externals: fi:trace-definition and fi:gdb
+
+	* clman.el: fix display of *clman* buffer
+
+Thu Apr 15 15:32:12 1993  Kevin Layer  (layer@sole)
+
+	* clman.el: fix defaulting of symbol in fi:clman
+
+Mon Apr 12 09:36:15 1993  Kevin Layer  (layer@sole)
+
+	* indent.el: add clim 2.x indent methods
+
+===============================================================================
+public release 2.0.4
+===============================================================================
+
+Fri Apr  9 08:09:23 1993  Kevin Layer  (layer@sole)
+
+	* subproc.el: properly string-match $ for env variabie substitution
+
+Tue Mar 23 10:08:35 1993  Kevin Layer  (layer@ice)
+
+	* Makefile: testit rule
+
+	* UserGuide.n: update
+
+	* modes.el: move fi:in-package-regexp and
+	fi:default-in-package-regexp to this file; set comment-column
+	only when unbound;
+>>>	fi:define-emacs-lisp-mode, default is `t'.
+
+	* indent.el: change defclass indent spec
+
+	* keys.el: comment
+
+	* utils.el: fix fi::explode
+
+	* subproc.el: fix directory tracking for relative pathnames
+
+	* site-init.el: new variable fi::load-subprocess-files (default
+	`t').
+
+	* clman.el: totally revamped (uses OBLIST.el now)
+
+===============================================================================
+public release 2.0.3 (with ACL 4.1 on the HP700)
+===============================================================================
+
+Mon Dec 14 17:30:28 1992  Kevin Layer  (layer@ice)
+
+>>>	* shell.el: put fi:shell-mode-bang under control of variable,
+>>>	turned off by default: fi:shell-mode-use-history
+
+	* subproc.el: for the hp700: don't assume `rsh' is there, check
+	for `remsh' first.  Also, `localhost' doesn't exist so default to
+	(system-name).
+
+	* utils.el: new function fi::command-exists-p
+
+Thu Dec 10 06:01:08 1992  Kevin Layer  (layer@ice)
+
+	* rlogin.el: new function: fi:rlogin-new-user
+
+===============================================================================
+public release 2.0.2 (with ACL 4.2 beta under CLIM 2.0 beta)
+===============================================================================
+
+Mon Oct  5 08:43:27 1992  Kevin Layer  (layer@ice)
+
+	* clman.el: allow symbols from different packages to be retrieved
+
+Fri Oct  2 09:08:06 1992  Kevin Layer  (layer@ice)
+
+	* leep.el: hack for epoch 4.2
+
+Thu Sep 24 17:58:38 1992  Kevin Layer  (layer@ice)
+
+	* indent.el: handle named-function
+
+Thu Sep 17 10:46:30 1992  Kevin Layer  (layer@ice)
+
+	* indent.el: make auto-file-mode in #||# comments work like
+	indented text mode.
+
+	* site-init.el: version 2.0.2
+
+	* keys.el: use only the first 128 entries in keymap (for Epoch
+	4.2)
+
+	* changes.el: pass fi:emacs-to-lisp-transaction-directory to
+	scm::list-changed-definitions
+
+	* lze.el: pass fi:emacs-to-lisp-transaction-directory to
+	evaluation request
+
+Wed Aug 19 07:14:19 1992  Kevin Layer  (layer@ice)
+
+	* changes.el: use find-backup-file-name instead of
+	make-backup-file-name.
+
+>>>	* shell.el: fi:shell-mode-bang that expands !$
+
+	* ring.el: added fi:pop-input-last-word (for new shell-mode !
+	command)
+
+Tue Aug  4 15:49:10 1992  Kevin Layer  (layer@ice)
+
+	* Doc.el: member-equal -> fi:member-equal
+
+	* utils.el: added fi:member-equal
+
+	* keys.el: use (current-global-map) instead of variable global-map
+
+	* filec.el: replace-match for file completion only if search successful
+
+Thu Jul 23 15:06:32 1992  Kevin Layer  (layer@ice)
+
+	* lze.el: don't echo results in minibuffer if
+	fi:echo-evals-from-buffer-in-listener-p is non-nil
+
+Wed Jul 22 11:34:56 1992  Kevin Layer  (layer@ice)
+
+>>>	* filec.el: implement filename abbreviations, where something like
+	/foo/bar/baz could expand to /foobar/bartab/bazmaster.
+
+===============================================================================
+public release 2.0.1
+===============================================================================
+
+Mon Jul 20 10:09:06 1992  Kevin Layer  (layer@ice)
+
+	* subproc.el: make default of
+	fi:pop-to-sublisp-buffer-after-lisp-eval be nil
+
+Fri Jul 17 12:18:09 1992  Kevin Layer  (layer@ice)
+
+	* indent.el: without-interrupts indent method fixed
+
+	* clman.el lep.el db.el keys.el: use (goto-char (point-max))
+	instead of (end-of-buffer) because the latter causes "Mark set" to
+	appear in the minibuffer.
+
+	* lze.el: fi:pop-to-sublisp-buffer-after-lisp-eval (bug2683) was
+	being ignored.
+
+Thu May 28 15:29:15 1992  Kevin Layer  (layer@ice)
+
+	* utils.el: move fi::explode here from subproc.el; new
+	fi::shell-command-output-to-string
+
+	* subproc.el: use csh's cdpath, not CDPATH env variable; move
+	fi::explode to utils.el
+
+Tue May 19 08:31:52 1992  Kevin Layer  (layer@ice)
+
+	* subproc.el: fix bug2601 (fi:common-lisp-buffer-name not handled
+	in non-interactive fi:common-lisp); make sure DISPLAY is set
+	properly
+
+Tue Apr 28 23:20:59 1992  Kevin Layer  (layer@ice)
+
+	* lze.el: don't lock buffer during eval/compile
+
+Tue Apr 28 13:49:18 1992  Kevin Layer  (layer@ice)
+
+	* indent.el: make fi:lisp-semicolon take a numerical prefix arg so
+	it is easy to insert multiple semis; fix egregious bug in
+	indenting forms like (cond ((let (x) (foo x)) #|RET HERE|# bar));
+	fix indent spec for without-scheduling (0 instead of 1)
+
+>>>	* basic-lep.el: add fi:send-reply
+
+>>>	* subproc.el: handle cdpath variable
+
+	* site-init.el: set version to 2.0.1
+
+	* lze.el: fix bug with where eval/compile background status gets
+	wedged
+
+	* stream.el: add `name' keyword to lep::create-listener-stream
+	(called from ACL)
+
+	* leep.el: conditionalize for Epoch 4.0
+
+===============================================================================
+release 2.0 with ACL 4.1 for Sun.
+===============================================================================
+
+Fri Feb 21 13:50:54 1992  Kevin Layer  (layer@ice)
+
+	* subproc.el, basic-lep.el: fix obscure race condition with
+	starting interface.
+
+Thu Feb 20 10:19:31 1992  Kevin Layer  (layer@ice)
+
+	* utils.el: fix fi:verify-emacs-support (accept-process-output
+	mods no longer needed with 18.58).
+
+Fri Jan 24 18:49:48 1992  Kevin Layer  (layer at ice)
+
+	* utils.el: split fi:error into fi:note and fi:error--fi:note does
+	everything but signal the error that the old fi:error used to do.
+
+	* lep.el: scm::signal-transaction-file-error used when :edit, for
+	example, can't find the file it expects.
+
+Wed Jan 22 16:39:45 1992  Kevin Layer  (layer at ice)
+
+	* utils.el: fix fi::listify-string so that spaces can be escaped
+	(and included in single strings)
+
+Thu Jan 16 14:28:54 1992  Kevin Layer  (layer at ice)
+
+	* clman.el: make fi::setup-default-clman-package-info just grab
+	the dirs in fi/manual instead of hardwiring them in... 
+
+Thu Jan 16 11:08:34 1992  Kevin Layer  (layer at ice)
+
+	* clman.el: split fi:clman-apropos into two functions (so some
+	consistency checking code can use the internal version)
+
+	* keys.el: fix docstring
+
+	* lze.el: unused var
+
+Wed Jan 15 13:28:51 1992  Kevin Layer  (layer at ice)
+
+	* db.el: fix help text
+
+Mon Jan 13 22:29:55 1992  Kevin Layer  (layer at ice)
+
+	* keys.el: added fi:lisp-mode-auto-indent
+
+Sun Jan 12 11:35:46 1992  Kevin Layer  (layer at ice)
+
+	* su.el: make sure root password doesn't hang around
+
+	* clman.el: add defsys, prof and stream.  misc cleanup.
+
+	* subproc.el: fix some docstrings.
+
+	* keys.el: [rfe1658] add new binding: C-cl (fi:toggle-to-lisp)
+
+	* keys.el, lze.el: [rfe1659] [rfe1657] change fi:lisp-eval-* to
+	fi:lisp-eval-or-compile-*.  New functions
+	fi:lisp-{compile,eval}-{defun,region,current-buffer,last-sexp}.
+	New variable fi:lisp-evals-always-compile.
+
+	* lep.el: [bug2444] fix bug in offering matches
+
+Thu Dec 19 19:00:34 1991  Kevin Layer  (layer at ice)
+
+	* utils.el: if fi::abbrev-to-symbol doesn't find a match, then
+	return the original pattern.
+
+	* lep.el: hack completion to better work with upper case
+
+Thu Dec 12 14:21:35 1991  Kevin Layer  (layer at ice)
+
+	* clman.el: [bug2380] and [spr4707] (misc weirdness)
+
+Tue Dec 10 18:34:38 1991  Kevin Layer  (layer at ice)
+
+	* db.el: fix help text
+
+Mon Dec  9 15:53:15 1991  Kevin Layer  (layer at ice)
+
+	* lze.el: [bug2376] fix docstrings
+
+	* db.el: [rfe1638] and [bug2377]: use same mechanism for saving
+	window conf as C-c SPC in other modes
+
+Thu Dec  5 16:51:56 1991  Kevin Layer  (layer at ice)
+
+	* leep.el: fix presentation bug whereby &'s get into buffer and
+	presentations are turned off thereafter
+
+Wed Nov 27 17:32:44 1991  Kevin Layer  (layer at ice)
+
+	* subproc.el: package qualify s-e-l-i; expand-file-name of
+	image-file.
+
+	* lep.el: fix undefine form
+
+Mon Nov 25 10:58:56 1991  Kevin Layer  (layer at ice)
+
+	* clman.el: cltr1 -> cltl1, numbers in packages
+
+Thu Nov 21 13:15:21 1991  Kevin Layer  (layer at ice)
+
+	* subproc.el: [rfe1622] fix defaulting for image-name
+
+	* indent.el: fix loop method (again!)
+
+	* utils.el: get-symbol-at-point must do save-excursion
+
+>>>	* keys.el: put ; binding on lisp-mode maps
+
+Mon Nov 11 14:41:49 1991  Kevin Layer  (layer at ice)
+
+	* basic-lep.el: beef up error handling in *background-interaction*
+	buffers (in case user does a :reset).
+
+	* lze.el: fix buffer handling in filter
+
+	* leep.el: fix C-cC-c in presentation buffers
+
+Fri Nov  1 00:11:29 1991  Kevin Layer  (layer at ice)
+
+	* utils.el: fix fi::get-default-symbol
+
+	* lep.el: "Complete, but not unique." message was bogus
+
+Tue Oct 29 14:56:34 1991  Kevin Layer  (layer at ice)
+
+	* sublisp.el: fi::sublisp-select: check
+	fi::common-lisp-backdoor-main-process-name before signalling an
+	error.
+
+	* utils.el: fi::setup-shell-buffer-for-common-lisp-interaction
+	used by make-dist.
+
+	* subproc.el: support for
+	fi::setup-shell-buffer-for-common-lisp-interaction
+
+>>>	* db.el: next-line binding (d) is now fi:ss-next-frame;
+	previous-line binding (u) is now fi:ss-previous-frame.
+
+	* dmode.el: fix `q' for both modes
+
+Mon Oct 21 20:01:37 1991  Kevin Layer  (layer at ice)
+
+	* indent.el: fix `do' method
+
+	* subproc.el: don't start interface for anything but the first cl
+
+	* composer.el: fix docstrings
+
+	* dmode.el: use one, buffer local variable to hold the window
+	configuration because `q' in inverse and normal mode expect it
+
+Tue Oct 15 11:31:39 1991  Kevin Layer  (layer at ice)
+
+	* indent.el: indent methods were being ignored in some cases
+
+	* basic-lep.el: abstract the fi:pop-up-temp-window-behavior and
+	move it to utils.el, so it can be used by definition modes
+
+	* utils.el: fi::display-pop-up-window, and friends, now used by
+	things that pop up *CL-temp* and definition mode buffers.
+
+	* Makefile: make tags depends on TAGS and TAGS depend on elcs
+
+	* dmode.el: don't bind M-. in definition mode (this was resolved a
+	long time ago in `tech' discussions, but was never implemented);
+	fix some doc strings; use new fi::display-pop-up-window
+
+>>>	* lep.el: new fi:list-unused-functions
+
+Thu Oct 10 11:35:10 1991  Kevin Layer  (layer at ice)
+
+	* subproc.el, utils.el: if process-environment isn't boundp, then
+	use setenv instead
+
+	* lze.el: make compiling/evaluating message in mode line stand out
+	more.
+
+>>>	* basic-lep.el: new function: fi:eval-in-lisp-asynchronous
+
+	* keys.el: have fi::tcp-simulate-special-char use
+	fi:eval-in-lisp-asynchronous so things like C-cC-c in a lisp
+	listener are not synchronous.
+
+Thu Oct  3 12:41:28 1991  Kevin Layer  (layer at ice)
+
+	* lep.el: fix to lep::completing-read-complete from cer
+
+	* basic-lep.el: bind fi:lisp-evalserver-timeout to 1000 in
+	fi::wait-for-reply-to-come-back.  The user can type ^G if they get
+	tired of waiting.
+
+	* utils.el: fi::get-default-symbol takes another optional:
+	ignore-keywords.
+
+	* subproc.el: fix fi:common-lisp to use
+	fi:common-lisp-buffer-name; also, always read the buffer name, if
+	reading other things.
+
+	* lep.el: specify explicit third argument to
+	fi::get-default-symbol; ignore-keywords hack.
+
+Tue Oct  1 13:36:43 1991  Kevin Layer  (layer at ice)
+
+	* keys.el: move fi::get-default-symbol and friends to utils.el.
+
+	* utils.el: hack fi::get-default-symbol to "do the right thing".
+	Check for funcall, apply and handle #' and (function ...) first
+	args to those functions.
+
+	* lep.el: fix [bug2197] "scm::metadot-session editor session N"
+	processes don't go away when they can; list and edit who calls get
+	default at point.
+
+Sun Sep 29 17:52:37 1991  Kevin Layer  (layer at ice)
+
+	* subproc.el: fix command line arg starting of emacs-lisp interface
+	for localhost
+
+Fri Sep 27 00:54:49 1991  Kevin Layer  (layer at ice)
+
+	* modes.el: make the syntax of dot in lisp-mode be same as other
+	symbol chars.
+
+	* basic-lep.el: defconst's -> defvar's
+
+	* utils.el: fi:map-lines
+
+	* subproc.el: start-emacs-lisp-interface is external now;
+	deinstall the common-lisp filter when the rendezvous is made with
+	lisp.
+
+	* keys.el: doc string hacking
+
+	* db.el: make fi::ss-help look at the keymap
+
+	* dmode.el: make sure definitions don't span lines
+
+>>>	* lze.el: annotate mode-line with "Compiling" or "Evaluating"
+
+Tue Sep 17 12:39:13 1991  Kevin Layer  (layer at ice)
+
+	* keys.el: fix fi:find-unbalanced-parenthesis yet again
+
+Mon Sep 16 14:42:13 1991  Kevin Layer  (layer at ice)
+
+	* basic-lep.el: fix show-some-text so that text isn't lost;
+	fi::note-background-reply in fi:show-some-text.
+
+>>>	* subproc.el: fi:start-lisp-interface-function is history.
+>>>	fi:start-lisp-interface-arguments is `in'.  New variable
+>>>	fi:use-background-streams.
+>>>	fi:start-backdoor-interface is history.
+>>>
+>>>	emacs-lisp interface started via command line args (-e) instead of
+>>>	stuffing forms into buffer.
+>>>
+>>>	fi:common-lisp doesn't change fi:common-lisp- variables unless run
+>>>	interactively.
+
+>>>	* keys.el: C-ck is fi:kill-definition in lisp modes.
+
+>>>	* lze.el: background eval/compile updates mode line with
+>>>	"Compiling" or "Evaling" (uses minor-mode-alist).
+
+Thu Sep 12 11:13:13 1991  Kevin Layer  (layer at ice)
+
+	* Makefile: add new files
+  from cxh:
+	* clman.el: directory fixes
+	* clman-generate.el: new file
+	* clman-mode.el: new file
+	* clman-preview.el: new file
+
+Wed Sep 11 15:18:11 1991  Kevin Layer  (layer at ice)
+
+	* su.el: fix su-filter messing with the current buffer
+
+	* basic-lep.el: fix error message when lep can't start.  Don't
+	create *LEP...* buffers by default.
+
+	* utils.el: make fi:error signal an error
+
+	* subproc.el: fi:goto-common-lisp removed (was never documented).
+	Hacks in cl filter so errors starting the interface can be
+	reported.
+
+	* site-init.el: fi::required-ipc-version
+
+	* keys.el: make fi:lisp-delete-pop-up-window work in epoch, too
+
+	* examples/emacs.el: example binding of fi:common-lisp
+
+Tue Sep 10 10:44:56 1991  Kevin Layer  (layer at ice)
+
+	* indent.el: also indent ^def forms (like defun).  Fix
+	define-condition (the indent for this seems to have changed
+	recently, but the indent method in this file hasn't).
+
+>>>	* basic-lep.el: new variable: fi:pop-up-temp-window-behavior
+	move fi:show-some-text el al here from lep.el.
+
+	* UserGuide.n: add fi:pop-up-temp-window-behavior, fi:raw-mode*
+
+	* subproc.el: abstract the commands used to start remote lisps so
+	things other than `rsh' can be used.
+
+	* site-init.el: inc versions number
+
+>>>	* keys.el: support for raw mode.  Two new variables: fi:raw-mode
+	and fi:raw-mode-echo.  Fix fi:find-unbalanced-parenthesis.
+
+	* rlogin.el: fix where args are consed.
+
+	* lep.el: code moved to basic-lep.el.  Fix calls to
+	fi::get-default-symbol to specify how default is parsed.
+	fi::reset-metadot-session, and fix problems with new metadot
+	stack.
+
+	* examples/emacs.el: new file
+
+Fri Aug 23 08:58:17 1991  Kevin Layer  (layer at ice)
+
+	* utils.el: beef up fi:verify-emacs-support
+	* subproc.el: run fi:verify-emacs-support when the lep is started
+
+Thu Aug 22 20:18:11 1991  Kevin Layer  (layer at ice)
+
+	* indent.el: fix problems with ;'s.  Do automagic indent for with-
+	and do- forms.
+
+	* basic-lep.el: bury the *lep...* buffer.  Give error for some
+	commands if connection not open.  Make fi:eval-in-lisp wait for
+	the interface to startup.
+
+	* clman.el: fix skip-chars-* calls (arg is not a regexp).
+
+	* subproc.el: hacks to make interrupting of listeners work better
+	(we don't depend on the process name in lisp anymore...)
+
+	* keys.el: fix functions that send pseudo chars to listener.
+>>>	fi:tcp-lisp-listener-interrupt-process renamed
+	fi:interrupt-listener.
+
+>>>	Also, made C-cC-c behave the same in all common lisp listener
+	buffers (subprocess and otherwise): interrupts the single process
+	tied to the buffer.  Give C-cC-c a prefix argument and it does the
+	"select process" thang, that used to happen only in *common-lisp*,
+	but not in *listener*.
+
+	Call fi:indent-sexp instead of indent-sexp, when appropriate.  Fix
+	for fi:find-unbalanced-parenthesis.
+
+	* changes.el: fi'ify
+	* composer.el: fi'ify
+	* db.el: fi'ify
+	* dmode.el: fi'ify
+
+>>>	* lep.el: new variable: fi:maintain-definition-stack (see doc
+	string for more info)
+
+	* lze.el: for eval-buffer, don't send package over, since it may
+	not exist.
+
+	* stream.el: fix for interrupting correct process.
+
+	* leep.el: fix for interrupting correct process.
+
+Tue Jul 30 20:49:18 1991  Kevin Layer  (layer at ice)
+
+	* subproc.el: fi:common-lisp was not using given values of
+	interactive arguments, if they were `nil'.
+
+	* indent.el: fix fi:lisp-indent-line for ;'s.
+
+>>>	* keys.el: fi:superkey-shadow-universal-argument (initial value
+	`t') control whether C-u superkey is made.
+
+Wed Jul 24 14:00:44 1991  Kevin Layer  (layer at ice)
+
+	* sublisp.el, clman.el, keys.el, db.el, lep.el: raise minibuffer
+	before doing completing-read
+
+	* subproc.el: fix tracking of in-package in subprocess buffers
+
+===============================================================================
+2.0beta release made.
+===============================================================================
+
+Wed Jul 10 22:25:38 1991  Kevin Layer  (layer at ice)
+
+	* Makefile, site-init.el: new files leep0.el and leep.el
+
+	* leep.el, leep0.el: the epoch side of presentations in a
+	lisp-listener window
+
+Sun Jul  7 21:16:09 1991  Kevin Layer  (layer at ice)
+
+	* indent.el: indent property for define-compiler-macro
+
+Tue Jul  2 10:06:51 1991  Kevin Layer  (layer at ice)
+
+	* subproc.el: try and work around a bug whereby the form sent to
+	cl is doesn't make it there
+
+	* keys.el: tweak fi:find-unbalanced-parenthesis 
+
+Fri Jun 28 09:57:33 1991  Kevin Layer  (layer at ice)
+
+	* subproc.el: fix message about image-args
+
+Thu Jun 27 16:06:44 1991  Kevin Layer  (layer at ice)
+
+	* indent.el: if fi:lisp-comment-indent-specification specifies
+	`t', then really indent like an sexp.
+
+Thu Jun 27 15:20:15 1991  Kevin Layer  (layer at ice)
+
+	* indent.el: make fi:lisp-comment-indent-specification
+	initialization really come from the defvar in this file.  Handle
+	comment-spec of a negative integer.  Don't setf car of
+	fi:lisp-comment-indent-specification when it is not a number.
+
+	* modes.el: don't set fi:lisp-comment-indent-specification at mode
+	init time, because it wipes out the initial value given by the
+	user
+
+	* clman.el: don't include "graph/" in initial list
+
+	* subproc.el: fix cl process startup message; fix out buffer is
+	found from the process name.
+
+	* Makefile: make a tags file for this directory.
+
+>>>	* keys.el: New binding in lisp editing modes
+
+		C-c^	       fi:center-defun
+
+	fix fi:find-unbalanced-parenthesis.
+
+	* dmode.el: do fi:lisp-push-window-configuration before poping up
+	buffers
+
+	* lep.el: fix typo
+
+	* stream.el: *compilation-output* -> *background-interaction*
+
+Thu Jun 20 15:22:03 1991  Kevin Layer  (layer at ice)
+
+>>>	* subproc.el: added new function: fi:goto-common-lisp.
+
+	* lep.el: fix scm::make-and-initialize-metadot-session wrt to
+	messages
+
+===============================================================================
+======== changes given to doc group and folded into beta documentation ========
+===============================================================================
+
+Thu Jun 20 10:26:14 1991  Kevin Layer  (layer at ice)
+
+	* modes.el: move write-file-hooks hacking to keys.el
+
+>>>	* keys.el: new variable fi:check-unbalanced-parentheses-when-saving
+
+Wed Jun 19 21:59:06 1991  Kevin Layer  (layer at ice)
+
+	* indent.el: make sure fi:lisp-comment-indent-specification is
+	updated when comment-column is changed.
+
+	* rlogin.el, shell.el, su.el, telnet.el: fi::mkae-subprocess
+	addition argument (nil, in this case).
+
+>>>	* modes.el: write-file-hooks runs fi:find-unbalanced-parenthesis
+
+	* basic-lep.el: remove lep::create-session-for-lisp
+
+>>>	* utils.el: fi:verify-emacs-support
+
+>>>	* subproc.el: fi:source-info-not-found-hook is gone (and so is
+	fi:find-tag-somewhere which was the initial value).  Get the
+	expansion of directories right for fi:common-lisp.  Added startup
+	message in fi::make-subprocess so users can be informed as to what
+	is being run.
+
+>>>	* keys.el: fi:lisp-find-tag -> fi:lisp-find-definition and
+	fi:lisp-tags-loop-continue -> fi:lisp-find-next-definition.
+	Furthermore, fi:lisp-find-definition is on ``C-c .'' and
+	fi:lisp-find-next-definition is on ``C-c ,''.  ``C-c 4 .'' is
+	bound to fi:lisp-find-definition-other-window.
+
+	Implement abbreviations (for example, f-d-c-p expands to
+	fast-digit-char-p).
+
+	Previously ``C-c .'' was bound to
+	fi:lisp-sync-current-working-directory in *common-lisp* buffers.
+	It is now ``C-c =''.
+
+	``C-c SPC'' restores the window configuration as it was before the
+	temporary window was made visible.
+
+	M-. is locked for first-time use, displaying a message about the
+	new changes.  New variable fi:find-tag-lock.
+
+	Make the second argument to interrupt-process, kill-process and
+	quit-process depend on the mode--in rlogin, shell and telnet modes
+	it is `t', otherwise `nil'.
+
+	* lep.el: fi:lisp-find-definition support.  Make sure
+	fi:lisp-find-definition and fi:lisp-find-next-definition print
+	correct message in minibuffer.  Support for abbreviation
+	expansion.
+
+	* dmode.el, composer.el: fi:lisp-find-tag ->
+	fi:lisp-find-definition.
+
+	* lze.el: remove debugging code
+
+	* stream.el: rename buffer in which compilation warnings appear
+
+Tue May 28 16:10:41 1991  Kevin Layer  (layer at ice)
+
+	* Doc.el: set fi:lisp-do-indentation to `t' before loading
+	site-init
+
+	* indent.el: add with-package-iterator and
+	with-hash-table-iterator methods
+
+>>>	* modes.el: define lisp-mode and common-lisp-mode, so that we
+	don't need to redefine set-auto-mode
+
+	* basic-lep.el: fi'ify.  Commented out
+	lep::create-session-for-lisp since it couldn't work
+
+	* utils.el: move functions to this file that are of general
+	internal use
+
+	* clman.el: hacking with cxh
+
+	* subproc.el, changes.el, dmode.el, lep.el, lze.el, stream.el: fi'ify
+
+	* Makefile: load utils.el during compile, now
+
+>>>	* db.el: `export' fi:scan-stack-mode-display-help, and fi'ify;
+>>>	lep:scan-stack-mode-hook renamed fi:scan-stack-mode-hook
+
+Fri Apr 26 13:01:09 1991  Kevin Layer  (layer at ice)
+
+	* lep.el: fix compile-or-load-file make-request
+
+===============================================================================
+==================== Final ALPHA DOC GIVEN TO DOCUMENTATION GROUP =============
+===============================================================================
+
+===============================================================================
+==================== 2.0alpha release =========================================
+===============================================================================
+
+Fri Apr 26 09:32:56 1991  Kevin Layer  (layer at ice)
+
+	* subproc.el: grok inspector prompts
+
+Wed Apr 24 10:04:48 1991  Kevin Layer  (layer at ice)
+
+>>>	* composer.el: browse -> inspect; doc strings
+
+	* lep.el: fix lep::prompt-for-values
+
+Tue Apr 23 21:05:09 1991  Kevin Layer  (layer at ice)
+
+	* clman.el: cxh/layer hacking
+
+===============================================================================
+==================== Updated ALPHA DOC GIVEN TO DOCUMENTATION GROUP ===========
+===============================================================================
+
+Tue Apr 23 15:45:42 1991  Kevin Layer  (layer at ice)
+
+>>>	* subproc.el: fi:emacs-to-lisp-transaction-directory is back!
+
+	* db.el: lep: -> fi:
+
+	* dmode.el: lep::dmode-undo -> fi:definition-mode-undo; doc string
+	additions
+
+	* lep.el: doc string hacking
+
+Mon Apr 22 23:24:00 1991  Kevin Layer  (layer at ice)
+
+	* db.el: give unique names to scan stack buffers
+
+	* lep.el: make bug-report prompt for process on which to zoom
+
+Mon Apr 22 14:22:00 1991  Kevin Layer  (layer at ice)
+
+	* dmode.el: print message when finding a definition
+
+	* clman.el: new fi::setup-default-clman-package-info from cxh
+
+	* lep.el, dmode.el: finish support for fi:list-undefined-functions
+	(inverse-definitions)
+
+	* subproc.el: fi'ify find-tag-somewhere
+
+	* Makefile: `lep' directory is outta here (files moved to .)
+
+Mon Apr 22 13:37:33 1991  Kevin Layer  (layer at ice)
+
+	* Doc.el: fi:use-lep is outta here
+
+	* utils.el: fi::frob-case-*-lisp moved here from tcplisp.el (which
+	is outta here)
+
+	* subproc.el: remove non-lep conditionalization
+
+	* Makefile: nonlep/ is outta here
+
+	* site-init.el: nonlep code is outta here
+
+	* keys.el: backdoor-eval replaced with eval-in-lisp
+
+	* lep/basic-lep.el: fi:eval-in-lisp works again
+
+	* lep/lep.el: lep::eval-from-lisp used by the Lisp function
+	lep::eval-in-emacs.
+
+	* lep/db.el: minor
+
+Wed Apr 17 16:09:44 1991  Kevin Layer  (layer at ice)
+
+>>>	* subproc.el: changed fi:source-info-not-found-hook to be a
+	function of two arguments: tag and other-window-p.  Fix prompt
+	to compatible with default prompts in all lisps.
+
+	* Makefile: lep/stream.el is back!
+
+	* site-init.el: fi:use-lep is on by default
+
+>>>	* keys.el: changed fi::get-symbol-at-point to support symbol
+	completion.
+
+>>>	* lep/basic-lep.el: new function fi:reset-lep-connection.
+	Support for completing read.
+
+	* lep/composer.el: epoch support; fi:'ed the functions
+	show-subclasses & show-superclasses
+
+>>>	* lep/dmode.el: `t' in definition-mode toggles tracing for that
+	definition; "C-n" binding is outta here.  Added epoch mouse
+	support and undo to revert buffer back to what it was
+	previously. Made it check for dmode being the only window and
+	to not shrink it - epoch death.
+
+>>>	inverse-definition-mode stuff for displaying output of
+...	fi:list-undefined-functions (see below)
+
+	* lep/lep-init.el: load stream.elc again
+
+>>>	* lep/lep.el: hacked the completion code into separate
+	functions, and added lep::completing-read that is an interface
+	to completing-read.  Deleted lep::create-listener-stream
+	duplicate.  Added lep::make-request-in-session-and-wait does
+	what it says.
+
+>>>	New function fi:compile-file.
+
+>>>	New function fi:list-undefined-functions.
+
+	* lep/stream.el: modified lep::create-listener-streams to take
+	args that specify the xparent etc.
+
+>>>	* lep/changes.el: Made a prefix arg of 4 do a compute changes
+...	relative to a ",0" file
+
+Wed Apr  3 08:53:50 1991  Kevin Layer  (layer at vapor)
+
+	* subproc.el: special case interace startup when require'ing lep
+	and scm
+
+Fri Mar 29 11:41:02 1991  Kevin Layer  (layer at vapor)
+
+	* clman.el: new one from teddy.  clman.data is outta here!
+
+Thu Mar 28 12:50:49 1991  Kevin Layer  (layer at vapor)
+
+   *** reorganize code in many files, remove dead code, move nonlep code
+   *** to nonlep files.
+
+>>>	* sublisp.el: the following features have been removed for the lep
+	version of the interface, since they are superfluous:
+
+	    fi:emacs-to-lisp-transaction-directory (variable)
+	    fi:remove-all-temporary-lisp-transaction-files (function)
+
+	* keys.el: fi:inferior-lisp-send-input moved to this file
+
+	* lep/lze.el: when evaluating, print appropriate messages
+
+Sat Mar 16 13:50:48 1991  Kevin Layer  (layer at vapor)
+
+	* lep/basic-lep.el: [bug1730] bind inhibit-quit to t in connection
+	filter
+
+	* subproc.el: give the `process' created by open-network-stream a
+	sentinel, so that pesky message on exit doesn't appear
+
+	* Makefile: `print' rule
+
+===============================================================================
+==================== ALPHA DOC GIVEN TO DOCUMENTATION GROUP ===================
+===============================================================================
+
+Fri Mar 15 12:37:35 1991  Kevin Layer  (layer at vapor)
+
+	* ug.n: done, except for clman!
+
+	* Makefile: spec.n is automatically generated from ug.n
+
+	* doc.el: differentiate between commands and functions
+
+	* nonlep/query.el, keys.el: lisp-who-calls -> list-who-calls
+
+	* lep/composer.el: fi'ify
+
+	* lep/dmode.el: lisp-who-calls -> list-who-calls
+
+	* lep/lep.el: fix fi:list- and fi:edit- functions up a little
+
+	* lep/changes.el: fix a few bugs, fi'ify
+
+*******************************************************************************
+
+    global change: make all keymaps non-sparse (all were previously
+    sparse).  There seems to be a bug in emacs which doesn't deal with
+    sparse keymaps correctly.  For example, I often get "error wrong
+    type argument listp ..." when doing a describe-bindings.  This has
+    gone away since I've started using vector keymaps.  Furthermore,
+    the doc strings for the various modes have the keys in the keymap
+    descriptions ordered randomly with sparse keymaps--I want them
+    ordered. 
+
+    Many, many doc strings were fixed or written.  Basically, all have
+    been regularized to conform to the Emacs standard doc string
+    format, giving the argument names in upper case and mentioning
+    them in the order in which they are found in the formal arglist.
+    When prefix arguments are taken, this has been explained.
+
+*******************************************************************************
+
+Wed Mar 13 22:00:00 1991  Kevin Layer  (layer at vapor)
+
+	* doc.el: new look to .out files 
+
+	* lep/dmode.el: fix it up a little; don't find first definition,
+	by default
+
+	* lep/lep.el: fi'ify some code
+
+	* lep/changes.el: fix typo
+
+Wed Mar 13 15:30:00 1991  Kevin Layer  (layer at vapor)
+
+	* subproc.el: read host second, in
+	fi::get-lisp-interactive-arguments, and make sure file names exist
+	if `local'; make fi:common-lisp and fi:franz-lisp program callable
+
+Wed Mar 13 15:00:00 1991  Kevin Layer  (layer at vapor)
+
+	* Makefile: new file: lep/changes.el
+
+	* site-init.el: reload keys.el when toggling lep
+
+	* spec.n: add fi:scan-stack
+
+	* lep/basic-lep.el: make session ids negative numbers; debugging aids
+
+	* lep/composer.el: edit-generic-function-methods, edit-callers,
+	and edit-callees moved elsewhere; fi'ify stuff; misc
+
+	* lep/dmode.el: misc
+
+	* lep/lep-init.el: new file lep/changes.el
+
+	* lep/lze.el: message with done with evaluations
+
+	* lep/lep.el: fi:edit-* moved here; misc
+
+	* lep/changes.el: changed-definition support!
+
+Wed Mar 13 10:38:06 1991  Kevin Layer  (layer at vapor)
+
+	* db.el: doc string hacking, rename some interactive functions
+
+Tue Mar 12 20:56:00 1991  Kevin Layer  (layer at vapor)
+
+	* utils.el: new function to canonicalize filenames
+
+	* subproc.el: better handle reading interactive arguments for
+	fi:common-lisp and fi:franz-lisp (share common code, too)
+
+Tue Mar 12 18:23:52 1991  Kevin Layer  (layer at vapor)
+
+	* Makefile: new file ug.n
+
+	* ug.n: user guide chapter draft
+
+	* spec.n: significantly update 
+
+	* subproc.el, sublisp.el: massive reorganization of function to
+	start lisp subprocesses, fully documented in fi:common-lisp doc
+	string, doc string hacking.
+
+	* indent.el, ring.el: doc string hacking
+
+	* rlogin.el, shell.el, telnet.el: doc string hacking, new
+	fi::make-subprocess
+
+	* su.el: new fi::make-subprocess
+
+	* doc.el: fix a few bugs
+
+	* modes.el, keys.el, tcplisp.el: `tcp' generally replaced with
+	`lisp-listener', doc string hacking.
+
+	* lep/basic-lep.el: variable name hacking
+
+	* lep/composer.el: name hacking
+
+	* lep/lep.el: doc string hacking
+
+	* lep/stream.el: name hacking
+
+	* nonlep/query.el: provide correct args to fi::get-default-symbol
+
+Thu Mar  7 14:52:54 1991  Kevin Layer  (layer at vapor)
+
+	* subproc.el: don't look for ^A's in the subprocess filter after
+	the lisp-emacs connection has been established.
+
+	* subproc.el: rework regexp to avoid \255, which phreaks out nemacs
+
+	* indent.el: fix defgeneric--'(like defmethod) doesn't work for
+	some reason
+
+	* keys.el: don't silently fixup syntax upon newline in subprocess
+	buffer.
+
+	* lep/lep.el: make find-tag-other-window do it in the other
+	window!
+
+	* lep/db.el: fix help text, and make reset, continue and pop not
+	frob with the current frame
+
+Thu Feb 28 23:00:22 1991  Kevin Layer  (layer at vapor)
+
+	* lep/lep.el: when *CL-TEMP* is used, print `package' on a
+	separate line; make sure there is a message printed before
+	macroexpansion starts
+
+	* indent.el: add a bunch of methods for ACL and generic CL.
+
+	* subproc.el: fix filter frammis to send back stuff before and
+	after ^A
+
+	* spec.n, keys.el: new function: fi:lisp-apropos; changed the name of
+	fi:lisp-walk to fi:lisp-macroexpand-recursively
+
+	* lep/basic-lep.el: lep::lep-open-connection-p to check for open
+	lep connection
+
+	* lep/lep.el: add hook in fi::show-some-text-1; fi:lisp-apropos;
+	don't start lisp to do M-.; make M-, behave like the standard one
+	does.
+
+	* lep/db.el: add binding to disassemble
+
+	* nonlep/query.el: M-, hacking, fi:lisp-walk renamed
+	fi:lisp-macroexpand-recursively
+
+Wed Feb 27 13:28:37 1991  Kevin Layer  (layer at vapor)
+
+>>>	* spec.n, indent.el: rename fi:lisp-case-sensitive to
+	  fi:indent-methods-case-sensitive.
+
+	* su.el: go to the correct buffer before reading the passwd
+
+	* nonlep/ltags.el, utils.el: fi:filename-frobber-hook and
+	  fi::discombobulate-automounter-lint moved from
+	  nonlep/ltags.el to utils.el.
+
+	* lep/db.el: don't shadow standard bindings in scan stack mode
+
+>>>	* spec.n, tcplisp.el, subproc.el: fi:unix-domain and
+	fi:unix-domain-socket have been removed from the interface.
+
+	* site-init.el: variable fi:use-lep controls whether or not lep is
+	loaded by default (nil, for now)
+
+	* lep/lep.el: lep::who-calls may return `nil', so handle this case
+
+Fri Feb 22 00:42:38 1991  Kevin Layer  (layer at vapor)
+
+	* lep/composer.el, lep/lze.el, lep/lep.el: regularize
+	  show-some-text*
+
+	* lep/db.el: use window configuration to restore windows
+
+Thu Feb 21 21:55:38 1991  Kevin Layer  (layer at vapor)
+
+	* spec.n, subproc.el: fi:subprocess-map-nl-to-cr and
+	  fi:subprocess-write-quantum variables are history.
+	  fi::send-region-split and fi::send-string-split functions are
+	  history.
+
+	* telnet.el, su.el, sublisp.el, keys.el, rlogin.el: use
+	send-string and send-region instead of our own versions of them.
+
+Fri Feb 15 23:34:00 1991  Kevin Layer  (layer at vapor)
+
+	* site-init.el, Makefile: query and ltags moved to nonlep
+	directory (soon to be depricated)
+
+	* keys.el, nonlep/query.el: fi:lisp-eval-* functions moved to
+	nonlep/query.el
+
+	* lep/lze.el: finish fi:lisp-eval-* suite of functions
+
+Fri Feb 15 23:18:24 1991  Kevin Layer  (layer at vapor)
+
+	* keys.el: fi:scan-stack entry point; beginning-of-defun fixes
+
+	* lep/lep-init.el: load db.elc
+
+	* subproc.el: send listener-protocol to correct process
+
+	* Makefile: added lep/db
+
+	* lep/db.el: implement stack scan mode, an interface to the
+	allegro debugger.
+
+	* lep/lze.el: use fi:beginning-of-defun
+
+	* lep/lep.el: more show-some-text fixes
+
+Wed Feb 13 10:19:08 1991  Kevin Layer  (layer at vapor)
+
+	* lep/basic-lep.el: print `done' message after starting lep
+	  connection
+	* lep/lep.el: fix show-some-text; remove debugging print's
+	* lep/lze.el: cosmetic
+
+Tue Feb 12 17:00:00 1991  Kevin Layer  (layer at vapor)
+
+	* lep/lep.el: fix show-some-text to be more friendly;
+	  *always-in-a-window* -> fi:always-in-a-window
+
+  from cer and layer:
+
+	* Makefile: added lep/lze.el
+	* site-init.el: message about loading LEP and non-LEP versions.
+	* sublisp.el: fix #+ version's.  Don't use compile-file-if-needed,
+	  since compiling is always the right thing.
+	* subproc.el: new variable: fi::frammis-hook, used to startup the
+	  lep connection between lisp and emacs.
+	* lep/composer.el: fix typo
+	* lep/dmode.el: definition mode hacking
+	* lep/lep-init.el: load lze.elc
+	* lep/lze.el: new file + cosmetic changes from cer's version.
+	* lep/lep.el: show output from lisp in a window (needs work,
+	  however).  Lots of other misc changes.
+	* lep/basic-lep.el: auto-ensure-lep-connection, which uses
+	  fi::frammis-hook
+
+Tue Feb 12 14:52:18 1991  Kevin Layer  (layer at vapor)
+
+	* dot.emacs: remove setting of fi:common-lisp-image-arguments
+	* indent.el: indent for ANSI `loop'
+	* sublisp.el: tell from what buffer forms are loaded
+	* subproc.el: give require 2nd arg for :emacs, since people may
+	  have a directory called `emacs'.  Frob defaulting in common-lisp
+	  functions.
+	* rlogin.el: set TERM to dumb in remote shell
+
+Thu Jan 31 22:03:23 1991  Kevin Layer  (layer at akbar)
+
+	* tcplisp.el: make fi:eval-in-lisp work in all buffer.
+
+	* keys.el: for compatibility with standard shell-mode, make C-cC-y
+	  to fi:pop-input; lep::toggle-trace-definition is fi:toggle-...;
+	  fi:lisp-find-tag-other-window on "C-x4."; make sure too many
+	  parens don't hang on newline in subprocess buffer.
+
+Thu Jan 31 14:00:00 1991  Kevin Layer  (layer at akbar)
+
+>>>	* modes.el: define an initial fi:lisp-mode-hook which puts the
+	  package in the mode line.  fi::check-for-package-info renamed
+	  fi:parse-mode-line-and-package.
+
+Thu Jan 31 09:23:43 1991  Kevin Layer  (layer at akbar)
+
+	* su.el: run fi:su-mode-hook instead of fi:shell-mode-hook
+	* spec.n, doc.el: revamp both
+	* telnet.el, modes.el, shell.el, rlogin.el, keys.el: doc string
+	  hacking
+	* query.el, lep/lep.el: lep::toggle-trace-definition ->
+	  fi:toggle-trace-definition
+
+>>>	* subproc.el: new variable, fi:subprocess-env-vars, contains the
+	  environment variables to pass to subprocesses (even remote ones
+	  started with `rsh').
+
+	* site-init.el: fix fi:toggle-lep
+
+>>>	* keys.el: new lisp-mode bindings:
+		C-c %		fi:extract-list
+		C-c ;		fi:comment-region
+	make "C-c%", "C-c;", "C-cC-e" and "C-c]" available in subprocess
+	modes, too.  New function, fi:beginning-of-defun, which works in
+	subprocess modes.
+
+Wed Jan 30 10:35:10 1991  Kevin Layer  (layer at akbar)
+
+>>>	* keys.el: new functions and bindings, for editing modes:
+
+		C-c C-e		fi:end-of-defun
+		C-c ]		fi:super-paren
+		ESC T		lep::toggle-trace-definition
+
+	new functions:
+
+		fi:find-unbalanced-parenthesis
+		fi:fill-paragraph
+
+	the latter fills and justifies comments.
+
+	* query.el: non-lep stub version of lep::toggle-trace-definition.
+
+	* lep/lep.el: fix interactive arguments to a bunch of functions.
+	Fix lep::toggle-trace-definition. 
+
+Tue Jan 29 14:19:49 1991  Kevin Layer  (layer at akbar)
+
+	* sublisp.el: 
+	* tcplisp.el: 
+	* utils.el: 
+	* ltags.el: 
+	* subproc.el: 
+	* lep/basic-lep.el: new predicate fi:process-running-p
+
+>>>	* site-init.el: fi:toggle-lep goes between lep and non-lep
+	versions of emacs-lisp interface.
+
+	* Makefile: lep/lep-utils.el is outta here (in comes `cl')
+
+	* sublisp.el: make fi::send-string-load setup things properly for
+	ACL 4.1 features.
+
+	* tcplisp.el: ipc version control
+
+>>>	* subproc.el: ipc version control; make fi:tcp-common-lisp take an
+	optional buffer-name
+
+	* new files in lep:
+		composer.el
+		lep-init.el
+		lep.el
+		basic-lep.el
+		dmode.el
+		lep-utils.el
+		stream.el
+
+	* keys.el: move functions effected by the lisp-editor protocol
+	portions into query.el.
+
+	* query.el: new file, containing the function effected by the
+	lisp-editor protocol.
+
+	* site-init.el: load query.elc
+
+=============== 1.5.2 release (included with ACL 4.0 on the Sun4) =============
+
+Fri Jan 11 10:25:22 1991  Kevin Layer  (layer at akbar)
+
+	* ltags.el: when the package specified in the file's mode
+	specification does not exist in the Lisp, make sure the backdoor
+	doesn't get an error.
+
+Fri Jan 11 10:10:39 1991  Kevin Layer  (layer at akbar)
+
+	* clman.el: `abouts' is called `about' in manual/.
+
+Fri Dec 28 14:26:53 1990  Kevin Layer  (layer at akbar)
+
+	* sublisp.el: make sure fi::sublisp-name is really a name and not
+	a process object, since caching the object is bad in the face of
+	someone restarting the process!
+
+Thu Dec 27 13:04:07 1990  Kevin Layer  (layer at akbar)
+
+	* tcplisp.el: split handling of case-mode into `to' and `from'
+	lisp functions.
+
+	* ltags.el: new hook, fi:filename-frobber-hook, used to strip off
+	/tmp_mnt/net at the beginning of filenames.
+
+	* subproc.el: case-mode hacking
+	* keys.el: case-mode hacking
+
+	* spec.n: add fi:filename-frobber-hook
+
+Mon Dec 17 17:47:32 1990  Kevin Layer  (layer at akbar)
+
+	* subproc.el: frob the case of the host name coming in from Lisp,
+	when starting the backdoor; fi::is-running-p hack is outta here.
+
+Mon Dec 17 14:50:48 1990  Kevin Layer  (layer at akbar)
+
+	* tcplisp.el: new functions: fi:backdoor-is-running-p and
+	fi:common-lisp-is-running-p.
+
+	* keys.el: augment M-x behaviour: don't startup backdoor, unless a
+	Lisp is running.  If can't then use default tags mechanism.
+
+	* clman.data: new one for 4.0, to go with the new manual/
+
+	* manual/: new one for 4.0
+
+Thu Dec 13 17:16:03 1990  Kevin Layer  (layer at akbar)
+
+	* subproc.el: don't set fi::remote-host if process was already
+	running
+
+Fri Dec  7 00:32:20 1990  Kevin Layer  (layer at akbar)
+
+	* keys.el: make sure M-. and M-, in CL buffer starts the backdoor.
+
+Tue Dec  4 23:04:58 1990  Kevin Layer  (layer at akbar)
+
+	* indent.el: add indent methods for a couple of new x3j13 things:
+	with-standard-io-syntax, print-unreadable-object
+
+	* modes.el: move local variable hackin in fi::lisp-edit-mode-setup
+	to another place.
+
+	* sublisp.el: setup some lisp-mode specific variables; don't use
+	"noname" as the default transaction buffer name, use the buffer
+	name.
+
+	* tcplisp.el: fi:unix-domain-socket is not a read-only variable
+	(ie, no one but the user looks at it); fi:inet-host-name is outta
+	here (no one was setting it); generally fix unix domain.
+
+	* utils.el: fi:test-tcp-interface is outta here since it didn't
+	work in the first place.
+
+	* subproc.el: unix domain hacking to make it work again.
+
+Thu Nov 29 14:07:47 1990  Kevin Layer  (layer at akbar)
+
+	* indent.el: indent method for defpackage
+
+	* sublisp.el: prevent sublisp-name from pointing to a dead process
+
+	* ltags.el: require 'tags
+
+	* subproc.el: make sure value of
+	fi:remote-lisp-track-image-name-directory has a directory.
+
+	* Makefile: use emacs instead of /usr/local/emacs
+
+	* keys.el: qualify chdir in excl package
+
+	* dot.emacsX11: give fi:lisp-find-tag an argument
+
+=============== 1.5.1 release (ftp'able from uunet) ===========================
+
+Fri Oct 19 13:48:25 1990  Kevin Layer  (layer at akbar)
+
+	* spec.n: version is now 1.5.1
+
+	* site-init.el: added version number variable,
+	fi:emacs-lisp-interface-version, the value is a string which
+	represents the version number.
+
+=============== 1.5 release (included with Sun4 ACL 4.0.beta.0) ===============
+
+Wed Oct 17 16:43:38 1990  Kevin Layer  (layer at akbar)
+
+	* subproc.el: if tracking directory for remote lisps, make sure
+	the rsh can access the image via an unqualified (relative)
+	pathname.
+
+Tue Oct 16 22:00:08 1990  Kevin Layer  (layer at akbar)
+
+	* subproc.el: put *'s before docstrings in some recent external
+	variables additions; new variable
+
+	   fi:default-remote-common-lisp-directory
+		If non-nil, used by fi:remote-common-lisp and
+		fi:explicit-remote-common-lisp as the directory in which
+		the Lisp is started.  Note that the pathname of the Lisp
+		image must be give relative to this directory, or the home
+		directory if this variable is nil.
+
+	fix startup of listener daemon so it works when ipc isn't loaded.
+
+Sat Oct 13 19:27:56 1990  Kevin Layer  (layer at akbar)
+
+	* sublisp.el: fix fi::sublisp-select so it knows about
+	tcp-common-lisp-mode.
+
+	* tcplisp.el: [bug1631] handle null string in fi::backdoor-filter
+
+	* keys.el: for remote lisps, defined C-d to use the backdoor and
+	do a debug-pop (fi:remote-ilsp-send-eof)
+
+	* subproc.el: tcp lisps shouldn't set
+	fi::freshest-common-sublisp-name and new variables:
+	  fi:remote-lisp-track-image-name-directory
+	  	If non-nil, then fi:remote-common-lisp and
+		fi:explicit-remote-common-lisp will cause both Emacs and
+		Lisp to cd into the directory where the Common Lisp image
+		resides.  Otherwise, the remote Common Lisp will have
+		$HOME as its current working directory and Emacs will have
+		whatever directory you were in when you evaluated either
+		function.
+	  fi:default-explicit-common-lisp-image-name
+	  	If non-nil, then the value of this variable is used as the
+		name of the image fi:explicit-common-lisp and
+		fi:explicit-remote-common-lisp uses to run Lisp, instead
+		of reading the name from the minibuffer.
+	  fi:default-explicit-common-lisp-image-arguments
+	  	If non-nil, then the value of this variable (a string)
+		contains the arguments given to Lisp by
+		fi:explicit-common-lisp and fi:explicit-remote-common-lisp
+		when Lisp is invoked, instead of reading the name from the
+		minibuffer.
+	  fi:default-remote-common-lisp-host
+	  	If non-nil, then the value of this variable (a string) is
+		names the host on which fi:remote-common-lisp and
+		fi:explicit-remote-common-lisp executes Lisp, instead of
+		reading the name from the minibuffer.
+
+	* telnet.el
+	* su.el
+	* modes.el
+	* rlogin.el
+	* shell.el: main modes take optional mode-hook, which is funcall'd
+	after local variables are killed.
+
+Tue Oct  9 10:42:42 1990  Kevin Layer  (layer at akbar)
+
+	* dot.emacs: add fi:subprocess-mode-hook and example of
+	calculating the process name
+
+	* subproc.el: make starting interface incur as little output as
+	possible in lisp subprocess buffer
+
+	* README: bring it up-to-date
+
+Thu Sep 13 23:28:51 1990  Kevin Layer  (layer at akbar)
+
+	* subproc.el: put package qualifiers on REQUIRE, since it is
+	movin' to the excl package.
+
+Tue Sep 11 16:48:28 1990  Kevin Layer  (layer at akbar)
+
+	* utils.el: new function: fi::fast-string-search, two args CHAR
+	and STRING.  Return t if CHAR is in STRING.
+
+	* subproc.el: use fi::fast-string-search in
+	fi::subprocess-control-a-frammis, to speed up processing of
+	subprocess output.
+
+Mon Sep 10 15:01:56 1990  Kevin Layer  (layer at akbar)
+
+	* subproc.el: fi:display-buffer-function back to
+	'switch-to-buffer.  Subprocess filter must bind inhibit-quit to t
+	so that output from the subprocess can be process fully
+	(independent of the user typing ^G's).
+
+	* tcplisp.el: inhibit-quit during filter operation.
+
+Sat Sep  8 01:00:22 1990  Kevin Layer  (layer at akbar)
+
+	* sublisp.el: use display-buffer & select-window instead of
+	switch-to-buffer-other-window, since the former will use a window
+	already showing the buffer.  fi::select-sublisp fixed so that when
+	it starts a lisp because a command needs it, it doesn't bomb.
+	Third arg to fi::eval-string-send was useless.
+
+	* keys.el: fi::eval-string-send takes two args, now.
+
+	* subproc.el: use display-buffer & select-window instead of
+	switch-to-buffer.
+
+Fri Sep  7 18:04:48 1990  Kevin Layer  (layer at akbar)
+
+	* sublisp.el: fix fi::send-string-load to not create a "visible"
+	buffer (put a space before the name).
+
+	* tcplisp.el: move constant fi::lisp-macroexpand-command to
+	keys.el (where it is used).
+
+	* keys.el: frob fi::lisp-macroexpand-command so that it binds
+	*print-length*, *print-level*, and *print-circle* to something
+	reasonable (nil, nil and t, for example).
+
+	* subproc.el: fi:remote-common-lisp and
+	fi:explicit-remote-common-lisp: give the remotely executing
+	command an environment of three variables: EMACS (so that programs
+	can discriminate whether they are running in an emacs buffer),
+	TERM and TERMCAP (where the screen-width is set properly).
+
+Thu Sep  6 23:11:22 1990  Kevin Layer  (layer at akbar)
+
+	* sublisp.el: create better name for
+	fi::emacs-to-lisp-transaction-file and use set-buffer on
+	fi::emacs-to-lisp-transaction-buf instead of pop-to-buffer so that
+	it doesn't appear on buffer alist.
+
+Wed Sep  5 16:57:57 1990  Kevin Layer  (layer at akbar)
+
+	* keys.el: define fi:shell-sync-current-working-directory and bind
+	to C-c. in shell modes 
+
+	* ipc.cl: use defpackage for ACL 4.0.
+
+Tue Sep  4 15:16:00 1990  Kevin Layer  (layer at akbar)
+
+>>>	* subproc.el: new variable, fi:start-lisp-interface-function,
+	which controls whether the lisp interface is started or not.
+
+Tue Sep  4 10:39:01 1990  Kevin Layer  (layer at akbar)
+
+	* subproc.el: funcall image-file in fi::make-subprocess only when
+	the process is created.  Also, funcall
+	fi::start-tcp-lisp-interface in fi::make-subprocess when it is
+	passed as the optional argument initial-func.
+
+Mon Sep  3 11:40:00 1990  Kevin Layer  (layer at akbar)
+
+>>>	* keys.el: C-c. in lisp subprocess modes bound to
+	fi:sync-current-working-directory.
+
+	* ltags.el: don't startup backdoor on "M-.".
+
+	* ipc.cl: cstruct-len -> cstruct-length (for 4.0)
+
+Mon Sep  3 00:21:03 1990  Kevin Layer  (layer at akbar)
+
+	* ipc.cl: merge 3.1 master and 4.0 hacks into our master.
+
+	* emacs.cl: merge 4.0 hacks into our master.
+
+Sun Sep  2 20:38:00 1990  Kevin Layer  (layer at akbar)
+
+>>>	* subproc.el: no long have to put anything in .clinit.cl to have
+	the lisp interface started!!!  Now that's progress.
+
+Sun Sep  2 20:00:00 1990  Kevin Layer  (layer at akbar)
+
+	* ipc.cl: [bug1303] don't print ";;; starting listener..." since
+	it screws up lisp symbol completion.
+
+	* tcplisp.el: fi::make-connection was bogusly implemented earlier
+	today.  Give it two args, name and buffer, and fix the callers.
+
+	* keys.el: case frobing in lisp symbol completion.
+
+Sun Sep  2 19:00:00 1990  Kevin Layer  (layer at akbar)
+
+	* Makefile: doc.el and spec.n are in . not ../somethingorother.
+
+	* spec.n: fi:excl-service-name and fi:local-host-name are outta
+	here.  Add fi:lisp-case-sensitive.
+
+	* doc.el: spec.n is in . not ../doc.
+
+Sun Sep  2 18:00:26 1990  Kevin Layer  (layer at akbar)
+
+	* ipc.cl: [rfe972] parameterize for ACL 3.1 and 4.0.
+>>>	Symbol ipc:*inet-port* is history.
+
+>>>	New symbols: *inet-port-min*, *inet-port-max*, *inet-port-used*,
+	and *inet-listener-password*.
+
+	Revamp the way internet port selection occurs.  Also, make the
+	internet domain the default!  The first pass as design and
+	implementation courtesy of Louis Steinberg, Rutgers University
+	(lou@aramis.rutgers.edu).  Thanks!  The scheme is this:
+
+		When ACL start the Lisp-side of the emacs-lisp interface,
+		it prints the a string to standard-output of the form:
+		^Aport password case-mode^A.  PORT is the internet
+		port which emacs uses to connect to ACL.  PASSWORD is the
+		number (randomly chosen by ACL) which identifies
+		connections as valid.  CASE-MODE is the case that ACL is
+		currently using.  When emacs sees this string, it sets the
+		state of various global and buffer local variables.
+
+>>>	* tcplisp.el: fi:unix-domain defaults to nil!  fi:local-host-name
+	changed to fi:inet-host-name.  fi:excl-service-name is outta here!
+
+	* modes.el: better handle symbolic-style package: mode line
+	format.
+
+>>>	* keys.el: in Lisp editing mode keymaps, define C-c-, which
+	annotates a function with a log entry of what was just done to it
+	(see fi:log-functional-change).  Also, frobing of symbols for
+	correctness of case.
+
+	* dot.emacs: fixup fi:common-lisp-image-arguments for above hacks. 
+	* dot.clinit: fixup for above hacks. 
+
+	* subproc.el: New variables: fi::remote-host (buffer local),
+	fi::remote-port (buffer local), fi::remote-password (buffer
+	local), and fi::lisp-case-mode.
+
+	All the fi: functions that startup subprocesses or tcp connections
+	now note their host.
+
+	fi::subprocess-filter watches for ^A in Lisp subprocess buffers.
+
+	New functions: fi::get-buffer-password, fi::get-buffer-port,
+	fi::get-buffer-host, and fi::set-buffer-host.
+
+	The case of symbols sent to Lisp is now correct, due to the above
+	^A hack.
+
+	* ltags.el: frob symbol case.
+
+	* utils.el: fix fi:test-tcp-interface due to above changes (even
+	though this function doesn't do what it was designed to do (yet)).
+
+Sat Sep  1 20:12:28 1990  Kevin Layer  (layer at akbar)
+
+	* sublisp.el: make sure transaction filenames don't have a length
+	of more than 14 characters
+
+	* keys.el: fix heuristic for determining when the collected input
+	should be send to the sublisp process.
+
+	* subproc.el: fix doc strings re: buffer naming.  Fix
+	fi::make-subprocess to expand image-file's with tildes.
+
+Fri Aug 31 23:30:13 1990  Kevin Layer  (layer at akbar)
+
+	* sublisp.el: qualify symbols in excl package; when loading lisp
+	code, do ":print t"; use sys::*fasl-default-type* for loading
+	.fasls.
+
+	* filec.el: ignore errors while searching for files
+
+	* indent.el: nasty bug whereby certain indent methods caused an
+	error (defmethod, for one).  New intenter for define-condition and
+	defclass.
+
+	* ipc.cl: cstruct-len -> cstruct-length; hacks for sony, sgi4d and
+	SunOS 4.1 in open-network-stream; use double-buffered-terminal
+	streams.
+
+	* rlogin.el: use fi::subprocess-mode-super-keys to setup keymap;
+	fi:rlogin-send funcs moved elsewhere.
+
+	* Makefile: added su.el and telnet.el; new directory structure in
+	/usr/emacs.  Remove `tags' rule (in ../../Makefile).  Added
+	`install' rule used by ../../install_emacs.sh.  Set SHELL (for
+	some system V machines) to /bi/sh.
+
+	* su.el: new file
+	* telnet.el: new file
+
+	* modes.el: fi::lisp-subprocess-mode-variables sets buffer local
+	fi:subprocess-mode to t so that we know when we are in a
+	subprocess mode (as opposed to just an editing mode).
+
+	* keys.el: handle rlogin mode, too.  Move fi:rlogin-send funcs to
+	this file from elsewhere.  fi:lisp-arglist: allow macros and
+	special forms, since ACL 4.0.alpha saves arglists for these frobs.
+
+	* dot.clinit: make sure lookup of
+	ipc:start-lisp-listener-daemon is not case sensitive.  Make
+	*directory-stack* a defparameter (from a defvar).
+
+	* subproc.el: fix fi:remote-common-lisp so that it evaluates
+	fi:common-lisp-image-name before passing it to fi::make-subprocess
+	as the image arguments.
+
+	* README: bring it up-to-date.
+
+	* site-init.el: load telnet and su.
+
+	* shell.el: fix doc string.
+
+	* utils.el: fi::substitute-chars-in-string: make sure
+	CHAR-ASSOC-LIST is hunky dory.  New function: fi::read-password.
+
+	* docompile.sh: make sure $3 looks like a directory.  Require
+	:defctype instead of :cstructs (the wave of the future).
+
+============================== release 1.4 ==============================
+Also distributed with NeXT 1.0
+=========================================================================
+
+Thu Aug 17 20:47:22 1989  Kevin Layer  (layer at snooze)
+
+	* subproc.el: save fi::input-ring-yank-pointer across processes,
+	just like fi::input-ring.
+
+Wed Aug 16 13:51:37 1989  Kevin Layer  (layer at snooze)
+
+	* ipc.cl: `hostent' structure changed for SunOS 4.0.  Put hacks in
+	open-network-stream which handle that structure differently if on
+	SunOS 4.0 (if /lib/ld.so exists, then we know we are on 4.0).
+
+Mon Aug  7 16:06:38 1989  Kevin Layer  (layer at snooze)
+
+	* ipc.cl: don't use excl::machine-case, because some targets (or
+	hosts) are not known on some ports of acl.  fi:unix-domain-socket
+	can now be a function, which is funcalled to get the string which
+	represents the socket pathname.  The form of the default socket
+	file is /tmp/GnuToAclXXX, where XXX is the uid of the person
+	running emacs and acl.  The length of this is more friendly to
+	system V users.
+
+	* tcplisp.el: fi:unix-domain-socket is `evaluated' at interface
+	startup-time, instead of interface load-time.
+
+	* Makefile: new way to compile .fasl files (output goes into the
+	library *or* to the ${cl_library}.  See docompile.sh.
+
+	* docompile.sh: used to compile the .cl files.  Mostly it just
+	created the output of compile-file in the lisp library.
+
+	* keys.el: during macroexpansion, bind
+	fi:echo-evals-from-buffer-in-listener-p to nil.
+
+	* subproc.el: wrap the funcall of `mode' (in make-subprocess) with
+	a condition-case.
+
+	* clman.el, clman.data: final touches to new scheme.
+
+	* dot.clinit, dot.emacs: remove a bunch of junk
+
+Wed Jul 19 14:01:32 1989  Kevin Layer  (layer at akbar)
+
+	* Makefile: change `depend' to `elcs' ("make depend" means
+	something very different to many people).
+
+	* ipc.cl: *unix-domain* defaults to nil on sgi4d.
+
+	* tcplisp.el: typo
+
+	* clinit.cl: test for setting socket-file fixed
+
+	* subproc.el: read interactive arguments for fi:explicit-*
+	functions better.  Specifically, don't read a list of strings for
+	the image arguments, ie ("a" "b" "c"), read "a b c" and do the
+	conversion for the user.
+
+	* ltags.el: fully qualify symbols not in the lisp package (someone
+	may not use the `excl' package).
+
+	* indent.el: move fi::lisp-find-char to utils.el
+
+	* utils.el: fi::lisp-find-char moved to this file (from
+	indent.el); new function fi::listify-string, which takes one arg,
+	a string, and converts it to a list of strings (space is the
+	separator in the string).  Also, first pass at a diagnosic tool
+	find failures in the interface.
+
+	* clman.el and clman.data: new (incompatible with previous
+	versions) format for manual files.  Names in the manual directory
+	are now *all* less than 14 characters!  Viva la system5!  Pardon
+	me, whilest I become sick...
+
+Tue Jul 11 18:10:08 1989  Kevin Layer  (layer at snooze)
+
+	* ipc.cl: better error messages.
+
+	* rlogin.el: get `env' from exec-directory.
+
+	* tcplisp.el: fully qualify `errorset' in the `excl' package.
+
+	* Makefile: clman-oblist.el renamed clman.data, and it is not
+	byte-compiled anymore.
+
+	* clinit.cl: lisp-listener-daemon-ff-loaded is now
+	.lisp-listener-daemon-ff-loaded.
+
+	* subproc.el: make-subprocess: substitute-in-file-name on image-file;
+	make-tcp-connection only does expand-file-name when unix-domain
+	non-nilA.
+
+	* indent.el: added indent property for `defclass'.
+
+	* clman.el: setup fi:clman-package-info first time manual entry
+	looked up, not at load time.
+
+============================== release 1.4beta ==============================
+
+Thu Jun  1 22:27:46 1989  Kevin Layer  (layer at snooze)
+
+	* modes.el: added some vars made local in mode setup.
+
+	* indent.el: these vars
+	    fi::calculate-lisp-indent-state-temp
+	    fi::lisp-most-recent-parse-result
+	    fi::lisp-indent-state-temp
+	  setup in mode initialization.  Also, fix indent hook for
+	  handler-bind and -case.A
+
+	* utils.el: make third arg to fi::{slow,fast}-parse-partial-sexp
+	optional (just like parse-partial-sexp).
+
+	* clman.el: use fi::clman-downcase instead of downcase.
+
+Wed May 24 14:36:02 1989  Kevin Layer  (layer at snooze)
+
+	* indent.el: defvar'd value of
+	fi:lisp-comment-indent-specification is bogus, because
+	comment-column given value in mode setup.
+
+	* modes.el: fi:lisp-do-indentation defaults to `t'.  Also, set
+	fi:lisp-comment-indent-specification in mode setup.
+
+	* subproc.el: make buffer names created by fi::make-subprocess
+	follow the standard buffer naming convention.  A second *shell*
+	buffer is now called *shell*<2>.
+
+Mon May 22 15:29:21 1989  Kevin Layer  (layer at snooze)
+
+	* clinit.cl: don't use handler-case, since it is not in all
+	versions of ACL in which this interface runs, but use errorset.Q
+
+	* ipc.cl: new and improved: 1) correctly restart daemon after
+	dumplisp [NOTE: this requires at least version 3.1.beta.19 to
+	work correctly], and 2) put #+'s around use of
+	process-property-list, since it doesn't exist in all versions in
+	which this interface runs.
+
+	* sublisp.el: forms sometimes sent to lisp in the wrong package.
+
+Mon May 15 22:22:12 1989  Kevin Layer  (layer at akbar)
+
+	* modes.el: Many changes:
+
+	  + define lisp mode syntax tables with fi:lisp-mode-syntax-table
+	    and emacs lisp mode with fi:emacs-lisp-mode-syntax-table.
+	  + added Emacs Lisp mode: variable: fi:emacs-lisp-mode-map.
+	    Function fi:emacs-lisp-mode.
+	  + new variable, fi:lisp-do-indentation, which controls whether
+	    the FI indentation is used.  This should be set in .emacs.
+	    The only reason not to use it is that M-C-q is slow for large
+	    functions.  This will be fixed in the future, but I don't have
+	    the time right.   Btw, the reason to use the FI indentation is
+	    that it indents everything *just right*!
+	  + fi:indent-setup-hook no longer run from all the lisp modes.
+	  + all the modes set fi:lisp-indent-hook-property according to
+	  the style of indentation for that mode (ie, either
+	  fi:common-lisp-indent-hook, fi:franz-lisp-indent-hook, etc).
+
+	* subproc.el: fi::make-subprocess: the last argument is optional,
+	a filter to install on the subprocess.
+
+	* site-init.el: only load indent.elc if fi:lisp-do-indentation is
+	non-nil.
+
+>>>	* indent.el: new file.   The meta language for describing how to
+	indent forms has been improved.  Among the features are: it
+	properly indents `flet', `labels', `macrolet', all the pitman
+	condition system macros (this is no small thing!!), and lambda
+	list keywords are indented specially (finally!).  Here are the
+	variables which control indentation:
+
+	  + fi:lisp-electric-semicolon: If `t', semicolons that begin
+	    comments are indented as they are typed.
+	  + fi:lisp-comment-indent-specification: Specification list for
+	    indentations of semicolon comments. The nth element of the
+	    list specifies the indentation for a comment beginning with n
+	    semicolons (e.g. the first element of the list is the
+	    indentation for comments beginning with one semicolon).  Each
+	    element of the list may be one of `t' (indent comment just
+	    like an s-expression), `nil' (don't change the indentation of
+	    the comment, i.e. leave the semicolon where it is), a non-
+	    negative integer (specifying the absolute column to which the
+	    comment is to be indented), or a negative integer (specifying
+	    a negative offset for the comment relative to the current
+	    column)
+	  + fi:lisp-body-indent: The indentation of a list continued on
+	    another line
+	  + fi:lisp-indent-offset: If non-nil, then indent by a constant
+	    amount of the column in which the sexp starts
+	  + fi:lisp-tag-indentation: Indentation of tags relative to
+	    containing list. This variable is used by the function
+	    `fi:lisp-indent-tagbody' to indent tags that occur within
+	    special forms whose symbols have a 'fi:lisp-indent-hook
+	    property of 'tag or 'tagbody.  The indentation is relative to
+	    the indentation of the parenthesis enclosing the special form
+	  + fi:lisp-tag-body-indentation: Indentation of non-tagged lines
+	    relative to containing list. This variable is used by the
+	    function `fi:lisp-indent-tagbody' to indent normal lines
+	    (lines without tags) that occur within special forms whose
+	    symbols have a 'fi:lisp-indent-hook property of 'tag or
+	    'tagbody.  The indentation is relative to the indentation of
+	    the parenthesis enclosing the special form. If the value is T,
+	    the body of tags will be indented as a block at the same
+	    indentation as the first s-expression following the tag.  In
+	    this case, the s-expressions before the first tag are indented
+	    as an undistinguished form
+	  + fi:lisp-tag-indentation-hook: Name of function to apply to
+	    return indentation of tag. This variable may be bound to the
+	    name of a function to be applied (to three arguments: the
+	    character position of the beginning of the tag, the last parse
+	    state, and the indent point) to return the appropriate
+	    indentation for tags occurring within special forms whose
+	    symbols have a 'fi:lisp-indent-hook property of 'tag or
+	    'tagbody.  The indentation returned is absolute
+	  + fi:lisp-keyword-indentation: Indentation of keywords relative
+	    to containing list. This variable is used by the function
+	    `fi:lisp-indent-keyword-list' to indent keywords that occur
+	    within special forms whose symbols have a 'fi:lisp-indent-hook
+	    property of 'keyword or 'keyword-list.  The indentation is
+	    relative to the indentation of the parenthesis enclosing the
+	    special form
+	  + fi:lisp-keyword-argument-indentation: Indentation of keyword
+	    argument lines relative to containing list. This variable is
+	    used by the function `fi:lisp-indent-keyword-list' to indent
+	    keyword-argument lines that occur within special forms whose
+	    symbols have a 'fi:lisp-indent-hook property of 'keyword or
+	    'keyword-list.  The indentation is relative to the indentation
+	    of the parenthesis enclosing the special form. If the value is
+	    T, the argument(s) of keywords will be indented as a block at
+	    the same indentation as the first s-expression following the
+	    tag.  See the documentation for the function
+	    `fi:lisp-indent-keyword-list'
+	  + fi:lisp-keyword-indentation-hook: Name of function to apply to
+	    return indentation of a keyword. This variable may be bound to
+	    the name of a function to be applied (to three arguments: the
+	    character position of the beginning of the keyword, the last
+	    parse state, and the indent point) to return the appropriate
+	    indentation for keywords occurring within special forms whose
+	    symbols have a 'fi:lisp-indent-hook property of 'keyword or
+	    'keyword-list.  The indentation returned is absolute
+	  + fi:lisp-maximum-indent-struct-depth: Maximum depth to
+	    backtrack out from a sublist for structured indentation. If
+	    this variable is NIL, no backtracking will occur and lists
+	    whose `car' is a symbol with a 'fi:lisp-indent-hook property
+	    of 'label, 'labels, 'flet, 'macrolet, 'defun, or a list may
+	    not be indented properly.  In addition, quoted lists will not
+	    be treated specially.  If this variable is T, there is no
+	    limit placed on backtracking.  A numeric value specifies the
+	    maximum depth to backtrack.  A reasonable value is 3.
+	  + fi:lisp-case-sensitive: If non-NIL, the code that is being
+	    edited is for a case-sensitive dialect of Lisp.  This variable
+	    is buffer-local.  If a Lisp is case-insensitive, indentation
+	    specifications should be placed on the Emacs Lisp symbol that
+	    corresponds to the lowercase name of the function, macro, or
+	    special form
+	  + fi:lisp-package: This variable may be NIL, T, or a symbol or
+	    string. If the value is NIL, a package qualifier is ignored
+	    when getting the indentation specification for a symbol.  If
+	    the value is T, the package qualifier is not ignored.  If this
+	    variable is any other symbol or a string, it names the package
+	    to be used for all unqualified symbols.  When this variable is
+	    not NIL, the qualified symbol is first checked for an
+	    indentation specification, then the unqualified symbol is
+	    checked.  This variable is buffer-local.
+
+	You may safely ignore these variables: the defaults are very
+	reasonable.
+
+	* utils.el: added an abstraction of parse-partial-sexp which has a
+	sixth argument (I tried to add a sixth argument in the C coded
+	function parse-partial-sexp, but the limit of 5 args is so
+	hardwire in Emacs that I didn't want to make the change) which is
+	used as the place to put the result.  Otherwise, this function
+	does lots of consing.
+ 
+	* tcplisp.el: for the backdoor loop use package qualifier on
+	`errorset' in case the package has changed and excl not inherited.
+
+	* keys.el: for new indentation (see fi:lisp-do-indentation).
+	fi:lisp-reindent-newline-indent changed to fi:lisp-mode-newline,
+	and the default is now to just do a newline, whereas before it
+	used to do "reindent, newline, reindent".
+
+	* filec.el: don't bind completion-ignored-extensions to nil.
+
+	* rlogin.el: made the filter an argument to fi::make-subprocess.
+
+============================== release 1.3 ==============================
+
+Fri Feb 17 18:49:01 1989  Kevin Layer  (layer at snooze)
+
+	* moved ChangeLog to parent directory of fi/.
+
+	* include patch43.{68k,sparc} in distribution.  This is so that
+	the following feature will work (otherwise the output has
+	duplicate characters, since unpatched Allegro CL echo streams
+	stutter).
+
+	* a new variable
+	      fi:echo-evals-from-buffer-in-listener-p
+	which defaults to nil (since the necessary patch to Allegro CL is
+	not yet widely distributed) and controls whether or not lisp echos
+	what is evaluated from emacs lisp source buffers.  Setting this to
+	nil (default is t) will cause the feature to be disabled.
+	Files: sublisp.el, patch43.*
+
+Tue Feb 14 17:13:54 1989  Kevin Layer  (layer at snooze)
+
+>>>	* added two new files: clman.el and clman-oblist.el.  These are
+	the emacs/on-line manual interface and are now part of this more
+	general interface.  Also, there is a directory called `manual'
+	which contains the database for the on-line manual.
+
+	The entry points are fi:clman and fi:clman-apropos.  Nothing other
+	than a binding for these two functions is needed for their use
+	(they are `interactive').
+
+	* added autoloads for clman stuff
+	File: site-init.el
+
+	* new function, fi::find-path, takes a string and looks through
+	load-path for that file or directory and returns the pathname
+	(absolute), if found.
+	File: utils.el
+
+Sat Nov 26 00:37:01 1988  Kevin Layer  (layer at snooze)
+
+	* new variable, fi:emacs-to-lisp-transaction-directory, which
+	controls where the transaction files are kept.  This is especially
+	useful for running lisp on remote machines (i.e., using
+	fi:remote-common-lisp).
+	Files: keys.el and subproc.el
+
+Tue Nov 22 20:17:56 1988  Kevin Layer  (layer at snooze)
+
+	* ipc.cl: don't load from the C library unless absolutely
+	necessary!  SunOS 4.0 on the Sun4 takes a bogus amount of time to
+	dynamically load under certain conditions.
+
+	* fix the way fi:XXX-image-name is handled (again, from 11/18/88).
+	Now it is `reduced' before displaying the buffer but it is NOT
+	done when the process already exists.
+	File: subproc.el
+
+Mon Nov 21 13:54:17 1988  Kevin Layer  (layer at snooze)
+
+	* fi::subprocess-hack-directory renamed to
+	fi::subprocess-watch-for-special-commands, to which smarts were
+	added about tracking package changes in inferior lisp modes.  The
+	new variable fi:common-lisp-package-regexp is used for this
+	purpose.
+	File: modes.el, keys.el and subproc.el
+
+	* fix fi:lisp-complete-symbol in the case of an explicit package
+	reference.
+	File: keys.el
+
+	* made the lisp evalserver more bullet-proof (output of more than
+	one process read wasn't doing the right thing).
+	File: tcplisp.el
+
+Fri Nov 18 20:34:39 1988  Kevin Layer  (layer at snooze)
+
+	* in fi::make-subprocess, funcall mode after starting process;
+	when fi:XXX-image-name is a cons, it used to be funcall'd after
+	the buffer was displayed.  It is now done before the process it
+	created.
+	File: subproc.el
+
+	* changed default service number from 1123 (which is taken on some
+	machines around here) to 6789.
+	Files: tcplisp.el, spec.n, and ipc.cl
+
+Thu Nov 17 12:15:57 1988  Kevin Layer  (layer at snooze)
+
+	* two new files in this directory: ipc.cl and emacs.cl.  To ipc.cl
+	added open-network-stream; to emacs.cl added list-all-completions
+	which is used by M-TAB in lisp modes to complete a Common Lisp
+	symbol!
+
+	* Implemented fi:eval-in-lisp with a lisp eval server over a tcp
+	socket and a new binding for M-TAB (fi:lisp-complete-symbol).
+	Files: tcplisp.el and keys.el
+
+	* new file clinit.cl, which contains the preferred way to startup
+	the emacs/lisp interface.  It requires that EMACSLIBRARY be set to
+	the root of the emacs tree (/usr/local/lib/emacs on almost all
+	machines).  The following should be put in .login:
+
+		setenv EMACSLIBRARY /usr/local/lib/emacs
+
+	where /usr/local/lib/emacs is replaced by the appropriate
+	pathname.
+
+Thu Nov  3 17:08:21 1988  Kevin Layer  (layer at snooze)
+
+	* filename completion as first input to a buffer now works.
+	File: filec.el
+
+	* new variable `fi:common-lisp-file-types', which is a list of the
+	file extentions for files automatically put in
+	fi:common-lisp-mode.  This variable should be set before
+	fi/site-init is loaded.
+	File: modes.el
+
+>>>	* new variable `fi:rlogin-initial-input', which is the initial
+	input to an rlogin process (after the first prompt is seen)
+	File: rlogin.el
+
+Thu Aug 11 21:24:19 1988  Kevin Layer  (layer at akbar)
+
+	* fixed typo in fi:explicit-rlogin; TERM set to `dumb' before
+	calling rlogin.
+	File: rlogin.el
+
+Sat Jul 23 12:09:56 1988  Kevin Layer  (layer at akbar)
+
+	* fix another bug in directory tracking code (wasn't handling
+	"pushd ...; ..." correctly.
+	File: subproc.el
+
+>>>	* added command completion to the file name completion code.  The
+	entry point is now fi:shell-do-completion, and the following added
+	to fi:subprocess-mode-hook will do the trick
+
+	   (define-key (current-local-map) "\C-i" 'fi:shell-do-completion)
+
+	File: filec.el
+
+Thu Jul 21 23:47:31 1988  Kevin Layer  (layer at akbar)
+
+	* directory tracking now handles "cd ... ; ..." and ignore
+	(rightly so) "cd ... &" since the latter is executed in a
+	subshell.
+	File: subproc.el
+
+	* M-. package hacking: do source-file on proper symbol by doing a
+	find-symbol with `fi:package' as the package argument.
+	File: ltags.el
+
+Mon Jul 18 11:31:28 1988  Kevin Layer  (layer at akbar)
+
+	* fixed fi:explicit-remote-common-lisp, which was calling
+	fi::make-subprocess with too many arguments.
+	File: subproc.el
+
+Sat Jul 16 16:22:02 1988  Kevin Layer  (layer at akbar)
+
+	* fix fi::get-default-symbol to send the proper package info to
+	lisp.
+	File: keys.el
+
+============================== release 1.2 ==============================
+
+  This release put in ~ftp/pub/fi/gnudist-1.2-tar.Z on ucbvax and ucbarpa
+
+=========================================================================
+
+Mon Jul 11 23:33:15 1988  Kevin Layer  (layer at akbar)
+
+	* if there is a space in the tag name then don't query lisp.  In
+	the future we may handle function specs, but for now only symbols
+	are done correctly.
+	File: ltags.el
+
+	* fixed up fi::subprocess-hack-directory to handle `pushd +n' and
+	`popd +n'.
+	File: subproc.el
+
+	* have filename completion do environment variable substitution
+	File: filec.el
+
+============================== release 1.1 ==============================
+
+ This release on the Allegro CL 3.0 tapes for sun3 and sun4.
+
+=========================================================================
+
+Tue Jun  7 14:49:17 1988  Kevin Layer  (layer at akbar)
+
+	* reading form for M-W from minibuffer caused an error.
+	File: keys.el
+
+Wed May 25 13:48:02 1988  Kevin Layer  (layer at akbar)
+
+	* fix bug (that's been buzzing jdi) in
+	fi:inferior-lisp-newline--RET in the middle of the buffer was
+	copying the wrong input to the end.
+	File: keys.el
+
+	* fix bug in fi:set-associated-sublisp (" not backquoted in
+	docstring)
+	File: sublisp.el
+
+============================== release 1.0 ==============================
+
+ This release given to selected customers, and really constitutes a beta
+ release of this software.
+
+ The compressed tar file is in arpa:~ftp/pub/layer/dist-1.0.tar.Z
+
+=========================================================================
+
+Wed May 25 10:54:27 1988  Kevin Layer  (layer at akbar)
+
+	* have M-sh-{M,F,D,A,W} commands read a form or symbol from the
+	minibuffer if parsing the current buffer around the point fails.
+	File: keys.el
+
+Thu May 19 15:08:00 1988  Kevin Layer  (layer at akbar)
+
+	* new function: fi:remove-all-temporary-lisp-transaction-files
+
+	* minor bugs
+
+Tue May 17 17:22:59 1988  Kevin Layer  (layer at akbar)
+
+	* change in bindings:
+
+	  in all subprocess modes:
+	     C-m bound to fi:subprocess-input-region
+
+	  in inferior-lisp mode:
+	     RET is bound to a new version of fi:inferior-lisp-newline
+	     which, when not at the end of the buffer, sends `input'
+	     surrounding the point to the lisp process (also copying it to
+	     the end of the buffer).
+
+Mon May 16 15:10:02 1988  Kevin Layer  (layer at akbar)
+
+	* fi::make-process and fi::make-tcp-connection use the default
+	directory of the buffer from which they were invoked.
+
+Fri May 13 10:27:46 1988  Kevin Layer  (layer at akbar)
+
+	* frontdoor equivalents to  M-A, M-D, M-F, M-M commands.
+
+Thu May 12 20:01:11 1988  Kevin Layer  (layer at akbar)
+
+	* if fi:MUMBLE-image-name is not a string, then it is funcall'd to
+	yield the real image name.
+
+	* fi:pop-input and fi:push-input arguments are now optional.
+
+	* new variable `fi:pop-to-sublisp-buffer-after-lisp-eval'
+	controls whether or not `eval' commands cause one to be put in the
+	sublisp buffer.
+
+	* `common-lisp-mode' and `lisp-mode' are outta here.  To do this,
+	though, we redefine `set-auto-mode' so we can capture the mode in
+	the -*- line.
+
+	* we now downcase the package name in the -*- line and the package
+	can be a list, in which case we just take the `car' of it.
+
+	* lisp tag stuff revamped so that package info doesn't hang
+	around.
+
+	* New function: fi:lisp-find-tag-other-window.
+
+	* TAB, in subprocess modes, is no longer bound to
+	fi:shell-file-name-completion, but rather is bound to
+	lisp-indent-line.
+
+	* fi:inferior-lisp-newline does a fi:inferior-lisp-send-sexp-input
+	instead of a fi:subprocess-send-input when in the middle of a
+	sublisp buffer.
+
+Wed May 11 14:07:51 1988  Kevin Layer  (layer at akbar)
+
+	* fi:lisp-find-tag, if given a prefix argument, will do a
+	tags-loop-continue.
+
+	* fi::get-cl-symbol renamed to fi::get-default-symbol, greatly
+	repaired in the process.
+
+	* fi:lisp-macroexpand and fi:lisp-walk now parse the sexp in the
+	current buffer (at the point) like fi:inferior-lisp-send-sexp-input.
+
+	* fi:set-associated-sublisp-buffer now sets the sublisp buffer
+	for eval commands for all buffers which are in the same mode as
+	the current buffer.
+
+	* fi:subprocess-kill-output no longer insert `input' of
+	"[output flushed]" into subprocess buffer.
+
+	* `fi:inferior-lisp-send-sexp-input' and
+	`fi:inferior-lisp-send-list-input' again have bindings in
+	fi:inferior-common-lisp and fi:tcp-common-lisp modes (ESC RET and
+	C-x RET, respectively).
+
+	* The fi:another-MUMBLE functions have been removed.  In
+	their place fi:MUMBLE has been enhanced and fi:explicit-MUMBLE has
+	been added.
+
+	* fi:explicit-MUMBLE-file-name and
+	fi:explicit-MUMBLE-image-arguments are outta here.
+
+	* the fi:default-MUMBLE-file-name and
+	fi:default-MUMBLE-image-arguments are now fi:MUMBLE-image-name
+	(Note: `file-name' -> `image-name') and fi:MUMBLE-image-arguments.
+
+	* fi:remote-MUMBLE and fi:explicit-remote-MUMBLE functions added.
+
+	* the TCP lisp functionality of fi:common-lisp was moved to
+	fi:tcp-common and fi:explicit-tcp-common.
+
+	* As you have undoubtedly noticed, the new form of the interface
+	is:
+	   fi:common-lisp
+	   fi:remote-common-lisp
+	   fi:tcp-common-lisp
+
+	   fi:explicit-common-lisp
+	   fi:explicit-remote-common-lisp
+	   fi:explicit-tcp-common-lisp
+
+	all of the above functions take a prefix argument, a number, which
+	is the buffer number.  If the buffer number is > 0, then the buffer
+	named `*MUMBLE-N*' is used.  The default is 1, in which case
+	the `-1' is dropped.  If the buffer number is < 0, then N is
+	chosen to be as small as possible while not pointing to an
+	existing buffer with a running process.
+
+	* the functions which start subprocesses and connections do not
+	reset the input ring.
+
+	* internal name change: tcp-lisp changed to tcp-common-lisp.
+	There was mention of fi:tcp-lisp-mode in the document, and that is
+	now fi:tcp-common-lisp-mode.
+
+Mon May  9 17:43:22 1988  Kevin Layer  (layer at akbar)
+
+	* remove all remaining indenting stuff from this interface
+	(actually, move it to ../local/indent.el).
+	File: modes.el
+
+	* add binding for who-calls (M-C, fi:lisp-who-calls)
+	File: modes.el
+	Note: this change will not work with allegro CL 3.0 (who calls is
+	      not in that lisp)
+
+Fri Apr 29 15:37:18 1988  Kevin Layer  (layer at akbar)
+
+	* removed from fi::make-process the "image name from the
+	environment" hack.  Not even Harry, the original author of this
+	feature, uses it.
+	File: subproc.el
+
+	* cl-indent is no longer loaded, since This interface has nothing
+	to do with indenting.
+	File: site-init.el
+
+Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
+
+	* fi::unix-domain-socket renamed to fi:unix-domain-socket
+	(exported)
+	File: subproc.el
+
+	* fi:emacs-lisp-mode moved from file modes.el to elisp.el
+
+	* The functions fi:inferior-lisp-send-sexp-input and 
+	fi:inferior-lisp-send-list-input are no longer bound in inferior
+	lisp modes, since they didn't work (at least I couldn't figure
+	them out).  They were previously bound to the keys M-RET and
+	C-x RET.
+
+	* fi::package renamed fi:package (exported)
+
+	* generic `lisp' mode removed (since nothing referred to it
+
+	* lisp-mode and common-lisp-mode are the same as
+	fi:common-lisp-mode (this is for -*- mode defs)
+
