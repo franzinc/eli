@@ -2,7 +2,7 @@
 			      User Guide
 			     Release 2.0
 
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.26 1991/12/11 14:59:41 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.27 1992/01/13 22:34:17 layer Exp $
 
 			     Introduction
 
@@ -650,10 +650,10 @@ Information sharing between Common Lisp and Emacs
 
       key		binding
       ---		-------
-      C-c C-r		fi:lisp-eval-region
-      C-c C-s		fi:lisp-eval-last-sexp
-      C-c C-b		fi:lisp-eval-current-buffer
-      ESC C-x		fi:lisp-eval-defun
+      C-c C-r		fi:lisp-eval-or-compile-region
+      C-c C-s		fi:lisp-eval-or-compile-last-sexp
+      C-c C-b		fi:lisp-eval-or-compile-current-buffer
+      ESC C-x		fi:lisp-eval-or-compile-defun
 		  The above group of functions cause the
 		  region, last s-expression, the entire buffer
 		  or the current top-level form to be
@@ -733,10 +733,24 @@ Functions and Variables for editing Common Lisp programs:
 %% fi:lisp-arglist			fi:common-lisp-mode-map
 %% fi:lisp-complete-symbol 		fi:common-lisp-mode-map
 %% fi:lisp-delete-pop-up-window		fi:common-lisp-mode-map
-%% fi:lisp-eval-current-buffer		fi:common-lisp-mode-map
+
+%% fi:lisp-eval-or-compile-current-buffer fi:common-lisp-mode-map
+%% fi:lisp-eval-or-compile-defun	fi:common-lisp-mode-map
+%% fi:lisp-eval-or-compile-last-sexp	fi:common-lisp-mode-map
+%% fi:lisp-eval-or-compile-region	fi:common-lisp-mode-map
+
+%% fi:lisp-eval-current-buffer 		fi:common-lisp-mode-map
 %% fi:lisp-eval-defun			fi:common-lisp-mode-map
 %% fi:lisp-eval-last-sexp		fi:common-lisp-mode-map
 %% fi:lisp-eval-region			fi:common-lisp-mode-map
+
+%% fi:lisp-evals-always-compile
+
+%% fi:lisp-compile-current-buffer 	fi:common-lisp-mode-map
+%% fi:lisp-compile-defun		fi:common-lisp-mode-map
+%% fi:lisp-compile-last-sexp		fi:common-lisp-mode-map
+%% fi:lisp-compile-region		fi:common-lisp-mode-map
+
 %% fi:lisp-find-definition		fi:common-lisp-mode-map
 %% fi:lisp-find-definition-other-window	fi:common-lisp-mode-map
 %% fi:lisp-find-next-definition		fi:common-lisp-mode-map
@@ -746,9 +760,11 @@ Functions and Variables for editing Common Lisp programs:
 %% fi:lisp-macroexpand			fi:common-lisp-mode-map
 %% fi:lisp-macroexpand-recursively	fi:common-lisp-mode-map
 %% fi:lisp-mode-newline			fi:common-lisp-mode-map
+%% fi:lisp-mode-auto-indent
 %% fi:log-functional-change		fi:common-lisp-mode-map
 %% fi:super-paren			fi:common-lisp-mode-map
 %% fi:toggle-trace-definition		fi:common-lisp-mode-map
+%% fi:toggle-to-lisp			fi:common-lisp-mode-map
 
 %% fi:list-who-calls			fi:common-lisp-mode-map
 %% fi:list-who-is-called-by
