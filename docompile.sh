@@ -1,9 +1,12 @@
 #! /bin/sh -ex
-# $Header: /repo/cvs.copy/eli/Attic/docompile.sh,v 1.2 1989/08/07 18:25:16 layer Exp $
+# $Header: /repo/cvs.copy/eli/Attic/docompile.sh,v 1.3 1989/08/07 18:38:23 layer Exp $
 
 # usage: $0 file cl_binary [cl_library]
 
-libdir=${3-'"excl::*library-code-pathname*"'}
+libdir=${3-excl::*library-code-pathname*}
+
+echo $1 $2 $3
+exit 1
 
 $2 -qq -batch << EOF
 (set-case-mode :case-sensitive-lower)
