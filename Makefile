@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.121 1996/08/01 22:35:29 layer Exp $
+# $Id: Makefile,v 1.122 1996/10/09 07:57:43 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -42,7 +42,7 @@ clean_OS:
 	rm -f *.o clman makeman
 
 clean:	clean_OS
-	rm -f *.elc *.doc
+	rm -f *.elc *.doc test.out
 
 tags:	TAGS
 
@@ -167,28 +167,27 @@ clman-dist:	all_clman
 
 ###############################################################################
 
-# The master checked-out copy lives in /fi/scm/emacs-lib/src/eli.
+hosts = freezer sole sparky akbar fridge girls louie hefty romeo vapor \
+	biggie clay
+# make of clman fails on these systems:
+#	fridge, girls, hefty, biggie, clay
 
-# removed: biggie fax clay
-hosts = sparky akbar sole fridge freezer girls louie hefty romeo vapor
 elib_root = /usr/fi/emacs-lib
 to = $(elib_root)/fi
+rdist = rdist
 
-rdist = /usr/local/rdist
-
-rdist: all local-fi-*.elc
-	rm -fr DIST
-	${rdist} -qc Makefile Doc.el ChangeLog *.doc fi-*.el fi-*.elc \
+FILES_TO_RDIST = ChangeLog fi-*.el fi-*.elc \
 		local-fi-*.el local-fi-*.elc \
-		clman.c clman.h clmanaux.c \
-		gc-mode-line.cl gc-mode-line.c \
-		"`hostname`:`pwd`/DIST"
-	(cd DIST;ln -s /net/vapor/scm/emacs-lib/src/eli/clman.data clman.data)
-	(cd DIST;ln -s /net/vapor/scm/emacs-lib/src/clman manual)
+		manual/OBLIST.el clman.data \
+		Makefile clman.c clman.h clmanaux.c
+
+rdist:
+	rm -fr DIST
+	${rdist} -wqc $(FILES_TO_RDIST) "`hostname`:`pwd`/DIST"
 	(cd DIST; ${rdist} -Rc . "{`echo ${hosts} | sed 's/ /,/g'`}:$(to)")
 	for h in ${hosts}; do \
 		echo making clman on $$h; \
-		rsh $$h "(cd ${to}; make CC=cc clman)"; \
+		rsh $$h "(cd ${to}; make CC=gcc clman)"; \
 	done
 	rm -fr DIST
 
@@ -197,20 +196,3 @@ save_version:
 	@for host in ${hosts}; do\
 		echo rsh $$host -n mv $(to) $(elib_root)/fi-$(version);\
 	done
-
-###############################################################################
-
-UPDATE_FILES = Makefile Doc.el ChangeLog *.doc fi-*.el fi-*.elc \
-	       local-fi-*.el local-fi-*.elc \
-	       clman.c clman.h clmanaux.c \
-	       gc-mode-line.cl gc-mode-line.c 
-
-TMP = eli-test
-
-updates:
-	rm -fr $(TMP)
-	mkdir $(TMP)
-	cp -p $(UPDATE_FILES) $(TMP)
-	(cd $(TMP); ln -s /net/vapor/scm/emacs-lib/src/eli/clman.data clman.data)
-	(cd $(TMP); ln -s /net/vapor/scm/emacs-lib/src/clman manual)
-	(cd $(TMP); rsync -va --delete -n . freezer:eli-test)
