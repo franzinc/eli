@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.19 1989/02/14 17:17:52 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.20 1989/05/19 14:09:31 layer Exp $
 
 ;;;;
 ;;; Key defs
@@ -82,8 +82,14 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
 
   (if supermap (define-key map "\C-c" supermap))
   
-  (define-key map "\t"		'lisp-indent-line)
-  (define-key map "\e\C-q"	'indent-sexp)
+  (if fi:lisp-do-indentation
+      (progn
+	(define-key map "\t"		'fi:lisp-indent-line)
+	(define-key map "\e\C-q"	'fi:indent-sexp))
+    (progn
+      (define-key map "\t"		'lisp-indent-line)
+      (define-key map "\e\C-q"		'indent-sexp)))
+
   (define-key map "\C-?"	'backward-delete-char-untabify)
   
   (cond
@@ -91,7 +97,7 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
      (define-key map "\r"	'fi:inferior-lisp-newline)
      (define-key map "\e\r"	'fi:inferior-lisp-input-sexp)
      (define-key map "\C-x\r"	'fi:inferior-lisp-input-list))
-    (t (define-key map "\r"	'fi:lisp-reindent-newline-indent)))
+    (t (define-key map "\r"	'fi:lisp-mode-newline)))
 
   (cond
     ((memq major-mode '(fi:common-lisp-mode fi:inferior-common-lisp-mode
@@ -128,13 +134,10 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
 
 ;;;;;;;;;;;;;;;;;;;;; inferior lisp mode related functions
 
-(defun fi:lisp-reindent-newline-indent ()
-  "Indent the current line, insert a newline and indent to the proper
-column."
+(defun fi:lisp-mode-newline ()
+  "Function bound to C-m.  The default version just inserts a newline."
   (interactive)
-  (save-excursion (funcall indent-line-function))
-  (newline)
-  (funcall indent-line-function))
+  (newline))
 
 (defun fi:inferior-lisp-newline ()
   "Bound to RET in an inferior Lisp buffer.  At the end of the buffer it
