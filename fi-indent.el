@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.52 1994/12/21 22:36:15 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.53 1996/03/25 23:38:36 smh Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If non-nil, semicolons that begin comments are indented as they are
@@ -70,7 +70,7 @@ property of 'tag or 'tagbody.  The indentation is relative to the
 indentation of the parenthesis enclosing the special form.")
 
 (make-variable-buffer-local 'fi:lisp-tag-indentation)
- 
+
 (defvar fi:lisp-tag-body-indentation 2
   "*Indentation of non-tagged lines relative to containing list.
 This variable is used by the function `fi:lisp-indent-tagbody' to indent normal
@@ -83,7 +83,7 @@ s-expressions before the first tag are indented as an undistinguished
 form.")
 
 (make-variable-buffer-local 'fi:lisp-tag-body-indentation)
- 
+
 (defvar fi:lisp-tag-indentation-hook nil
   "*Name of function to apply to return indentation of tag.
 This variable may be bound to the name of a function to be applied (to
@@ -94,7 +94,7 @@ a 'fi:lisp-indent-hook property of 'tag or 'tagbody.  The indentation
 returned is absolute.")
 
 (make-variable-buffer-local 'fi:lisp-tag-indentation-hook)
- 
+
 (defvar fi:lisp-keyword-indentation 1
   "*Indentation of keywords relative to containing list.
 This variable is used by the function `fi:lisp-indent-keyword-list' to indent
@@ -116,7 +116,7 @@ at the same indentation as the first s-expression following the tag.  See
 the documentation for the function `fi:lisp-indent-keyword-list'.")
 
 (make-variable-buffer-local 'fi:lisp-keyword-argument-indentation)
- 
+
 (defvar fi:lisp-keyword-indentation-hook nil
   "*Name of function to apply to return indentation of a keyword.
 This variable may be bound to the name of a function to be applied (to
@@ -127,7 +127,7 @@ a 'fi:lisp-indent-hook property of 'keyword or 'keyword-list.  The inden-
 tation returned is absolute.")
 
 (make-variable-buffer-local 'fi:lisp-keyword-indentation-hook)
- 
+
 (defvar fi:lisp-maximum-indent-struct-depth 3
   "*Maximum depth to backtrack out from a sublist for structured indentation.
 If this variable is NIL, no backtracking will occur and lists whose `car'
@@ -216,7 +216,7 @@ little consing as possible.")
     (cond ((and (= count 0) (not (string= comment-start ";")))
            (let ((len (length comment-start)))
              (while (and (< count len)
-                         (eql (elt comment-start count) ?\;)) 
+                         (eql (elt comment-start count) ?\;))
                (setq count (+ count 1))))))
     (setq spec
       (if (> count spec-length)
@@ -239,13 +239,14 @@ little consing as possible.")
   "Lisp semicolon hook.  Prefix argument is number of semicolons to
 insert.  The default value is 1."
   (interactive "p")
-  (insert-char ?; (or count 1))
+  (insert-char ?; (or count 1)
+	       )
   (if fi:lisp-electric-semicolon
       (save-excursion
 	(skip-chars-backward ";")
 	(let ((fi::lisp-doing-electric-semicolon t))
 	  (fi::indent-lisp-semicolon)))))
- 
+
 (defun fi::indent-lisp-semicolon (&optional at last-state)
   "Indent Lisp semicolon at point.
 The optional parameters specify the point at which the last partial
@@ -376,7 +377,7 @@ rigidly along with this one."
 	     (setq beg (point))
 	     (> end beg))
 	   (fi:indent-code-rigidly beg end shift-amt)))))
- 
+
 (defun fi::calculate-lisp-indent (&optional parse-start)
   "Return appropriate indentation for current line as Lisp code.
 In usual case returns an integer: the column to indent to.
@@ -401,7 +402,7 @@ of the start of the containing expression."
 	(beginning-of-defun))
 
       ;; Find outermost containing sexp
-      
+
       (while (< (point) indent-point)
 	(setq state (fi::parse-partial-sexp
 		     (point) indent-point 0 nil nil state)))
@@ -519,11 +520,11 @@ of the start of the containing expression."
 	     (cond ((setq desired-indent
 		      (catch 'fi:lisp-indent-hook-escape
 			(funcall fi:lisp-indent-hook indent-point state))))
-		   (t 
+		   (t
 		    ;; Use default indentation if not computed yet
 		    (setq desired-indent (current-column)))))
 	    (t (setq desired-indent (current-column))))
-      
+
       desired-indent)))
 
 (defun fi:lisp-indent-hook (indent-point state)
@@ -796,7 +797,7 @@ treated just like a LAMBDA (whose method is '((1 1 lambda-list) (0 t 1)))."
       (list calculated-indent (nth 1 state)))
      (t
       nil))))
- 
+
 (defun fi::lisp-indent-quoted-list (depth count state indent-point)
   "Function for indenting quoted lists."
   (goto-char (1+ (car (cdr state))))
@@ -1004,9 +1005,9 @@ NIL if no keyword was found or if the last s-expression parsed was a keyword),
 point where last s-expression parsed starts (or NIL if the current form
 contains no s-expressions), count (possibly zero) of keywords found, and
 the number (possibly zero) of non-keyword s-expressions (excluding keyword
-arguments) that were found or T if IGNORE-AFTER-COUNT was non-NIL and keyword 
-scanning was curtailed because of it.  A keyword and its argument constitute 
-a keyword pair.  The argument to a keyword, even if it is itself a keyword, 
+arguments) that were found or T if IGNORE-AFTER-COUNT was non-NIL and keyword
+scanning was curtailed because of it.  A keyword and its argument constitute
+a keyword pair.  The argument to a keyword, even if it is itself a keyword,
 is not counted as a keyword.  The argument to a keyword is not counted as a
 non-keyword s-expression."
   (let ((containing-form-start (car (cdr state)))
@@ -1566,9 +1567,9 @@ if matched at the beginning of a line, means don't indent that line."
   )
 
 (let ((tag 'fi:common-lisp-indent-hook))
-  
+
   ;; generic Common Lisp
-  
+
   (put 'compiler-let tag '((1 1 quote) (0 t 1)))
   (put 'defclass tag '((1 2 quote) (0 t 2)))
   (put 'defgeneric tag
@@ -1577,7 +1578,7 @@ if matched at the beginning of a line, means don't indent that line."
 		((1 2 lambda-list) (0 t 2)))))
   (put 'define-condition tag '((1 1 quote) (0 t 2)))
   (put 'defmacro tag '((1 2 (recursive lambda-list)) (0 t 2)))
-  (put 'defmethod tag 
+  (put 'defmethod tag
        (quote (if (fi:lisp-atom-p 2)
 		  ((1 3 lambda-list) (0 t 3))
 		((1 2 lambda-list) (0 t 2)))))
@@ -1672,6 +1673,7 @@ if matched at the beginning of a line, means don't indent that line."
   (put 'def-format-parser tag '(like defun))
   (put 'def-format-runtime tag '(like defun))
   (put 'def-function-spec-handler tag 2)
+  (put 'def-tr tag 3)
   (put 'defadvice tag 2)
   (put 'defcmacro tag '(like defmacro))
   (put 'defcstruct tag 1)

@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.116 1996/03/07 10:58:06 georgej Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.117 1996/03/25 23:38:33 smh Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -206,8 +206,10 @@ clman-dist:	all_clman
 
 ###############################################################################
 
-# removed: biggie fax louie girls clay
-hosts = ox akbar sole fridge hefty
+# The master checked-out copy lives in /fi/scm/emacs-lib/src/eli.
+
+# removed: biggie fax clay
+hosts = sparky akbar sole fridge freezer girls louie hefty romeo vapor
 elib_root = /usr/fi/emacs-lib
 to = $(elib_root)/fi
 
