@@ -1,19 +1,7 @@
-;; If you have any comments or questions on this interface, please feel
-;; free to contact Franz Inc. at
-;;	Franz Inc.
-;;	Attn: Kevin Layer
-;;	1995 University Ave
-;;	Suite 275
-;;	Berkeley, CA 94704
-;;	(415) 548-3600
-;; or
-;;	emacs-info@franz.com
-;;	uunet!franz!emacs-info
-
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
 ;; Copyright (C) 1985, 1986, 1987 Free Software Foundation, Inc.
-;; Copyright (c) 1987-1993 Franz Inc, Berkeley, Ca.
+;; Copyright (c) 1987-2001 Franz Inc, Berkeley, Ca.
 ;;
 ;; This file is derived from part of GNU Emacs.
 ;;
@@ -32,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-sublisp.el,v 1.66 1998/03/25 17:55:54 layer Exp $
+;; $Id: fi-sublisp.el,v 1.66.32.1 2001/06/05 16:01:45 layer Exp $
 
 (defun fi:set-associated-sublisp (buffer-name mode)
   "Use BUFFER-NAME as the name of a buffer which contains a Lisp subprocess

@@ -1,7 +1,7 @@
 ;; Stuff grabbed and modified from the GNU Emacs sources.
 
 ;; Copyright (C) 1985, 1986, 1987, 1990 Free Software Foundation, Inc.
-;; Copyright (C) 1993 Franz Inc.
+;; Copyright (C) 1993-2001 Franz Inc.
 
 ;; This file is (was) part of GNU Emacs.
 
@@ -19,7 +19,7 @@
 ;; along with GNU Emacs; see the file COPYING.  If not, write to
 ;; the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 
-;; $Id: fi-gnu.el,v 2.4 1997/02/27 17:33:41 layer Exp $
+;; $Id: fi-gnu.el,v 2.4.40.1 2001/06/05 16:01:42 layer Exp $
 
 (defun fi::find-most-recent-backup-file-name (fn)
   (if (eq version-control 'never)

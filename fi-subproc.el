@@ -1,7 +1,7 @@
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
 ;; Copyright (C) 1985, 1986, 1987 Free Software Foundation, Inc.
-;; Copyright (c) 1987-1993 Franz Inc, Berkeley, Ca.
+;; Copyright (c) 1987-2001 Franz Inc, Berkeley, Ca.
 ;;
 ;; This file is derived from part of GNU Emacs.
 ;;
@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.208.6.3 2001/05/30 20:10:53 layer Exp $
+;; $Id: fi-subproc.el,v 1.208.6.4 2001/06/05 16:01:45 layer Exp $
 
 ;; Low-level subprocess mode guts
 

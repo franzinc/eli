@@ -1,16 +1,16 @@
 ;; gnu emacs v19 specific hacks for the Franz Inc. emacs-lisp interface
 ;;
-;; Copyright (c) 1993-1994 Franz Inc, Berkeley, Ca.
+;; Copyright (c) 1987-2001 Franz Inc, Berkeley, Ca.
 ;;
 ;; Permission is granted to any individual or institution to use, copy,
-;; modify, and distribute this software, provided that this complete
-;; copyright and permission notice is maintained, intact, in all copies and
-;; supporting documentation.
+;; modify, and distribute this software, and to distribute modified
+;; versions, provided that this complete copyright and permission notice is
+;; maintained, intact, in all copies and supporting documentation.
 ;;
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-emacs19.el,v 2.23 2000/06/22 20:48:53 layer Exp $
+;; $Id: fi-emacs19.el,v 2.23.6.1 2001/06/05 16:01:42 layer Exp $
 
 (cond
  ((and (eq fi::emacs-type 'emacs19)
