@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.21 1991/04/20 23:25:57 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.22 1991/04/22 13:40:59 layer Exp $
 ;;
 
 (defvar fi:always-in-a-window nil)
@@ -491,7 +491,7 @@ visit time."
 (defun fi::lisp-complete-1 (pattern package functions-only)
   (let ((completions
 	 (progn
-	   (car (lep::eval-in-lisp 
+	   (car (lep::eval-session-in-lisp 
 		 'lep::list-all-completions-session
 		 ':pattern (fi::frob-case-to-lisp pattern)
 		 ':buffer-package (string-to-keyword fi:package)
@@ -834,3 +834,6 @@ time."
 						       undeffuncs))
 		(() (error)
 		 (message "error: %s" error))))
+
+(defun lep::eval-from-lisp (string)
+  (list (eval (car (read-from-string string)))))
