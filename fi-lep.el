@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.9 1991/02/13 10:20:37 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.10 1991/02/15 23:18:12 layer Exp $
 ;;
 ;;;;;; This LEP file redefines many of the fi:functions in the fi/keys.el file
 
@@ -324,6 +324,7 @@ the point is used as the default."
   "Display TEXT in a temporary buffer putting that buffer setting that
 buffers package to the package of PACKAGE."
   (let* ((from-window (selected-window))
+	 (real-from-window nil)
 	 (from-window-orig-height (1- (window-height))) ; minus mode line
 	 (buffer (get-buffer-create "*CL-temp*"))
 	 (buffer-window (get-buffer-window buffer))
@@ -342,10 +343,9 @@ buffers package to the package of PACKAGE."
     ;; get to the proper window
     ;;
     (cond (buffer-window
-	   (select-window buffer-window))
-	  ((eq (current-buffer) buffer)
-	   ;; in the correct buffer
-	   )
+	   (when (not (eq (selected-window) buffer-window))
+	     (select-window buffer-window)))
+	  ((eq (current-buffer) buffer))
 	  ((one-window-p)
 	   (setq from-window-orig-height (1- (window-height)))
 	   (split-window)
@@ -354,7 +354,10 @@ buffers package to the package of PACKAGE."
 	     (setq from-window (selected-window)))
 	   (switch-to-buffer buffer))
 	  (t
+	   (setq real-from-window (selected-window))
 	   (select-window (get-largest-window))
+	   (if (eq real-from-window (selected-window))
+	       (setq real-from-window nil))
 	   (setq from-window-orig-height (1- (window-height)))
 	   (split-window)
 	   (save-window-excursion
@@ -363,17 +366,17 @@ buffers package to the package of PACKAGE."
 	   (switch-to-buffer buffer)))
 
     (unless (one-window-p)
-      (let* ((window-min-height 1)
+      (let* ((window-min-height 2)
 	     (target-size
-	      (min (/ from-window-orig-height 2)
-		   (max window-min-height lines))))
+	      (max window-min-height
+		   (min lines (/ from-window-orig-height 2)))))
 	(if (< target-size (window-height))
 	    (shrink-window (- (window-height) target-size 1))
 	  (if (> target-size (window-height))
 	      (enlarge-window (- target-size (window-height) -1))))))
     
     (bury-buffer buffer)
-    (select-window from-window)))
+    (select-window (or real-from-window from-window))))
 
 ;;; Function documentation
 
