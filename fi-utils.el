@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.29 1991/11/01 00:12:22 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.30 1991/11/21 13:16:24 layer Exp $
 
 ;;; Misc utilities
 
@@ -358,14 +358,15 @@ at the beginning of the line."
   (let ((symbol
 	 (cond
 	  ((looking-at "\\sw\\|\\s_")
-	   (while (looking-at "\\sw\\|\\s_")
-	     (forward-char 1))
-	   (buffer-substring
-	    (point)
-	    (progn (forward-sexp -1)
-		   (while (looking-at "\\s'")
-		     (forward-char 1))
-		   (point))))
+	   (save-excursion
+	     (while (looking-at "\\sw\\|\\s_")
+	       (forward-char 1))
+	     (buffer-substring
+	      (point)
+	      (progn (forward-sexp -1)
+		     (while (looking-at "\\s'")
+		       (forward-char 1))
+		     (point)))))
 	  (t
 	   (condition-case ()
 	       (save-excursion
