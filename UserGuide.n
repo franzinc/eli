@@ -2,7 +2,7 @@
 			      User Guide
 			   Release 2.0beta
 
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.23 1991/09/27 00:59:06 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.24 1991/10/10 11:37:08 layer Exp $
 
 			     Introduction
 
@@ -481,6 +481,7 @@ Functions and Variables for Interacting with a Common Lisp subprocess
 %% fi:default-input-ring-max
 %% fi:display-buffer-function
 %% fi:eval-in-lisp
+%% fi:eval-in-lisp-asynchronous
 %% fi:filename-frobber-hook
 %% fi:lisp-evalserver-number-reads
 %% fi:lisp-evalserver-timeout
