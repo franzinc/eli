@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.67 1996/01/06 19:39:39 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.68 1996/02/13 23:35:26 smh Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -158,7 +158,7 @@ at file visit time."
     pathname))
 
 (defun fi::translate-putative-logical-pathname (pathname)
-  (fi:eval-in-lisp "(ignore-errors (namestring (translate-logical-pathname \"%s\")))"
+  (fi:eval-in-lisp "cl:(ignore-errors (namestring (translate-logical-pathname \"%s\")))"
 		   pathname))
 
 (defun fi:lisp-find-next-definition ()
