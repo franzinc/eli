@@ -1,3 +1,11 @@
+Tue Jun 11 08:49:29 1996    <layer@hobart.franz.com>
+
+	* fi-emacs19.el: fix last change (making menubar buffer-local)
+	since it caused slowness when starting up the buffer's mode
+
+	* fi-site-init.el: use fi::load instead of load everywhere, since
+	it compiles and loads files on windows
+
 Wed Jun 05 13:30:38 1996    <layer@hobart.franz.com>
 
 	* fi-xemacs.el:

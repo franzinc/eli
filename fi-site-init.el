@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.73 1996/05/16 21:51:13 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.74 1996/06/11 15:51:48 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -152,7 +152,7 @@ exists.")
 (autoload 'fi:clman-apropos "fi-clman" nil t)
 
 (condition-case nil
-    (load "local-fi-developer-hooks.elc")
+    (fi::load "local-fi-developer-hooks")
   (error nil))
 
 (setq fi:package-loaded t)
@@ -162,10 +162,10 @@ exists.")
 
 (when fi::load-subprocess-files
   (cond ((eq fi::emacs-type 'xemacs19)
-       (load "fi-xemacs"))
+       (fi::load "fi-xemacs"))
       ((eq fi::emacs-type 'emacs19)
-       (load "fi-emacs19"))
-      (t (load "fi-emacs18"))))
+       (fi::load "fi-emacs19"))
+      (t (fi::load "fi-emacs18"))))
 
 (defun fi::top-level ()
   (fi::initialize-emacs-lisp-interface)

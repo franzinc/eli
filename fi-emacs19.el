@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-emacs19.el,v 2.14 1996/06/05 20:31:42 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-emacs19.el,v 2.15 1996/06/11 15:51:46 layer Exp $
 
 
 (unless (string-match "^18." emacs-version) ;Allows compilation on 18.
@@ -252,19 +252,34 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(make-local-variable 'current-menubar)
+
+(defun fi::set-buffer-menubar (menubar)
+  (setq current-menubar menubar)
+  ;; this slows things down a lot.  Why??????????
+;;;;(set-menubar-dirty-flag)
+  )
+
 (defun fi::install-menubar (menu-bar)
   (add-menu nil (car menu-bar) (cdr menu-bar) "Help"))
+
+(defvar fi::buffer-local-menubar nil)
 
 (defun fi::install-buffer-local-emacs19-acl-menubar ()
   (when (eq current-menubar (default-value 'current-menubar))
     ;; current-menubar isn't yet buffer local
-    (set-buffer-menubar current-menubar)
-    (fi::install-menubar fi:allegro-file-menu)
-    (fi::install-menubar fi:allegro-edit-menu)
-    (fi::install-menubar fi:allegro-debug-menu)
-    (fi::install-menubar fi:allegro-help-menu)
-    (when (and fi:composer-menu (not (on-ms-windows)))
-      (fi::install-menubar fi:composer-menu))))
+    (cond
+     (fi::buffer-local-menubar
+      (fi::set-buffer-menubar fi::buffer-local-menubar))
+     (t
+      (set-buffer-menubar current-menubar)
+      (fi::install-menubar fi:allegro-file-menu)
+      (fi::install-menubar fi:allegro-edit-menu)
+      (fi::install-menubar fi:allegro-debug-menu)
+      (fi::install-menubar fi:allegro-help-menu)
+      (when (and fi:composer-menu (not (on-ms-windows)))
+	(fi::install-menubar fi:composer-menu))
+      (setq fi::buffer-local-menubar current-menubar)))))
 
 (defvar fi::menubar-initialization)
 (setq fi::menubar-initialization
@@ -596,5 +611,6 @@
 	       (when (boundp 'lisp-font-lock-keywords-2)
 		 (setq font-lock-keywords lisp-font-lock-keywords-2))))))
 
-(defun set-menubar-dirty-flag ()	;smh 31oct94
-  (setq lucid-menu-bar-dirty-flag t))
+;;why redefine this????
+;;(defun set-menubar-dirty-flag ()	;smh 31oct94
+;;  (setq lucid-menu-bar-dirty-flag t))
