@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.16 1991/03/12 18:29:33 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.17 1991/03/13 15:02:53 layer Exp $
 ;;
 
 (defvar fi:always-in-a-window nil)
@@ -193,7 +193,7 @@ occurance of the last tag."
   (if lep:*meta-dot-session* (lep::kill-session lep:*meta-dot-session*))
   (setq lep:*meta-dot-session* nil))
 
-(defun fi::lisp-find-tag-common (something next other-window-p)
+(defun fi::lisp-find-tag-common (something next other-window-p &optional type)
   (message "Finding definition...")
   (setq  *meta-dot-string* something)
   (if (lep::lep-open-connection-p)
@@ -202,6 +202,7 @@ occurance of the last tag."
 	(setq lep:*meta-dot-session*
 	  (make-complex-request 
 	   (scm::metadot-session :package (string-to-keyword fi:package)
+				 :type (or type t)
 				 :fspec something)
 	   ((something other-window-p) (pathname point n-more)
 	    (show-found-definition (if (symbolp something)
@@ -221,6 +222,7 @@ occurance of the last tag."
 (defun fi:lisp-tags-loop-continue (&optional first-time)
   "Find the next definition found by a previous fi:lisp-find-tag."
   (interactive "P")
+  (message "Finding next definition...")
   (if (or tags-loop-form (not lep:*meta-dot-session*))
       (progn
 	(when lep:*meta-dot-session*
@@ -242,22 +244,28 @@ occurance of the last tag."
 	  (message
 	   "%s was defined somewhere at the top-level, %d more definitions"
 	   thing n-more)
-	(let ((mess ""))
+	(let ((mess "")
+	      (xb nil))
 	  (if fi:filename-frobber-hook
 	      (setq pathname (funcall fi:filename-frobber-hook pathname)))
+	  ;;
+	  (setq xb (get-file-buffer pathname))
 	  (if (or other-window-p
 		  fi:subprocess-mode
 		  ;; Perhaps there is already a window for this file
 		  )
 	      (find-file-other-window pathname)
 	    (find-file pathname))
+	  (if xb (set-mark (point)))
 	  (if (null point)
 	      (progn
 		(setq mess
 		  (format "The definition of %s is somewhere in this file! : "
 			  thing))
 		(beginning-of-buffer))
-	    (goto-char (1+ point)))
+	    (progn
+	      (goto-char (1+ point))
+	      (if (not xb) (set-mark (point)))))
 	  (cond ((eq n-more 0)
 		 (message (concat mess "No more definitions of %s") thing))
 		(n-more
@@ -337,8 +345,12 @@ return the pathname of temp file."
 		       (write-region (point-min) (point-max) file nil
 				     'no-message)
 		       file)))
-	      (and (fboundp 'buffer-tick) (buffer-tick)))
+	      (lep::buffer-modified-tick))
       (list ':does-not-exist))))
+
+(defun lep::buffer-modified-tick ()
+  "Get the buffer tick if it is supported"
+  (and (fboundp 'buffer-modified-tick) (buffer-modified-tick)))
 
 ;;; This is pretty horrible:
 ;;; Some how we need to get the name of the process for the buffer
@@ -423,7 +435,7 @@ documentation for SYMBOL."
   "Print the macroexpansion of the form at the point."
   (interactive)
   (message "Macroexpanding...")
-  (fi::lisp-macroexpand-common 'lisp:macroexpand "macroexpand"))
+  (fi::lisp-macroexpand-common 'lisp:macroexpand-1 "macroexpand"))
 
 (defun fi:lisp-macroexpand-recursively (arg)
   "Print the full macroexpansion the form at the point.
@@ -535,19 +547,15 @@ s-expression around the point."
 (defun list-fspecs-common (symbol function msg)
   (make-request (lep::list-fspecs-session
 		 :function function :fspec (fi::frob-case-to-lisp symbol))
-		((symbol) (who text)
-		 ;; It might be good to make this list mouse sensitive so that
-		 ;; we can mouse there
-		 ;; dmode should be a minor mode???
-		 (cond
-		  (text (fi:show-some-text fi:package text))
-		  (t
-		   (beep)
-		   (message "No callers of \"%s\" in package \"%s\""
-			    symbol fi:package))))
+		((symbol fi:package) (the-definitions)
+		 (display-some-definitions fi:package
+					   the-definitions
+					   (list 'find-a-definition)))
 		((msg) (error)
 		 (message msg error))))
 
+(defun find-a-definition (string type list-buffer)
+  (fi::lisp-find-tag-common string  nil t type))
 
 (defun lep::my-find-file (filename)
   (find-file filename))
@@ -611,6 +619,7 @@ s-expression around the point."
 it inserts a form to undefine it at the end of the definition. With a
 prefix argument do it"
   (interactive "P")
+  (message "Killing definition...")
   (make-request (lep::undefine-reply :buffer (buffer-name) 
 				     :start-point (point)
 				     :end-point (save-excursion
@@ -621,7 +630,8 @@ prefix argument do it"
 		 (if (not prefix)
 		     (progn (end-of-defun) 
 			    (save-excursion (insert form)
-					    (insert "\n")))))
+					    (insert "\n")))
+		   (message "Killing definition...done.")))
 		(() (error)
 		 (message "Cannot undefine current definition %s"  error))))
 
@@ -644,3 +654,39 @@ function is called."
 		((string) (error)
 		 (message "Cannot (un)trace %s: %s" string error))))
 
+
+;;; Editing callers, callees etc
+
+(defun fi:edit-generic-function-methods (something)
+  (interactive (if current-prefix-arg
+		   '(nil t)
+		 (fi::get-default-symbol "Generic Function Name")))
+  (edit-somethings something 
+		   'lep::generic-function-methods-function-specs
+		   "Generic Function Methods"))
+
+(defun fi:edit-callers (something)
+  (interactive (if current-prefix-arg
+		   '(nil t)
+		 (fi::get-default-symbol "Function name")))
+  (message "Editing callers ...")
+  (edit-somethings something 
+		   'lep::who-calls
+		   "Who calls"))
+
+(defun fi:edit-callees (something)
+  (interactive (if current-prefix-arg
+		   '(nil t)
+		 (fi::get-default-symbol "Function name")))
+  (message "Editing callees ...")
+  (edit-somethings something 
+		   'lep::who-is-called-by
+		   "Who is called by"))
+
+(defun fi:list-callers (symbol)
+  (interactive (fi::get-default-symbol "Find references to symbol"))
+  (fi:lisp-who-calls symbol))
+
+;;; list-callees
+;;; list-class-methods
+;;; list-generic-function-methods
