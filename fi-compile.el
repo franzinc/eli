@@ -1,4 +1,4 @@
-;; $Id: fi-compile.el,v 2.10.6.1 2000/10/21 15:17:58 layer Exp $
+;; $Id: fi-compile.el,v 2.10.6.2 2000/10/22 00:35:38 layer Exp $
 
 (require 'cl)
 
@@ -22,7 +22,7 @@
 (load "fi-leep0.el")
 
 (setq fi-files
-  '("Doc0" "fi-vers" "fi-basic-lep" "fi-changes" "fi-composer" "fi-db"
+  '("fi-vers" "fi-basic-lep" "fi-changes" "fi-composer" "fi-db"
     "fi-dmode" "fi-emacs18" "fi-emacs19" "fi-filec" "fi-gnu"
     "fi-indent" "fi-keys" "fi-leep0"
     "fi-lep" "fi-lze" "fi-modes" "fi-ring" "fi-rlogin" "fi-shell"

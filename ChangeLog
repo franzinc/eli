@@ -11,6 +11,11 @@ For more detailed instructions on filling in the ChangeLog form, see
 
 2000-10-21  Kevin Layer  <layer@ultra>
 
+	* fi-compile.el: finish removing Doc0 reference
+	* fi-site-init.el: fix "you must byte-recompile" message [bug9697]
+
+2000-10-21  Kevin Layer  <layer@ultra>
+
 	* Makefile: remove readme.htm depend
 	* fi-compile.el: don't build readme0.htm anymore
 	* local.mak: don't distribute Doc0.el
