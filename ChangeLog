@@ -1,10 +1,14 @@
-Thu Oct 03 14:01:48 1996    <layer@HOBART>
-
-	* makefile.win32: add clman.exe to default rule
-
 *******************************************************************************
 2.0.20.alpha.5 release for ACL on Windows
 *******************************************************************************
+
+Thu Oct 03 14:01:48 1996    <layer@HOBART>
+
+	* fi-keys.el: remove windows newline hack (fix it for real
+	elsewhere)
+	* fi-shell.el: do "cmd /q" on NT so newlines work
+	* fi-version.el: new variable *on-windows-nt*
+	* makefile.win32: add clman.exe to default rule
 
 Thu Oct 03 10:55:11 1996    <layer@HOBART>
 

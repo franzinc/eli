@@ -1,9 +1,13 @@
-;; $Id: fi-version.el,v 2.6 1996/08/01 22:36:40 layer Exp $
+;; $Id: fi-version.el,v 2.7 1996/10/03 21:17:43 layer Exp $
 
 ;; This is in a separate file so that it can be loaded at byte-compile time
 
 (defun on-ms-windows ()
   (memq system-type '(windows-nt ms-windows ms-dos win386)))
+
+(defvar *on-windows-nt*
+    (and (on-ms-windows)
+	 (file-exists-p (format "%s/system32" (getenv "WINDIR")))))
 
 (let ((case-fold-search t))
   (cond ((string-match "xemacs" emacs-version) (setq fi::emacs-type 'xemacs19))
