@@ -2,7 +2,7 @@
 			      User Guide
 			   Release 2.0beta
 
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.20 1991/09/10 11:19:57 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.21 1991/09/11 15:24:16 layer Exp $
 
 			     Introduction
 
@@ -433,7 +433,6 @@ Lisp Listeners
 Functions and Variables for Interacting with a Common Lisp subprocess
 
 %% fi:common-lisp
-%% fi:goto-common-lisp
 %% fi:open-lisp-listener
 
 %% fi:common-lisp-buffer-name
