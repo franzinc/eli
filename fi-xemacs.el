@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-xemacs.el,v 2.8 1997/10/30 00:46:39 layer Exp $
+;; $Id: fi-xemacs.el,v 2.8.22.1 1998/07/08 08:43:23 layer Exp $
 
 (defun fi-find-buffer-visiting (filename)
   (get-file-buffer filename))
@@ -142,8 +142,8 @@
 (defconst fi:composer-menu
     '("Composer"
       ["Start Composer" fi:start-composer (fi::connection-open-composer-loaded-and-stopped)]
-      ["Start Composer with Podium" fi:start-composer-mouse-line
-       (fi::connection-open-composer-loaded-and-stopped)]
+;;;      ["Start Composer with Podium" fi:start-composer-mouse-line
+;;;       (fi::connection-open-composer-loaded-and-stopped)]
       "----"
       ["Inspect" fi:inspect-value (fi::composer-connection-open)]
       ("CLOS"

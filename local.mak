@@ -1,11 +1,11 @@
-# $Id: local.mak,v 2.6.20.4 1998/06/25 18:42:02 layer Exp $
+# $Id: local.mak,v 2.6.20.5 1998/07/08 08:43:23 layer Exp $
 
 TGZFILE = eli-$(VERSION).tar.gz
 DISTDIR = eli-$(VERSION)
 README_HTM = readme.htm
 README_TXT = readme.txt
 
-release_files = Makefile version.mak fi-*.el fi-*.elc \
+release_files = Makefile version.mak Doc0.el fi-*.el fi-*.elc \
 	examples/emacs.el readme.htm
 
 echo_release_files:
