@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.25 1991/12/10 18:34:29 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.26 1992/01/15 13:28:41 layer Exp $
 
 (defvar fi::ss-help
     "Debugger commands:\\<fi:scan-stack-mode-map>
@@ -16,7 +16,7 @@
 \\[fi:ss-continue]	:continue
 \\[fi:ss-pop]	:pop
 \\[fi:ss-reset]	:reset
-\\[fi:lisp-delete-pop-up-window]	same as \\[fi::ss-quit] below
+\\[fi:lisp-delete-pop-up-window]	same as \\[fi:ss-quit] below
 \\[fi:ss-set-current]	make frame under the point the current frame
 \\[fi:ss-disassemble]	disassemble the function
 \\[fi:ss-restart]	restart function (give prefix to specify different form)
