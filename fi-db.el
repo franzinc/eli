@@ -24,12 +24,12 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.15 1991/04/22 23:25:37 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.16 1991/04/23 15:47:14 layer Exp $
 ;;
 
 (defconst lep:current-frame-regexp "^ ->")
 (defconst lep:ok-frame-regexp "^   (")
-(defconst lep:scan-stack-mode-map nil)
+(defconst fi:scan-stack-mode-map nil)
 (defconst lep:debugger-help
     "Debugger commands:
 
@@ -89,7 +89,7 @@ process. With argument ALL, do a \":zoom :all t\"."
 				      (or from-buffer
 					  lep::debugger-from-buffer))))
 		     (unless lep::help-displayed
-		       (lep:ss-hide-help-text))
+		       (fi:ss-hide-help-text))
 		     (insert stack)
 		     (beginning-of-buffer)
 		     (re-search-forward lep:current-frame-regexp)
@@ -129,35 +129,35 @@ Entry to this mode runs the lep:scan-stack-mode-hook hook."
   (setq lep::process-name process-name)
   (setq major-mode 'let:scan-stack-mode)
   (setq mode-name "Scan stack mode")
-  (if (null lep:scan-stack-mode-map)
+  (if (null fi:scan-stack-mode-map)
       (let ((map (make-keymap))
 	    (ccmap (make-keymap)))
-	(define-key ccmap "\C-c"	'lep:ss-continue)
-	(define-key ccmap "\C-p"	'lep:ss-pop)
-	(define-key ccmap "\C-r"	'lep:ss-reset)
+	(define-key ccmap "\C-c"	'fi:ss-continue)
+	(define-key ccmap "\C-p"	'fi:ss-pop)
+	(define-key ccmap "\C-r"	'fi:ss-reset)
 	(define-key map "\C-c"	ccmap)
 	
-	(define-key map " "	'lep:ss-hide-help-text)
-	(define-key map "."	'lep:ss-set-current)
-	(define-key map "D"	'lep:ss-disassemble)
-	(define-key map "R"	'lep:ss-restart)
+	(define-key map " "	'fi:ss-hide-help-text)
+	(define-key map "."	'fi:ss-set-current)
+	(define-key map "D"	'fi:ss-disassemble)
+	(define-key map "R"	'fi:ss-restart)
 	(define-key map "d"	'next-line)
-	(define-key map "a"	'lep:ss-toggle-all)
-	(define-key map "e"	'lep:ss-edit)
-	(define-key map "g"	'lep:ss-revert-stack)
-	(define-key map "h"	'lep:ss-unhide-help-text)
-	(define-key map "l"	'lep:ss-locals)
-	(define-key map "p"	'lep:ss-pprint)
-	(define-key map "q"	'lep:ss-quit)
-	(define-key map "r"	'lep:ss-return)
+	(define-key map "a"	'fi:ss-toggle-all)
+	(define-key map "e"	'fi:ss-edit)
+	(define-key map "g"	'fi:ss-revert-stack)
+	(define-key map "h"	'fi:ss-unhide-help-text)
+	(define-key map "l"	'fi:ss-locals)
+	(define-key map "p"	'fi:ss-pprint)
+	(define-key map "q"	'fi:ss-quit)
+	(define-key map "r"	'fi:ss-return)
 	(define-key map "u"	'previous-line)
-	(setq lep:scan-stack-mode-map map)))
-  (use-local-map lep:scan-stack-mode-map)
+	(setq fi:scan-stack-mode-map map)))
+  (use-local-map fi:scan-stack-mode-map)
   (if (not buffer-read-only) (toggle-read-only))
   (setq truncate-lines t)
   (run-hooks 'lep:scan-stack-mode-hook))
 
-(defun lep:ss-reset ()
+(defun fi:ss-reset ()
   "Do a :reset on the process being debugged.  This causes the process
 being debugged to throw out to the outer most read-eval-print loop, and
 causes the debugger buffer to be buried and the window configuration as it
@@ -165,14 +165,14 @@ was before this mode was entered to be restored."
   (interactive)
   (lep::do-tpl-command-on-process t nil "reset"))
 
-(defun lep:ss-continue ()
+(defun fi:ss-continue ()
   "Do a :continue on the process being debugged.  This causes the process
 being debugged to continue from a continuable error, taking the default
 restart (restart number 0)."
   (interactive)
   (lep::do-tpl-command-on-process t nil "continue"))
 
-(defun lep:ss-pop ()
+(defun fi:ss-pop ()
   "Do a :pop on the process being debugged.  This causes the process being
 debugged to pop out to the next outer most read-eval-print loop, and
 causes the debugger buffer to be buried and the window configuration as it
@@ -180,7 +180,7 @@ was before this mode was entered to be restored."
   (interactive)
   (lep::do-tpl-command-on-process t nil "pop"))
 
-(defun lep:ss-return ()
+(defun fi:ss-return ()
   "Do a :return on the process being debugged.  This causes the process
 being debugged to return a value from the current frame, as if the error
 never occured.  The form to evaluate to obtain the return value for the
@@ -195,7 +195,7 @@ it was before this mode was entered is restored."
    (list 'read-from-string
 	   (read-string "Form (evaluated in the Lisp environment): " "nil"))))
 
-(defun lep:ss-restart (new-form)
+(defun fi:ss-restart (new-form)
   "Do a :restart on the process being debugged.  This causes the process
 being debugged to restart the execution of the function associated with the
 current frame.  With argument NEW-FORM, a form to evaluate to obtain the
@@ -213,13 +213,13 @@ is restored."
      (list 'read-from-string
 	   (read-string "Form (evaluated in the Lisp environment): ")))))
 
-(defun lep:ss-edit ()
+(defun fi:ss-edit ()
   "Find the source file associated with the function in the current frame
 and pop up a buffer with that definition visible."
   (interactive)
   (lep::do-tpl-command-on-process nil t "edit"))
 
-(defun lep:ss-revert-stack ()
+(defun fi:ss-revert-stack ()
   "Cause the stack in the debugger buffer to be synchronized with the
 actual stack in the Common Lisp environment.  This is useful when commands
 are typed in the *common-lisp* buffer which change the state of the process
@@ -227,7 +227,7 @@ being debugged."
   (interactive)
   (fi:scan-stack))
 
-(defun lep:ss-toggle-all ()
+(defun fi:ss-toggle-all ()
   "Toggle showing all frames in the currently debugged process stack.  By
 default, there are certain types of frames hidden because they offer no
 additional information."
@@ -235,7 +235,7 @@ additional information."
   (setq lep:show-all-frames (not lep:show-all-frames))
   (fi:scan-stack))
 
-(defun lep:ss-set-current ()
+(defun fi:ss-set-current ()
   "Make the frame to which the point lies the current frame for future
 operations.  It is not necessary to use this command, usually, since most
 commands make the frame to which the point lies the current frame before
@@ -251,7 +251,7 @@ performing their assigned action."
 	     nil nil "up" (- offset) ':zoom nil))
 	  (lep::make-current offset)))))
 
-(defun lep:ss-quit ()
+(defun fi:ss-quit ()
   "Quit debugging the Common Lisp process.  The debugger buffer is buried
 and the window configuration as it was before this mode was entered is
 restored."
@@ -259,7 +259,7 @@ restored."
   (set-window-configuration lep::db-saved-window-configuration)
   (end-of-buffer))
 
-(defun lep:ss-disassemble ()
+(defun fi:ss-disassemble ()
   "Disassemble the function associated with the current frame, putting the
 disassembly into a help buffer and positioning the point on the instruction
 that will next be executed if the current error can be continued."
@@ -280,7 +280,7 @@ that will next be executed if the current error can be continued."
       (beginning-of-line)
       (insert ">"))))
 
-(defun lep:ss-locals ()
+(defun fi:ss-locals ()
   "Find the local variables to the function associated with the current
 frame, and display them in a help buffer.  See the Allegro CL compiler
 switch compiler:save-local-names-switch for information on accessing local
@@ -297,7 +297,7 @@ variables in the debugger."
      (() (error)
       (message "Cannot find locals: %s" error)))))
 
-(defun lep:ss-pprint ()
+(defun fi:ss-pprint ()
   "Pretty print the current frame, function and arguments, into a help
 buffer."
   (interactive)
@@ -313,7 +313,7 @@ buffer."
      (() (error)
       (message "Cannot pprint: %s" error)))))
 
-(defun lep:ss-hide-help-text ()
+(defun fi:ss-hide-help-text ()
   "Hide the help text at the beginning of the debugger buffer."
   (interactive)
   (save-excursion
@@ -325,7 +325,7 @@ buffer."
     (narrow-to-region (point) (point-max))
     (setq lep::help-displayed nil)))
 
-(defun lep:ss-unhide-help-text ()
+(defun fi:ss-unhide-help-text ()
   "Unhide the help text at the beginning of the debugger buffer."
   (interactive)
   (save-excursion
@@ -351,7 +351,7 @@ buffer."
 		  ;; Normal continuation
 		  ((offset) (done)
 		   (if done
-		       (lep:ss-quit)
+		       (fi:ss-quit)
 		     (when offset (lep::make-current offset))))
 		  ;; Error continuation
 		  ((process-name) (error)
