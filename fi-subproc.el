@@ -19,7 +19,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.136 1992/02/21 13:51:15 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.137 1992/02/21 14:36:10 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -342,7 +342,25 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	 (local (or (string= "localhost" host)
 		    (string= host (system-name))))
 	 (real-args
-	  (if fi:start-lisp-interface-arguments
+	  (if (and fi:start-lisp-interface-arguments
+		   ;; can't do this:
+		   ;;  (not (fi::lep-open-connection-p))
+		   ;; because there is a race condition implied here: the
+		   ;; network connection may take longer to die than the
+		   ;; process, so we might not startup the interface
+		   ;; correctly (it seems to happen to some users more than
+		   ;; others, but it still happens).
+		   ;;
+		   ;; What we really just want to prevent is multiple
+		   ;; connections.
+		   (let* ((buffer-name (fi::calc-buffer-name buffer-name
+							     "common-lisp"))
+			  (buffer (get-buffer buffer-name)))
+		     (or (not (fi::lep-open-connection-p))
+			 (and buffer
+			      (eq buffer (fi::connection-buffer
+					  fi::*connection*)))))
+		   )
 	      (append (funcall fi:start-lisp-interface-arguments
 			       fi:use-background-streams)
 		      image-args)
@@ -592,7 +610,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 (defun fi::common-lisp-subprocess-filter (process output &optional stay
 								   cruft)
   (let ((val (catch 'cl-subproc-filter-foo
-	       (fi::common-lisp-subprocess-filter-1))))
+	       (fi::common-lisp-subprocess-filter-1 process))))
     (case val
       (normal
        (fi::subprocess-filter process output stay cruft)
@@ -604,7 +622,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	     (switch-to-buffer "*Help*"))
 	 (fi::subprocess-filter process output stay cruft))))))
 
-(defun fi::common-lisp-subprocess-filter-1 ()
+(defun fi::common-lisp-subprocess-filter-1 (process)
   ;; This is a temporary filter, which is used until the rendezvous with
   ;; Lisp is made.
   (save-excursion
@@ -666,12 +684,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 			    &rest mode-hook-arguments)
   (let* ((remote (and (stringp image-file)
 		      (string= fi::rsh-command image-file)))
-	 (buffer-name
-	  (cond ((stringp buffer-name) buffer-name)
-		(t (let ((name (concat "*" process-name "*")))
-		     (if (numberp buffer-name)
-			 (fi::buffer-number-to-buffer name buffer-name)
-		       name)))))
+	 (buffer-name (fi::calc-buffer-name buffer-name process-name))
 	 (buffer (or (get-buffer buffer-name)
 		     (get-buffer-create buffer-name)))
 	 (buffer-name (buffer-name buffer))
@@ -738,6 +751,13 @@ the first \"free\" buffer name and start a subprocess in that buffer."
       (fi::make-subprocess-variables)
       (when initial-func (funcall initial-func process)))
     process))
+
+(defun fi::calc-buffer-name (buffer-name process-name)
+  (cond ((stringp buffer-name) buffer-name)
+	(t (let ((name (concat "*" process-name "*")))
+	     (if (numberp buffer-name)
+		 (fi::buffer-number-to-buffer name buffer-name)
+	       name)))))
 
 (defvar fi::tcp-listener-table nil)
 (defvar fi::tcp-listener-generation 0)
@@ -899,6 +919,8 @@ This function implements continuous output to visible buffers."
        (t (set-buffer old-buffer))))))
 
 (defun fi::buffer-number-to-buffer (name number)
+  (if (string-match "^\\(.*\\)<[0-9]+>$" name)
+      (setq name (substring name (match-beginning 1) (match-end 1))))
   (let ((buffer-name
 	 (cond ((> number 1) (concat name "<" number ">"))
 	       ((< number 0)
