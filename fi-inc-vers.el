@@ -36,8 +36,9 @@
     (prin1 version (current-buffer))))
 (skip-chars-backward "^\"")
 (message "%s"
-	 (buffer-substring (point)
-			   (progn (skip-chars-forward "^\"") (point))))
+	 (setq whole-version
+	   (buffer-substring (point)
+			     (progn (skip-chars-forward "^\"") (point)))))
 
 
 (write-region (point-min) (point-max) version-file nil 'nomsg)
@@ -65,7 +66,7 @@
 (insert
  "*******************************************************************************\n")
 (insert
- (format "%d public release\n" version))
+ (format "%s public release\n" whole-version))
 (insert
  "*******************************************************************************\n\n")
 
