@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.3 1991/02/13 10:20:43 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.4 1991/02/15 23:18:05 layer Exp $
 ;;
 ;; Code the implements evaluation in via the backdoor
 
@@ -56,7 +56,7 @@ compiled."
   (interactive "P")
   (let* ((end (save-excursion (end-of-defun) (point)))
 	 (start (save-excursion
-		  (beginning-of-defun)
+		  (fi:beginning-of-defun)
 		  (point))))
     (lep::eval-region-internal start end compilep)))
 
