@@ -1,3 +1,7 @@
+Thu Sep  5 16:15:57 1996  Kevin Layer  <layer@freezer>
+
+	* fi-site-init.el: fix fi::load
+
 Wed Sep 04 11:42:45 1996    <layer@HOBART>
 
 	* fi-shell.el: make sure we run the correct shell on NT

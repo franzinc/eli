@@ -1,4 +1,4 @@
-;; $Id: fi-site-init.el,v 1.78 1996/09/03 23:55:41 layer Exp $
+;; $Id: fi-site-init.el,v 1.79 1996/09/05 23:16:26 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -9,8 +9,9 @@
 (defvar fi::build-time nil)
 (defvar fi::emacs-type nil)
 
-(defvar fi::library-directory
-    (file-name-directory load-file-name))
+(defvar fi::library-directory)
+
+(setq fi::library-directory (file-name-directory load-file-name))
 
 (defun fi::locate-library (file)
   (let (p)
@@ -117,7 +118,8 @@ exists.")
 		   lib-file))
 	     (byte-compile-file el-lib-file t))
 	    (t (load lib-file)))))
-   (t (load file))))
+   (t (load (or (fi::locate-library file)
+		(error "Couldn't find \"%s\"" file))))))
 
 (defun fi::load-compiled (file &rest load-before-compile)
   (let ((lib-file (fi::locate-library file)))
