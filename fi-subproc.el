@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 3.7.2.4 2004/08/14 07:02:36 layer Exp $
+;; $Id: fi-subproc.el,v 3.7.2.5 2004/09/28 20:42:13 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -333,11 +333,12 @@ keyboard-quit function will interrupt the waiting, however.")
 (defvar minibuffer-confirm-incomplete)
 
 (defvar fi::set-emacs-mule-terminal-io
-    "(when (not (featurep :allegro-cl-trial))
-       (let ((*load-verbose* nil))
+    "(let ((*load-verbose* nil))
+       (when (and (fboundp 'excl::load-emacs-mule-ef)
+                  (excl::load-emacs-mule-ef t))
         (princ \";; Setting (stream-external-format *terminal-io*) to :emacs-mule.\")
-        (setf (stream-external-format *terminal-io*) :emacs-mule)
-        (values)))"
+        (setf (stream-external-format *terminal-io*) :emacs-mule))
+       (values))"
     "*The initial input sent to a Lisp listener in order to set its 
 *terminal-io* stream-external-format to :emacs-mule.")
 

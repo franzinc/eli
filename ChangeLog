@@ -1,3 +1,7 @@
+2004-09-02  Charles A. Cox  <cox@gemini>
+
+	* fi-subproc.el: (small change) use new emacs-mule setter.
+
 2004-09-20  Kevin Layer  <layer@gemini>
 
 	* fi-utils.el (fi:start-interface-via-file): fix spr29390: set
@@ -4993,4 +4997,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.9.2.6 $
+$Revision: 3.9.2.7 $
