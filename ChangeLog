@@ -7,6 +7,13 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.pre-beta.11
+
+Wed Dec 17 19:00:28 1997  Kevin Layer  <layer@ultra>
+
+	* fi-subproc.el: fix typo in last rev
+
+*******************************************************************************
 2.0.21.pre-beta.10
 
 Wed Dec 17 16:14:52 1997  Kevin Layer  <layer@ultra>
