@@ -1,3 +1,12 @@
+Thu Sep  2 11:32:57 1993  Kevin Layer  (layer at sole)
+
+	* fi-lemacs.el: just found out that the active-p menu predicates
+	run with the locals from the buffer in the screen where the
+	menubar resides.  If fi:package is something, like :pclos, that
+	doesn't exist in the lisp world, then running the active-p preds
+	that do fi:eval-in-lisp causes problems.  So, bind fi:package to
+	nil.
+
 Wed Sep  1 16:08:59 1993  Kevin Layer  (layer at sole)
 
 	* fi-lemacs.el: lots of fixes, improvements

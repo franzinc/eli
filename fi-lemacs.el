@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/Attic/fi-lemacs.el,v 2.7 1993/09/01 23:12:21 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-lemacs.el,v 2.8 1993/09/02 18:37:05 layer Exp $
 
 (defconst fi:allegro-file-menu
     '("ACLFile"
@@ -175,7 +175,8 @@
     (setq fi::connection-open-composer-loaded nil))
   (and (fi::lep-open-connection-p)
        (or (unless fi::connection-open-composer-loaded
-	     (if (fi:eval-in-lisp "(when (find-package :wt) t)")
+	     (if (let ((fi:package nil))
+		   (fi:eval-in-lisp "(when (find-package :wt) t)"))
 		 (progn
 		   (setq fi::connection-open-composer-loaded 'yes)
 		   (setq fi::composer-cached-connection fi::*connection*))
@@ -188,10 +189,11 @@
 (defun fi::connection-open-composer-loaded-and-stopped ()
   (and (fi::connection-open-composer-loaded)
        (or (unless fi::connection-open-composer-loaded-and-stopped
-	     (if (fi:eval-in-lisp
-		  "(when (and (find-package :wt)
-                              (not (wt::common-windows-initialized-p)))
-                     t)")
+	     (if (let ((fi:package nil))
+		   (fi:eval-in-lisp
+		    "(when (and (find-package :wt)
+                                (not (wt::common-windows-initialized-p)))
+                       t)"))
 		 (setq fi::connection-open-composer-loaded-and-stopped 'yes)
 	       (setq fi::connection-open-composer-loaded-and-stopped 'no))
 	     nil)
@@ -202,7 +204,8 @@
 (defun fi::composer-connection-open ()
   (and (fi::connection-open-composer-loaded)
        (or (unless fi::composer-connection-open
-	     (if (fi:eval-in-lisp "(wt::connected-to-epoch-p)")
+	     (if (let ((fi:package nil))
+		   (fi:eval-in-lisp "(wt::connected-to-epoch-p)"))
 		 (setq fi::composer-connection-open 'yes)
 	       (setq fi::composer-connection-open 'no))
 	     nil)

@@ -2,7 +2,7 @@
 			      User Guide
 			    Release 2.0.8
 
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.48 1993/09/01 23:12:18 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.49 1993/09/02 18:37:01 layer Exp $
 
 			     Introduction
 
@@ -573,11 +573,12 @@ Packages
    with respect to the correct package.
 
    There are two methods for telling Emacs about which package to use.
-   The IN-PACKAGE macro form is parse when a file is visited, and the
+   The IN-PACKAGE macro form is parsed when a file is visited and the
    argument to IN-PACKAGE is used as the package for that buffer.
    Additionally, the file mode line (unfortunately named, since the
    name conflicts with the display "mode line") is used to communicate
-   information about the file to Emacs.  It has the following form:
+   information about the file to Emacs.  The file mode line has the
+   following form:
 
 	;; -*- ... -*-
 
@@ -594,10 +595,9 @@ Packages
 
 	package: name		`name' is the name of the package for
 				the file.  For compatibility with Lisp
-				machines, `name' can be a
-				list--everything but the first element
-				is ignored, which should be the name of
-				the package.
+				machines, `name' can be a list--the
+				first element should be the name of
+				the package; the rest is ignore.
 
 	readtable: name		`name' is the name of the readtable
 				for this buffer.  See the Allegro CL
