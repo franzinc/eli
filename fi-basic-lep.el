@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.31 1993/07/23 03:48:32 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.32 1993/07/27 20:12:14 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -184,7 +184,7 @@ emacs-lisp interface cannot be started.
 		(buffer-name (if fi::lep-debug proc-name))
 		(buffer (when buffer-name
 			  (get-buffer-create buffer-name)))
-		(process (open-network-stream proc-name nil host port)))
+		(process (fi::open-network-stream proc-name nil host port)))
 	   (when buffer
 	     (bury-buffer buffer)
 	     (save-excursion (set-buffer buffer) (erase-buffer))
@@ -292,7 +292,7 @@ versions of the emacs-lisp interface.
 	 (condition-case error
 	     (apply (fi::intern-it (second form)) (cddr form))
 	   (error 
-	    (message (concat "Request error: " (prin1-to-string error))))))
+	    (message (concat "Request error: " (fi::prin1-to-string error))))))
 	(t (error "Funny request received: %s" form))))
 
 
@@ -367,7 +367,7 @@ versions of the emacs-lisp interface.
 					continuation-and-arguments
 					error-continuation-and-arguments))
 	 (process (fi::connection-process connection)))
-    (send-string process (prin1-to-string 
+    (send-string process (fi::prin1-to-string 
 			  (list* nil
 				 'lep::make-session session-class 
 				 ':session-id (fi::session-id session)
@@ -432,7 +432,7 @@ versions of the emacs-lisp interface.
   (let* ((connection (fi::session-connection session))
 	 (process (fi::connection-process connection)))
     (send-string process
-		 (prin1-to-string
+		 (fi::prin1-to-string
 		  (list* (fi::session-id session) session-class
 			 session-arguments)))
     (send-string process "\n")))
@@ -441,7 +441,7 @@ versions of the emacs-lisp interface.
   (let* ((connection (fi::session-connection session))
 	 (process (fi::connection-process connection)))
     (fi::remove-session connection session)
-    (send-string process (prin1-to-string
+    (send-string process (fi::prin1-to-string
 			  (list nil 'lep::terminate-session
 				(fi::session-id session))))
     (send-string process "\n")))
@@ -454,10 +454,10 @@ versions of the emacs-lisp interface.
     (fi::modify-session-continuation 
      session continuation-and-arguments error-continuation-and-arguments)
     (send-string process
-		 (prin1-to-string (list* (fi::session-id session)
-					 ':request
-					 session-class 
-					 session-arguments)))
+		 (fi::prin1-to-string (list* (fi::session-id session)
+					     ':request
+					     session-class 
+					     session-arguments)))
     (send-string process "\n")))
 
 (defmacro fi::make-request-in-existing-session (session type-and-options 
@@ -495,34 +495,34 @@ versions of the emacs-lisp interface.
 		     (result (apply (fi::intern-it function) args)))
 		(when  replyp
 		  (send-string process 
-			       (prin1-to-string (list* (fi::session-id session)
-						       ':reply
-						       result)))
+			       (fi::prin1-to-string (list* (fi::session-id session)
+							   ':reply
+							   result)))
 		  (send-string process "\n")))
 	    (error 
 	     (if replyp
 		 (progn
 		   (send-string process 
-				(prin1-to-string
+				(fi::prin1-to-string
 				 (list (fi::session-id session)
 				       ':error
-				       (prin1-to-string error))))
+				       (fi::prin1-to-string error))))
 	 
 		   (send-string process "\n"))
-	       (message (concat "Error occurred: " (prin1-to-string error))))))
+	       (message (concat "Error occurred: " (fi::prin1-to-string error))))))
 	  (setq done t))
       (unless done
 	(send-string process 
-		     (prin1-to-string (list (fi::session-id session)
-					    ':error
-					    ':aborted))))
+		     (fi::prin1-to-string (list (fi::session-id session)
+						':error
+						':aborted))))
       (if oncep (lep::kill-session session)))))
 
 (defun fi:send-reply (session string)
   (let* ((connection (fi::session-connection session))
 	 (process (fi::connection-process connection)))
     (send-string process
-		 (prin1-to-string
+		 (fi::prin1-to-string
 		  (list (fi::session-id session) ':reply string)))
     (send-string process "\n")))
 

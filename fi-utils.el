@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.44 1993/07/23 03:49:35 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.45 1993/07/27 20:12:28 layer Exp $
 
 ;;; Misc utilities
 
@@ -301,7 +301,25 @@ minimum require support for the Emacs-Lisp interface exists.
 As of GNU Emacs 18.58, there is no additional support/modifications needed
 for the emacs-lisp interface to function properly."
   (interactive)
-  (if (interactive-p) (message "everything looks fine!")))
+  (if (interactive-p)
+      (message "everything looks fine!")
+    t))
+
+(defun fi::open-network-stream (name buffer host service)
+  (condition-case condition
+      (open-network-stream name buffer host service)
+    (error
+     (if (not (file-readable-p "/etc/hosts"))
+	 (fi:error "
+Can't connect to host %s.  This is probably due to /etc/hosts not being
+readable.  The error from open-network-stream was:
+  %s"
+		   host (car (cdr condition)))
+       (fi:error "
+Can't connect to host %s.  The error from open-network-stream was:
+  %s"
+		 host (car (cdr condition))))
+     nil)))
 
 (defun fi:note (format-string &rest args)
   (let ((string (apply 'format format-string args)))
@@ -672,6 +690,15 @@ created by fi:common-lisp."
       ((eq p end))
     (insert-char (aref string p) 1)))
 
-(if (string-match "ucid" emacs-version)
-    (defun fi::mark () (mark t))
-  (defun fi::mark () (mark)))
+(defun fi::mark-hack () (mark t))
+
+(defun fi::prin1-to-string-hack (form)
+  (let ((print-escape-newlines nil))
+    (prin1-to-string form)))
+
+(cond ((string-match "ucid" emacs-version)
+       (fset 'fi::mark 'fi::mark-hack)
+       (fset 'fi::prin1-to-string 'fi::prin1-to-string-hack))
+      (t
+       (fset 'fi::mark 'mark)
+       (fset 'fi::prin1-to-string 'prin1-to-string)))

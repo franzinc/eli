@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 2.7 1993/07/23 03:48:37 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 2.8 1993/07/27 20:12:16 layer Exp $
 
 (defvar fi::clman-prog
     (or (fi::find-path load-path "clman")
@@ -57,6 +57,10 @@ math:).  The buffer that is displayed will be in CLMAN mode."
 	  (set-buffer standard-output)
 	  (setq exit-status
 	    (call-process fi::clman-prog nil t nil fi::clman-data symbol))
+	  (when (< (buffer-size) 80)
+	    (goto-char (point-min))
+	    (end-of-line)
+	    (error (buffer-substring 1 (point))))
 	  (fi:clman-mode)))
       (when (> exit-status 1)
 	(message "%d additional clman pages at end of buffer"

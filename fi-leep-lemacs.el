@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/Attic/fi-leep-lemacs.el,v 2.1 1993/07/23 03:48:56 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-leep-lemacs.el,v 2.2 1993/07/27 20:12:19 layer Exp $
 
 ;; The lemacs side of presentations in a lisp-listener window.
 
@@ -72,10 +72,12 @@
 (defun fi::leep-subprocess-filter-insert-output-hook (output marker)
   ;; Presentation escape sequences are:
   ;;  &&		- escape a single &
-  ;;  &<		- start a presentation
-  ;;  &ddd>	- end presentation number ddd (arbitrary decimal int)
+  ;;  &lll<		- start a presentation at level lll
+  ;;  &ddd>		- end presentation number ddd (arbitrary decimal int)
   (do ((pnt 0)
        (len (length output))
+       level
+       end
        index)
       ((or (eq pnt len)
 	   (null (setq index (string-match "&" output pnt))))
@@ -94,11 +96,24 @@
 	   (insert-char ?& 1)
 	   (set-marker marker (point))
 	   (setq pnt (+ index 1)))
-	  ((eq (aref output index) ?<)
+	  ((eq index (string-match "\\([0-9]\\)*<" output index))
+	   (setq pnt (match-end 1))
+	   (setq end (match-end 0))
+;;	   (when (> pnt index)
+;;	     (condition-case nil
+;;		 (setq level (car (read-from-string
+;;				   (substring output index pnt))))
+;;	       (error (setq level nil))))
+;;	   (when level
+;;	     (push (cons level (length fi::presentation-stack)) layer2)
+;;	     (while (> (length fi::presentation-stack) (1+ level))
+;;	       (setq layer
+;;		 (pop fi::presentation-stack))))
 	   (let* ((pres (make-presentation :start (point) :end 0 :data 0))
 		  (parent (car fi::presentation-stack))
 		  (subs (presentation-subpresentation-vector parent))
-		  (fi::window-stream-presentation nil)) ;flag stream busy
+		  ;;flag stream busy
+		  (fi::window-stream-presentation nil))
 	     (if subs
 		 (let ((len (length subs))
 		       (next (aref subs 0)))
@@ -113,7 +128,7 @@
 	       (setf (presentation-subpresentation-vector parent)
 		 (vector 2 pres nil nil)))
 	     (push pres fi::presentation-stack))
-	   (setq pnt (+ index 1)))
+	   (setq pnt end))
 	  ((eq index (string-match "\\([0-9]\\)+>" output index))
 	   (setq pnt (match-end 0))
 	   (let ((pres (pop fi::presentation-stack))

@@ -1,3 +1,25 @@
+Tue Jul 27 13:07:02 1993  Kevin Layer  (layer at sole)
+
+	* clmanaux.c: exit status <0 means `failed'
+	* clman.c: exit status 0 means `failed'
+	* makeman.c: exit status -1 means `failed'
+	* clman.h: extern for `failed'
+
+	* fi-basic-lep.el: open-network-stream -> fi::open-network-stream;
+	prin1-to-string -> fi::prin1-to-string
+
+	* fi-clman.el: use minibuffer in `failed' case
+
+	* fi-leep-lemacs.el: start of fix for bug2757
+
+	* fi-subproc.el: open-network-stream -> fi::open-network-stream
+
+	* fi-utils.el: fi::open-network-stream, so we can catch certain
+	errors (like /etc/hosts not being readable); fi::prin1-to-string,
+	so we can make sure print-escape-newlines is nil.
+
+	* Doc.el: prin1-to-string -> fi::prin1-to-string
+
 Fri Jul 23 00:01:17 1993  Kevin Layer  (layer@sole)
 
 	* Makefile: fix fi-dist rule, add clman-dist; move contents of

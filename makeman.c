@@ -1,6 +1,6 @@
 /* Copyright (C) 1993, Franz Inc., Berkeley, CA.  All rights reserved. */
 
-/* $Header: /repo/cvs.copy/eli/Attic/makeman.c,v 2.1 1993/07/22 23:05:12 layer Exp $ */
+/* $Header: /repo/cvs.copy/eli/Attic/makeman.c,v 2.2 1993/07/27 20:12:30 layer Exp $ */
 
 #include "clman.h"
 
@@ -59,6 +59,7 @@ main(argc, argv)
 	exit(1);
     }
 
+    failed = -1;
     nsymbols = 0;
     seplen = strlen(sep);
     chdir(mandir);

@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.38 1993/06/29 23:50:51 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.39 1993/07/27 20:12:07 layer Exp $
 
 (require 'cl)
 
@@ -113,7 +113,7 @@
 		       (insert "\n")
 		     (forward-line 1))
 		   (insert (format "   Initial value: %s\n"
-				   (frob-newlines (prin1-to-string val))))
+				   (frob-newlines (fi::prin1-to-string val))))
 		   (when verbose
 		     (insert-doc-string doc))))))
 	 ((fboundp var)

@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.150 1993/07/23 03:49:29 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.151 1993/07/27 20:12:23 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -818,7 +818,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
     (if (fi:process-running-p proc)
 	(goto-char (point-max))
       (setq default-directory default-dir)
-      (setq proc (open-network-stream buffer-name buffer host service))
+      (setq proc (fi::open-network-stream buffer-name buffer host service))
       (set-process-sentinel proc 'fi::tcp-sentinel)
       ;;
       ;; The first input the new (Common Lisp) process is sent is the name
@@ -828,7 +828,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
       (when given-ipc-version
 	(process-send-string
 	 proc
-	 (format "%s\n" (prin1-to-string fi::listener-protocol))))
+	 (format "%s\n" (fi::prin1-to-string fi::listener-protocol))))
       (process-send-string proc (format "\"%s\"\n" (buffer-name buffer)))
       (process-send-string proc (format "%d\n" password))
 

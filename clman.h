@@ -1,6 +1,6 @@
 /* Copyright (C) 1993, Franz Inc., Berkeley, CA.  All rights reserved. */
 
-/* $Header: /repo/cvs.copy/eli/Attic/clman.h,v 2.1 1993/07/22 23:04:45 layer Exp $ */
+/* $Header: /repo/cvs.copy/eli/Attic/clman.h,v 2.2 1993/07/27 20:12:10 layer Exp $ */
 
 #include <unistd.h>
 #include <stdio.h>
@@ -36,3 +36,5 @@ extern int table_max_entries;
 extern char *string_table;
 extern int string_table_size;
 extern int data_size;
+
+extern int failed;

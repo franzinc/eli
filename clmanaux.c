@@ -1,6 +1,6 @@
 /* Copyright (C) 1993, Franz Inc., Berkeley, CA.  All rights reserved. */
 
-/* $Header: /repo/cvs.copy/eli/Attic/clmanaux.c,v 2.2 1993/07/23 07:28:04 layer Exp $ */
+/* $Header: /repo/cvs.copy/eli/Attic/clmanaux.c,v 2.3 1993/07/27 20:12:12 layer Exp $ */
 
 #include "clman.h"
 
@@ -11,6 +11,8 @@ int table_max_entries;
 char *string_table;
 int string_table_size;
 int data_size;
+
+int failed;
 
 hash(name, size)
     unsigned char *name;
@@ -43,7 +45,7 @@ puthashi(i)
 	if (i == oldi) {
 	    if (seen) {
 		fprintf(stderr, "internal error: table full\n");
-		exit(-1);
+		exit(failed);
 	    } else {
 		seen++;
 	    }
@@ -64,7 +66,7 @@ gethashi(name)
 	if (i == oldi) {
 	    if (seen) {
 		fprintf(stderr, "internal error: table full\n");
-		exit(-1);
+		exit(failed);
 	    } else {
 		seen++;
 	    }
@@ -75,7 +77,7 @@ gethashi(name)
     if (table[i].name_index) {
 	return(i);
     } else {
-	fprintf(stderr, "No CLMan entry for %s.\n", name);
-	exit(-1);
+	fprintf(stderr, "No CL manual entry for %s.\n", name);
+	exit(failed);
     }
 }
