@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-basic-lep.el,v 1.47.6.5.8.1 2003/03/26 16:16:36 layer Exp $
+;; $Id: fi-basic-lep.el,v 1.47.6.5.8.2 2003/08/07 15:27:23 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -147,7 +147,8 @@ printed in the minibuffer can easily be erased.")
 (defun fi:reset-lep-connection ()
   "Reset the Lisp-editor protocol connection."
   (interactive)
-  (set-menubar-dirty-flag)		;smh 31oct94
+  (when (fboundp 'set-menubar-dirty-flag)
+    (set-menubar-dirty-flag))
   (setq fi::*connection* nil))
 
 ;;; Start up a connection as soon as we know where to connect to.
@@ -230,7 +231,8 @@ emacs-lisp interface cannot be started.
 	   (prog1
 	       (setq fi::*connection*
 		 (fi::make-connection (current-buffer) host process))
-	     (set-menubar-dirty-flag))))
+	     (when (fboundp 'set-menubar-dirty-flag)
+	       (set-menubar-dirty-flag)))))
 	(t
 	 (fi:error
 	  "

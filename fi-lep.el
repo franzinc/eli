@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 1.85.6.6.2.1 2002/09/25 19:44:12 layer Exp $
+;; $Id: fi-lep.el,v 1.85.6.6.2.2 2003/08/07 15:27:23 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -90,6 +90,19 @@ exhausted.")
   (if fi:maintain-definition-stack
       (car lep::meta-dot-session)
     lep::meta-dot-session))
+
+(defvar lep::show-def-marker-ring (make-ring 16))
+
+(defun fi:pop-definition-mark ()
+  "Pop back to where the find definition was last invoked."
+  (interactive)
+  (if (ring-empty-p lep::show-def-marker-ring)
+      (error "No previous locations for show-found-definition invocation"))
+  (let ((marker (ring-remove lep::show-def-marker-ring 0)))
+    (fi::switch-to-buffer (or (marker-buffer marker)
+			      (error "The marked buffer has been deleted")))
+    (goto-char (marker-position marker))
+    (set-marker marker nil nil)))
 
 (defun fi:lisp-find-definition (tag &optional next)
   "Find TAG using information in the Common Lisp environment, in the current
@@ -258,6 +271,7 @@ time."
 	      (pathname (fi::ensure-translated-pathname pathname)))
 	  (when fi:filename-frobber-hook
 	    (setq pathname (funcall fi:filename-frobber-hook pathname)))
+	  (ring-insert lep::show-def-marker-ring (point-marker))
 	  (setq xb (get-file-buffer pathname))
 	  (if other-window-p
 	      (find-file-other-window pathname)

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-rlogin.el,v 1.31.24.2 2002/02/07 16:41:34 layer Exp $
+;; $Id: fi-rlogin.el,v 1.31.24.2.8.1 2003/08/07 15:27:23 layer Exp $
 
 (defvar fi:rlogin-mode-map nil
   "The rlogin major-mode keymap.")
@@ -56,18 +56,9 @@ any other mode setup."
   (if mode-hook (funcall mode-hook))
   (setq major-mode 'fi:rlogin-mode)
   (setq mode-name "Rlogin")
-
-  (if (null fi:rlogin-mode-super-key-map)
-      (setq fi:rlogin-mode-super-key-map
-	(fi::subprocess-mode-super-keys (make-keymap) 'rlogin)))
-
-  (if (null fi:rlogin-mode-map)
-      (setq fi:rlogin-mode-map
-	(fi::subprocess-mode-commands (make-keymap)
-				      fi:rlogin-mode-super-key-map
-				      'rlogin)))
+  (fi::initialize-mode-map 'fi:rlogin-mode-map 'fi:rlogin-super-key-map
+			   'rlogin)
   (use-local-map fi:rlogin-mode-map)
-  (setq fi:subprocess-super-key-map fi:rlogin-mode-super-key-map)
   (setq fi:shell-popd-regexp nil)
   (setq fi:shell-pushd-regexp nil)
   (setq fi:shell-cd-regexp nil)

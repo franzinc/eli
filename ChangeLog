@@ -9,6 +9,26 @@ For more detailed instructions on filling in the ChangeLog form, see
 ******************************************************************************
 post-6.2 release changes: 
 
+2003-08-05  Kevin Layer  <layer@crikey>
+2.4.0
+
+    for rfe5611: improve menus; follow major mode conventions, and
+	* fi-basic-lep.el: changes for new menu code
+	* fi-compile.el: compile new file (fi-emasc21)
+	* (NEW) fi-emasc21.el: new menu code
+	* fi-keys.el: massive keybinding code reorg
+	- fi:define-global-lisp-mode-bindings is history
+	- new variable fi:extended-keybindings
+	- new variable fi:menu-bar-single-item
+	* fi-modes.el,
+	* fi-rlogin.el,
+	* fi-shell.el,
+	* fi-su.el,
+	* fi-telnet.el: support for keybinding reorg
+	* fi-site-init.el: new file, fi-emacs21
+    rfe5529: C-c *
+	* fi-lep.el: add fi:pop-definition-mark
+
 2003-07-03  Kevin Layer  <layer@crikey>
 
 	* fi-dmode.el: make RET and C-c. goto definitions, too

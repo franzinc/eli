@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-shell.el,v 1.28.24.2 2002/02/07 16:41:34 layer Exp $
+;; $Id: fi-shell.el,v 1.28.24.2.8.1 2003/08/07 15:27:23 layer Exp $
 
 (defvar fi:shell-mode-map nil
   "The shell major-mode keymap.")
@@ -67,22 +67,8 @@ any other mode setup."
   (if mode-hook (funcall mode-hook))
   (setq major-mode 'fi:shell-mode)
   (setq mode-name "Shell")
-
-  (if (null fi:shell-mode-super-key-map)
-      (progn
-	(setq fi:shell-mode-super-key-map (make-keymap))
-	(fi::subprocess-mode-super-keys fi:shell-mode-super-key-map 'shell)))
-
-  (if (null fi:shell-mode-map)
-      (progn
-	(setq fi:shell-mode-map
-	  (fi::subprocess-mode-commands (make-keymap)
-					fi:shell-mode-super-key-map
-					'shell))
-	(when fi:shell-mode-use-history
-	  (define-key fi:shell-mode-map "!" 'fi:shell-mode-bang))))
+  (fi::initialize-mode-map 'fi:shell-mode-map 'fi:shell-super-key-map 'shell)
   (use-local-map fi:shell-mode-map)
-  (setq fi:subprocess-super-key-map fi:shell-mode-super-key-map)
   (run-hooks 'fi:subprocess-mode-hook 'fi:shell-mode-hook))
 
 (defun fi:shell-mode-bang (&optional arg)

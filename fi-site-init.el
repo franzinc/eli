@@ -1,6 +1,8 @@
-;; $Id: fi-site-init.el,v 1.116.22.2.18.1 2003/03/24 22:37:38 layer Exp $
+;; $Id: fi-site-init.el,v 1.116.22.2.18.2 2003/08/07 15:27:23 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
+
+(setq fi::*debug* nil)
 
 (require 'cl)
 
@@ -296,9 +298,15 @@ On Windows, just remove all .elc files and restart xemacs.")
   (cond ((or (eq fi::emacs-type 'xemacs19)
 	     (eq fi::emacs-type 'xemacs20))
 	 (fi::load "fi-xemacs"))
+	
+	((and (boundp 'emacs-major-version)
+	      (>= emacs-major-version 21))
+	 (fi::load "fi-emacs21"))
+	
 	((or (eq fi::emacs-type 'emacs19)
 	     (eq fi::emacs-type 'emacs20))
 	 (fi::load "fi-emacs19"))
+	
 	(t (fi::load "fi-emacs18"))))
 
 (defun fi::top-level ()

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 1.117.6.4.8.1 2002/06/03 15:54:08 layer Exp $
+;; $Id: fi-keys.el,v 1.117.6.4.8.2 2003/08/07 15:27:23 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -41,210 +41,255 @@ is'' if there are too many or few parens--answering no leaves the point at
 the place of error.  If the value is 'warn, then a warning is issued and
 the file is written.")
 
-(defvar fi:define-global-lisp-mode-bindings t
-  "*If non-nil, define Lisp mode bindings on the \\e and \\C-x keys.")
+(defvar fi:extended-keybindings t
+  "*If non-nil then define the extended keybindings, which in some cases
+are in violation of the Elisp major mode conventions outlined in the Emacs
+Lisp Manual.  For compatibility reasons the value of this variable is `t'
+by default.")
+
+(defvar fi:menu-bar-single-item t
+  "*If non-nil then put a single item onto the menu-bar.  Otherwise, the
+sub-menus in the single menu are put onto the menu-bar.  This variable is
+ignored in all but Emacs 21 and later.")
+
 
 ;;;;
 ;;; Key defs
 ;;;;
 
+(defvar fi::.defkey-marker. (cons 'not-a 'keymap))
 
-(defun fi::subprocess-mode-super-keys (map mode)
-  "Setup keys in MAP as a subprocess super-key map.  MODE is either
-shell, rlogin, sub-lisp or tcp-lisp."
-  (define-key map "\C-a" 'fi:subprocess-beginning-of-line)
-  (define-key map "\C-k" 'fi:subprocess-kill-output)
-  (define-key map "\C-l" 'fi:list-input-ring)
-  (define-key map "\r"   'fi:subprocess-input-region)
-  (define-key map "\C-n" 'fi:push-input)
-  (define-key map "\C-o" 'fi:subprocess-send-flush)
-  (define-key map "\C-p" 'fi:pop-input)
-  (define-key map "\C-r" 'fi:re-search-backward-input)
-  (define-key map "\C-s" 'fi:re-search-forward-input)
-  (define-key map "\C-u" 'fi:subprocess-kill-input)
-  (define-key map "\C-v" 'fi:subprocess-show-output)
-  (define-key map "\C-w" 'fi:subprocess-backward-kill-word)
-  (define-key map "\C-y" 'fi:pop-input)	; for compatibility with shell-mode
-  (cond ((memq mode '(sub-lisp tcp-lisp))
-	 (define-key map "=" 'fi:lisp-sync-current-working-directory))
-	(t
-	 (define-key map "=" 'fi:shell-sync-current-working-directory)))
+(defun fi::defkey (map key func condition)
+  (when condition
+    (cond ((and (consp map) (eq fi::.defkey-marker. (car map)))
+	   (dolist (m (cdr map)) (define-key m key func)))
+	  (t (define-key map key func)))))
 
-  (cond
-   ((eq mode 'rlogin)
-    (define-key map "\C-z"	'fi:rlogin-send-stop)
-    (define-key map "\C-c"	'fi:rlogin-send-interrupt)
-    (define-key map "\C-d"	'fi:rlogin-send-eof)
-    (define-key map "\C-\\"	'fi:rlogin-send-quit))
-   ((eq mode 'shell)
-    (define-key map "\C-z"	'fi:subprocess-suspend)
-    (define-key map "\C-c"	'fi:subprocess-interrupt)
-    (define-key map "\C-d"	'fi:subprocess-send-eof)
-    (define-key map "\C-\\"	'fi:subprocess-quit))
-   ((eq mode 'sub-lisp)
-    (define-key map "\C-c"	'fi:interrupt-listener)
-    (if (or fi::lisp-is-remote
-	    (null fi::common-lisp-connection-type)
-	    ;; fi::common-lisp-connection-type might be bound differently at
-	    ;; connection startup time, so we'll just always use the backdoor
-	    ;; approach.  There is no ever need to depend on a pty for eofs.
-	    ;; However, this and probably lots of other things will work only
-	    ;; with Allegro and not franzlisp and other plausible sublisps.
-	    t)
-	(define-key map "\C-d"	'fi:remote-lisp-send-eof)
-      (define-key map "\C-d"	'fi:subprocess-send-eof))
-    (define-key map "\C-\\"	'fi:subprocess-quit))
-   ((eq mode 'tcp-lisp)
-    (define-key map "\C-c"	'fi:interrupt-listener)
-    (define-key map "\C-d"	'fi:tcp-lisp-listener-send-eof)
-    (define-key map "\C-\\"	'fi:tcp-lisp-listener-kill-process)))
+(defun fi::initialize-mode-map (mode-map-sym &optional mode-super-map-sym type)
+  (when (null (symbol-value mode-map-sym))
+    (let* ((ext fi:extended-keybindings)
+	   (elsrc (eq major-mode 'fi:emacs-lisp-mode))
+	   (clsrc (eq major-mode 'fi:common-lisp-mode))
+	   (flsrc (eq major-mode 'fi:franz-lisp-mode))
+	   (lsrc (or clsrc flsrc))
+	   (src (or elsrc clsrc flsrc))
+	   (subproc (not src))
+	   (listener (memq type '(sub-lisp tcp-lisp)))
+	   (clistener (and listener
+			   (not (eq major-mode 'fi:inferior-franz-lisp-mode))))
+	   (flistener (and listener
+			   (eq major-mode 'fi:inferior-franz-lisp-mode)))
+	   (non-lisp-subproc (and subproc (not listener)))
+	   
+	   (super (and subproc
+		       mode-super-map-sym
+		       fi:subprocess-enable-superkeys))
+	   (lisp (memq major-mode '(fi:common-lisp-mode
+				    fi:inferior-common-lisp-mode
+				    fi:lisp-listener-mode
+				    fi:franz-lisp-mode
+				    fi:inferior-franz-lisp-mode)))
+	   (clisp (memq major-mode '(fi:common-lisp-mode
+				     fi:inferior-common-lisp-mode
+				     fi:lisp-listener-mode)))
+	   (indent (and (or src lisp) fi:lisp-do-indentation))
+	   (rlogin (memq type '(telnet rlogin)))
+	   (telnet (eq type 'telnet))
+	   (shell (eq type 'shell))
+	   (sub-lisp (eq type 'sub-lisp))
+	   (tcplisp (eq type 'tcp-lisp))
+	   (remote
+	    (and sub-lisp
+		 (or fi::lisp-is-remote
+		     ;; fi::common-lisp-connection-type might be bound
+		     ;; differently at connection startup time, so we'll just
+		     ;; always use the backdoor approach.
+		     (null fi::common-lisp-connection-type)
+		     t)))
+	   (universal
+	    (and super
+		 (or (not (eq 'universal-argument
+			      (lookup-key global-map "\C-u")))
+		     fi:superkey-shadow-universal-argument)))
+	   (comint (and (or (eq fi::emacs-type 'emacs19)
+			    (eq fi::emacs-type 'emacs20))
+			(boundp 'comint-mode-map)
+			comint-mode-map))
+	   
+	   (map (make-keymap))
+	   (smap (make-sparse-keymap))
+	   (cmap (make-keymap))
+	   (xmap (make-sparse-keymap))
+	   (emap (make-sparse-keymap))
+	   (csmaps (list fi::.defkey-marker. cmap smap)))
+      
+      (when sub-lisp
+	(let ((i (1+ ?\C-z))
+	      (l ;; use this instead of (length map)
+	       128))
+	  ;; For now we can't implement raw mode and also work with wnn
+	  ;; kanji input translation.  Until we figure out a good solution,
+	  ;; raw mode will be disabled in Mule.
+	  (unless (or (boundp 'nemacs-version) (boundp 'mule-version))
+	    (while (< i l)
+	      (define-key map (char-to-string i) 'fi:self-insert-command)
+	      (setq i (1+ i)))))
+	;; fix C-_
+	(define-key map (char-to-string 31) nil))
+      
+;;;; main map
+      (fi::defkey map "\C-a" 'fi:subprocess-beginning-of-line subproc)
+      (fi::defkey map "\C-d" 'fi:subprocess-superkey super)
+      (fi::defkey map "\C-c" cmap t)
+      (fi::defkey map "\C-i" 'fi:lisp-indent-line (and (or elsrc lisp) indent))
+      (fi::defkey map "\C-i" 'lisp-indent-line (and (or elsrc lisp)
+						    (not indent)))
+      (fi::defkey map "\C-m" 'fi:subprocess-send-input non-lisp-subproc)
+      (fi::defkey map "\C-m" (if listener
+				 'fi:inferior-lisp-newline
+			       'fi:lisp-mode-newline)
+		  (not non-lisp-subproc))
+      (fi::defkey map "\C-o" 'fi:subprocess-superkey super)
+      (fi::defkey map "\C-u" 'fi:subprocess-superkey universal)
+      (fi::defkey map "\C-w" 'fi:subprocess-superkey super)
+      (fi::defkey map "\C-x" xmap (and subproc lisp ext))
+      (fi::defkey map "\C-z" 'fi:subprocess-superkey super)
+      (fi::defkey map "\C-\\" 'fi:subprocess-superkey super)
+      (fi::defkey map "\C-?" 'backward-delete-char-untabify t)
+      (fi::defkey map "\e" emap t)
+      (fi::defkey map ";" 'fi:lisp-semicolon indent)
+      (fi::defkey map "!" 'fi:shell-mode-bang
+		  (and fi:shell-mode-use-history shell))
+      (when comint
+	(fi::defkey map [menu-bar] (lookup-key comint-mode-map [menu-bar]) t))
 
-  (if (memq mode '(sub-lisp tcp-lisp))
-      (progn
-	(define-key map "s" 'fi:scan-stack)))
+;;;; ESC map
+      (fi::defkey emap "\C-q" (if indent 'fi:indent-sexp 'indent-sexp)
+		  (or src listener))
+      (fi::defkey emap "\C-x" 'fi:lisp-eval-or-compile-defun clsrc)
+      (fi::defkey emap "\C-x" 'eval-defun elsrc)
+      (fi::defkey emap "\r" 'fi:inferior-lisp-input-sexp (and ext listener))
+      (fi::defkey emap "\t" 'fi:lisp-complete-symbol clisp)
+      (fi::defkey emap "A" 'fi:lisp-arglist (and ext clisp))
+      (fi::defkey emap "C" 'fi:list-who-calls (and ext clisp))
+      (fi::defkey emap "D" 'fi:describe-symbol (and ext clisp))
+      (fi::defkey emap "F" 'fi:lisp-function-documentation (and ext clisp))
+      (fi::defkey emap "M" 'fi:lisp-macroexpand (and ext clisp))
+      (fi::defkey emap "T" 'fi:toggle-trace-definition (and ext clisp))
+      (fi::defkey emap "W" 'fi:lisp-macroexpand-recursively (and ext clisp))
+      
+;;;; C-x map
+      (fi::defkey xmap "\r" 'fi:inferior-lisp-input-list
+		  (and subproc lisp ext))
 
-  map)
+;;;; super map
+      (fi::defkey csmaps "\C-\\" 'fi:rlogin-send-quit rlogin)
+      (fi::defkey csmaps "\C-\\" 'fi:subprocess-quit shell)
+      (fi::defkey csmaps "\C-\\" 'fi:subprocess-quit sub-lisp)
+      (fi::defkey csmaps "\C-\\" 'fi:tcp-lisp-listener-kill-process tcplisp)
+      (fi::defkey csmaps "\C-d" 'fi:remote-lisp-send-eof (and sub-lisp remote))
+      (fi::defkey csmaps "\C-d" 'fi:rlogin-send-eof rlogin)
+      (fi::defkey csmaps "\C-d" 'fi:subprocess-send-eof
+		  (or (and sub-lisp (not remote)) shell))
+      (fi::defkey csmaps "\C-d" 'fi:tcp-lisp-listener-send-eof tcplisp)
+      (fi::defkey csmaps "\C-o" 'fi:subprocess-send-flush subproc)
+      (fi::defkey csmaps "\C-u" 'fi:subprocess-kill-input subproc)
+      (fi::defkey csmaps "\C-w" 'fi:subprocess-backward-kill-word subproc)
+      (fi::defkey smap "\C-z" 'fi:rlogin-send-stop rlogin)
+      (fi::defkey smap "\C-z" 'fi:subprocess-suspend shell)
+      
+;;;; C-c map
+      ;; NOTE: C-\ is defined above
+      (fi::defkey cmap "\C-a" 'fi:lisp-arglist clisp)
+      (fi::defkey cmap "\C-b" 'fi:lisp-eval-or-compile-current-buffer clsrc)
+      (fi::defkey cmap "\C-c" 'fi:interrupt-listener clistener)
+      (fi::defkey cmap "\C-c" 'fi:rlogin-send-interrupt rlogin)
+      (fi::defkey cmap "\C-c" 'fi:subprocess-interrupt (or flistener shell))
+      ;; NOTE: C-d is defined above
+      (fi::defkey cmap "\C-e" 'fi:end-of-defun (or lisp src))
+      (fi::defkey cmap "\C-f" 'fi:lisp-function-documentation clisp)
+      (fi::defkey cmap "\C-f" 'fi:telnet-start-garbage-filter non-lisp-subproc)
+      ;; NOTE: don't use C-g (it's for quit)
+      ;; NOTE: don't use C-h (it's for help)
+      (fi::defkey cmap "\C-i" 'fi:describe-symbol clisp)
+      (fi::defkey cmap "\C-j" 'fi:toggle-to-lisp clisp)
+      (fi::defkey cmap "\C-k" 'fi:subprocess-kill-output subproc)
+      (fi::defkey cmap "\C-l" 'fi:list-input-ring subproc)
+      (fi::defkey cmap "\C-m" 'fi:subprocess-input-region
+		  (and subproc (not clisp)))
+      (fi::defkey cmap "\C-m" 'fi:lisp-macroexpand clisp)
+      (fi::defkey cmap "\C-n" 'fi:push-input subproc)
+      ;; NOTE: C-o is defined above
+      (fi::defkey cmap "\C-p" 'fi:pop-input subproc)
+      (fi::defkey cmap "\C-q" (if indent 'fi:indent-sexp 'indent-sexp)
+		  (or lisp src))
+      (fi::defkey cmap "\C-r" 'fi:re-search-backward-input subproc)
+      (fi::defkey cmap "\C-r" 'fi:lisp-eval-or-compile-region clsrc)
+      (fi::defkey cmap "\C-s" 'fi:re-search-forward-input subproc)
+      (fi::defkey cmap "\C-s" 'fi:lisp-eval-or-compile-last-sexp clsrc)
+      (fi::defkey cmap "\C-t" 'fi:toggle-trace-definition
+		  (and (not ext) clisp))
+      (fi::defkey cmap "\C-t" 'fi:trace-definer (and ext clisp))
+      ;; NOTE: C-u is defined above
+      (fi::defkey cmap "\C-v" 'fi:subprocess-show-output subproc)
+      ;; NOTE: C-w is defined above
+      (fi::defkey cmap "\C-x" 'eval-defun elsrc)
+      (fi::defkey cmap "\C-x" 'fi:lisp-eval-or-compile-defun clsrc)
+      (fi::defkey cmap "\C-y" 'fi:kill-definition clisp)
+      (fi::defkey cmap "\C-z" 'fi:list-who-calls clisp)
+      (fi::defkey cmap "\C-z" 'fi:rlogin-send-stop rlogin)
+      (fi::defkey cmap "\C-z" 'fi:subprocess-suspend shell)
 
-(defun fi::subprocess-mode-commands (map supermap mode)
-  "Define subprocess mode commands on MAP, using SUPERMAP as the supermap.
-MODE is either sub-lisp, tcp-lisp, shell or rlogin."
-  (define-key map "\C-m" 'fi:subprocess-send-input)
-  (if fi:subprocess-enable-superkeys
-      (progn
-	(define-key map "\C-a"  'fi:subprocess-superkey)
-	;; \C-c points to supermap
-	(define-key map "\C-d"  'fi:subprocess-superkey)
-	(define-key map "\C-o"  'fi:subprocess-superkey)
-	(if (or (not (eq 'universal-argument
-			 (lookup-key global-map "\C-u")))
-		fi:superkey-shadow-universal-argument)
-	    (define-key map "\C-u"  'fi:subprocess-superkey))
-	(define-key map "\C-w"  'fi:subprocess-superkey)
-	(define-key map "\C-z"  'fi:subprocess-superkey)
-	(define-key map "\C-\\" 'fi:subprocess-superkey)))
-  (if supermap (define-key map "\C-c" supermap))
+      ;; These are OK to define for all, but strictly speaking are reserved
+      ;; for minor modes and if someone uses a minor mode they might get
+      ;; stepped on...
+      (fi::defkey cmap " " 'fi:lisp-delete-pop-up-window clisp)
+      (fi::defkey cmap "%" 'fi:extract-list (or src lisp))
+      (fi::defkey cmap "&" 'fi:scan-stack (and clistener (not ext)))
+      (fi::defkey cmap "*" 'fi:pop-definition-mark clisp)
+      (fi::defkey cmap "," 'fi:lisp-find-next-definition clisp)
+      (fi::defkey cmap "-" 'fi:log-functional-change src)
+      (fi::defkey cmap "=" 'fi:lisp-sync-current-working-directory listener)
+      (fi::defkey cmap "=" 'fi:shell-sync-current-working-directory
+		  non-lisp-subproc)
+      (fi::defkey cmap "." 'fi:lisp-find-definition clisp)
+      (fi::defkey cmap ";" 'fi:comment-region (or lisp src))
+      (fi::defkey cmap "(" 'fi:lisp-macroexpand-recursively clisp)
+      (fi::defkey cmap "<" 'fi:previous-top-level-form src)
+      (fi::defkey cmap ">" 'fi:next-top-level-form src)
+      (fi::defkey cmap "]" 'fi:super-paren (or src listener))
+      (fi::defkey cmap "?" 'fi:lisp-apropos clisp)
+      (fi::defkey cmap "^" 'fi:center-defun src)
+      (fi::defkey cmap "\t" 'fi:lisp-complete-symbol clisp)
+      (fi::defkey cmap "4" (make-sparse-keymap) clisp)
+      (fi::defkey cmap "4." 'fi:lisp-find-definition-other-window clisp)
 
-  (when (and (or (eq fi::emacs-type 'emacs19)
-		 (eq fi::emacs-type 'emacs20))
-	     (boundp 'comint-mode-map)
-	     comint-mode-map)
-    (define-key map [menu-bar]
-      (lookup-key comint-mode-map [menu-bar])))
-
-  map)
-
-(defun fi::lisp-mode-commands (map supermap mode)
-  (when fi:define-global-lisp-mode-bindings
-    (define-key map "\e" (make-keymap))
-    (define-key map "\C-x" (make-keymap)))
-
-  (if supermap
-      (define-key map "\C-c" supermap)
-    ;; editing mode
-    (define-key map "\C-c" (make-keymap)))
-
-  (define-key map "\C-?"	'backward-delete-char-untabify)
-  (define-key map "\C-c-"	'fi:log-functional-change)
-  (define-key map "\C-c%"	'fi:extract-list)
-  (define-key map "\C-c;"	'fi:comment-region)
-  (define-key map "\C-c\C-e"	'fi:end-of-defun)
-  (define-key map "\C-c]"	'fi:super-paren)
-  (define-key map "\C-cl"	'fi:toggle-to-lisp)
-  (if fi:lisp-do-indentation
-      (progn
-	(define-key map ";"		'fi:lisp-semicolon)
-	(define-key map "\t"		'fi:lisp-indent-line)
-	(when fi:define-global-lisp-mode-bindings
-	  (define-key map "\e\C-q"	'fi:indent-sexp))
-	(define-key map "\C-c\C-q"	'fi:indent-sexp))
-    ;;not sure if the following should be added:
-    ;;   (lisp-mode-commands map)
-    (define-key map "\t"		'lisp-indent-line)
-    (when fi:define-global-lisp-mode-bindings
-      (define-key map "\e\C-q"		'indent-sexp))
-    (define-key map "\C-c\C-q"		'indent-sexp))
-
-  (if (memq mode '(sub-lisp tcp-lisp))
-      (progn
-	(define-key map "\r"		'fi:inferior-lisp-newline)
-	(when fi:define-global-lisp-mode-bindings
-	  (define-key map "\e\r"	'fi:inferior-lisp-input-sexp)
-	  (define-key map "\C-x\r"	'fi:inferior-lisp-input-list)))
-    (define-key map "\r"		'fi:lisp-mode-newline)
-    (define-key map "\C-c^"		'fi:center-defun))
-
-  (when (memq major-mode '(fi:common-lisp-mode
-			   fi:inferior-common-lisp-mode
-			   fi:lisp-listener-mode))
-    (define-key map "\C-c?"	'fi:lisp-apropos)
-    (define-key map "\C-c."	'fi:lisp-find-definition)
-    (define-key map "\C-c4"	(make-keymap))
-    (define-key map "\C-c4." 	'fi:lisp-find-definition-other-window)
-    (define-key map "\C-c,"	'fi:lisp-find-next-definition)
-    (define-key map "\C-ck"	'fi:kill-definition)
-    (when fi:define-global-lisp-mode-bindings
-      (define-key map "\e\t"	'fi:lisp-complete-symbol)
-      (define-key map "\eA"	'fi:lisp-arglist)
-      (define-key map "\eC"	'fi:list-who-calls)
-      (define-key map "\eD"	'fi:describe-symbol)
-      (define-key map "\eF"	'fi:lisp-function-documentation)
-      (define-key map "\eM"	'fi:lisp-macroexpand)
-      (define-key map "\eT"	'fi:toggle-trace-definition)
-      (define-key map "\eW"	'fi:lisp-macroexpand-recursively))
-    (define-key map "\C-c\t"	'fi:lisp-complete-symbol)
-    (define-key map "\C-cA"	'fi:lisp-arglist)
-    (define-key map "\C-ca"	'fi:lisp-arglist)
-    (define-key map "\C-cC"	'fi:list-who-calls)
-    (define-key map "\C-cc"	'fi:list-who-calls)
-    (define-key map "\C-cD"	'fi:describe-symbol)
-    (define-key map "\C-cd"	'fi:describe-symbol)
-    (define-key map "\C-cF"	'fi:lisp-function-documentation)
-    (define-key map "\C-cf"	'fi:lisp-function-documentation)
-    (define-key map "\C-cM"	'fi:lisp-macroexpand)
-    (define-key map "\C-cm"	'fi:lisp-macroexpand)
-    (define-key map "\C-cT"	'fi:toggle-trace-definition)
-    (define-key map "\C-ct"	'fi:toggle-trace-definition)
-    (define-key map "\C-cW"	'fi:lisp-macroexpand-recursively)
-    (define-key map "\C-cw"	'fi:lisp-macroexpand-recursively)
-    (define-key map "\C-c\C-t"	'fi:trace-definer)
-    (define-key map "\C-c "	'fi:lisp-delete-pop-up-window))
-
-  (when (eq major-mode 'fi:emacs-lisp-mode)
-    (when fi:define-global-lisp-mode-bindings
-      (define-key map "\e\C-x" 'eval-defun))
-    (define-key map "\C-c\C-x" 'eval-defun))
-
-  (when (memq major-mode '(fi:common-lisp-mode fi:franz-lisp-mode
-			   fi:lisp-mode))
-    (when fi:define-global-lisp-mode-bindings
-      (define-key map "\e\C-x"	'fi:lisp-eval-or-compile-defun))
-    (define-key map "\C-c\C-x"	'fi:lisp-eval-or-compile-defun)
-    (define-key map "\C-c\C-b"  'fi:lisp-eval-or-compile-current-buffer)
-    (define-key map "\C-c\C-s"  'fi:lisp-eval-or-compile-last-sexp)
-    (define-key map "\C-c\C-r"  'fi:lisp-eval-or-compile-region))
-  
-  map)
-
-(defun fi::lisp-listener-mode-commands (map supermap)
-  (fi::lisp-mode-commands (fi::subprocess-mode-commands map supermap 'tcp-lisp)
-			  supermap
-			  'tcp-lisp))
-
-(defun fi::inferior-lisp-mode-commands (map supermap)
-  (let ((i (1+ ?\C-z))
-	(l 128				; use this instead of (length map)
-	   ))
-    ;; For now we can't implement raw mode and also work with wnn kanji
-    ;; input translation.  Until we figure out a good solution, raw mode
-    ;; will be disabled in Mule.
-    (unless (or (boundp 'nemacs-version) (boundp 'mule-version))
-      (while (< i l)
-	(define-key map (char-to-string i) 'fi:self-insert-command)
-	(setq i (1+ i)))))
-  (define-key map (char-to-string 31) nil) ; fix C-_
-  (fi::lisp-mode-commands (fi::subprocess-mode-commands map supermap 'sub-lisp)
-			  supermap
-			  'sub-lisp))
+      ;; These are contrary to the coding conventions, so must be `ext'.
+      ;; Each of the functions bound to these keys should be available
+      ;; elsewhere.
+      (fi::defkey cmap "A" 'fi:lisp-arglist (and clisp ext))
+      (fi::defkey cmap "C" 'fi:list-who-calls (and clisp ext))
+      (fi::defkey cmap "D" 'fi:describe-symbol (and clisp ext))
+      (fi::defkey cmap "F" 'fi:lisp-function-documentation (and clisp ext))
+      (fi::defkey cmap "M" 'fi:lisp-macroexpand (and clisp ext))
+      (fi::defkey cmap "T" 'fi:toggle-trace-definition (and clisp ext))
+      (fi::defkey cmap "W" 'fi:lisp-macroexpand-recursively (and clisp ext))
+      (fi::defkey cmap "a" 'fi:lisp-arglist (and clisp ext))
+      (fi::defkey cmap "c" 'fi:list-who-calls (and clisp ext))
+      (fi::defkey cmap "d" 'fi:describe-symbol (and clisp ext))
+      (fi::defkey cmap "f" 'fi:lisp-function-documentation (and clisp ext))
+      (fi::defkey cmap "k" 'fi:kill-definition (and clisp ext))
+      (fi::defkey cmap "l" 'fi:toggle-to-lisp (and clisp ext))
+      (fi::defkey cmap "m" 'fi:lisp-macroexpand (and clisp ext))
+      (fi::defkey cmap "s" 'fi:scan-stack (and clistener ext))
+      (fi::defkey cmap "t" 'fi:toggle-trace-definition (and clisp ext))
+      (fi::defkey cmap "w" 'fi:lisp-macroexpand-recursively (and clisp ext))
+      
+      (set mode-map-sym map)
+      (when mode-super-map-sym
+	(set mode-super-map-sym smap)
+	(setq fi:subprocess-super-key-map smap))
+      t)))
 
 ;;;;;;;;;;;;;;;;;;;;; inferior lisp mode related functions
 
@@ -508,9 +553,13 @@ except that if the pattern at the beginning of the line matches the
 current subprocess prompt pattern, this function skips over it.
 With argument ARG non nil or 1, move forward ARG - 1 lines first."
   (interactive "p")
-  (beginning-of-line arg)
-  (if (looking-at fi::prompt-pattern)
-      (re-search-forward fi::prompt-pattern nil t)))
+  (let ((old (point))
+	new)
+    (beginning-of-line arg)
+    (when (looking-at fi::prompt-pattern)
+      (if (= old (second (setq new (match-data 0))))
+	  (goto-char (first new))
+	(goto-char (second new))))))
 
 (defun fi:subprocess-backward-kill-word (arg)
   "Kill previous word in current subprocess input line.  This function
@@ -1150,3 +1199,23 @@ buffer and the source buffer from which this function was invoked."
 	   (setq fi::toggle-to-lisp-last-lisp-buffer (current-buffer))
 	   (setq target-buffer fi::toggle-to-lisp-common-lisp-buffer-name)))
     (funcall fi:display-buffer-function target-buffer)))
+
+(defun fi:next-top-level-form ()
+  "Move the point to the beginning of the next top-level form in the buffer."
+  (interactive)
+  (let ((foo) (lpar (string-to-char "(")))
+    (re-search-forward
+     "^(" nil nil
+     (if (and (= lpar (char-after (point)))
+	      (setq foo (char-after (- (point) 1)))
+	      (= ?\C-j foo))
+	 2 1))
+    (forward-char -1)))
+
+(defun fi:previous-top-level-form ()
+  "Move the point to the beginning of the previous or current top-level
+form in the buffer.  If already at the beginning of the current one, go to
+the previous one."
+  (interactive)
+  (re-search-backward "^("))
+
