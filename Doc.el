@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.16 1989/08/28 20:13:59 layer Rel $
+;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.17 1990/08/31 23:59:55 layer Exp $
 
 (setq load-path
   (cons (file-name-directory (directory-file-name default-directory))
@@ -15,7 +15,7 @@
   (fi:tcp-common-lisp-mode)
   (fundamental-mode)
 
-  (insert-file "../../doc/spec.n")
+  (insert-file "../doc/spec.n")
 
   (beginning-of-buffer)
 
