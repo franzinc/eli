@@ -24,12 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.7 1991/03/15 12:44:01 layer Exp $
-;;
-;;;;;;;;;;;;;;;;;; Composer 2 related stuff
-;;; Perhaps some of this is generally useful
-;;; Called to create an editor.
-;;; Perhaps on Epoch this should do something different, such as create a new window
+;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.8 1991/03/15 21:05:06 layer Exp $
 
 (defun composer::make-listener ()
   (fi:open-lisp-listener -1))
@@ -42,15 +37,25 @@
   (call-interactively 'fi:lisp-find-tag))
 
 
-;;; XXXX = class, method, generic-function, method-combination
-;;; describe-xxx
-;;; browse-xxx
-;;; edit-class-methods
-;;; edit-uses
+;;;;Todo:
+;;;; fi:browse-method
+;;;; fi:browse-generic-function
+;;;; fi:browse-method-combination
 
-;; inspecting stuff
+(defun fi:browse-class (something)
+  (interactive (fi::get-default-symbol "Class name"))
+  (fi::inspect-something something 'clos::find-class "Class"))
 
-(defun fi:inspect-something (something function descr)
+(defun fi:browse-function (something)
+  (interactive (fi::get-default-symbol "Function name"))
+  (fi::inspect-something something 'fdefinition "Function"))
+
+
+(defun fi:inspect-value (something)
+  (interactive (fi::get-default-symbol "Value to inspect"))
+  (fi::inspect-something something 'eval "Inspect"))
+
+(defun fi::inspect-something (something function descr)
   (make-request (composer::inspect-something-session
 		 :fspec something :function function)
 		;; Normal continuation
@@ -59,28 +64,9 @@
 		((something) (error)
 		 (message "Cannot inspect/browse %s: %s" something error))))
 
-(defun fi:browse-class (something)
-  (interactive (if current-prefix-arg
-		   '(nil t)
-		 (fi::get-default-symbol "Class name")))
-  (inspect-something something 'clos::find-class "Class"))
-
-(defun fi:browse-function (something)
-  (interactive (if current-prefix-arg
-		   '(nil t)
-		 (fi::get-default-symbol "Function spec")))
-  (inspect-something something 'fdefinition "Function"))
-
-
-(defun fi:inspect-value (something)
-  (interactive (if current-prefix-arg
-		   '(nil t)
-		 (fi::get-default-symbol "form ")))
-  (inspect-something something 'eval "Inspect"))
-
+;;;Todo?
 ;;; show-callers
 ;;; show-callees
-
 
 (defun fi:show-calls-to (function)
   (interactive (fi::get-default-symbol "Function"))
