@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 1.79.20.3 1999/01/08 02:09:39 layer Exp $
+;; $Id: fi-lep.el,v 1.79.20.4 1999/02/22 21:12:36 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -364,7 +364,10 @@ since the Emacs-Lisp interface will not create it."
   "Get the buffer tick if it is supported"
   (and (fboundp 'buffer-modified-tick) (buffer-modified-tick)))
 
-(require 'sendmail) ;; for mail-to
+;; XEmacs 21 pre-release versions don't have this, so protect ourselves
+(condition-case ()
+    (require 'sendmail) ;; for mail-to
+  (error nil)) 
 
 (defun fi:bug-report ()
   "Create a mail buffer which contains information about the Common Lisp

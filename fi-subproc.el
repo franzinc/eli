@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.200.10.12 1999/01/19 00:28:03 layer Exp $
+;; $Id: fi-subproc.el,v 1.200.10.13 1999/02/22 21:12:36 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -81,8 +81,7 @@ a buffer, which is used to display a buffer when a subprocess is created.")
     '(("EMACS" . "t")
       ("TERM" . "emacs")
       ("DISPLAY" . (or (getenv "DISPLAY") (format "%s:0.0" (system-name))))
-      ("TERMCAP" . (format "emacs:co#%d:tc=unknown:"
-		    (frame-width))))
+      ("TERMCAP" . (format "emacs:co#%d:tc=unknown:" (frame-width))))
   "*An alist containing the environment variables to pass to newly created
 subprocesses.")
 
@@ -514,7 +513,13 @@ be a string. Use the 6th argument for image file."))
 			     "common-lisp"
 			     executable-image-name
 			     real-args)))
-		      (unless (eq 'run (process-status p))
+		      (unless (or (eq 'run (process-status p))
+				  ;; From Greg Klanderman:
+				  ;; XEmacs 21.0 on NT process status
+				  ;; is 'exit but it's really OK.
+				  ;; May be an XEmacs bug...
+				  (and (eq fi::emacs-type 'xemacs20)
+				       (on-ms-windows)))
 			(error "Program %s died." executable-image-name))
 		      (setq start-lisp-after-failed-connection nil)))
 		  (sleep-for 1)
@@ -642,7 +647,10 @@ be a string. Use the 6th argument for image file."))
 	(win32-start-process-show-window t)
 	(w32-start-process-show-window t)
 	(win32-quote-process-args t)
-	(w32-quote-process-args t))
+	(w32-quote-process-args t)
+	;; from Greg Klanderman:
+	;; XEmacs 21 NT does this differently...
+	(nt-quote-args-functions-alist '(("." . nt-quote-args-double-quote))))
     (apply (function start-process)
 	   process-name
 	   nil ;; buffer-name

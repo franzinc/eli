@@ -7,6 +7,16 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.16.12
+
+1999-01-20  Kevin Layer  <layer@ultra>
+
+	* fi-lep.el: protect against 'sendmail module not being there (as
+	it isn't in XEmacs 21.0.62)
+	* fi-site-init.el: fi::emacs-type for XEmacs 21
+	* fi-subproc.el: workaround for bug in XEmacs 21; fix for XEmacs 21
+
+*******************************************************************************
 2.0.21.16.11
 
 1999-02-08  Kevin Layer  <layer@ultra>
