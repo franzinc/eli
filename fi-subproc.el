@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.70 1990/10/09 10:48:37 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.71 1990/10/13 19:37:54 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -58,12 +58,35 @@
   "*If non-nil, then this function is funcalled to startup the GNU
 Emacs-Lisp interface.")
 
+(defvar fi:remote-lisp-track-image-name-directory nil
+  "If non-nil, then fi:remote-common-lisp and
+fi:explicit-remote-common-lisp will cause both Emacs and Lisp to cd into
+the directory where the Common Lisp image resides.  Otherwise, the remote
+Common Lisp will have $HOME as its current working directory and Emacs will
+have whatever directory you were in when you evaluated either function.")
+
 (defvar fi:common-lisp-image-name "cl"
   "*Default Common Lisp image to invoke from `fi:common-lisp'.  If the
 value is a string then it names the image file or image path that
 `fi:common-lisp' invokes.  Otherwise, the value of this variable is given
 to funcall, the result of which should yield a string which is the image
 name or path.")
+
+(defvar fi:default-explicit-common-lisp-image-name nil
+  "If non-nil, then the value of this variable is used as the name of the
+image fi:explicit-common-lisp and fi:explicit-remote-common-lisp uses to
+run Lisp, instead of reading the name from the minibuffer.")
+
+(defvar fi:default-explicit-common-lisp-image-arguments nil
+  "If non-nil, then the value of this variable (a string) contains the
+arguments given to Lisp by fi:explicit-common-lisp and
+fi:explicit-remote-common-lisp when Lisp is invoked, instead of reading the
+name from the minibuffer.")
+
+(defvar fi:default-remote-common-lisp-host nil
+  "If non-nil, then the value of this variable (a string) is names the
+host on which fi:remote-common-lisp and fi:explicit-remote-common-lisp
+executes Lisp, instead of reading the name from the minibuffer.")
 
 (defvar fi:common-lisp-image-arguments nil
   "*Default Common Lisp image arguments when invoked from `fi:common-lisp',
@@ -182,6 +205,18 @@ buffer.")
 
 (make-variable-buffer-local 'fi::shell-directory-stack)
 
+(defvar fi::lisp-is-remote nil
+  "Non-nil if the lisp process tied to the current buffer is on another
+machine, which implies that it was started via an `rsh'.  This variable is
+buffer local.")
+
+(make-variable-buffer-local 'fi::lisp-is-remote)
+
+(defconst fi::remote-lisp-sh-prefix
+    "sh -ec 'EMACS=t TERM=emacs TERMCAP=emacs:co#%d:tc=unknown: cd %s; "
+  "A format string, which takes two arguments: the screen width (%d) and
+the directory in which the remote Lisp should execute (%s).")
+
 (defvar fi::remote-host nil 
 "Host that is running the lisp in this buffer.  Buffer local.")
 
@@ -237,9 +272,11 @@ are read from the minibuffer."
   (interactive
    (list 
     current-prefix-arg
-    (expand-file-name (read-file-name "Image name: " nil nil t))
-    (fi::listify-string
-     (read-from-minibuffer "Image arguments (separate by spaces): "))))
+    (or fi:default-explicit-common-lisp-image-name
+	(expand-file-name (read-file-name "Image name: " nil nil t)))
+    (or fi:default-explicit-common-lisp-image-arguments
+	(fi::listify-string
+	 (read-from-minibuffer "Image arguments (separate by spaces): ")))))
   (let ((proc (fi::make-subprocess
 	       buffer-number
 	       "common-lisp" 
@@ -268,25 +305,42 @@ The image file and image arguments are taken from the variables
 `fi:common-lisp-image-name' and `fi:common-lisp-image-arguments'.
 
 See fi:explicit-remote-common-lisp."
-  (interactive "p\nsRemote host name: ")
-  (let ((proc (fi::make-subprocess
-	       buffer-number
-	       "common-lisp" 
-	       'fi:inferior-common-lisp-mode
-	       fi:common-lisp-prompt-pattern
-	       "rsh"
-	       (append
-		(list host
-		      (format
-		       "sh -ec 'EMACS=t TERM=emacs TERMCAP=emacs:co#%d:tc=unknown: "
-		       (screen-width))
-		      fi:common-lisp-image-name)
-		fi:common-lisp-image-arguments
-		'("'"))
-	       nil
-	       fi:start-lisp-interface-function)))
+  (interactive
+   (list current-prefix-arg
+	 (or fi:default-remote-common-lisp-host
+	     (read-from-minibuffer "Remote host name: "))))
+  (let* ((remote-dir
+	  (expand-file-name
+	   (if fi:remote-lisp-track-image-name-directory
+	       (let ((dir (file-name-directory image-name)))
+		 (if (= ?/ (aref dir 0))
+		     dir
+		   (format "~/%s" dir)))
+	     "~/")))
+	 (proc (fi::make-subprocess
+		buffer-number
+		"common-lisp" 
+		'fi:inferior-common-lisp-mode
+		fi:common-lisp-prompt-pattern
+		"rsh"
+		(append
+		 (list host
+		       (format fi::remote-lisp-sh-prefix
+			       (screen-width) remote-dir)
+		       (if fi:remote-lisp-track-image-name-directory
+			   (file-name-nondirectory
+			    fi:common-lisp-image-name)
+			 fi:common-lisp-image-name))
+		 fi:common-lisp-image-arguments
+		 '("'"))
+		nil
+		fi:start-lisp-interface-function
+		(list 'lambda ()
+		      '(setq fi::lisp-is-remote t)
+		      (list 'cd remote-dir)
+		      (list 'fi::set-buffer-host '(current-buffer)
+			    host)))))
     (setq fi::freshest-common-sublisp-name (process-name proc))
-    (fi::set-buffer-host (process-buffer proc) host)
     proc))
 
 (defun fi:explicit-remote-common-lisp (&optional buffer-number host
@@ -296,28 +350,42 @@ arguments are read from the minibuffer."
   (interactive
    (list 
     current-prefix-arg
-    (read-from-minibuffer "Remote host name: ")
-    (read-from-minibuffer "Image name (relative to home directory): ")
-    (fi::listify-string
-     (read-from-minibuffer "Image arguments (separate by spaces): "))))
-  (let ((proc (fi::make-subprocess
-	       buffer-number
-	       "common-lisp" 
-	       'fi:inferior-common-lisp-mode
-	       fi:common-lisp-prompt-pattern
-	       "rsh"
-	       (append
-		(list host
-		      (format
-		       "sh -ec 'EMACS=t TERM=emacs TERMCAP=emacs:co#%d:tc=unknown: "
-		       (screen-width))
-		      image-name)
-		image-arguments
-		'("'"))
-	       nil
-	       fi:start-lisp-interface-function)))
+    (or fi:default-remote-common-lisp-host
+	(read-from-minibuffer "Remote host name: "))
+    (or fi:default-explicit-common-lisp-image-name
+	(read-from-minibuffer "Image name (relative to home directory): "))
+    (or fi:default-explicit-common-lisp-image-arguments
+	(fi::listify-string
+	 (read-from-minibuffer "Image arguments (separate by spaces): ")))))
+  (let* ((remote-dir
+	  (expand-file-name
+	   (if fi:remote-lisp-track-image-name-directory
+	       (let ((dir (file-name-directory image-name)))
+		 (if (= ?/ (aref dir 0))
+		     dir
+		   (format "~/%s" dir)))
+	     "~/")))
+	 (proc (fi::make-subprocess
+		buffer-number
+		"common-lisp" 
+		'fi:inferior-common-lisp-mode
+		fi:common-lisp-prompt-pattern
+		"rsh"
+		(append
+		 (list host
+		       (format fi::remote-lisp-sh-prefix
+			       (screen-width) remote-dir)
+		       (file-name-nondirectory image-name))
+		 image-arguments
+		 '("'"))
+		nil
+		fi:start-lisp-interface-function
+		(list 'lambda ()
+		      '(setq fi::lisp-is-remote t)
+		      (list 'cd remote-dir)
+		      (list 'fi::set-buffer-host '(current-buffer)
+			    host)))))
     (setq fi::freshest-common-sublisp-name (process-name proc))
-    (fi::set-buffer-host (process-buffer proc) host)
     proc))
 
 (defun fi:tcp-common-lisp (&optional buffer-number)
@@ -339,7 +407,6 @@ See `fi:unix-domain' and `fi:explicit-tcp-common-lisp'."
 	       (fi::get-buffer-host fi::freshest-common-sublisp-name)
 	       (fi::get-buffer-port fi::freshest-common-sublisp-name)
 	       (fi::get-buffer-password fi::freshest-common-sublisp-name))))
-    (setq fi::freshest-common-sublisp-name (process-name proc))
     proc))
 
 (defun fi:explicit-tcp-common-lisp (&optional buffer-number
@@ -359,7 +426,6 @@ fi:unix-domain is non-nil."
 	       buffer-number "tcp-common-lisp" 'fi:tcp-common-lisp-mode
 	       fi:common-lisp-prompt-pattern
 	       host service password)))
-    (setq fi::freshest-common-sublisp-name (process-name proc))
     proc))
 
 (defun fi:franz-lisp (&optional buffer-number)
@@ -409,7 +475,8 @@ are read from the minibuffer."
 (defun fi::make-subprocess (buffer-number process-name mode-function
 			    image-prompt image-file image-arguments
 			    &optional filter
-				      initial-func)
+				      initial-func
+				      mode-hook)
   (let* ((buffer (fi::make-process-buffer process-name buffer-number))
 	 (default-dir default-directory)
 	 (buffer-name (buffer-name buffer))
@@ -465,7 +532,7 @@ are read from the minibuffer."
       (condition-case ()
 	  (let ((saved-input-ring fi::input-ring)
 		(saved-input-ring-yank-pointer fi::input-ring-yank-pointer))
-	    (funcall mode-function)
+	    (funcall mode-function mode-hook)
 	    (setq fi::input-ring saved-input-ring)
 	    (setq fi::input-ring-yank-pointer saved-input-ring-yank-pointer))
 	(error nil))
