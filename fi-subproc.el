@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.32 1988/05/18 13:36:38 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.33 1988/05/19 14:42:43 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -286,11 +286,11 @@ are read from the minibuffer."
 	 (buffer-name (buffer-name buffer))
 	 start-up-feed-name process status)
     (switch-to-buffer buffer)
-    (setq default-directory default-dir)
     (setq process (get-buffer-process buffer))
     (setq status (if process (process-status process)))
     (if (memq status '(run stop))
 	(goto-char (point-max))
+      (setq default-directory default-dir)
       (if (not (stringp image-file))
 	  (setq image-file (funcall image-file)))
       (if process (delete-process process))
@@ -340,7 +340,6 @@ are read from the minibuffer."
 		    (if fi:unix-domain 0 fi:excl-service-name)))
 	 proc status)
     (switch-to-buffer buffer)
-    (setq default-directory default-dir)
     (setq proc (get-buffer-process buffer))
     (setq status (if proc (process-status proc)))
     (if (eq status 'run)
@@ -348,6 +347,7 @@ are read from the minibuffer."
 	 "can't start a TCP Common Lisp in a buffer which has a subprocess"))
     (if (eq status 'open)
 	(goto-char (point-max))
+      (setq default-directory default-dir)
       (setq proc (open-network-stream buffer-name buffer host service))
       ;;
       ;; HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK HACK
