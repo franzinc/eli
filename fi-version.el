@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/Attic/fi-version.el,v 2.3 1995/01/10 20:04:51 smh Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-version.el,v 2.3.2.1 1997/03/26 23:06:55 georgej Exp $
 
 ;; This is in a separate file so that it can be loaded at byte-compile time
 
@@ -12,3 +12,7 @@
 	 (error
 	  "%s is not supported by this version of the emacs-lisp interface."
 	  emacs-version))))
+
+;; this is here temporarily (will move to fi-compile.el) to allow
+;; compilation that will work across different Emacs versions
+(setq byte-compile-compatibility t)
