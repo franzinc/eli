@@ -16,6 +16,21 @@ dot.login	additions for ~/.login
 
 ====================
 
+filec.el	File name completion for subprocess buffers
+keys.el		interactive function definitions
+ltags.el	Lisp `find-tag' facility
+modes.el	mode definitions
+ring.el		Input ring
+sublisp.el	Lisp-specific subprocess code
+subproc.el	subprocess primitives
+tcplisp.el	TCP/IP interface functions
+utils.el	misc utility functions
+
+indent.el	Lisp indentation facility
+
+rlogin.el	general rlogin package
+shell.el	general shell package
+
 clman-oblist.el	index of database for clman.el
 clman.el	online manual interface for Common Lisp the Reference and
 		windows manuals.
@@ -23,18 +38,3 @@ clman.el	online manual interface for Common Lisp the Reference and
 			      distributed electronically since it is
 			      quite large (> 3MB).  Contact Franz Inc.
 			      if you wish to acquire it.
-filec.el	File name completion for subprocess buffers
-keys.el		interactive function definitions
-ltags.el	Lisp `find-tag' facility
-modes.el	mode definitions
-ring.el		Input ring
-rlogin.el	general rlogin package
-shell.el	general shell package
-sublisp.el	Lisp-specific subprocess code
-subproc.el	subprocess primitives
-tcplisp.el	TCP/IP interface functions
-utils.el	misc utility functions
-
-Local Variables: **
-mode: text **
-End: **
