@@ -2,7 +2,7 @@
 			      User Guide
 			   Release 2.0beta
 
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.19 1991/08/22 21:40:36 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.20 1991/09/10 11:19:57 layer Exp $
 
 			     Introduction
 
@@ -484,6 +484,8 @@ Functions and Variables for Interacting with a Common Lisp subprocess
 %% fi:filename-frobber-hook
 %% fi:lisp-evalserver-number-reads
 %% fi:lisp-evalserver-timeout
+%% fi:raw-mode
+%% fi:raw-mode-echo
 %% fi:shell-cd-regexp
 %% fi:shell-popd-regexp
 %% fi:shell-pushd-regexp
@@ -805,6 +807,7 @@ Functions and Variables for editing Common Lisp programs:
 %% fi:lisp-electric-semicolon
 %% fi:parse-mode-line-and-package
 %% fi:pop-to-sublisp-buffer-after-lisp-eval
+%% fi:pop-up-temp-window-behavior
 %% fi:set-associated-sublisp
 
 ===============================================================================
