@@ -10,7 +10,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.77 1990/12/13 17:34:55 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.78 1990/12/17 17:48:29 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -245,8 +245,7 @@ The image file and image arguments are taken from the variables
 
 See fi:explicit-common-lisp."
   (interactive "p")
-  (let* ((already-running (fi::is-running-p "common-lisp" buffer-number))
-	 (proc (fi::make-subprocess
+  (let* ((proc (fi::make-subprocess
 		buffer-number
 		"common-lisp" 
 		'fi:inferior-common-lisp-mode
@@ -254,9 +253,10 @@ See fi:explicit-common-lisp."
 		fi:common-lisp-image-name
 		fi:common-lisp-image-arguments
 		nil
-		fi:start-lisp-interface-function)))
-    (if (not already-running)
-	(fi::set-buffer-host (process-buffer proc) (system-name)))
+		fi:start-lisp-interface-function
+		(list 'lambda ()
+		      (list 'fi::set-buffer-host '(current-buffer)
+			    (system-name))))))
     (setq fi::freshest-common-sublisp-name (process-name proc))
     proc))
 
@@ -272,8 +272,7 @@ are read from the minibuffer."
     (or fi:default-explicit-common-lisp-image-arguments
 	(fi::listify-string
 	 (read-from-minibuffer "Image arguments (separate by spaces): ")))))
-  (let* ((already-running (fi::is-running-p "common-lisp" buffer-number))
-	 (proc (fi::make-subprocess
+  (let* ((proc (fi::make-subprocess
 		buffer-number
 		"common-lisp" 
 		'fi:inferior-common-lisp-mode
@@ -281,9 +280,10 @@ are read from the minibuffer."
 		image-name
 		image-arguments
 		nil
-		fi:start-lisp-interface-function)))
-    (if (not already-running)
-	(fi::set-buffer-host (process-buffer proc) (system-name)))
+		fi:start-lisp-interface-function
+		(list 'lambda ()
+		      (list 'fi::set-buffer-host '(current-buffer)
+			    (system-name))))))
     (setq fi::freshest-common-sublisp-name (process-name proc))
     proc))
 
@@ -484,12 +484,6 @@ are read from the minibuffer."
 ;;;;
 ;;; Internal functions
 ;;;;
-
-(defun fi::is-running-p (process-name buffer-number)
-  (let* ((buffer (fi::make-process-buffer process-name buffer-number))
-	 (process (get-buffer-process buffer))
-	 (status (if process (process-status process))))
-    (memq status '(run stop))))
 
 (defun fi::make-subprocess (buffer-number process-name mode-function
 			    image-prompt image-file image-arguments
@@ -792,10 +786,10 @@ This function implements continuous output to visible buffers."
 	;; of the ipc.cl didn't provide it
 	(if (setq host
 	      (condition-case ()
-		  (car (setq xx (read-from-string command (cdr xx))))
+		  (car (setq xx
+			 (fi::case-frob (read-from-string command (cdr xx)))))
 		(error nil)))
-	    (setq fi:unix-domain-socket
-	      (setq fi::remote-host host)))
+	    (setq fi:unix-domain-socket (setq fi::remote-host host)))
 	res)
     string))
 
