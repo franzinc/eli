@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.9 1991/03/15 12:43:59 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.10 1991/03/16 13:56:55 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -105,7 +105,7 @@
 		(process (open-network-stream buffer-name nil host port)))
 	   (save-excursion (set-buffer buffer) (erase-buffer))
 	   (set-process-buffer process buffer)
-	   (set-process-filter process 'connection-filter)
+	   (set-process-filter process 'lep::connection-filter)
 	   ;; new stuff to indicate that we want the lisp editor protocol
 	   (send-string process ":lep\n")
 	   (send-string process (format "\"%s\"\n" (buffer-name buffer)))
@@ -119,34 +119,35 @@
 
 (defvar lep::trace-lep-filter nil)
 
-(defun connection-filter (process string)
+(defun lep::connection-filter (process string)
   "When a complete sexpression comes back from the lisp, read it and then
 handle it"
-  (when lep::trace-lep-filter
-    (print string (get-buffer "*scratch*")))
-  (save-excursion
-    (set-buffer (process-buffer process))
-    (goto-char (point-max))
-    (insert string))
-  (let (form)
-    (while 
-	(condition-case ignore
-	    (save-excursion
-	      (set-buffer (process-buffer process))
-	      (and 
-	       (not (eq (point-max) (point-min)))
-	       (progn
-		 (goto-char (point-min))
-		 (forward-sexp)
-		 (let ((p (point)))
+  (let ((inhibit-quit t))
+    (when lep::trace-lep-filter
+      (print string (get-buffer "*scratch*")))
+    (save-excursion
+      (set-buffer (process-buffer process))
+      (goto-char (point-max))
+      (insert string))
+    (let (form)
+      (while 
+	  (condition-case ignore
+	      (save-excursion
+		(set-buffer (process-buffer process))
+		(and 
+		 (not (eq (point-max) (point-min)))
+		 (progn
 		   (goto-char (point-min))
-		   (condition-case ignore 
-		       (progn (setq form (read (current-buffer))) t)
-		     (error (setq form nil)))
-		   (delete-region (point-min) p))
-		 t)))
-	  (error nil))
-      (if form (handle-input process form)))))
+		   (forward-sexp)
+		   (let ((p (point)))
+		     (goto-char (point-min))
+		     (condition-case ignore 
+			 (progn (setq form (read (current-buffer))) t)
+		       (error (setq form nil)))
+		     (delete-region (point-min) p))
+		   t)))
+	    (error nil))
+	(if form (handle-input process form))))))
 
 (defun handle-input (process form)
   "A reply is (session-id . rest) or (nil . rest)"
