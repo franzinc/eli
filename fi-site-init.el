@@ -1,4 +1,5 @@
-
+;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.12 1989/08/28 20:20:32 layer Rel $
+;;
 ;; The Franz Inc. Lisp/Emacs interface:
 ;;
 (load "fi/modes.elc")
