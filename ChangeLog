@@ -9,6 +9,11 @@ For more detailed instructions on filling in the ChangeLog form, see
 *******************************************************************************
 2.0.21.14
 
+Mon Aug 10 13:58:20 1998    <layer@HOBART>
+
+	* local.mak: add readme.htm back into release_files--what was I
+	thinkin'?
+
 Tue Aug  4 17:33:39 1998  Kevin Layer  <layer@ultra>
 
 	* doc/eli.htm: fix typos 
