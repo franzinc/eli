@@ -1,4 +1,4 @@
-;; $Id: Doc0.el,v 1.1.2.5 1998/07/16 17:05:04 layer Exp $
+;; $Id: Doc0.el,v 1.1.2.6 1999/11/09 16:56:21 layer Exp $
 
 (defvar current-local-map-var)
 
@@ -120,6 +120,8 @@
        (erase-buffer)
        (insert-file-contents file)
        (goto-char (point-min))
+       (fix-html-chars)
+       (goto-char (point-min))
        (while (not (eobp))
 	 (insert-string (make-string indent ? ))
 	 (forward-line 1))
@@ -186,12 +188,27 @@
 	  name type arglist (if invoke-with invoke-with "") description))
 
 (defun value-to-string (value name)
-  (cond ((syntax-table-p value) "")
-	((keymapp value) (substitute-command-keys (format "\\{%s}" name)))
-	(t (frob-newlines (fi::prin1-to-string value)))))
+  (frob-string
+   (cond ((syntax-table-p value) "")
+	 ((keymapp value) (substitute-command-keys (format "\\{%s}" name)))
+	 (t (frob-newlines (fi::prin1-to-string value))))))
 
 (defun frob-docstring (string)
-  ;; remove leading *
-  (if (= ?* (aref string 0))
-      (substring string 1)
-    string))
+  ;; remove leading *, and other stuff
+  (frob-string (if (= ?* (aref string 0))
+		   (substring string 1)
+		 string)))
+
+(defun frob-string (string)
+  (save-excursion
+    (set-buffer (get-buffer-create "***temp***"))
+    (erase-buffer)
+    (insert string)
+    (fix-html-chars)
+    (buffer-string)))
+
+(defun fix-html-chars ()
+  (goto-char (point-min))
+  (replace-string "<" "&lt;")
+  (goto-char (point-min))
+  (replace-string ">" "&gt;"))

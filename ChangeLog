@@ -9,6 +9,10 @@ For more detailed instructions on filling in the ChangeLog form, see
 *******************************************************************************
 post release patches:
 
+1999-11-09  Kevin Layer  <layer@ultra>
+
+	* Doc0.el: fixes for html generation
+
 1999-08-25  Kevin Layer  <layer@ultra>
 
 	* fi-lep.el: fix fi:lisp-complete-symbol for keywords
