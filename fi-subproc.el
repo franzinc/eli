@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.125 1991/09/16 14:54:32 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.126 1991/09/27 00:58:30 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -122,7 +122,7 @@ fi:lisp-eval-* functions will be echoed by Common Lisp.")
     (function
      (lambda (use-background-streams)
        (list "-e"
-	     (format "\"(excl::start-emacs-lisp-interface %s 1)\""
+	     (format "\"(start-emacs-lisp-interface %s)\""
 		     use-background-streams))))
   "*This value of this variable determines whether or not the emacs-lisp
 interface is started automatically when fi:common-lisp is used to run
@@ -592,9 +592,14 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 (defun fi::common-lisp-subprocess-filter (process output &optional stay cruft)
   (case (catch 'cl-subproc-filter-foo (fi::common-lisp-subprocess-filter-1))
     (error (switch-to-buffer "*Help*"))
+    (normal
+     (fi::subprocess-filter process output stay cruft)
+     (set-process-filter process 'fi::subprocess-filter))
     (t (fi::subprocess-filter process output stay cruft))))
 
 (defun fi::common-lisp-subprocess-filter-1 ()
+  ;; This is a temporary filter, which is used until the rendezvous with
+  ;; Lisp is made.
   (save-excursion
     (set-buffer (process-buffer process))
     (if (not (fi::lep-open-connection-p))
@@ -635,10 +640,12 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		  (error nil)))
 	      (setq output res)
 	      (condition-case ()
-		  (cond ((consp fi:start-lisp-interface-hook)
-			 (mapcar 'funcall fi:start-lisp-interface-hook))
-			(fi:start-lisp-interface-hook
-			 (funcall fi:start-lisp-interface-hook)))
+		  (progn
+		    (cond ((consp fi:start-lisp-interface-hook)
+			   (mapcar 'funcall fi:start-lisp-interface-hook))
+			  (fi:start-lisp-interface-hook
+			   (funcall fi:start-lisp-interface-hook)))
+		    (throw 'cl-subproc-filter-foo 'normal))
 		(error (throw 'cl-subproc-filter-foo 'error))))))))
 
 (defun fi::make-subprocess (startup-message process-name buffer-name
