@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-indent.el,v 1.58 1997/02/27 17:33:49 layer Exp $
+;; $Id: fi-indent.el,v 1.58.24.1 1998/06/10 07:20:45 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If non-nil, semicolons that begin comments are indented as they are
@@ -1545,7 +1545,6 @@ if matched at the beginning of a line, means don't indent that line."
   (put 'map tag 1)
   (put 'multiple-value-bind tag '((1 1 quote) (0 t 2)))
   (put 'multiple-value-call tag 1)
-  (put 'multiple-value-list tag 1)
   (put 'multiple-value-prog1 tag 1)
   (put 'multiple-value-setq tag '((1 1 quote) (0 t 1)))
   (put 'prog tag '((0 1 1) (0 t tagbody)))

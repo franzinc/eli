@@ -7,6 +7,13 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.4
+
+Wed Jun 10 00:10:46 1998  Kevin Layer  <layer@ultra>
+
+	* fi-indent.el: remove multiple-value-list indent spec
+
+*******************************************************************************
 2.0.21.3
 
 Wed Jun  3 13:22:12 1998  Kevin Layer  <layer@ultra>
