@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-leep.el,v 1.6 1992/04/28 14:02:39 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-leep.el,v 1.7 1992/05/11 14:57:13 layer Exp $
 
 ;; The epoch side of presentations in a lisp-listener window.
 
@@ -79,8 +79,6 @@
   (fi::initialize-for-presenting-listeners))
 
 (defun composer::setup-buffer-for-presentations (buffer)
-  (message "Setup...")
-  (sit-for 3)
   (set-buffer buffer)
   (make-local-variable 'highlighted-presentation)
   (setq-default highlighted-presentation 'no-value) ;default value for

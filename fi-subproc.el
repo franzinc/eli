@@ -19,7 +19,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.138 1992/04/28 14:02:10 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.139 1992/05/11 14:56:55 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -1089,7 +1089,7 @@ to your `.cshrc' after the `set cdpath=(...)' in the same file."
     (error nil)))
 
 (defun fi::listify-cdpath ()
-  (fi::explode (getenv "CDPATH") ? ))
+  (fi::explode (getenv "CDPATH") ?:))
 
 (defun fi::explode (string char)
   (let ((res nil)
