@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.116 1991/07/02 10:08:06 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.117 1991/07/24 14:02:13 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -85,7 +85,7 @@ buffers, but is nil elsewhere.")
 (make-variable-buffer-local 'fi:in-package-regexp)
 
 (defvar fi:default-in-package-regexp
-  "(in-package\\>\\|:\\<pa\\>\\|:\\<pac\\>\\|:\\<pack\\>\\|:\\<packa\\>\\|:\\<packag\\>\\|:\\<package\\>"
+  "(in-package\\>\\|:pa\\>\\|:pac\\>\\|:pack\\>\\|:packa\\>\\|:packag\\>\\|:package\\>"
   "*The regular expression matching the Lisp expression to change the
 current package.  The two things this must match are the IN-PACKAGE macro
 form and all the possible instances of the :package top-level command.
@@ -864,7 +864,8 @@ This function implements continuous output to visible buffers."
 	   (goto-char (match-end 0))
 	   (cond
 	     ((or (looking-at "[ \t]*[':]\\(.*\\)[ \t]*)")
-		  (looking-at "[ \t]*\"\\(.*\\)\"[ \t]*)"))
+		  (looking-at "[ \t]*\"\\(.*\\)\"[ \t]*)")
+		  (looking-at "[ \t]*\\(.*\\)[ \t]*)"))
 	      ;; (in-package foo)
 	      (setq fi:package
 		(buffer-substring (match-beginning 1) (match-end 1))))
