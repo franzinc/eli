@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/Attic/clinit.cl,v 1.6 1988/11/17 18:29:27 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/clinit.cl,v 1.7 1988/11/18 19:02:15 layer Exp $
 
 #|
 
@@ -58,7 +58,7 @@ setenv EMACSLIBRARY /usr/local/lib/emacs
   `(let ((p ,package) (s ,symbol))
      (values (find-symbol (symbol-name s) p))))
 
-(defun load-and-start-ipc-package ()
+(defun load-and-start-ipc-package (&key (unix-domain nil udp))
   (excl::handler-case 
    (let ((emacs-library
 	  (format nil "~a/lisp/fi/" (si:getenv "EMACSLIBRARY"))))
@@ -69,6 +69,7 @@ setenv EMACSLIBRARY /usr/local/lib/emacs
 		 (set (svalue :ipc :lisp-listener-daemon-ff-loaded) nil))
 	     (require :ipc)
 	     (require :emacs)
+	     (if udp (set (svalue :ipc :*unix-domain*) unix-domain))
 	     (let ((s (svalue :ipc :*socket-pathname*))
 		   (socket-file
 		    (format nil "/tmp/~a_emacs_to_acl"
