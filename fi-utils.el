@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.15 1991/04/22 13:40:14 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.16 1991/05/28 16:17:36 layer Exp $
 
 ;;; Misc utilities
 
@@ -223,3 +223,48 @@ that starts with ~."
     (cond ((eq ':upper fi::lisp-case-mode)
 	   (upcase string))
 	  (t string))))
+
+(defun fi::getf-property (plist property &optional default)
+  (while (and plist
+	      (not (eq (car plist) property)))
+    (setq plist (cddr plist)))
+  (if plist 
+      (second plist)
+    default))
+
+(defun fi::transpose-list (list)
+  (let ((l (make-list (length (car list)) nil)))
+    (dolist (k list)
+      (let ((n 0))
+	(dolist (a k)
+	  (push a (nth n l))
+	  (incf n))))
+    l))
+
+(defun fi::insert-file-contents-into-kill-ring (copy-file-name)
+  (let ((buffer (generate-new-buffer "*temp*")))
+    (save-excursion
+      (set-buffer buffer)
+      (insert-file copy-file-name)
+      (copy-region-as-kill (point-min) (point-max)))
+    (kill-buffer buffer)))
+
+(defun fi::member-plist (prop plist)
+  (and plist
+       (or (eq (car plist) prop)
+	   (fi::member-plist prop (cddr plist)))))
+
+(defun fi::string-to-keyword (package)
+  (and package (intern (concat ":" package))))
+
+(defun fi::listify (x)
+  (and x
+       (if (atom x)
+	   (list x)
+	 x)))
+
+(defun fi::quote-every-other-one (list)
+  (and list
+       (list* (list 'quote (first list)) (second list)
+	      (fi::quote-every-other-one (cddr list)))))
+
