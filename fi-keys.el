@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.49 1991/03/28 12:56:12 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.50 1991/04/20 23:24:28 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -136,7 +136,7 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
 
   (cond
     ((memq major-mode '(fi:common-lisp-mode fi:inferior-common-lisp-mode
-			fi:tcp-lisp-listener-mode))
+			fi:lisp-listener-mode))
      (define-key map "\C-c?"	'fi:lisp-apropos)
      (define-key map "\e."	'fi:lisp-find-tag)
      (define-key map "\e,"	'fi:lisp-tags-loop-continue)
@@ -357,33 +357,47 @@ parsed, the enclosing list is processed."
 
 ;;;;;;;;;;;;;;;;;;;;; TCP lisp mode related functions
 
+(defun fi::get-symbol-at-point (&optional up-p packagify)
+    (let ((symbol (condition-case ()
+		      (save-excursion
+			(if up-p
+			    (progn
+			      (if (= (following-char) ?\() (forward-char 1))
+			      (if (= (preceding-char) ?\)) (forward-char -1))
+			      (up-list -1)
+			      (forward-char 1)))
+			(while (looking-at "\\sw\\|\\s_")
+			  (forward-char 1))
+			(if (re-search-backward "\\sw\\|\\s_" nil t)
+			    (progn (forward-char 1)
+				   (buffer-substring
+				    (point)
+				    (progn (forward-sexp -1)
+					   (while (looking-at "\\s'")
+					     (forward-char 1))
+					   (point))))
+			  nil))
+		    (error nil))))
+      (if (and fi:package packagify (not (string-match ":?:" symbol nil)))
+	  (format "%s::%s" fi:package symbol)
+	symbol)))
+
+;; This is a pretty bad hack but it appears that within completing-read
+;; fi:package has the wrong value so we bind this variable to get around
+;; the problem.
+(defvar fi::original-package nil)
+
 (defun fi::get-default-symbol (prompt &optional up-p use-package)
   (let* ((symbol-at-point
-	  (condition-case ()
-	      (save-excursion
-		(if up-p
-		    (progn
-		      (if (= (following-char) ?\() (forward-char 1))
-		      (if (= (preceding-char) ?\)) (forward-char -1))
-		      (up-list -1)
-		      (forward-char 1)))
-		(while (looking-at "\\sw\\|\\s_")
-		  (forward-char 1))
-		(if (re-search-backward "\\sw\\|\\s_" nil t)
-		    (progn (forward-char 1)
-			   (buffer-substring
-			    (point)
-			    (progn (forward-sexp -1)
-				   (while (looking-at "\\s'")
-				     (forward-char 1))
-				   (point))))
-		  nil))
-	    (error nil)))
+	  (fi::get-symbol-at-point up-p))
 	 (read-symbol
-	  (read-string
+	  (let ((fi::original-package fi:package))
+	  (completing-read
 	   (if symbol-at-point
 	       (format "%s: (default %s) " prompt symbol-at-point)
-	     (format "%s: " prompt))))
+	     (format "%s: " prompt))
+	   'fi::minibuffer-complete
+	   )))
 	 (symbol (if (string= read-symbol "")
 		     symbol-at-point
 		   read-symbol))
@@ -391,6 +405,31 @@ parsed, the enclosing list is processed."
     (if (and (not colonp) use-package fi:package)
 	(setq symbol (format "%s::%s" fi:package symbol)))
     (list symbol)))
+
+(defun fi::minibuffer-complete (pattern predicate what)
+  (let ((fi:package fi::original-package))
+    (let (package deletion)
+      (if (string-match ":?:" pattern)
+	  (setq package
+	    (concat
+	     ":" (substring pattern 0 (match-beginning 0)))
+	    deletion (substring pattern 0 (match-end 0))
+	    pattern
+	    (substring pattern (match-end 0))))
+      (let* ((alist
+	      (fi::lisp-complete-1 pattern package nil))
+	     (completion (and alist (try-completion pattern alist))))
+	(ecase what
+	  ((nil)
+	   (if (eq completion t)
+	       t
+	     (concat deletion completion)))
+	  ((t)
+	   (mapcar (function cdr) alist))
+	  (lambda (not (not alist))))))))
+	      
+      
+
 
 (defun fi:remote-lisp-send-eof ()
   "Simulate sending an EOF to a Lisp subprocess that was started on a
