@@ -1,3 +1,7 @@
+2005-03-22    <layer@HOBART>
+
+	* fi-subproc.el: handle all current 7.0 windows + args
+
 2005-03-14  Kevin Layer  <layer@gemini>
 
 	* fi-keys.el (fi:inferior-lisp-newline): only call
@@ -5042,4 +5046,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.9.2.10.2.5 $
+$Revision: 3.9.2.10.2.6 $
