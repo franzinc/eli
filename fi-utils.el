@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.30 1991/11/21 13:16:24 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.31 1991/12/19 19:01:33 layer Exp $
 
 ;;; Misc utilities
 
@@ -149,6 +149,23 @@ arguments."
 	  (symbol-function 'fi::fast-parse-partial-sexp))
   (fset 'fi::parse-partial-sexp
 	(symbol-function 'fi::slow-parse-partial-sexp)))
+
+(defun fi::all-upper-case-p (string)
+  (let ((index 0)
+	(max+1 (length string))
+	(lower-found nil)
+	char)
+    (while (< index max+1)
+      (setq char (aref string index))
+      (if (and (>= char ?a) (<= char ?z))
+	  (setq lower-found t))
+      (setq index (+ index 1)))
+    (not lower-found)))
+
+(defun fi::downcase-alist-elt (item)
+  ;; use: (mapcar 'fi::downcase-alist-elt xalist)
+  (cons (downcase (car item))
+	(downcase (cdr item))))
 
 (defun fi::fast-search-string (char string)
   (let ((index 0)
@@ -442,7 +459,9 @@ at the beginning of the line."
 	(setq words (cons expanded-word words)))
       (setq n (+ n 1)))
     
-    (format "%s-%s" (mapconcat 'identity (nreverse words) "-") suffix)))
+    (if words
+	(format "%s-%s" (mapconcat 'identity (nreverse words) "-") suffix)
+      pattern)))
 
 (defun fi::word (string word)
   ;; (fi::word "foo-bar-baz" 0) returns "foo"
