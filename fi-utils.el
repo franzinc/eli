@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 1.67 1997/12/11 00:28:30 layer Exp $
+;; $Id: fi-utils.el,v 1.67.6.1 1998/11/11 22:24:46 layer Exp $
 
 ;;; Misc utilities
 
@@ -229,8 +229,8 @@ from Lisp.  This exists solely for the purpose of removing /tmp_mnt/net
 from the beginning of filenames that are on automounted filesystems.")
 
 (defun fi::discombobulate-automounter-lint (name)
-  ;; remove /tmp_mnt/net from the beginning of NAME
-  (if (string-match "^\\(/tmp_mnt/net\\)?\\(.*\\)$" name)
+  ;; remove /tmp_mnt from the beginning of NAME
+  (if (string-match "^\\(/tmp_mnt\\)?\\(.*\\)$" name)
       (substring name (match-beginning 2) (match-end 2))
     (error "discombobulate-automounter-lint: internal error on %s" name)))
 

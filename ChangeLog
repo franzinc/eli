@@ -7,6 +7,10 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.22.2.1 -- join from acl50 branch onto armysttr branch
+next merge tag: acl50_to_armysttr_merge2
+
+*******************************************************************************
 2.0.22.2 -- join from acl50 branch
 next merge tag: acl50_merge3
 
@@ -17,6 +21,17 @@ next merge tag: acl50_merge2
 *******************************************************************************
 2.0.21.1 -- join from acl50 branch (versions 2.0.21.beta.0 to 2.0.21.0)
 next merge tag: acl50_merge1
+
+*******************************************************************************
+2.0.21.16.2
+
+Mon Oct 12 15:26:02 1998  Kevin Layer  <layer@ultra>
+
+	* fi-site-init.el: remove bogus comment
+	* fi-utils.el: fix fi::discombobulate-automounter-lint to remove
+	just /tmp_mnt
+	* local.mak: use tar instead of cp to copy files (to preserve
+	directory structure)
 
 *******************************************************************************
 2.0.21.16.1
