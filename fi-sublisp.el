@@ -45,7 +45,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.37 1990/08/31 23:45:32 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.38 1990/09/01 20:15:09 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -265,11 +265,17 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
     (if (null fi::emacs-to-lisp-transaction-file)
 	(let ()
 	  (setq fi::emacs-to-lisp-transaction-file
-	    (let* ((filename (buffer-file-name (current-buffer))))
-	      (format "%s/%s,%s" fi:emacs-to-lisp-transaction-directory
-		      (user-login-name)
-		      (if filename (file-name-nondirectory filename)
-			"noname"))))
+	    (make-temp-name
+	     (format "%s/%s" fi:emacs-to-lisp-transaction-directory
+		     (if buffer-file-name
+			 ;; take only the first 9 characters because we
+			 ;; don't want to generate a filename with more
+			 ;; than 14 characters in it...
+			 (let ((s (file-name-nondirectory buffer-file-name)))
+			   (if (> (length s) 8)
+			       (substring s 0 8)
+			     s))
+		       "noname"))))
 	  (setq fi::emacs-to-lisp-package
 	    (if fi:package
 		(format "(in-package :%s)\n" fi:package)
