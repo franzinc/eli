@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.19 1991/09/11 15:22:13 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.20 1991/09/16 14:55:10 layer Exp $
 
 ;;; Misc utilities
 
@@ -45,12 +45,10 @@
 (defun fi::listify-string (string)
   "Take a string \"a b c\" and turn it into a list of \"a\" \"b\" and
 \"c\".  nil is represented by the null string."
-  (let ((res nil)
-	n)
+  (let ((res nil) n)
     (while (setq n (fi::lisp-find-char space string t))
       (setq res (cons (substring string (+ n 1)) res))
-      (setq string (substring string 0 n))
-      )
+      (setq string (substring string 0 n)))
     (if (/= 0 (length string))
 	(setq res (cons string res)))))
 
