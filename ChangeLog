@@ -11,6 +11,10 @@ For more detailed instructions on filling in the ChangeLog form, see
 
 2000-06-22  Kevin Layer  <layer@ultra>
 
+	* fi-indent.el: add props for while and until
+
+2000-06-22  Kevin Layer  <layer@ultra>
+
 	* Makefile: fix for location of xemacs on windows
 	* emacsdir.pl: only need read access to registry
 	* fi-compile.el: if an error occurs when loading comint, ignore
