@@ -1,5 +1,5 @@
 ;;;
-;;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.5 1988/02/29 11:38:57 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.6 1988/02/29 18:33:36 layer Exp $
 
 ;;;;
 ;;; Variables
@@ -20,21 +20,12 @@
 (defvar fi:tcp-lisp-mode-super-key-map nil
   "Used for super-key processing in TCP mode.")
 
-(defvar fi:emacs-lisp-mode-map nil
-  "Emacs-lisp-mode keymap.")
+(defvar fi:common-lisp-mode-map nil "The Common Lisp major-mode map.")
+(defvar fi:franz-lisp-mode-map nil "The Franz Lisp major-mode map.")
+(defvar fi:emacs-lisp-mode-map nil "Emacs Lisp major-mode map.")
+(defvar fi:lisp-mode-map nil "The Lisp major-mode map.")
 
-(defvar fi:lisp-mode-map nil
-  "The Lisp major-mode map.")
-
-(defvar fi:common-lisp-mode-map nil
-  "The Common Lisp major-mode map.")
-
-(defvar fi:franz-lisp-mode-map nil
-  "The Franz Lisp major-mode map.")
-
-(defvar fi:lisp-mode-syntax-table nil
-  "The syntax table for a lisp modes.")
-
+(defvar fi:lisp-mode-syntax-table nil "The syntax table for all Lisp modes.")
 
 ;;;;
 ;;; The Modes
@@ -75,24 +66,21 @@ Variables shell-cd-regexp, shell-pushd-regexp and shell-popd-regexp are
 used to match these command names, and are buffer-local variables."
   (interactive)
   (kill-all-local-variables)
-  (subprocess-mode-common)
-  
   (setq major-mode 'shell-mode)
   (setq mode-name "Shell")
+  (subprocess-mode-common)
   (if (null fi:shell-mode-super-key-map)
       (progn
 	(setq fi:shell-mode-super-key-map (make-sparse-keymap))
 	(subprocess-super-keys fi:shell-mode-super-key-map)))
   (if (null fi:shell-mode-map)
-      (progn
-	(setq fi:shell-mode-map (make-sparse-keymap))
-	(define-key fi:shell-mode-map "\C-c" fi:shell-mode-super-key-map)
-	(shell-mode-commands fi:shell-mode-map)))
+      (setq fi:shell-mode-map
+	(shell-mode-commands (make-sparse-keymap)
+			     fi:shell-mode-super-key-map)))
   (use-local-map fi:shell-mode-map)
-
   (make-local-variable 'subprocess-super-key-map)
   (setq subprocess-super-key-map fi:shell-mode-super-key-map)
-  
+
   (make-local-variable 'subprocess-prompt-pattern)
   (setq subprocess-prompt-pattern
     (if prompt-pattern prompt-pattern shell-prompt-pattern))
@@ -124,11 +112,10 @@ cd, pushd and popd commands (Lisp aliases, which emmulate the C shell
 commands) behave as they do in shell-mode (see fi:shell-mode)."
   (interactive)
   (kill-all-local-variables)
-  (lisp-mode)
+  (lisp-mode-common)
   (subprocess-mode-common)
   (set-syntax-table fi:lisp-mode-syntax-table)
   (setq local-abbrev-table lisp-mode-abbrev-table)
-  
   (setq major-mode 'inferior-lisp-mode)
   (setq mode-name "Inferior Lisp")
   (if (null fi:inferior-lisp-mode-super-key-map)
@@ -136,11 +123,9 @@ commands) behave as they do in shell-mode (see fi:shell-mode)."
 	(setq fi:inferior-lisp-mode-super-key-map (make-sparse-keymap))
 	(subprocess-super-keys fi:inferior-lisp-mode-super-key-map)))
   (if (null fi:inferior-lisp-mode-map)
-      (progn
-	(setq fi:inferior-lisp-mode-map (make-sparse-keymap))
-	(define-key fi:inferior-lisp-mode-map "\C-c"
-	  fi:inferior-lisp-mode-super-key-map)
-	(inferior-lisp-mode-commands fi:inferior-lisp-mode-map)))
+      (setq fi:inferior-lisp-mode-map
+	(inferior-lisp-mode-commands (make-sparse-keymap)
+				     fi:inferior-lisp-mode-super-key-map)))
   (use-local-map fi:inferior-lisp-mode-map)
   (make-local-variable 'subprocess-super-key-map)
   (setq subprocess-super-key-map fi:inferior-lisp-mode-super-key-map)
@@ -148,6 +133,7 @@ commands) behave as they do in shell-mode (see fi:shell-mode)."
   (make-local-variable 'subprocess-prompt-pattern)
   (setq subprocess-prompt-pattern
     (if prompt-pattern prompt-pattern lisp-prompt-pattern))
+
   (run-hooks 'subprocess-mode-hook 'lisp-mode-hook 'inferior-lisp-mode-hook))
 
 (defun fi:tcp-lisp-mode (&optional prompt-pattern)
@@ -179,23 +165,20 @@ cd, pushd and popd commands (Lisp aliases, which emmulate the C shell
 commands) behave as they do in shell-mode (see fi:shell-mode)."
   (interactive)
   (kill-all-local-variables)
-  (lisp-mode)
+  (setq major-mode 'tcp-lisp-mode)
+  (setq mode-name "TCP Lisp")
+  (lisp-mode-common)
   (subprocess-mode-common)
   (set-syntax-table fi:lisp-mode-syntax-table)
   (setq local-abbrev-table lisp-mode-abbrev-table)
-  
-  (setq major-mode 'tcp-lisp-mode)
-  (setq mode-name "TCP Lisp")
   (if (null fi:tcp-lisp-mode-super-key-map)
       (progn
 	(setq fi:tcp-lisp-mode-super-key-map (make-sparse-keymap))
 	(subprocess-super-keys fi:tcp-lisp-mode-super-key-map)))
   (if (null fi:tcp-lisp-mode-map)
-      (progn
-	(setq fi:tcp-lisp-mode-map (make-sparse-keymap))
-	(define-key fi:tcp-lisp-mode-map "\C-c"
-	  fi:shell-mode-super-key-map)
-	(tcp-lisp-mode-commands fi:tcp-lisp-mode-map)))
+      (setq fi:tcp-lisp-mode-map
+	(tcp-lisp-mode-commands (make-sparse-keymap)
+				fi:tcp-lisp-mode-super-key-map)))
   (use-local-map fi:tcp-lisp-mode-map)
   (make-local-variable 'subprocess-super-key-map)
   (setq subprocess-super-key-map fi:tcp-lisp-mode-super-key-map)
@@ -203,8 +186,8 @@ commands) behave as they do in shell-mode (see fi:shell-mode)."
   (make-local-variable 'subprocess-prompt-pattern)
   (setq subprocess-prompt-pattern
 	(if prompt-pattern prompt-pattern lisp-prompt-pattern))
-  (run-hooks 'subprocess-mode-hook
-	     'lisp-mode-hook 'tcp-lisp-mode-hook))
+
+  (run-hooks 'subprocess-mode-hook 'lisp-mode-hook 'tcp-lisp-mode-hook))
 
 (defun subprocess-mode-common ()
   (setq mode-line-process '(": %s"))
@@ -233,14 +216,14 @@ Entry to this mode calls the value of lisp-mode-hook and
 common-lisp-mode-hook, in this order, if that value is non-nil."
   (interactive)
   (kill-all-local-variables)
+  (setq major-mode 'common-lisp-mode)
+  (setq mode-name "Common Lisp")
+  (lisp-mode-common)
   (if (null fi:common-lisp-mode-map)
       (progn
 	(setq fi:common-lisp-mode-map (make-sparse-keymap))
 	(fi:lisp-mode-commands fi:common-lisp-mode-map)))
   (use-local-map fi:common-lisp-mode-map)
-  (setq major-mode 'common-lisp-mode)
-  (setq mode-name "Common Lisp")
-  (lisp-mode-common)
   (fi:check-for-package-info)
   (make-local-variable 'sublisp-name)
   (setq sublisp-name freshest-common-sublisp-name)
@@ -254,14 +237,14 @@ Entry to this mode calls the value of lisp-mode-hook and
 franz-lisp-mode-hook, in this order, if that value is non-nil."
   (interactive)
   (kill-all-local-variables)
+  (setq major-mode 'franz-lisp-mode)
+  (setq mode-name "Franz Lisp")
+  (lisp-mode-common)
   (if (null fi:franz-lisp-mode-map)
       (progn
 	(setq fi:franz-lisp-mode-map (make-sparse-keymap))
 	(fi:lisp-mode-commands fi:franz-lisp-mode-map)))
   (use-local-map fi:franz-lisp-mode-map)
-  (setq major-mode 'franz-lisp-mode)
-  (setq mode-name "Franz Lisp")
-  (lisp-mode-common)
   (fi:check-for-package-info)
   (make-local-variable 'sublisp-name)
   (setq sublisp-name freshest-franz-sublisp-name)
@@ -275,14 +258,14 @@ Entry to this mode calls the value of lisp-mode-hook if that value is
 non-nil."
   (interactive)
   (kill-all-local-variables)
+  (setq major-mode 'lisp-mode)
+  (setq mode-name "Lisp")
+  (lisp-mode-common)
   (if (null fi:lisp-mode-map)
       (progn
 	(setq fi:lisp-mode-map (make-sparse-keymap))
 	(fi:lisp-mode-commands fi:lisp-mode-map)))
   (use-local-map fi:lisp-mode-map)
-  (setq major-mode 'lisp-mode)
-  (setq mode-name "Lisp")
-  (lisp-mode-common)
   (run-hooks 'lisp-mode-hook))
 
 (defun emacs-lisp-mode ()
@@ -293,14 +276,14 @@ Entry to this mode calls the value of lisp-mode-hook if that value is
 non-nil."
   (interactive)
   (kill-all-local-variables)
+  (setq major-mode 'emacs-lisp-mode)
+  (setq mode-name "Emacs Lisp")
+  (lisp-mode-common)
   (if (null fi:emacs-lisp-mode-map)
       (progn
 	(setq fi:emacs-lisp-mode-map (make-sparse-keymap))
 	(fi:lisp-mode-commands fi:emacs-lisp-mode-map)))
   (use-local-map fi:emacs-lisp-mode-map)
-  (setq major-mode 'emacs-lisp-mode)
-  (setq mode-name "Emacs Lisp")
-  (lisp-mode-common)
   (run-hooks 'emacs-lisp-mode-hook))
 
 (defun lisp-mode-common ()
@@ -409,9 +392,6 @@ The subprocess modes are `shell-mode', `inferior-lisp-mode' and
   (define-key map "\C-v" 'fi:show-output-from-shell)
   (define-key map "\C-w" 'subprocess-backward-kill-word)
   (define-key map "\C-x" 'input-region)
-  (define-key map "\C-y" 'pop-input)
-  (define-key map "\ew" 'push-input)
-  (define-key map "\ex" 'input-ring-save)
 
   (if (eq major-mode 'shell-mode)
       (define-key map "\C-z" 'fi:stop-shell-subjob))
@@ -422,109 +402,100 @@ The subprocess modes are `shell-mode', `inferior-lisp-mode' and
 	(define-key map "\C-d"  'fi:tcp-lisp-send-eof)
 	(define-key map "\C-\\" 'fi:tcp-lisp-kill-process))
     (progn
-      (define-key map "\C-c" 'fi:interrupt-shell-subjob)
-      (define-key map "\C-d" 'fi:shell-send-eof)
-      (define-key map "\C-\\" 'fi:quit-shell-subjob)))
-  
-  (fset 'Subprocess-Special-prefix map)
+      (define-key map "\C-c"	'fi:interrupt-shell-subjob)
+      (define-key map "\C-d"	'fi:shell-send-eof)
+      (define-key map "\C-\\"	'fi:quit-shell-subjob)))
+
   map)
 
-(defun shell-mode-commands (&optional map)
+(defun shell-mode-commands (map supermap)
   (define-key map "\C-m" 'subprocess-send-input)
   (define-key map "\C-i" 'shell-file-name-completion)
   (if subprocess-enable-superkeys
-    (progn
-      (define-key map "\C-a" 'subprocess-superkey)
-      (define-key map "\C-c" 'subprocess-superkey)
-      (define-key map "\C-d" 'subprocess-superkey)
-      (define-key map "\C-o" 'subprocess-superkey)
-      (define-key map "\C-u" 'subprocess-superkey)
-      (define-key map "\C-w" 'subprocess-superkey)
-      (define-key map "\C-z" 'subprocess-superkey)
-      (define-key map "\C-\\" 'subprocess-superkey)))
+      (progn
+	(define-key map "\C-a"  'subprocess-superkey)
+	;; \C-c points to supermap
+	(define-key map "\C-d"  'subprocess-superkey)
+	(define-key map "\C-o"  'subprocess-superkey)
+	(define-key map "\C-u"  'subprocess-superkey)
+	(define-key map "\C-w"  'subprocess-superkey)
+	(define-key map "\C-z"  'subprocess-superkey)
+	(define-key map "\C-\\" 'subprocess-superkey)))
+  (define-key map "\C-c" supermap)
   map)
 
 (defun fi:lisp-mode-commands (map)
   (if lisp-auto-semicolon-mode
       (define-key map ";"		'lisp-semicolon))
   
-  (cond ((or (eq map fi:emacs-lisp-mode-map)
-	     (eq map fi:common-lisp-mode-map)
-	     (eq map fi:franz-lisp-mode-map)
-	     (eq map fi:lisp-mode-map))
-	 (if lisp-auto-semicolon-mode
-	     (define-key map "\t"	'lisp-indent-line))
-	 (define-key map "\e\C-q"	'indent-sexp)
-	 (define-key map "\C-?"		'backward-delete-char-untabify)
-	 (define-key map "\r"		'lisp-reindent-newline-indent)
+  (define-key map "\e" (make-sparse-keymap))
+  (define-key map "\C-x" (make-sparse-keymap))
+  
+  (cond
+    ((or (eq major-mode 'common-lisp-mode)
+	 (eq major-mode 'franz-lisp-mode)
+	 (eq major-mode 'emacs-lisp-mode)
+	 (eq major-mode 'lisp-mode))
+     
+     (define-key map "\e\C-q"		'indent-sexp)
+     (define-key map "\C-?"		'backward-delete-char-untabify)
+     (define-key map "\r"		'lisp-reindent-newline-indent)
 	 
-	 (cond
-	   ((eq map fi:emacs-lisp-mode-map)
-	    (define-key map "\e\C-x"	'eval-defun))
+     (if lisp-auto-semicolon-mode
+	 (define-key map "\t"		'lisp-indent-line))
+     
+     (cond
+       ((eq major-mode 'emacs-lisp-mode)
+	(define-key map "\e\C-x"	'eval-defun))
 	   
-	   ((or (eq map fi:common-lisp-mode-map)
-		(eq map fi:franz-lisp-mode-map))
-	    (define-key map "\e\C-r"	'fi:eval-region)
-	    (define-key map "\e\C-x"	'fi:eval-defun)
-	    (define-key map "\e\C-b"	'fi:eval-current-buffer)
-	    (define-key map "\C-x\e" 	'fi:eval-last-sexp))
-	   
-	   ((eq map fi:common-lisp-mode-map)
-	    (define-key map "\e."	'fi:lisp-find-tag)
-	    (define-key map "\e,"	'fi:lisp-tags-loop-continue)
-	    (define-key map "\eA"	'fi:lisp-arglist)
-	    (define-key map "\eD" 	'fi:lisp-describe)
-	    (define-key map "\eF" 	'fi:lisp-function-documentation)
-	    (define-key map "\eM" 	'fi:lisp-macroexpand))))
+       ((or (eq major-mode 'common-lisp-mode)
+	    (eq major-mode 'franz-lisp-mode))
+	(define-key map "\e\C-b"	'fi:eval-current-buffer)
+	(define-key map "\C-x\e" 	'fi:eval-last-sexp)
+	(define-key map "\e\C-r"	'fi:eval-region)
+	(define-key map "\e\C-x"	'fi:eval-defun)
+	    
+	(cond ((eq major-mode 'common-lisp-mode)
+	       (define-key map "\e."	'fi:lisp-find-tag)
+	       (define-key map "\e,"	'fi:lisp-tags-loop-continue)
+	       (define-key map "\eA"	'fi:lisp-arglist)
+	       (define-key map "\eD"	'fi:lisp-describe)
+	       (define-key map "\eF"	'fi:lisp-function-documentation)
+	       (define-key map "\eM"	'fi:lisp-macroexpand))))))
 
-	((eq map fi:inferior-lisp-mode-map)
-	 (define-key map "\r"		'inferior-lisp-newline)
-	 (define-key map "\e\r"		'inferior-lisp-send-sexp-input)
-	 (define-key map "\C-x"		(make-sparse-keymap))
-	 (define-key map "\C-x\r"	'inferior-lisp-send-list-input)
-	 (define-key map "\e\C-q"	'indent-sexp))))
+    ((or (eq major-mode 'inferior-lisp-mode)
+	 (eq major-mode 'tcp-lisp-mode))
+     (define-key map "\r"		'inferior-lisp-newline)
+     (define-key map "\e\r"		'inferior-lisp-send-sexp-input)
+     (define-key map "\C-x"		(make-sparse-keymap))
+     (define-key map "\C-x\r"		'inferior-lisp-send-list-input)
+     (define-key map "\e\C-q"		'indent-sexp)))
+  map)
 
-(defun tcp-lisp-mode-commands (map)
-  (shell-mode-commands map)
-  (fi:lisp-mode-commands map))
+(defun tcp-lisp-mode-commands (map supermap)
+  (fi:lisp-mode-commands (shell-mode-commands map supermap)))
 
-(defun inferior-lisp-mode-commands (map)
-  (shell-mode-commands map)
-  (fi:lisp-mode-commands map))
+(defun inferior-lisp-mode-commands (map supermap)
+  (fi:lisp-mode-commands (shell-mode-commands map supermap)))
 
 ;;;;
 ;;; Initializations
 ;;;;
 
-(defun fi:alist-parse (list string token)
-  "recursively looks through list
-   for an element whose car is string and makes its cdr token."
-  (cond ((null list) nil)
-	((equal (car (car list)) string)
-	  (progn
-	    (rplacd (car list) token)
-	    t))
-	(t (fi:alist-parse (cdr list) string token))))
-
 ;; the following is because the data associated with auto-mode-alist
 ;; is put in text space when xemacs is built, and is by default read-only.
 (setq auto-mode-alist (copy-alist auto-mode-alist))
 
-(defmacro push (x y)
-  (list 'setq y (list 'cons x y)))
+(defun def-auto-mode (string mode)
+  (let ((xx (assoc string auto-mode-alist)))
+    (if xx
+	(rplacd xx mode)
+      (setq auto-mode-alist
+	(cons (cons string mode) auto-mode-alist)))))
 
-(if (not (fi:alist-parse auto-mode-alist "\\.l$" 'franz-lisp-mode))
-    (push '("\\.l$" . franz-lisp-mode) auto-mode-alist))
-
-(if (not (fi:alist-parse auto-mode-alist "\\.cl$" 'common-lisp-mode))
-    (push '("\\.cl$" . common-lisp-mode) auto-mode-alist))
-
-(fi:alist-parse auto-mode-alist "\\.el$" 'emacs-lisp-mode)
-(fi:alist-parse auto-mode-alist "/\\..*emacs" 'emacs-lisp-mode)
-
-(fi:alist-parse auto-mode-alist "\\.lisp$" 'common-lisp-mode)
-(fi:alist-parse auto-mode-alist "\\.lsp$" 'common-lisp-mode)
-(fi:alist-parse auto-mode-alist "\\.ml$" 'common-lisp-mode)
+(def-auto-mode "\\.l$" 'franz-lisp-mode)
+(def-auto-mode "\\.cl$" 'common-lisp-mode)
+(def-auto-mode "\\.lisp$" 'common-lisp-mode)
 
 (if (not fi:lisp-mode-syntax-table)
     (progn
