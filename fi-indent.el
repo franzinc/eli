@@ -45,7 +45,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.9 1989/05/19 18:35:53 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.10 1989/05/24 19:57:56 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If `t', semicolons that begin comments are indented as they are typed.")
@@ -53,7 +53,7 @@
 (defvar fi:comment-indent-hook-values '(0 nil)
   "What does this do????")
 
-(defvar fi:lisp-comment-indent-specification (list comment-column t nil 0)
+(defvar fi:lisp-comment-indent-specification nil
   "*Specification list for indentations of semicolon comments.
 The nth element of the list specifies the indentation for a comment beginning
 with n semicolons (e.g. the first element of the list is the indentation for
