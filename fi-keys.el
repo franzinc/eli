@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.51 1991/04/22 13:40:44 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.52 1991/06/19 22:17:07 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -108,10 +108,10 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
   (if supermap
       (define-key map "\C-c" supermap)
     ;; editing mode
-    (let ((c-map (make-keymap)))
-      (define-key map "\C-c" c-map)
-      (define-key c-map "-"	'fi:log-functional-change)))
+    (define-key map "\C-c" (make-keymap)))
   
+  (define-key map "\C-?"	'backward-delete-char-untabify)
+  (define-key map "\C-c-"	'fi:log-functional-change)
   (define-key map "\C-c%"	'fi:extract-list)
   (define-key map "\C-c;"	'fi:comment-region)
   (define-key map "\C-c\C-e"	'fi:end-of-defun)
@@ -125,41 +125,43 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
       (define-key map "\t"		'lisp-indent-line)
       (define-key map "\e\C-q"		'indent-sexp)))
 
-  (define-key map "\C-?"	'backward-delete-char-untabify)
+  (if (memq mode '(sub-lisp tcp-lisp))
+      (progn
+	(define-key map "\r"	 'fi:inferior-lisp-newline)
+	(define-key map "\e\r"	 'fi:inferior-lisp-input-sexp)
+	(define-key map "\C-x\r" 'fi:inferior-lisp-input-list))
+    (define-key map "\r"	 'fi:lisp-mode-newline))
 
-  (cond
-    ((memq mode '(sub-lisp tcp-lisp))
-     (define-key map "\r"	'fi:inferior-lisp-newline)
-     (define-key map "\e\r"	'fi:inferior-lisp-input-sexp)
-     (define-key map "\C-x\r"	'fi:inferior-lisp-input-list))
-    (t (define-key map "\r"	'fi:lisp-mode-newline)))
+  (when (memq major-mode '(fi:common-lisp-mode fi:inferior-common-lisp-mode
+			   fi:lisp-listener-mode))
+    (define-key map "\C-c?"	'fi:lisp-apropos)
+    (define-key map "\C-c."	'fi:lisp-find-definition)
+    (define-key map "\C-c4"	(make-keymap))
+    (define-key map "\C-c4." 	'fi:lisp-find-definition-other-window)
+    (define-key map "\C-c,"	'fi:lisp-find-next-definition)
+    (define-key map "\e\t"	'fi:lisp-complete-symbol)
+    (define-key map "\eA"	'fi:lisp-arglist)
+    (define-key map "\eC"	'fi:list-who-calls)
+    (define-key map "\eD"	'fi:describe-symbol)
+    (define-key map "\eF"	'fi:lisp-function-documentation)
+    (define-key map "\eM"	'fi:lisp-macroexpand)
+    (define-key map "\eT"	'fi:toggle-trace-definition)
+    (define-key map "\eW"	'fi:lisp-macroexpand-recursively)
+    (define-key map "\C-c "	'fi:lisp-delete-pop-up-window))
 
-  (cond
-    ((memq major-mode '(fi:common-lisp-mode fi:inferior-common-lisp-mode
-			fi:lisp-listener-mode))
-     (define-key map "\C-c?"	'fi:lisp-apropos)
-     (define-key map "\e."	'fi:lisp-find-tag)
-     (define-key map "\e,"	'fi:lisp-tags-loop-continue)
-     (define-key map "\e\t"	'fi:lisp-complete-symbol)
-     (define-key map "\eA"	'fi:lisp-arglist)
-     (define-key map "\eC"	'fi:list-who-calls)
-     (define-key map "\eD"	'fi:describe-symbol)
-     (define-key map "\eF"	'fi:lisp-function-documentation)
-     (define-key map "\eM"	'fi:lisp-macroexpand)
-     (define-key map "\eT"	'fi:toggle-trace-definition)
-     (define-key map "\eW"	'fi:lisp-macroexpand-recursively)
-     (let ((4-map (make-keymap)))
-       (define-key map "\C-x4" 4-map)
-       (define-key 4-map "." 	'fi:lisp-find-tag-other-window))))
-  (cond
-    ((eq major-mode 'fi:emacs-lisp-mode)
-     (define-key map "\e\C-x"	'eval-defun))
-    ((memq major-mode '(fi:common-lisp-mode fi:franz-lisp-mode
-			fi:lisp-mode))
-     (define-key map "\e\C-x"	'fi:lisp-eval-defun)
-     (define-key map "\C-c\C-b"	'fi:lisp-eval-current-buffer)
-     (define-key map "\C-c\C-s" 'fi:lisp-eval-last-sexp)
-     (define-key map "\C-c\C-r"	'fi:lisp-eval-region)))
+  (when (eq major-mode 'fi:common-lisp-mode)
+    (define-key map "\C-c!"	'fi:common-lisp))
+
+  (when (eq major-mode 'fi:emacs-lisp-mode)
+    (define-key map "\e\C-x"	'eval-defun))
+  
+  (when (memq major-mode '(fi:common-lisp-mode fi:franz-lisp-mode
+			   fi:lisp-mode))
+    (define-key map "\e\C-x"	'fi:lisp-eval-defun)
+    (define-key map "\C-c\C-b"	'fi:lisp-eval-current-buffer)
+    (define-key map "\C-c\C-s"	'fi:lisp-eval-last-sexp)
+    (define-key map "\C-c\C-r"	'fi:lisp-eval-region))
+  
   map)
 
 (defun fi::lisp-listener-mode-commands (map supermap)
@@ -392,12 +394,11 @@ parsed, the enclosing list is processed."
 	  (fi::get-symbol-at-point up-p))
 	 (read-symbol
 	  (let ((fi::original-package fi:package))
-	  (completing-read
-	   (if symbol-at-point
-	       (format "%s: (default %s) " prompt symbol-at-point)
-	     (format "%s: " prompt))
-	   'fi::minibuffer-complete
-	   )))
+	    (completing-read
+	     (if symbol-at-point
+		 (format "%s: (default %s) " prompt symbol-at-point)
+	       (format "%s: " prompt))
+	     'fi::minibuffer-complete)))
 	 (symbol (if (string= read-symbol "")
 		     symbol-at-point
 		   read-symbol))
@@ -421,9 +422,10 @@ parsed, the enclosing list is processed."
 	     (completion (and alist (try-completion pattern alist))))
 	(ecase what
 	  ((nil)
-	   (if (eq completion t)
-	       t
-	     (concat deletion completion)))
+	   (cond ((eq completion t) t)
+		 ((and alist (null (cdr alist)))
+		  (concat deletion (car (car alist))))
+		 (t (concat deletion completion))))
 	  ((t)
 	   (mapcar (function cdr) alist))
 	  (lambda (not (not alist))))))))
@@ -607,7 +609,9 @@ Also move the point there."
 (defun fi:subprocess-interrupt ()
   "Send a kill (SIGINT) signal to the current subprocess."
   (interactive)
-  (interrupt-process nil t))
+  (interrupt-process nil
+		     (memq major-mode '(fi:rlogin-mode fi:shell-mode
+					fi:telnet-mode))))
 
 (defun fi:rlogin-send-interrupt ()
   "Send an interrupt (SIGINT) to the process running as in the current
@@ -618,12 +622,16 @@ subprocess buffer."
 (defun fi:subprocess-kill ()
   "Send a kill (SIGKILL) signal to the current subprocess."
   (interactive)
-  (kill-process nil t))
+  (kill-process nil
+		(memq major-mode '(fi:rlogin-mode fi:shell-mode
+					fi:telnet-mode))))
 
 (defun fi:subprocess-quit ()
   "Send a quit (SIGQUIT) signal to the current subprocess."
   (interactive)
-  (quit-process nil t))
+  (quit-process nil
+		(memq major-mode '(fi:rlogin-mode fi:shell-mode
+					fi:telnet-mode))))
 
 (defun fi:rlogin-send-quit ()
   "Send a quit (SIGQUIT) to the process running as in the current
@@ -753,7 +761,8 @@ If they are not, position the point at the first syntax error found."
       (forward-sexp 1)
       (if (looking-at ")") (error "Extra `)'")))
     (goto-char started-here)
-    (message "All parentheses appear to be balanced.")))
+    (if (interactive-p)
+	(message "All parentheses appear to be balanced."))))
 
 (defun fi:fill-paragraph (arg)
   "Properly fill paragraphs of Lisp comments by inserting the appropriate
@@ -833,3 +842,82 @@ positions, and ARG."
 	    (replace-match comment-end))
 	  (if (looking-at (regexp-quote comment-start))
 	      (replace-match "")))))))
+
+(defvar fi::wc-stack nil)
+
+(defconst fi::wc-stack-max 10)
+
+(defun fi:lisp-delete-pop-up-window ()
+  (interactive)
+  (unless fi::wc-stack
+    (error "The pop-up window ring is empty."))
+  (let ((conf (car fi::wc-stack)))
+    (setq fi::wc-stack (cdr fi::wc-stack))
+    (set-window-configuration conf)))
+
+(defun fi:lisp-push-window-configuration ()
+  (setq fi::wc-stack (cons (current-window-configuration) fi::wc-stack))
+  (if (> (length fi::wc-stack) fi::wc-stack-max)
+      (setcdr (nthcdr (1- fi::wc-stack-max) fi::wc-stack) nil)))
+
+(require 'tags)				; make sure not autoloaded
+
+(defvar fi:find-tag-lock t
+  "If non-nil, then the first time find-tag or find-tag-other-window are
+executed a buffer will be displayed explaining the new method for finding
+Lisp definitions.")
+
+(defvar fi::find-tag-lock-state nil)
+
+(defun fi:disabled-once-find-tag (&rest args)
+  (interactive)
+  (let ((wc (current-window-configuration)))
+    (delete-other-windows)
+    (switch-to-buffer "*find-tag lock*")
+    (erase-buffer)
+    (insert (format "You have invoked ``%s''.\n" this-command))
+    (insert "
+``M-.'' no longer finds Lisp definitions.  In all Lisp-moded buffers, the
+sequence ``C-c .'' is bound to fi:lisp-find-definition and ``C-c ,'' is
+bound to fi:find-next-definition.  ``M-.'' and ``M-,'' are unchanged (and
+are bound to find-tag and tags-loop-continue).
+
+If you want ``M-.'' to find Lisp definitions in Lisp-moded buffers, then
+``C-c .'' and ``M-.'' can be switched in Lisp-moded buffers.  Put the
+following form in your ~/.emacs file:
+
+	(setq fi:lisp-mode-hook
+	  (function
+	   (lambda ()
+	     (let ((map (current-local-map)))
+	       (define-key map \"\\C-c.\"	'find-tag)
+	       (define-key map \"\\C-c,\"	'tags-loop-continue)
+	       (define-key map \"\\e.\"	'fi:lisp-find-definition)
+	       (define-key map \"\\e,\"	'fi:lisp-find-next-definition)))))
+
+To prevent this message to appear when find-tag or find-tag-other-window
+are invoked, put this form in your ~/.emacs:
+
+	(setq fi:find-tag-lock nil)
+
+Type `q' to proceed.
+")
+    (message "Type `q' to proceed.")
+    (setq fi::find-tag-lock-state (cons wc this-command))
+    (use-local-map (make-keymap))
+    (define-key (current-local-map) "q"
+		'fi::disabled-once-find-tag-continue)
+    (setq buffer-read-only t)))
+
+(defun fi::disabled-once-find-tag-continue ()
+  (interactive)
+  (set-window-configuration (car fi::find-tag-lock-state))
+  (fset 'find-tag (symbol-function 'saved-find-tag))
+  (fset 'find-tag-other-window (symbol-function 'saved-find-tag-other-window))
+  (call-interactively (cdr fi::find-tag-lock-state)))
+
+(when fi:find-tag-lock
+  (fset 'saved-find-tag (symbol-function 'find-tag))
+  (fset 'saved-find-tag-other-window (symbol-function 'find-tag-other-window))
+  (fset 'find-tag (symbol-function 'fi:disabled-once-find-tag))
+  (fset 'find-tag-other-window (symbol-function 'fi:disabled-once-find-tag)))
