@@ -1,4 +1,4 @@
-# $Id: local.mak,v 2.5 1997/12/18 18:38:49 layer Exp $
+# $Id: local.mak,v 2.6 1997/12/20 00:29:32 layer Exp $
 
 TGZFILE = eli-$(VERSION).tar.gz
 DISTDIR = eli-$(VERSION)
@@ -40,10 +40,10 @@ to = $(elib_root)/fi
 rdist = rdist
 
 FILES_TO_RDIST = ChangeLog fi-*.el fi-*.elc \
-		local-fi-*.el local-fi-*.elc Makefile 
+		local*.el local*.elc Makefile 
 
 rdist:
 	rm -fr DIST
-	$(rdist) -hwqc $(FILES_TO_RDIST) "`hostname`:`$(pwd)`/DIST"
+	$(rdist) -hwqc $(FILES_TO_RDIST) "`hostname`:$(pwd)/DIST"
 	(cd DIST; $(rdist) -Rc . "{`echo $(hosts) | sed 's/ /,/g'`}:$(to)")
 	rm -fr DIST

@@ -7,6 +7,13 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.pre-beta.14
+
+Fri Dec 19 16:29:00 1997  Kevin Layer  <layer@ultra>
+
+	* local.mak: fix use of $(pwd)
+
+*******************************************************************************
 2.0.21.pre-beta.13
 
 Fri Dec 19 16:22:11 1997    <layer@HOBART>
