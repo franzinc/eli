@@ -1,4 +1,3 @@
-;;                  		-[Wed May 22 11:21:09 1991 by layer]-
 ;;
 ;; copyright (C) 1987, 1988, 1989, 1990, 1991 Franz Inc, Berkeley, Ca.
 ;;
@@ -25,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.18 1991/05/28 16:17:45 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.19 1991/06/27 15:26:27 layer Exp $
 
 (defun fi::setup-default-clman-package-info ()
   ;;  Returns a list that 
@@ -50,7 +49,7 @@
 	    ("cond" "cond/")
 	    ("excl" "excl/")
 	    ("foreign" "foreign/")
-	    ("graph" "graph/")
+;;;;	    ("graph" "graph/")
 	    ("inspect" "inspect/")
 	    ("lisp" "lisp/")
 	    ("mp" "mp/")
