@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.50 1991/02/15 23:17:49 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.51 1991/02/15 23:37:23 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -13,7 +13,7 @@ cl_library =
 
 elcs = modes.elc indent.elc subproc.elc sublisp.elc filec.elc ring.elc\
 	    su.elc telnet.elc rlogin.elc shell.elc keys.elc tcplisp.elc\
-	    query.elc utils.elc ltags.elc clman.elc doc.elc\
+	    nonlep/ltags.elc nonlep/query.elc utils.elc clman.elc doc.elc\
 	    lep/basic-lep.elc lep/lep.elc lep/lze.elc lep/db.elc\
 	    lep/dmode.elc lep/stream.elc lep/composer.elc
 
@@ -46,3 +46,7 @@ spec.out:	spec.n ${elcs}
 
 install:
 	cp -rp spec.out *.cl dot.* *.sh *.el *.elc *.data $(DEST)
+	mkdir $(DEST)/lep
+	mkdir $(DEST)/nonlep
+	cp -p lep/*.el* $(DEST)/lep
+	cp -p nonlep/*.el* $(DEST)/nonlep
