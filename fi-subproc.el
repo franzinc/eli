@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.52 1989/07/19 14:05:38 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.53 1989/08/07 16:43:55 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -371,9 +371,11 @@ are read from the minibuffer."
 				fi:subprocess-map-nl-to-cr)))
       (goto-char (point-max))
       (set-marker (process-mark process) (point))
-      (let ((saved-input-ring fi::input-ring))
-	(funcall mode-function)
-	(setq fi::input-ring saved-input-ring))
+      (condition-case ()
+	  (let ((saved-input-ring fi::input-ring))
+	    (funcall mode-function)
+	    (setq fi::input-ring saved-input-ring))
+	(error nil))
       (make-local-variable 'subprocess-prompt-pattern)
       (setq subprocess-prompt-pattern image-prompt)
       (fi::make-subprocess-variables))
@@ -382,6 +384,8 @@ are read from the minibuffer."
 (defun fi::make-tcp-connection (buffer-number buffer-name mode image-prompt
 				    &optional given-host
 					      given-service)
+  (if (null fi:unix-domain-socket)
+      (error "Emacs/Lisp interface has not been started yet."))
   (let* ((buffer (fi::make-process-buffer buffer-name buffer-number))
 	 (default-dir default-directory)
 	 (buffer-name (buffer-name buffer))
