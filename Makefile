@@ -1,11 +1,11 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.26 1989/02/14 17:16:17 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.27 1989/02/14 17:43:27 layer Exp $
 
 cl = /usr/local/cl3.0
 emacs = /usr/local/emacs
 
 elc-files = modes.elc subproc.elc sublisp.elc filec.elc ring.elc\
 	    tools/doc.elc rlogin.elc shell.elc keys.elc tcplisp.elc utils.elc\
-	    ltags.elc
+	    ltags.elc clman.elc clman-oblist.elc
 
 precompile = (set-case-mode :case-sensitive-lower)(require :process)(require :foreign)(require :cstructs)
 
