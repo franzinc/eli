@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-modes.el,v 1.76 2003/09/29 23:28:23 layer Exp $
+;; $Id: fi-modes.el,v 1.77 2003/10/14 21:12:34 layer Exp $
 
 ;;;; Mode initializations
 
@@ -478,7 +478,11 @@ the readtable used for evaluations given to Lisp from emacs."
 	    (subseq default (1+ n))
 	  default)))))
 
-(put 'fi:common-lisp-mode 'find-tag-default-function 'fi::find-tag-common-lisp)
+(dolist (m '(fi:common-lisp-mode
+	     fi:inferior-common-lisp-mode
+	     fi:lisp-listener-mode
+	     fi:definition-mode))
+  (put m 'find-tag-default-function 'fi::find-tag-common-lisp))
 
 ;;;;
 ;;; Initializations

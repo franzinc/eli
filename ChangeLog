@@ -11,9 +11,10 @@ For more detailed instructions on filling in the ChangeLog form, see
 
 2003-10-14    <layer@HOBART>
 
+	* fi-modes.el: rfe4251: same treatment for other modes
 	* fi-emacs21.el: rfe5597: resizing a frame causes the pretty
 	  printer to notice the change
->>>	* fi-subproc.el (fi:user-env-vars): rfe4337: new variable
+	* fi-subproc.el (fi:user-env-vars): rfe4337: new variable
 	  fi:user-env-vars
 	* fi-subproc.el (fi::read-file-name): bug9125: fix long standing
 	  annoyance of bogus dxl input in minibuffer
@@ -368,7 +369,7 @@ post-release patch
 
 2001-09-10  Kevin Layer  <layer@crikey>
 
-    from smh:
+    from smh from rfe4251:
 	* fi-modes.el (fi::find-tag-common-lisp): raise the intelligence
 	of the default tag in find-tag by removing explicit package
 	qualifiers.
