@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.65 1991/09/11 15:22:38 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.66 1991/09/16 14:54:46 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -160,6 +160,7 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
     (define-key map "\C-c4"	(make-keymap))
     (define-key map "\C-c4." 	'fi:lisp-find-definition-other-window)
     (define-key map "\C-c,"	'fi:lisp-find-next-definition)
+    (define-key map "\C-ck"	'fi:kill-definition)
     (define-key map "\e\t"	'fi:lisp-complete-symbol)
     (define-key map "\eA"	'fi:lisp-arglist)
     (define-key map "\eC"	'fi:list-who-calls)
@@ -193,6 +194,7 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
     (while (< i l)
       (define-key map (char-to-string i) 'fi:self-insert-command)
       (setq i (1+ i))))
+  (define-key map (char-to-string 31) nil) ; fix C-_
   (fi::lisp-mode-commands (fi::subprocess-mode-commands map supermap 'sub-lisp)
 			  supermap
 			  'sub-lisp))
@@ -581,7 +583,7 @@ subprocess mode."
 
 (defun fi::tcp-simulate-special-char (function)
   (let* ((proc (get-buffer-process (current-buffer)))
-	 (item (assq proc fi::tcp-listener-table)))
+	 (item (or (assq proc fi::tcp-listener-table) '(nil . 1))))
     (if item
 	(fi:eval-in-lisp
 	 (format "(lep::tcp-simulate-special-char #'%s %d)\n"
