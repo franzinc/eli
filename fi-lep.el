@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.45 1991/12/19 19:01:39 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.46 1992/01/12 11:48:50 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -422,10 +422,13 @@ beginning of words in target symbols."
 	  ((and (null completion) (null alist))
 	   (message "Can't find completion for \"%s\"" pattern)
 	   (ding))
-;;;; the next two clauses are for abbrev expansion:
+
+;;;; the next three clauses are for abbrev expansion:
+
 	  ((and (null completion) alist (null (cdr alist)))
 	   (delete-region real-beg end)
 	   (insert (cdr (car alist))))
+
 	  ((and (null completion) alist)
 	   ;; pattern is something like l-a-comp.  The next hack is to turn
 	   ;; this into something like list-all-comp...
@@ -436,7 +439,23 @@ beginning of words in target symbols."
 	   (with-output-to-temp-buffer "*Help*"
 	     (display-completion-list (mapcar 'cdr alist)))
 	   (message "Making completion list...done"))
+
+	  ((and (cdr alist)
+		(or
+		 ;; there is a match, but there are other possible
+		 ;; matches
+		 (string= pattern completion)
+		 ;; more than one choice, so insert what completion we have
+		 ;; and give the choices to the user
+		 (not (assoc pattern alist))))
+	   (delete-region beg end)
+	   (insert completion)
+	   (message "Making completion list...")
+	   (with-output-to-temp-buffer "*Help*"
+	     (display-completion-list
+	      (mapcar 'cdr alist))))
 ;;;;
+	  
 	  ((null (string= pattern completion))
 	   (let ((new (cdr (assoc completion alist))))
 	     (if new
@@ -451,10 +470,7 @@ beginning of words in target symbols."
 	   (message "Making completion list...")
 	   (with-output-to-temp-buffer "*Help*"
 	     (display-completion-list
-	      (mapcar 'cdr alist)
-;;;; the following is superfluous, since alist is the list of completions
-;;;;	      (all-completions pattern alist)
-	      ))
+	      (mapcar 'cdr alist)))
 	   (message "Making completion list...done")))))
 
 (defun fi::lisp-complete-1 (pattern package functions-only
