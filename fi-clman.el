@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 2.2 1993/04/15 22:31:57 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 2.3 1993/04/22 14:44:50 layer Exp $
 
 (defun fi::figure-out-mandir ()
   (do* ((path load-path (cdr path))
@@ -39,14 +39,24 @@ argument SYMBOL is prompted for in the minibuffer, if not supplied.   To get
 completion for a symbol in a package other than the :lisp 
 package, use the nickname of that package, followed by a colon (e.g. cw: or
 math:).  The buffer that is displayed will be in CLMAN mode."
-  (interactive (list (car (fi::get-default-symbol "CLMAN for Symbol"))))
+  (interactive
+   (let* ((symbol-at-point (fi::get-symbol-at-point t))
+	  (res (completing-read (format "CLMAN for Symbol (default %s): "
+					symbol-at-point)
+				fi::clman-big-oblist
+				nil
+				nil
+				nil)))
+     (list (if (string= "" res)
+	       symbol-at-point
+	     res))))
   (setq fi::clman-window-configuration (current-window-configuration))
   (let ((files (cdr (assoc symbol fi::clman-big-oblist))))
     (if files
-	(fi::clman-display-file fi:clman-displaying-buffer files))
-    (if files
-	(length files)
-      nil)))
+	(progn
+	  (fi::clman-display-file fi:clman-displaying-buffer files)
+	  (length files))
+      (error "couldn't find entry for %s" symbol))))
     
 (defun fi:clman-apropos ()
   "Prompts for a string on which an apropos search is done.  Displays a
