@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lze.el,v 1.35.44.2.8.1 2003/08/12 21:17:39 layer Exp $
+;; $Id: fi-lze.el,v 1.35.44.2.8.2 2003/08/12 23:13:13 layer Exp $
 ;;
 ;; Code the implements evaluation in via the backdoor
 
@@ -178,7 +178,9 @@ with this buffer."
 	 (set-buffer buffer)
 	 (cond
 	  ((eq 'minibuffer (car fi:pop-up-temp-window-behavior))
-	   (fi:show-some-text nil stuff))
+	   (if (and (stringp stuff) (= 0 (length stuff)))
+	       (fi::note-background-reply (list compilep))
+	     (fi:show-some-text nil stuff)))
 	  (t
 	   (fi::note-background-reply (list compilep))))
 	 (when (and results (null fi:echo-evals-from-buffer-in-listener-p))
