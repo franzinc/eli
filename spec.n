@@ -614,7 +614,7 @@ for the mode.
 			      Appendix C
 			Sample X11 interaction
 
-%eval: (insert-file "dot.emacs_x11")
+%eval: (insert-file "dot.emacsX11")
 
 			      Appendix D
 			  Franz Lisp Support
