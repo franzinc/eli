@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.13 1991/09/30 11:39:17 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.14 1991/10/21 20:04:21 layer Exp $
 
 (defun composer::make-listener (new-screen-p)
   (when (and new-screen-p (fboundp 'create-screen))
@@ -32,17 +32,26 @@
 ;;;; fi:inspect-method-combination
 
 (defun fi:inspect-class (something)
-  "Inspect, using the grapher, a class object."
+  "Inspect, using the grapher, a class object.
+
+This command will only work in a Common Lisp image that has Allegro
+Composer loaded and initialized."
   (interactive (fi::get-default-symbol "Class name"))
   (fi::inspect-something something 'clos::find-class "Class"))
 
 (defun fi:inspect-function (something)
-  "Inspect, using the grapher, a function object."
+  "Inspect, using the grapher, a function object.
+
+This command will only work in a Common Lisp image that has Allegro
+Composer loaded and initialized."
   (interactive (fi::get-default-symbol "Function name"))
   (fi::inspect-something something 'fdefinition "Function"))
 
 (defun fi:inspect-value (something)
-  "Inspect, using the grapher, an arbitrary Lisp object."
+  "Inspect, using the grapher, an arbitrary Lisp object.
+
+This command will only work in a Common Lisp image that has Allegro
+Composer loaded and initialized."
   (interactive (fi::get-default-symbol "Value to inspect"))
   (fi::inspect-something something 'eval "Inspect"))
 
@@ -60,12 +69,18 @@
 ;;; show-callees
 
 (defun fi:show-calls-to (function)
-  "Show a graph of the calls to FUNCTION."
+  "Show a graph of the calls to FUNCTION.
+
+This command will only work in a Common Lisp image that has Allegro
+Composer loaded and initialized."
   (interactive (fi::get-default-symbol "Function"))
   (fi::show-calls function ':parent "Could not show calls to %s"))
 
 (defun fi:show-calls-from (function)
-  "Show a graph of the calls from FUNCTION."
+  "Show a graph of the calls from FUNCTION.
+
+This command will only work in a Common Lisp image that has Allegro
+Composer loaded and initialized."
   (interactive (fi::get-default-symbol "Function"))
   (fi::show-calls function  ':kid "Could not show calls from %s"))
 
@@ -80,12 +95,18 @@
 ;;;
 
 (defun fi:show-subclasses (class)
-  "Show a graph of the subclasses of CLASS."
+  "Show a graph of the subclasses of CLASS.
+
+This command will only work in a Common Lisp image that has Allegro
+Composer loaded and initialized."
   (interactive (fi::get-default-symbol "Subclasses of class"))
   (fi::show-subsuper-classes class ':kid "Could not show subclasses: %s"))
 
 (defun fi:show-superclasses (class)
-  "Show a graph of the superclasses of CLASS."
+  "Show a graph of the superclasses of CLASS.
+
+This command will only work in a Common Lisp image that has Allegro
+Composer loaded and initialized."
   (interactive (fi::get-default-symbol "Superclasses of class"))
   (fi::show-subsuper-classes class ':parent "Could not show superclasses: %s"))
 
