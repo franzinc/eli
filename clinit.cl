@@ -1,8 +1,12 @@
-;; $Header: /repo/cvs.copy/eli/Attic/clinit.cl,v 1.5 1988/11/17 18:26:43 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/clinit.cl,v 1.6 1988/11/17 18:29:27 layer Exp $
 
 #|
 
-;; Put the following single form in your .emacs file:
+;; Put the following single line in your .login file:
+
+setenv EMACSLIBRARY /usr/local/lib/emacs
+
+;; Then, put the following single form in your .emacs file:
 
 (setq fi:unix-domain-socket
   (format "/tmp/%s_emacs_to_acl" (user-login-name)))
