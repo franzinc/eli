@@ -1,4 +1,4 @@
-;;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.8 1988/03/19 18:48:20 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.9 1988/03/20 01:05:56 layer Exp $
 ;;;
 ;;; Mode initializations
 
@@ -7,19 +7,19 @@
 ;;;;
 
 (defvar fi:shell-mode-map nil
-  "Fi:shell-mode keymap.")
+  "The shell major-mode keymap.")
 (defvar fi:shell-mode-super-key-map nil
-  "Used for super-key processing in fi::subprocess modes.")
+  "Used for super-key processing in subprocess modes.")
 
 (defvar fi:inferior-lisp-mode-map nil
-  "Fi:inferior-lisp-mode keymap.")
+  "The inferior-lisp major-mode keymap.")
 (defvar fi:inferior-lisp-mode-super-key-map nil
-  "Used for super-key processing in inferior-lisp modes.")
+  "Used for super-key processing in inferior-lisp mode.")
 
 (defvar fi:tcp-lisp-mode-map nil
-  "Fi:tcp-lisp-mode keymap.")
+  "The tcp-lisp major-mode keymap.")
 (defvar fi:tcp-lisp-mode-super-key-map nil
-  "Used for super-key processing in TCP mode.")
+  "Used for super-key processing in tcp-lisp mode.")
 
 (defvar fi:common-lisp-mode-map nil "The Common Lisp major-mode map.")
 (defvar fi:franz-lisp-mode-map nil "The Franz Lisp major-mode map.")

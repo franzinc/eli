@@ -1,4 +1,4 @@
-;;; $Header: /repo/cvs.copy/eli/fi-filec.el,v 1.2 1988/03/04 09:10:37 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-filec.el,v 1.3 1988/03/20 01:06:50 layer Exp $
 ;;;
 ;;; File name completions
 
@@ -6,7 +6,7 @@
   "If non-nil, completion window requires cleaning up.")
 
 (defvar fi:shell-token-pattern "[ \t\n()<>&|;=]"
-  "*Regexp used by shell name completion to mark path name boundries.")
+  "Regexp used by shell name completion to mark path name boundries.")
 
 (defun fi:shell-file-name-completion ()
   "Preform file name completion in shell mode"
