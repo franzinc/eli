@@ -7,6 +7,11 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+join from acl62 to trunk on 8/14/2002
+command:
+  ./join.sh acl62 acl62_to_trunk_merge1 acl62_to_trunk_merge2 eli
+
+*******************************************************************************
 join from acl62 to trunk on 7/9/02
 
 ******************************************************************************
