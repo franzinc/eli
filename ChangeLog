@@ -7,6 +7,13 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.1.pre-beta.7
+
+2000-07-06  Kevin Layer  <layer@ultra>
+
+	* fi-modes.el: handle cl:in-package, too
+
+*******************************************************************************
 2.1.pre-beta.6
 
 2000-06-27  Kevin Layer  <layer@ultra>
