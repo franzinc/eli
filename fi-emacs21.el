@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-emacs21.el,v 1.1.2.3 2003/08/08 17:02:17 layer Exp $
+;; $Id: fi-emacs21.el,v 1.1.2.4 2003/08/11 20:50:37 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; emacs specific stuff
@@ -59,7 +59,8 @@
 
 (defun fi::initialize-menu-bar-map ()
   (when (not (memq major-mode fi::menu-bar-initialized))
-    (let* ((map (cond
+    (let* ((composer (and fi:composer-menu (not (on-ms-windows))))
+	   (map (cond
 		 ((eq major-mode 'fi:common-lisp-mode) fi:common-lisp-mode-map)
 		 ((eq major-mode 'fi:inferior-common-lisp-mode)
 		  fi:inferior-common-lisp-mode-map)
@@ -72,7 +73,7 @@
 	   (help-name (if fi:menu-bar-single-item "Help" "ACLHelp"))
 	   (help-map (make-sparse-keymap help-name))
 	   (composer-name "Composer")
-	   (composer-map (make-sparse-keymap composer-name))
+	   (composer-map (when composer (make-sparse-keymap composer-name)))
 	   (debug-name (if fi:menu-bar-single-item "Debug" "ACLDebug"))
 	   (debug-map (make-sparse-keymap debug-name))
 	   (edit-name (if fi:menu-bar-single-item "Edit" "ACLEdit"))
@@ -82,14 +83,17 @@
       (cond
        (fi:menu-bar-single-item
 	(define-key map [menu-bar acl] (cons acl-name acl-map))
-	(define-key map [menu-bar acl composer]
-	  (cons composer-name composer-map))
+	(when composer
+	  (define-key map [menu-bar acl composer]
+	    (cons composer-name composer-map)))
 	(define-key map [menu-bar acl acldebug] (cons debug-name debug-map))
 	(define-key map [menu-bar acl acledit] (cons edit-name edit-map))
 	(define-key map [menu-bar acl aclfile] (cons file-name file-map)))
        (t
 	(define-key map [menu-bar aclhelp] (cons help-name help-map))
-	(define-key map [menu-bar composer] (cons composer-name composer-map))
+	(when composer
+	  (define-key map [menu-bar composer]
+	    (cons composer-name composer-map)))
 	(define-key map [menu-bar acldebug] (cons debug-name debug-map))
 	(define-key map [menu-bar acledit] (cons edit-name edit-map))
 	(define-key map [menu-bar aclfile] (cons file-name file-map))))
@@ -378,134 +382,136 @@
 		  :enable '(fi::connection-open)))
 
 ;;;; Composer
+
+      (when composer
+	(define-key map (fi::keys [composer exit-composer])
+	  (fi::menu "Exit Composer/Common Windows" 'fi:composer-exit
+		    :enable '(fi::composer-connection-open-uncache)))
     
-      (define-key map (fi::keys [composer exit-composer])
-	(fi::menu "Exit Composer/Common Windows" 'fi:composer-exit
-		  :enable '(fi::composer-connection-open-uncache)))
+	(define-key map (fi::keys [composer composer-sep1])
+	  (fi::menu "----"))
     
-      (define-key map (fi::keys [composer composer-sep1])
-	(fi::menu "----"))
+	(define-key map (fi::keys [composer help])
+	  (cons "Help" (make-sparse-keymap "Help")))
     
-      (define-key map (fi::keys [composer help])
-	(cons "Help" (make-sparse-keymap "Help")))
+	(define-key map (fi::keys [composer other])
+	  (cons "Other" (make-sparse-keymap "Other")))
     
-      (define-key map (fi::keys [composer other])
-	(cons "Other" (make-sparse-keymap "Other")))
+	(define-key map (fi::keys [composer composer-other-options])
+	  (fi::menu "Options" 'fi:composer-other-options
+		    :enable '(fi::composer-connection-open)))
     
-      (define-key map (fi::keys [composer composer-other-options])
-	(fi::menu "Options" 'fi:composer-other-options
-		  :enable '(fi::composer-connection-open)))
+	(define-key map (fi::keys [composer profiler])
+	  (cons "Profiler" (make-sparse-keymap "Profiler")))
     
-      (define-key map (fi::keys [composer profiler])
-	(cons "Profiler" (make-sparse-keymap "Profiler")))
+	(define-key map (fi::keys [composer xref])
+	  (cons "Xref" (make-sparse-keymap "Xref")))
     
-      (define-key map (fi::keys [composer xref])
-	(cons "Xref" (make-sparse-keymap "Xref")))
+	(define-key map (fi::keys [composer clos])
+	  (cons "CLOS" (make-sparse-keymap "CLOS")))
     
-      (define-key map (fi::keys [composer clos])
-	(cons "CLOS" (make-sparse-keymap "CLOS")))
+	(define-key map (fi::keys [composer inspect])
+	  (fi::menu "Inspect" 'fi:inspect-value
+		    :enable '(fi::composer-connection-open)))
     
-      (define-key map (fi::keys [composer inspect])
-	(fi::menu "Inspect" 'fi:inspect-value
-		  :enable '(fi::composer-connection-open)))
+	(define-key map (fi::keys [composer composer-sep2])
+	  (fi::menu "----"))
     
-      (define-key map (fi::keys [composer composer-sep2])
-	(fi::menu "----"))
-    
-      (define-key map (fi::keys [composer start-composer])
-	(fi::menu "Start Composer" 'fi:start-composer
-		  :enable '(fi::connection-open-composer-loaded-and-stopped)))
+	(define-key map (fi::keys [composer start-composer])
+	  (fi::menu "Start Composer" 'fi:start-composer
+		    :enable
+		    '(fi::connection-open-composer-loaded-and-stopped)))
 
 ;;;; Composer > Help
     
-      (define-key map [menu-bar composer help composer-help-gesture-bindings]
-	(fi::menu "Current pointer gesture bindings"
-		  'fi:composer-help-gesture-bindings
-		  :enable '(fi::composer-connection-open)))
+	(define-key map [menu-bar composer help composer-help-gesture-bindings]
+	  (fi::menu "Current pointer gesture bindings"
+		    'fi:composer-help-gesture-bindings
+		    :enable '(fi::composer-connection-open)))
     
-      (define-key map (fi::keys [composer help composer-help])
-	(fi::menu "Help" 'fi:composer-help
-		  :enable '(fi::composer-connection-open)))
+	(define-key map (fi::keys [composer help composer-help])
+	  (fi::menu "Help" 'fi:composer-help
+		    :enable '(fi::composer-connection-open)))
 
 ;;;; Composer > Other
     
-      (define-key map (fi::keys [composer other reinitialize-resources])
-	(fi::menu "Reinitialize Composer resources"
-		  'fi:composer-reinitialize-resources
-		  :enable '(fi::composer-connection-open)))
+	(define-key map (fi::keys [composer other reinitialize-resources])
+	  (fi::menu "Reinitialize Composer resources"
+		    'fi:composer-reinitialize-resources
+		    :enable '(fi::composer-connection-open)))
     
-      (define-key map (fi::keys [composer other defsys-browser])
-	(fi::menu "System Browser" 'fi:composer-defsys-browser
-		  :enable '(fi::composer-connection-open)))
+	(define-key map (fi::keys [composer other defsys-browser])
+	  (fi::menu "System Browser" 'fi:composer-defsys-browser
+		    :enable '(fi::composer-connection-open)))
     
-      (define-key map (fi::keys [composer other process-browser])
-	(fi::menu "Process Browser" 'fi:composer-process-browser
-		  :enable '(fi::composer-connection-open)))
+	(define-key map (fi::keys [composer other process-browser])
+	  (fi::menu "Process Browser" 'fi:composer-process-browser
+		    :enable '(fi::composer-connection-open)))
     
 ;;;; Composer > Profiler
     
-      (define-key map (fi::keys [composer profiler options])
-	(fi::menu "Options" 'fi:composer-profiler-options
-		  :enable '(fi::composer-connection-open)))
+	(define-key map (fi::keys [composer profiler options])
+	  (fi::menu "Options" 'fi:composer-profiler-options
+		    :enable '(fi::composer-connection-open)))
     
-      (define-key map (fi::keys [composer profiler display-space])
-	(fi::menu "Display space" 'fi:composer-display-space-profiler
-		  :enable '(fi::composer-connection-open)))
+	(define-key map (fi::keys [composer profiler display-space])
+	  (fi::menu "Display space" 'fi:composer-display-space-profiler
+		    :enable '(fi::composer-connection-open)))
     
-      (define-key map (fi::keys [composer profiler display-time])
-	(fi::menu "Display time" 'fi:composer-display-time-profiler
-		  :enable '(fi::composer-connection-open)))
+	(define-key map (fi::keys [composer profiler display-time])
+	  (fi::menu "Display time" 'fi:composer-display-time-profiler
+		    :enable '(fi::composer-connection-open)))
     
-      (define-key map (fi::keys [composer profiler stop-profiler])
-	(fi::menu "Stop profiler" 'fi:composer-stop-profiler
-		  :enable '(fi::composer-connection-open)))
+	(define-key map (fi::keys [composer profiler stop-profiler])
+	  (fi::menu "Stop profiler" 'fi:composer-stop-profiler
+		    :enable '(fi::composer-connection-open)))
     
-      (define-key map [menu-bar composer profiler start-space-profiler]
-	(fi::menu "Start space profiler" 'fi:composer-start-space-profiler
-		  :enable '(fi::composer-connection-open)))
+	(define-key map [menu-bar composer profiler start-space-profiler]
+	  (fi::menu "Start space profiler" 'fi:composer-start-space-profiler
+		    :enable '(fi::composer-connection-open)))
     
-      (define-key map (fi::keys [composer profiler start-time-profiler])
-	(fi::menu "Start time profiler" 'fi:composer-start-time-profiler
-		  :enable '(fi::composer-connection-open)))
+	(define-key map (fi::keys [composer profiler start-time-profiler])
+	  (fi::menu "Start time profiler" 'fi:composer-start-time-profiler
+		    :enable '(fi::composer-connection-open)))
 
 ;;;; Composer > Xref
     
-      (define-key map (fi::keys [composer xref discard])
-	(fi::menu "Discard Xref info" 'fi:discard-xref-info
-		  :enable '(fi::connection-open)))
+	(define-key map (fi::keys [composer xref discard])
+	  (fi::menu "Discard Xref info" 'fi:discard-xref-info
+		    :enable '(fi::connection-open)))
     
-      (define-key map (fi::keys [composer xref composer-ref-sep1])
-	(fi::menu "----"))
+	(define-key map (fi::keys [composer xref composer-ref-sep1])
+	  (fi::menu "----"))
     
-      (define-key map (fi::keys [composer xref show-calls-to-and-from])
-	(fi::menu "Show calls to and from" 'fi:show-calls-to-and-from
-		  :enable '(fi::composer-connection-open)))
+	(define-key map (fi::keys [composer xref show-calls-to-and-from])
+	  (fi::menu "Show calls to and from" 'fi:show-calls-to-and-from
+		    :enable '(fi::composer-connection-open)))
     
-      (define-key map (fi::keys [composer xref show-calls-from])
-	(fi::menu "Show calls from" 'fi:show-calls-from
-		  :enable '(fi::composer-connection-open)))
+	(define-key map (fi::keys [composer xref show-calls-from])
+	  (fi::menu "Show calls from" 'fi:show-calls-from
+		    :enable '(fi::composer-connection-open)))
 
-      (define-key map (fi::keys [composer xref show-calls-to])
-	(fi::menu "Show calls to" 'fi:show-calls-to
-		  :enable '(fi::composer-connection-open)))
+	(define-key map (fi::keys [composer xref show-calls-to])
+	  (fi::menu "Show calls to" 'fi:show-calls-to
+		    :enable '(fi::composer-connection-open)))
 
 ;;;; Composer > CLOS
     
-      (define-key map (fi::keys [composer clos show-superclasses])
-	(fi::menu "Show class superclasses" 'fi:show-superclasses
-		  :enable '(fi::composer-connection-open)))
+	(define-key map (fi::keys [composer clos show-superclasses])
+	  (fi::menu "Show class superclasses" 'fi:show-superclasses
+		    :enable '(fi::composer-connection-open)))
     
-      (define-key map (fi::keys [composer clos show-subclasses])
-	(fi::menu "Show class subclasses" 'fi:show-subclasses
-		  :enable '(fi::composer-connection-open)))
+	(define-key map (fi::keys [composer clos show-subclasses])
+	  (fi::menu "Show class subclasses" 'fi:show-subclasses
+		    :enable '(fi::composer-connection-open)))
     
-      (define-key map (fi::keys [composer clos inspect-function])
-	(fi::menu "Inspect generic function" 'fi:inspect-function
-		  :enable '(fi::composer-connection-open)))
+	(define-key map (fi::keys [composer clos inspect-function])
+	  (fi::menu "Inspect generic function" 'fi:inspect-function
+		    :enable '(fi::composer-connection-open)))
     
-      (define-key map (fi::keys [composer clos inspect-class])
-	(fi::menu "Inspect class" 'fi:inspect-class
-		  :enable '(fi::composer-connection-open)))
+	(define-key map (fi::keys [composer clos inspect-class])
+	  (fi::menu "Inspect class" 'fi:inspect-class
+		    :enable '(fi::composer-connection-open))))
     
 ;;;; ACLHelp
 

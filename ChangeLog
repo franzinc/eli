@@ -9,6 +9,10 @@ For more detailed instructions on filling in the ChangeLog form, see
 ******************************************************************************
 post-6.2 release changes: 
 
+2003-08-11  Kevin Layer  <layer@crikey>
+
+	* fi-emacs21.el: rfe5611: no composer menu on windows
+
 2003-08-08  Kevin Layer  <layer@crikey>
 
 	* fi-compile.el: don't compile emacs-only files in xemacs
