@@ -24,13 +24,16 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.60 1991/07/24 14:02:01 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.61 1991/07/30 20:54:26 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
 kept.  Buffer local.")
 
 (make-variable-buffer-local 'fi:subprocess-super-key-map)
+
+(defvar fi:superkey-shadow-universal-argument t
+  "...")
 
 (defvar fi:find-tag-lock t
   "If non-nil, then the first time find-tag or find-tag-other-window are
@@ -106,7 +109,10 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
 	;; \C-c points to supermap
 	(define-key map "\C-d"  'fi:subprocess-superkey)
 	(define-key map "\C-o"  'fi:subprocess-superkey)
-	(define-key map "\C-u"  'fi:subprocess-superkey)
+	(if (or (not (eq 'universal-argument
+			 (lookup-key global-map "\C-u")))
+		fi:superkey-shadow-universal-argument)
+	    (define-key map "\C-u"  'fi:subprocess-superkey))
 	(define-key map "\C-w"  'fi:subprocess-superkey)
 	(define-key map "\C-z"  'fi:subprocess-superkey)
 	(define-key map "\C-\\" 'fi:subprocess-superkey)))
