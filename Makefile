@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.112 1995/01/18 17:06:25 smh Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.113 1995/04/07 01:37:13 georgej Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -93,7 +93,7 @@ makeman:	makeman.o clmanaux.o
 
 clman.oblist:	manual/OBLIST.el makeman.elc
 	emacs -nw -batch -q -l `pwd`/manual/OBLIST.el -l `pwd`/makeman.elc \
-		> clman.oblist
+		2> clman.oblist
 
 clman.data:	clman.oblist makeman
 	makeman clman.data < clman.oblist
@@ -104,7 +104,7 @@ small_manual/manual/OBLIST.el:	manual/OBLIST.el
 small_manual/clman.oblist:	small_manual/manual/OBLIST.el makeman.elc
 	emacs -nw -batch -q -l `pwd`/small_manual/manual/OBLIST.el \
 		-l `pwd`/makeman.elc \
-		> small_manual/clman.oblist
+		2> small_manual/clman.oblist
 
 small_manual/clman.data:	small_manual/clman.oblist makeman
 	makeman small_manual/clman.data < small_manual/clman.oblist
@@ -125,13 +125,13 @@ clman:	clman.o clmanaux.o
 
 release_root = /net/vapor/scm/emacs-lib/Dists
 
-fi_release_files = ChangeLog fi-*.el fi-*.elc Makefile *.doc examples/*.el \
-	gc-mode-line.cl gc-mode-line.c
+fi_release_files = ChangeLog fi-*.el fi-*.elc Makefile Doc.el *.doc \
+	examples/*.el gc-mode-line.cl gc-mode-line.c
 
 # gc-mode-line included here, even though these files will not be needed
 # starting with 4.3
-acl_release_files = ChangeLog fi-*.el fi-*.elc Makefile *.doc examples/*.el \
-	gc-mode-line.cl gc-mode-line.c \
+acl_release_files = ChangeLog fi-*.el fi-*.elc Makefile Doc.el *.doc \
+	examples/*.el gc-mode-line.cl gc-mode-line.c \
 	$(acl_clman_release_files)
 
 echo_acl_release_files:
@@ -204,7 +204,7 @@ rdist = /usr/ucb/rdist
 
 rdist: all
 	rm -fr DIST
-	${rdist} -qc Makefile ChangeLog *.doc fi-*.el fi-*.elc \
+	${rdist} -qc Makefile Doc.el ChangeLog *.doc fi-*.el fi-*.elc \
 		clman.c clman.h clmanaux.c \
 		gc-mode-line.cl gc-mode-line.c \
 		"`hostname`:`pwd`/DIST"

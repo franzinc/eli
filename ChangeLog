@@ -1,3 +1,11 @@
+Sun Mar 19 13:49:48 1995  George Jacob  <georgej@vapor>
+
+	* fi-clman.el (math): Allow uppercase symbols to work (spr10564)
+
+	* Makefile (rdist): Added Doc.el to list of distributable files
+
+	* Doc.el: Added description at beginning of file
+
 *******************************************************************************
 2.0.18 public release
 *******************************************************************************

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 2.9 1995/02/06 00:20:30 smh Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 2.10 1995/04/07 01:37:16 georgej Exp $
 
 (defvar fi::clman-prog
     (or (fi::find-path load-path "clman")
@@ -56,7 +56,10 @@ math:).  The buffer that is displayed will be in CLMAN mode."
 	(save-excursion
 	  (set-buffer standard-output)
 	  (setq exit-status
-	    (call-process fi::clman-prog nil t nil fi::clman-data symbol))
+	    ;; spr10564: put DOWNCASE around SYMBOL in next form to allow
+	    ;; uppercase symbols to do the right thing. -dm 4/12/94
+	    (call-process fi::clman-prog nil t nil fi::clman-data 
+			  (downcase symbol)))
 	  (when (< (buffer-size) 80)
 	    (goto-char (point-min))
 	    (end-of-line)
