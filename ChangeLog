@@ -7,6 +7,14 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.pre-beta.8
+
+Fri Dec 12 09:13:28 1997  Kevin Layer  <layer@ultra>
+
+	* fi-compile.el: compile fi-vers.el
+	* local.mak: add romeo
+
+*******************************************************************************
 2.0.21.pre-beta.7
 
 Wed Dec 10 17:20:21 1997  Kevin Layer  <layer@ultra>
