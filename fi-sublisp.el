@@ -31,13 +31,15 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.26 1988/05/12 12:23:09 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.27 1988/05/12 22:55:32 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;; User Visibles
 ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defvar fi:pop-to-sublisp-buffer-after-lisp-eval t)
 
 (defvar fi:package nil
   "A buffer-local variable whose value should either be nil or a string
@@ -121,11 +123,12 @@ parsed, the enclosing list is processed."
 	     (setq start-resend
 	       (save-excursion
 		 (cond
-		   ((= (preceding-char) ?\))
-		    (scan-sexps (point) (- arg)))
+		   ((= (preceding-char) ?\)) (scan-sexps (point) (- arg)))
 		   ((= (following-char) ?\() (point))
 		   ((= (following-char) ?\))
 		    (forward-char 1) (scan-sexps (point) (- arg)))
+		   ((not (memq (char-syntax (preceding-char)) '(?w ?_)))
+		    (point))
 		   (t (scan-sexps (point) (- arg))))))
 	     (setq end-resend
 	       (save-excursion
@@ -133,6 +136,8 @@ parsed, the enclosing list is processed."
 		   ((= (preceding-char) ?\)) (point))
 		   ((= (following-char) ?\() (scan-sexps (point) arg))
 		   ((= (following-char) ?\)) (forward-char 1) (point))
+		   ((not (memq (char-syntax (following-char)) '(?w ?_)))
+		    (point))
 		   (t (scan-sexps (point) arg)))))))
 	(setq exp-to-resend
 	  (buffer-substring
@@ -165,8 +170,10 @@ correct fi:package, of course."
     (fi::send-string-load
      sublisp-process stuff fi:subprocess-map-nl-to-cr compile-file-p)
     (fi::send-string-split sublisp-process "\n" fi:subprocess-map-nl-to-cr)
-    (switch-to-buffer-other-window (process-buffer sublisp-process))
-    (goto-char (point-max))))
+    (if fi:pop-to-sublisp-buffer-after-lisp-eval
+	(progn
+	  (switch-to-buffer-other-window (process-buffer sublisp-process))
+	  (goto-char (point-max))))))
 
 (defun fi::sublisp-select ()
   "Find a sublisp for eval commands to send code to.  Result stored in
