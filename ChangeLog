@@ -7,6 +7,13 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.pre-beta.9
+
+Wed Dec 17 09:01:58 1997    <layer@HOBART>
+
+	* local-fi-developer-hooks.el: disable fi::update-acl-id
+
+*******************************************************************************
 2.0.21.pre-beta.8
 
 Fri Dec 12 09:13:28 1997  Kevin Layer  <layer@ultra>

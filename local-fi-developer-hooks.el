@@ -1,11 +1,12 @@
 ;; local-fi-developer-hooks.el
-;; $Id: local-fi-developer-hooks.el,v 2.9 1997/03/21 21:34:16 layer Exp $
+;; $Id: local-fi-developer-hooks.el,v 2.10 1997/12/17 17:31:48 layer Exp $
 
 ;; This file is not for public distribution.
 ;; It contains extra hooks for fi developers only, things like special
 ;; file write hooks that automatically time stamp runtime system files.
 ;; If this file is present, it is loaded by fi-site-init.
 
+;;;; NOT USED ANYMORE:
 (defun fi::update-acl-id ()
   (interactive "")
   (save-excursion
@@ -60,20 +61,20 @@
 (add-hook 'c-mode-common-hook
 	  (function (lambda () (c-set-style "bsd"))))
 
-(add-hook 'fi:common-lisp-mode-hook
-	  (function
-	   (lambda ()
-	     (pushnew 'fi::update-acl-id local-write-file-hooks))))
-
-(add-hook 'c-mode-hook
-	  (function
-	   (lambda ()
-	     (pushnew 'fi::update-acl-id local-write-file-hooks))))
-
-(add-hook 'c++-mode-hook
-	  (function
-	   (lambda ()
-	     (pushnew 'fi::update-acl-id local-write-file-hooks))))
+;;;(add-hook 'fi:common-lisp-mode-hook
+;;;	  (function
+;;;	   (lambda ()
+;;;	     (pushnew 'fi::update-acl-id local-write-file-hooks))))
+;;;
+;;;(add-hook 'c-mode-hook
+;;;	  (function
+;;;	   (lambda ()
+;;;	     (pushnew 'fi::update-acl-id local-write-file-hooks))))
+;;;
+;;;(add-hook 'c++-mode-hook
+;;;	  (function
+;;;	   (lambda ()
+;;;	     (pushnew 'fi::update-acl-id local-write-file-hooks))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
