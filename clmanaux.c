@@ -1,6 +1,6 @@
 /* Copyright (C) 1993, Franz Inc., Berkeley, CA.  All rights reserved. */
 
-/* $Header: /repo/cvs.copy/eli/Attic/clmanaux.c,v 2.1 1993/07/22 23:04:47 layer Exp $ */
+/* $Header: /repo/cvs.copy/eli/Attic/clmanaux.c,v 2.2 1993/07/23 07:28:04 layer Exp $ */
 
 #include "clman.h"
 
@@ -43,7 +43,7 @@ puthashi(i)
 	if (i == oldi) {
 	    if (seen) {
 		fprintf(stderr, "internal error: table full\n");
-		exit(1);
+		exit(-1);
 	    } else {
 		seen++;
 	    }
@@ -64,7 +64,7 @@ gethashi(name)
 	if (i == oldi) {
 	    if (seen) {
 		fprintf(stderr, "internal error: table full\n");
-		exit(1);
+		exit(-1);
 	    } else {
 		seen++;
 	    }
@@ -75,7 +75,7 @@ gethashi(name)
     if (table[i].name_index) {
 	return(i);
     } else {
-	fprintf(stderr, "couldn't find %s in table\n", name);
-	exit(1);
+	fprintf(stderr, "No CLMan entry for %s.\n", name);
+	exit(-1);
     }
 }

@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.84 1993/07/23 07:10:56 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.85 1993/07/23 07:28:01 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -181,10 +181,15 @@ rdist = /usr/ucb/rdist
 rdist: all
 	rm -fr DIST
 	${rdist} -qc Makefile ChangeLog *.doc fi-*.el fi-*.elc \
+		clman.c clman.h clmanaux.c \
 		"`hostname`:`pwd`/DIST"
 	(cd DIST; ln -s $(clman_data_release) .)
 	(cd DIST; ln -s /net/vapor/scm/emacs-lib/clman manual)
 	(cd DIST; ${rdist} -Rc . "{`echo ${hosts} | sed 's/ /,/g'`}:$(to)")
+	for h in ${hosts}; do \
+		echo making clman on $$h; \
+		rsh $$h "(cd ${to}; make CC=cc clman)"; \
+	done
 	rm -fr DIST
 
 save_version:
