@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 3.7.2.8 2004/10/07 21:39:12 layer Exp $
+;; $Id: fi-subproc.el,v 3.7.2.8.2.1 2005/01/28 21:32:42 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -1011,8 +1011,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	  (concat temp "/"))))
 
     (setq exe (fi::read-file-name "Lisp executable program: " exe exe))
-    (setq dxl
-      (fi::read-file-name "Lisp image (dxl) file: " directory dxl nil dxl))
+    (setq dxl (fi::read-file-name "Lisp image (dxl) file: " dxl dxl))
 
     (setq image-args
       (fi::listify-string
