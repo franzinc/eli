@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 3.7.2.3 2004/08/05 21:00:05 layer Exp $
+;; $Id: fi-subproc.el,v 3.7.2.4 2004/08/14 07:02:36 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -635,9 +635,18 @@ be a string. Use the 6th argument for image file."))
   (let ((connection-file
 	 (format "%s\\elistartup%d" (fi::temporary-directory)
 		 (process-id proc)))
+	;;In w32proc.c where is this Win9x lossage workaround
+	;; /* Hack for Windows 95, which assigns large (ie negative) pids */
+	;; if (cp->pid < 0)
+	;;   cp->pid = -cp->pid;
+	(connection-file-win9x
+	 (format "%s\\elistartup%d" (fi::temporary-directory)
+		 (- (process-id proc))))
 	(i 0))
 
-    (while (not (file-exists-p connection-file))
+    (while (and (not (when (file-exists-p connection-file-win9x)
+		       (setf connection-file connection-file-win9x)))
+		(not (file-exists-p connection-file)))
       (cond
        (fi:common-lisp-subprocess-wait-forever)
        ((and (> i 0) (zerop (mod i 10)))

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 3.3.2.1 2004/07/19 18:32:21 layer Exp $
+;; $Id: fi-keys.el,v 3.3.2.2 2004/08/14 07:02:36 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -873,7 +873,8 @@ target."
 form.  If there are too many parens delete them.  The form is also indented."
   (interactive)
   (save-restriction
-    (narrow-to-region (point) (save-excursion (fi:beginning-of-defun) (point)))
+    (narrow-to-region (point)
+		      (save-excursion (fi:beginning-of-defun) (point)))
     (let ((res (parse-partial-sexp (point-min) (point))))
       (when (nth 3 res) (error "Inside a string!"))
       (when (nth 4 res) (error "Inside a comment!"))
@@ -885,7 +886,11 @@ form.  If there are too many parens delete them.  The form is also indented."
 		      (error t)))
 	(goto-char p)
 	(insert ")"))
-      (unless (eq p (point)) (delete-region p (point)))))
+      (unless (eq p (point))
+	(error "Extra text after completed form.")
+;;;bug14287: don't delete the extra stuff... that's very unfriendly.
+;;;	(delete-region p (point))
+	)))
   (fi:beginning-of-defun)
   (if fi:lisp-do-indentation
       (fi:indent-sexp)

@@ -1,3 +1,11 @@
+2004-08-13  Kevin Layer  <layer@gemini>
+
+	* fi-keys.el (fi:super-paren): bug14287: don't delete extra stuff
+    from smh:
+	* fi-subproc.el (fi::common-lisp-1-windows): bug14546: work around
+	  emacs lossage on win9x -- pid's on Win95 are negative and emacs
+	  makes them positive
+
 2004-07-18  Kevin Layer  <layer@gemini>
 
 	* fi-keys.el (fi:arglist-lisp-space): rfe5988
@@ -4979,4 +4987,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.9.2.4 $
+$Revision: 3.9.2.5 $
