@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.23 1991/10/03 12:45:58 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.24 1991/10/10 11:36:32 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -612,6 +612,32 @@ versions of the emacs-lisp interface.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defun fi::eval-in-lisp-wait-for-connection ()
+  (if (not (fi::lep-open-connection-p))
+      (let ((i 0) (max 20))
+	(while (and (< i max)
+		    fi::common-lisp-backdoor-main-process-name
+		    (get-process fi::common-lisp-backdoor-main-process-name)
+		    (not (fi::lep-open-connection-p))
+		    (progn (sleep-for 3) t))
+	  (setq i (+ i 1))))))
+
+(defun fi:eval-in-lisp-asynchronous (string &rest args)
+  "Apply (Emacs Lisp) format to STRING and ARGS and asychronously evaluate
+the result in the Common Lisp to which we are connected.  If a
+lisp-eval-server has not been started, then this function starts it."
+  (fi::eval-in-lisp-wait-for-connection)
+  (let ((string (if args (apply 'format string args) string)))
+    (fi::make-request
+     (lep::eval-from-emacs-session
+      :string (fi::frob-case-to-lisp string))
+     ;; Normal continuation
+     (() (value)
+      ;; ignore the value...
+      nil)
+     ((string) (error)
+      (message "error evaluating %s: %s" string error)))))
+
 (defvar fi:lisp-evalserver-timeout 5
   "The time which fi:eval-in-lisp will wait before timing out and
 signalling an error.  Without a timeout Emacs would potentially be locked
@@ -628,17 +654,8 @@ be increased.")
   "Apply (Emacs Lisp) format to STRING and ARGS and sychronously evaluate
 the result in the Common Lisp to which we are connected.  If a
 lisp-eval-server has not been started, then this function starts it."
-  (if (not (fi::lep-open-connection-p))
-      (let ((i 0) (max 20))
-	(while (and (< i max)
-		    fi::common-lisp-backdoor-main-process-name
-		    (get-process fi::common-lisp-backdoor-main-process-name)
-		    (not (fi::lep-open-connection-p))
-		    (progn (sleep-for 3) t))
-	  (setq i (+ i 1)))))
-  (let ((string (if args
-		    (apply 'format string args)
-		  string)))
+  (fi::eval-in-lisp-wait-for-connection)
+  (let ((string (if args (apply 'format string args) string)))
     (car (lep::eval-session-in-lisp 'lep::eval-from-emacs-session
 				    ':string (fi::frob-case-to-lisp string)))))
 
