@@ -8,9 +8,6 @@
 
   (fi:common-lisp-mode)
   (fi:franz-lisp-mode)
-  (fi:lisp-mode)
-  (fi:emacs-lisp-mode)
-  (fi:inferior-lisp-mode)
   (fi:tcp-lisp-mode)
   (fundamental-mode)
 
