@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.55 1991/06/19 22:46:45 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.56 1991/06/20 10:29:38 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -32,6 +32,15 @@ kept.  Buffer local.")
 
 (make-variable-buffer-local 'fi:subprocess-super-key-map)
 
+(defvar fi:find-tag-lock t
+  "If non-nil, then the first time find-tag or find-tag-other-window are
+executed a buffer will be displayed explaining the method for finding
+Lisp definitions.")
+
+(defvar fi:check-for-unbalanced-parens-on-write-file t
+  "If non-nil, for the Lisp editing modes (Common Lisp, Emacs Lisp, and
+Franz Lisp) check for unbalanced parentheses before writing the file.  This
+is done by pushing the name of a function on WRITE-FILE-HOOKS.")
 
 ;;;;
 ;;; Key defs
@@ -764,6 +773,21 @@ If they are not, position the point at the first syntax error found."
     (if (interactive-p)
 	(message "All parentheses appear to be balanced."))))
 
+(defun fi:check-for-unbalanced-parens-on-write-file ()
+  (if (memq major-mode '(fi:common-lisp-mode fi:emacs-lisp-mode
+			 fi:franz-lisp-mode))
+      (condition-case nil
+	  (fi:find-unbalanced-parenthesis)
+	(error
+	 (message "Warning: parens are not balanced in this buffer.")
+	 (ding)
+	 (sit-for 2))))
+  ;; so the file is written:
+  nil)
+
+(setq write-file-hooks
+  (cons 'fi:check-for-unbalanced-parens-on-write-file write-file-hooks))
+
 (defun fi:fill-paragraph (arg)
   "Properly fill paragraphs of Lisp comments by inserting the appropriate
 semicolons at the beginning of lines.  With prefix argument, ARG, justify
@@ -863,11 +887,6 @@ as it was before it was made visible."
       (setcdr (nthcdr (1- fi::wc-stack-max) fi::wc-stack) nil)))
 
 (require 'tags)				; make sure not autoloaded
-
-(defvar fi:find-tag-lock t
-  "If non-nil, then the first time find-tag or find-tag-other-window are
-executed a buffer will be displayed explaining the new method for finding
-Lisp definitions.")
 
 (defvar fi::find-tag-lock-state nil)
 
