@@ -1,3 +1,8 @@
+2005-02-17  Kevin Layer  <layer@gemini>
+
+	* fi-emacs21.el (fi::maybe-update-default-right-margin): minor
+	  cleanup -- set fi::*current-frame-width* inside the inner `when'
+
 2005-02-09  Kevin Layer  <layer@gemini>
 
 	* fi-ring.el: make sure fi::input-append checks that
@@ -5031,4 +5036,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.9.2.10.2.3 $
+$Revision: 3.9.2.10.2.4 $

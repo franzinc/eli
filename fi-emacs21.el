@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-emacs21.el,v 3.2.8.1.2.1 2005/01/28 18:53:51 layer Exp $
+;; $Id: fi-emacs21.el,v 3.2.8.1.2.2 2005/02/17 23:19:58 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; emacs specific stuff
@@ -1086,14 +1086,7 @@
      (let ((new-width (car fi::*new-frame-width*))
 	   (frame (cdr fi::*new-frame-width*)))
        (setq fi::*new-frame-width* nil)
-       (when (/= fi::*current-frame-width* new-width)
-;;;	 (message "window frame %s width changed from %s to %s"
-;;;		  frame fi::*current-frame-width* new-width)
-     
-	 ;; Save the value first, in case there an error, so we don't contact
-	 ;; Lisp more than we have to.
-	 (setq fi::*current-frame-width* new-width)
-	
-	 (when (fi::lep-open-connection-p)
-	   (fi:eval-in-lisp "(setq excl::*default-right-margin* %d)"
-			    new-width)))))))
+       (when (and (/= fi::*current-frame-width* new-width)
+		  (fi::lep-open-connection-p))
+	 (fi:eval-in-lisp "(setq excl::*default-right-margin* %d)"
+			  (setq fi::*current-frame-width* new-width)))))))
