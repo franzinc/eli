@@ -1,4 +1,4 @@
-;; $Id: fi-site-init.el,v 1.116.22.1 2000/10/22 00:35:38 layer Exp $
+;; $Id: fi-site-init.el,v 1.116.22.1.14.1 2001/11/14 18:29:15 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -15,11 +15,12 @@
   (let ((case-fold-search t))
     (cond ((or (string-match "xemacs" emacs-version)
 	       (string-match "lucid" emacs-version))
-	   (cond ((string-match "^2[01]\." emacs-version) 'xemacs20)
+	   (cond ((string-match "^2[01]\\." emacs-version) 'xemacs20)
 		 (t 'xemacs19)))
-	  ((string-match "^20\." emacs-version) 'emacs20)
-	  ((string-match "^19\." emacs-version) 'emacs19)
-	  ((string-match "^18\." emacs-version) 'emacs18)
+	  ((string-match "^20\\." emacs-version) 'emacs20)
+	  ((string-match "^21\\." emacs-version) 'emacs20)
+	  ((string-match "^19\\." emacs-version) 'emacs19)
+	  ((string-match "^18\\." emacs-version) 'emacs18)
 	  ((boundp 'epoch::version) 'epoch)
 	  (t
 	   (error
