@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.40 1991/01/31 22:05:30 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.41 1991/02/15 23:21:34 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -77,6 +77,11 @@ shell, rlogin, sub-lisp or tcp-lisp."
     (define-key map "\C-c"	'fi:tcp-lisp-interrupt-process)
     (define-key map "\C-d"	'fi:tcp-lisp-send-eof)
     (define-key map "\C-\\"	'fi:tcp-lisp-kill-process)))
+  
+  (if (memq mode '(sub-lisp tcp-lisp))
+      (progn
+	(define-key map "s" 'fi:scan-stack)))
+
   map)
 
 (defun fi::subprocess-mode-commands (map supermap mode)
@@ -286,7 +291,7 @@ compiled."
   (interactive "P")
   (let* ((end (save-excursion (end-of-defun) (point)))
 	 (start (save-excursion
-		  (beginning-of-defun)
+		  (fi:beginning-of-defun)
 		  (point))))
     (fi::eval-send start end compile-file-p)))
 
@@ -561,7 +566,7 @@ at the head of the function."
   (let* ((case-fold-search t)
 	 (bof
 	  (cond ((string-match "lisp" mode-name)
-		 'beginning-of-defun)
+		 'fi:beginning-of-defun)
 		((string= mode-name "C")
 		 '(lambda () (re-search-backward "^{" nil t)))
 		(t (error "can't handle this mode: %s" mode-name)))))
@@ -597,18 +602,19 @@ at the head of the function."
 prefix argument, do it this many times.  Returns t, unless beginning of
 buffer is hit."
   (interactive "p")
-  (if fi:subprocess-mode
-      (goto-char (process-mark (get-buffer-process (current-buffer))))
-    (progn
-      (and n (< n 0) (forward-char 1))
-      (and (re-search-backward "^\\s(" nil 'move (or n 1))
-	   (progn (beginning-of-line) t)))))
+  (or (looking-at "^\\s(")
+      (if fi:subprocess-mode
+	  (goto-char (process-mark (get-buffer-process (current-buffer))))
+	(progn
+	  (and n (< n 0) (forward-char 1))
+	  (and (re-search-backward "^\\s(" nil 'move (or n 1))
+	       (progn (beginning-of-line) t))))))
 
 (defun fi:end-of-defun ()
   (interactive)
   (if fi:subprocess-mode
       (goto-char (point-max))
-    (when (or (looking-at "^\\s(") (beginning-of-defun 1))
+    (when (fi:beginning-of-defun 1)
       (forward-sexp 1))))
 
 (defun fi:super-paren ()
@@ -619,7 +625,7 @@ form.  If there are too many parens delete them.  The form is indent, too."
     (narrow-to-region (point) (save-excursion (fi:beginning-of-defun) (point)))
     (let (p)
       (while (progn (setq p (point))
-		    (beginning-of-defun)
+		    (fi:beginning-of-defun)
 		    (condition-case nil (progn (forward-sexp 1) nil)
 		      (error t)))
 	(goto-char p)
