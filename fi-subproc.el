@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.46 1988/11/22 20:21:39 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.47 1989/05/19 11:42:32 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -308,7 +308,8 @@ are read from the minibuffer."
 
 (defun fi::make-subprocess (buffer-number process-name mode-function
 					  image-prompt image-file
-					  image-arguments)
+					  image-arguments
+			    &optional filter)
   (let* ((buffer (fi::make-process-buffer process-name buffer-number))
 	 (default-dir default-directory)
 	 (buffer-name (buffer-name buffer))
@@ -326,11 +327,18 @@ are read from the minibuffer."
 	(goto-char (point-max))
       (setq default-directory default-dir)
       (if process (delete-process process))
-      (setq process (apply 'start-process
-			   (append (list buffer-name buffer image-file)
-				   image-arguments)))
+      (setq process
+	(apply 'start-process
+	       (append (list buffer-name buffer
+			     (concat exec-directory "env")
+			     (format "TERMCAP=emacs:co#%d:tc=unknown:"
+				     (screen-width))
+			     "TERM=emacs"
+			     "EMACS=t"
+			     "-" image-file)
+		       image-arguments)))
       (set-process-sentinel process 'fi::subprocess-sentinel)
-      (set-process-filter process 'fi::subprocess-filter)
+      (set-process-filter process (if filter filter 'fi::subprocess-filter))
       (setq start-up-feed-name
 	(if image-file
 	    (concat "~/.emacs_" (file-name-nondirectory image-file))))
