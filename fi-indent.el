@@ -45,7 +45,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.1 1989/03/20 15:32:38 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.2 1989/03/21 18:10:50 layer Exp $
 
 (defvar lisp-electric-semicolon nil
   "*If `t', semicolons that begin comments are indented as they are typed.")
@@ -123,14 +123,14 @@ indentation for keywords occurring within special forms whose symbols have
 a 'lisp-indent-hook property of 'keyword or 'keyword-list.  The inden-
 tation returned is absolute.")
  
-(defvar lisp-maximum-indent-struct-depth 1
+(defvar lisp-maximum-indent-struct-depth 3
   "*Maximum depth to backtrack out from a sublist for structured indentation.
 If this variable is NIL, no backtracking will occur and lists whose `car'
 is a symbol with a 'lisp-indent-hook property of 'label, 'labels, 'flet,
 'macrolet, 'defun, or a list may not be indented properly.  In addition,
 quoted lists will not be treated specially.  If this variable is T, there
 is no limit placed on backtracking.  A numeric value specifies the maximum
-depth to backtrack.  A reasonable value is three.")
+depth to backtrack.  A reasonable value is 3.")
 
 (defvar lisp-case-sensitive t
   "If non-NIL, the code that is being edited is for a case-sensitive dialect
@@ -697,7 +697,10 @@ syntax table."
 	 (lisp-indent-keyword-list
 	  depth count state indent-point t nil t))
 	((memq method '(lambda lambda-list))
-	 (lisp-indent-lambda-list depth count state indent-point))
+	 (lisp-indent-keyword-list depth count state indent-point t nil t
+				   nil nil nil "&optional" "&rest" "&key"
+				   "&allow-other-keys" "&aux" "&body"
+				   "&whole" "&env"))
 	((and method (symbolp method))
 	 ;; this is how one form shadows the indenation of another, though
 	 ;; I suppose that this could loop infinitely!
@@ -815,44 +818,52 @@ treated just like a LAMBDA (whose method is '((1 1 lambda-list) (0 t 1)))."
   "Function for indenting a form with keywords.
 This function is useful for indenting lambda lists and special forms that
 have keywords.  The argument QUOTEDP indicates that the form is a quoted
-list (such as a lambda list) if it is non-NIL.  KEYWORD-ARG-PAIRS-P if
-non-NIL indicates that keywords and their arguments come in pairs, i.e.
-there is a single s-expression associated with each keyword.  If this
-is NIL, all s-expressions that follow a keyword, up to the next keyword,
-are considered as the `arguments' to the keyword.  (Note that the first
-s-expression following the keyword is always treated as the argument to
-the keyword even if it is also a keyword.)  Optional argument KEYWORD-COUNT
-specifies the number of keyword that are recognized as such.  Only the
-specified number of keywords (and their associated argument s-expressions)
-will be indented distinctly: any further keywords are treated simply as
-atomic expressions in the body of the form.  If this is T, all keywords
-found in the form are recognized.  Optional argument SPECIAL-KEYWORD-COUNT
-specifies the number of distinguished keywords.  Distinguished keywords are
-indented twice the value of `lisp-body-indent', just as distinguished forms
-are indented by `lisp-indent-specform'.  If the argument to a distinguished
-keyword does not appear on the same line as the keyword, the argument is
-indented thrice the value of `lisp-body-indent'.  If KEYWORD-ARG-PAIRS-P
-is NIL, variable `lisp-keyword-argument-indentation' determines the
-indentation of any second and subsequent arguments to distinguished
-keywords.  If `lisp-keyword-argument-indentation' is not T, arguments
-are indented thrice the value of `lisp-body-indent'.  If SPECIAL-KEYWORD-COUNT
-is T, all keywords and their arguments are treated as distinguished.  The
-keywords encountered in the form are counted in parallel to satisfy both
-SPECIAL-KEYWORD-COUNT and KEYWORD-COUNT.  Optional argument SPECIAL-COUNT
-specifies the number of distinguished s-expressions in the form.  Any
-potential keywords and their arguments that appear as distinguished
-s-expressions of the form are not counted toward SPECIAL-KEYWORD-COUNT or
-KEYWORD-COUNT.  Optional argument IGNORE-AFTER-COUNT specifies the number
-of initial non-keyword s-expressions in the form (after satisfying 
-SPECIAL-COUNT) after which keywords will no longer be recognized.  If
-this is T, no keywords will be recognized after the first non-keyword,
-non-special s-expression encountered.  (Note that specifying both
-KEYWORD-ARG-PAIRS-P to be NIL and IGNORE-AFTER-COUNT to be T means only
-that no keywords will be recognized if the first s-expression following
-any distinguished s-expressions is not a keyword.)  Any further arguments 
-to this function constitute the specific keywords to be recognized.  If 
-no keywords are explicitly specified, all keywords (atoms beginning with 
-a colon) are recognized."
+list (such as a lambda list) if it is non-NIL.
+
+KEYWORD-ARG-PAIRS-P if non-NIL indicates that keywords and their arguments
+come in pairs, i.e. there is a single s-expression associated with each
+keyword.  If this is NIL, all s-expressions that follow a keyword, up to
+the next keyword, are considered as the `arguments' to the keyword.  (Note
+that the first s-expression following the keyword is always treated as the
+argument to the keyword even if it is also a keyword.)
+
+Optional argument KEYWORD-COUNT specifies the number of keyword that are
+recognized as such.  Only the specified number of keywords (and their
+associated argument s-expressions) will be indented distinctly: any further
+keywords are treated simply as atomic expressions in the body of the form.
+If this is T, all keywords found in the form are recognized.
+
+Optional argument SPECIAL-KEYWORD-COUNT specifies the number of
+distinguished keywords.  Distinguished keywords are indented twice the
+value of `lisp-body-indent', just as distinguished forms are indented by
+`lisp-indent-specform'.  If the argument to a distinguished keyword does
+not appear on the same line as the keyword, the argument is indented thrice
+the value of `lisp-body-indent'.  If KEYWORD-ARG-PAIRS-P is NIL, variable
+`lisp-keyword-argument-indentation' determines the indentation of any
+second and subsequent arguments to distinguished keywords.  If
+`lisp-keyword-argument-indentation' is not T, arguments are indented thrice
+the value of `lisp-body-indent'.  If SPECIAL-KEYWORD-COUNT is T, all
+keywords and their arguments are treated as distinguished.  The keywords
+encountered in the form are counted in parallel to satisfy both
+SPECIAL-KEYWORD-COUNT and KEYWORD-COUNT.
+
+Optional argument SPECIAL-COUNT specifies the number of distinguished
+s-expressions in the form.  Any potential keywords and their arguments that
+appear as distinguished s-expressions of the form are not counted toward
+SPECIAL-KEYWORD-COUNT or KEYWORD-COUNT.
+
+Optional argument IGNORE-AFTER-COUNT specifies the number of initial
+non-keyword s-expressions in the form (after satisfying SPECIAL-COUNT)
+after which keywords will no longer be recognized.  If this is T, no
+keywords will be recognized after the first non-keyword, non-special
+s-expression encountered.  (Note that specifying both KEYWORD-ARG-PAIRS-P
+to be NIL and IGNORE-AFTER-COUNT to be T means only that no keywords will
+be recognized if the first s-expression following any distinguished
+s-expressions is not a keyword.)
+
+Any further arguments to this function constitute the specific keywords to
+be recognized.  If no keywords are explicitly specified, all keywords
+(atoms beginning with a colon) are recognized."
   (if (> depth 0)
       nil
     (save-excursion
@@ -982,20 +993,6 @@ a colon) are recognized."
 	  (setq matched t))
       (setq keys (cdr keys)))
     matched))
-
-(defun lisp-indent-lambda-list (depth count state indent-point)
-  "Function to indent lambda lists.
-This is shorthand for a lisp-indent-hook property of `(lisp-indent-keyword-list
-t nil t nil nil nil \"&optional\" \"&rest\" \"&key\" \"&allow-other-keys\"
-\"&aux\" \"&body\" \"&whole\" \"&env\")'.  This function may be specified
-using a lisp-indent-hook property of 'lambda or 'lambda-list."
-  (if (> depth 0)
-      nil
-    (lisp-indent-keyword-list
-     depth count state indent-point
-     t nil t nil nil nil
-     "&optional" "&rest" "&key" "&allow-other-keys" "&aux"
-     "&body" "&whole" "&env")))
 
 (defun lisp-scan-sexp-for-keywords (special-count ignore-after-count
 				    ignore-car keyword-arg-pairs-p
@@ -1453,150 +1450,158 @@ if matched at the beginning of a line, means don't indent that line."
 ;;;   any indentation specified with the property stored under the
 ;;;   indicator `lisp-indent-hook'.
 
-;;;;;;;;;;;;;;;;;;;;;;;;; Generic Lisp ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(let ((tag 'lisp-indent-hook))
+  (put 'assert tag '((1 2 quote) (0 t 2)))
+  (put 'block tag 1)
+  (put 'case tag '((1 (2 t) ((1 0 quote) (0 t nil))) (0 t 1)))
+  (put 'catch tag 1)
+  (put 'ccase tag 'case)
+  (put 'check-type tag 2)
+  (put 'compiler-let tag '((1 1 quote) (0 t 1)))
+  (put 'concatenate tag 1)
+  (put 'ctypecase tag 'case)
+  (put 'defconstant tag 'defvar)
+  (put 'define-modify-macro tag '((1 2 lambda-list) (0 t 2)))
+  (put 'define-setf-method tag '((1 2 lambda-list) (0 t 2)))
+  (put 'defmacro tag '((1 2 lambda-list) (0 t 2)))
+  (put 'defparameter tag 'defvar)
+  (put 'defsetf tag '((1 2 lambda-list) (0 t 3)))
+  (put 'defstruct tag '((1 1 quote) (0 t 1)))
+  (put 'deftype tag '((1 2 lambda-list) (0 t 2)))
+  (put 'defun tag '((1 2 lambda-list) (0 t 2)))
+  (put 'defvar tag 2)
+  (put 'do tag '((1 1 1) (1 2 1) (0 t (lisp-indent-tagbody 2))))
+  (put 'do* tag 'do)
+  (put 'do-all-symbols tag 'dolist)
+  (put 'do-external-symbols tag 'dolist)
+  (put 'do-symbols tag 'dolist)
+  (put 'dolist tag '((1 1 1) (0 t (lisp-indent-tagbody 1))))
+  (put 'dotimes tag 'dolist)
+  (put 'ecase tag 'case)
+  (put 'etypecase tag 'case)
+  (put 'eval-when tag 1)
+  (put 'flet tag '((2 1 ((1 1 lambda-list) (0 t 1))) (0 t 1)))
+  (put 'if tag 2)
+  (put 'labels tag 'flet)
+  (put 'lambda tag '((1 1 lambda-list) (0 t 1)))
+  (put 'let tag '((1 1 quote) (0 t 1)))
+  (put 'let* tag 'let)
+  (put 'locally tag 'lisp-indent-predicated-special)
+  (put 'loop tag 'tagbody)
+  (put 'macrolet tag 'flet)
+  (put 'map tag 1)
+  (put 'multiple-value-bind tag '((1 1 quote) (0 t 2)))
+  (put 'multiple-value-call tag 1)
+  (put 'multiple-value-list tag 1)
+  (put 'multiple-value-prog1 tag 1)
+  (put 'multiple-value-setq tag '((1 1 quote) (0 t 1)))
+  (put 'prog tag '((0 1 1) (0 t tagbody)))
+  (put 'prog* tag 'prog)
+  (put 'prog1 tag 1)
+  (put 'prog2 tag 2)
+  (put 'progn tag 0)
+  (put 'progv tag 2)
+  (put 'return tag 0)
+  (put 'return-from tag 1)
+  (put 'setf tag 1)
+  (put 'setq tag 1)
+  (put 'tagbody tag 'tagbody)
+  (put 'the tag 1)
+  (put 'throw tag 1)
+  (put 'typecase tag 'case)
+  (put 'unless tag 1)
+  (put 'unwind-protect tag 1)
+  (put 'when tag 1)
+  (put 'with-input-from-string tag '((1 1 quote) (0 t 1)))
+  (put 'with-open-file tag '((1 1 quote) (0 t 1)))
+  (put 'with-open-stream tag '((1 1 quote) (0 t 1)))
+  (put 'with-output-to-string tag '((1 1 quote) (0 t 1)))
 
-(put 'assert 'lisp-indent-hook '((1 2 quote) (0 t 2)))
-(put 'case 'lisp-indent-hook '((1 (2 t) ((1 0 quote) (0 t nil))) (0 t 1)))
-(put 'caseq 'lisp-indent-hook '((1 (2 t) ((1 0 quote) (0 t nil))) (0 t 1)))
-(put 'catch 'lisp-indent-hook 1)
-(put 'concatenate 'lisp-indent-hook 1)
-(put 'check-type 'lisp-indent-hook 2)
-(put 'defflavor 'lisp-indent-hook '((1 2 quote) (1 3 quote) (0 t 3)))
-(put 'defmacro 'lisp-indent-hook '((1 2 lambda-list) (0 t 2)))
-(put 'defmethod 'lisp-indent-hook '((1 1 quote) (1 2 lambda-list) (0 t 2)))
-(put 'defsetf 'lisp-indent-hook '((1 2 lambda-list) (0 t 3)))
-(put 'defstruct 'lisp-indent-hook '((1 1 quote) (0 t 1)))
-(put 'defun 'lisp-indent-hook '((1 2 lambda-list) (0 t 2)))
-(put 'defvar 'lisp-indent-hook 2)
-(put 'defconstant 'lisp-indent-hook 'defvar)
-(put 'defparameter 'lisp-indent-hook 'defvar)
-(put 'defwhopper 'lisp-indent-hook '((1 1 quote) (1 2 lambda-list) (0 t 2)))
-(put 'defwrapper 'lisp-indent-hook '((1 1 quote) (1 2 lambda-list) (0 t 2)))
-(put 'do 'lisp-indent-hook '((1 1 1) (1 2 1) (0 t (lisp-indent-tagbody 2))))
-(put 'do* 'lisp-indent-hook 'do)
-(put 'do-all-symbols 'lisp-indent-hook 'dolist)
-(put 'do-external-symbols 'lisp-indent-hook 'dolist)
-(put 'do-symbols 'lisp-indent-hook 'dolist)
-(put 'dolist 'lisp-indent-hook '((1 1 1) (0 t (lisp-indent-tagbody 1))))
-(put 'dotimes 'lisp-indent-hook 'dolist)
-(put 'ccase 'lisp-indent-hook 'case)
-(put 'ecase 'lisp-indent-hook 'case)
-(put 'eval-when 'lisp-indent-hook 1)
-(put 'if 'lisp-indent-hook 2)
-(put 'label 'lisp-indent-hook '((1 2 ((1 1 lambda-list) (0 t 1))) (0 t 1)))
-(put 'lambda 'lisp-indent-hook '((1 1 lambda-list) (0 t 1)))
-(put 'let 'lisp-indent-hook '((1 1 quote) (0 t 1)))
-(put 'let* 'lisp-indent-hook 'let)
-(put 'loop 'lisp-indent-hook 'tagbody)
-(put 'map 'lisp-indent-hook 1)
-(put 'multiple-value-bind 'lisp-indent-hook '((1 1 quote) (0 t 2)))
-(put 'multiple-value-call 'lisp-indent-hook 1)
-(put 'multiple-value-list 'lisp-indent-hook 1)
-(put 'multiple-value-prog1 'lisp-indent-hook 1)
-(put 'multiple-value-setq 'lisp-indent-hook '((1 1 quote) (0 t 1)))
-(put 'prog 'lisp-indent-hook '((0 1 1) (0 t tagbody)))
-(put 'prog* 'lisp-indent-hook 'prog)
-(put 'progn 'lisp-indent-hook 0)
-(put 'prog1 'lisp-indent-hook 1)
-(put 'prog2 'lisp-indent-hook 2)
-(put 'progv 'lisp-indent-hook 2)
-(put 'return 'lisp-indent-hook 0)
-(put 'setq 'lisp-indent-hook 1)
-(put 'setf 'lisp-indent-hook 1)
-(put 'throw 'lisp-indent-hook 1)
-(put 'unless 'lisp-indent-hook 1)
-(put 'unwind-protect 'lisp-indent-hook 1)
-(put 'when 'lisp-indent-hook 1)
+  ;; the condition system (v18)
 
-;;;;;;;;;;;;;;;;;;;;;;;;; Generic Common Lisp ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (put 'define-condition tag '((1 (4 t) nil) (1 3 quote) (0 t 3)))
+  (put 'handler-bind tag 'case)
+  (put 'handler-case tag 'let)
 
-(put 'block 'common-lisp-indent-hook 1)
-(put 'compiler-let 'common-lisp-indent-hook '((1 1 quote) (0 t 1)))
-(put 'define-modify-macro 'common-lisp-indent-hook
-     '((1 2 lambda-list) (0 t 2)))
-(put 'define-setf-method 'common-lisp-indent-hook
-     '((1 2 lambda-list) (0 t 2)))
-(put 'defmacro 'common-lisp-indent-hook
-     '((1 2 (recursive lambda-list)) (0 t 2)))
-(put 'destructuring-bind 'common-lisp-indent-hook 'defmacro)
-(put 'defsetf 'common-lisp-indent-hook
-     '(if (lisp-atom-p 2) 2 ((1 2 lambda-list) (0 t 3))))
-(put 'deftype 'common-lisp-indent-hook '((1 2 lambda-list) (0 t 2)))
-(put 'flet 'common-lisp-indent-hook
-     '((2 1 ((1 1 lambda-list) (0 t 1))) (0 t 1)))
-(put 'labels 'common-lisp-indent-hook 'flet)
-(put 'locally 'common-lisp-indent-hook 'lisp-indent-predicated-special)
-(put 'macrolet 'common-lisp-indent-hook 'flet)
-(put 'return-from 'common-lisp-indent-hook 1)
-(put 'tagbody 'common-lisp-indent-hook 'tagbody)
-(put 'the 'common-lisp-indent-hook 1)
-(put 'typecase 'common-lisp-indent-hook
-     '((1 (2 t) ((1 0 quote) (0 t nil))) (0 t 1)))
-(put 'etypecase 'common-lisp-indent-hook
-     '((1 (2 t) ((1 0 quote) (0 t nil))) (0 t 1)))
-(put 'ctypecase 'common-lisp-indent-hook
-     '((1 (2 t) ((1 0 quote) (0 t nil))) (0 t 1)))
-(put 'with-input-from-string 'common-lisp-indent-hook '((1 1 quote) (0 t 1)))
-(put 'with-open-file 'common-lisp-indent-hook '((1 1 quote) (0 t 1)))
-(put 'with-open-stream 'common-lisp-indent-hook '((1 1 quote) (0 t 1)))
-(put 'with-output-to-string 'common-lisp-indent-hook '((1 1 quote) (0 t 1)))
+  (put 'restart-bind tag
+       '((2 1 ((0 t (lisp-indent-keyword-list
+		     nil	; quotedp
+		     t		; keyword-arg-pairs-p
+		     2		; keyword-count
+		     2		; special-keyword-count
+		     1		; special-count
+		     t		; ignore-after-count
+		     ;; keywords recognized:
+		     ":interactive-function" ":report-function"))))
+	 (0 t 1)))
+  (put 'restart-case tag
+       '((1 (2 t) ((1 1 lambda-list)
+		   (0 t (lisp-indent-keyword-list
+			 nil	; quotedp
+			 t	; keyword-arg-pairs-p
+			 2	; keyword-count
+			 2	; special-keyword-count
+			 1	; special-count
+			 t	; ignore-after-count
+			 ;; keywords recognized:
+			 ":report" ":interactive"))))
+	 (0 t 1)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;; the Condition System
+  (put 'with-simple-restart tag 'when)
 
-;; todo:
-;;   handler-bind
-;;   handler-case
-;;   restart-bind
-;;   with-simple-restart
+  ;; CLOS
 
-(put 'restart-case 'common-lisp-indent-hook
-     '((1 (2 t) ((1 1 lambda-list)
-		 (0 t (lisp-indent-keyword-list
-		       nil t 1 1 1 t ":report" ":report-function"))))
-       (0 t 1)))
+  (put 'make-instance tag 1)
 
-(put 'define-condition 'common-lisp-indent-hook
-     '(lisp-indent-keyword-list nil t t t 2 t
-       ":conc-name" ":report-function" ":report" ":handler-function"
-       ":handle"))
+  ;; Flavors
 
-;;;;;;;;;;;;;;;;;;;;;;;;; CLOS
+  (put 'defflavor tag '((1 2 quote) (1 3 quote) (0 t 3)))
+  (put 'defmethod tag '((1 1 quote) (1 2 lambda-list) (0 t 2)))
+  (put 'defwhopper tag '((1 1 quote) (1 2 lambda-list) (0 t 2)))
+  (put 'defwrapper tag '((1 1 quote) (1 2 lambda-list) (0 t 2)))
+  )
 
-(put 'make-instance 'common-lisp-indent-hook 1)
+(let ((tag 'common-lisp-indent-hook))
+  
+  ;; generic Common Lisp
+  
+  (put 'defmacro tag '((1 2 (recursive lambda-list)) (0 t 2)))
+  (put 'destructuring-bind tag 'defmacro)
+  (put 'defsetf tag '(if (lisp-atom-p 2) 2 ((1 2 lambda-list) (0 t 3))))
 
-;;;;;;;;;;;;;;;;;;;;;;;;; Allegro CL
+  ;; Allegro CL
 
-;; Allegro CL indenting
-(put 'tpl:alias 'common-lisp-indent-hook 2)
-(put 'if* 'common-lisp-indent-hook
-     '(lisp-indent-keyword-list
-       nil nil 4 0 0 nil "then" "thenret" "else" ("elseif" . 1)))
+  (put 'tpl:alias tag 2)
+  (put 'if* tag
+       '(lisp-indent-keyword-list
+	 nil nil 4 0 0 nil "then" "thenret" "else" ("elseif" . 1)))
+  )
 
-;;;;;;;;;;;;;;;;;;;;;;;;; Franz Lisp ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(let ((tag 'franz-lisp-indent-hook))
+  (put 'caseq tag 'case)
+  (put 'c-declare tag '((1 t 1) (0 t 0)))
+  (put '*catch tag 1)
+  (put 'def tag '((1 2 ((1 1 lambda-list) (0 t 1))) (0 t 1)))
+  (put 'defcmacro tag '((1 2 lambda-list) (0 t 2)))
+  (put 'defsubst tag '((1 2 lambda-list) (0 t 2)))
+  (put 'errset tag 1)
+  (put 'fexpr tag '((1 1 lambda-list) (0 t 1)))
+  ;;(put 'if tag 'if*)
+  ;;(put 'label tag '((1 2 ((1 1 lambda-list) (0 t 1))) (0 t 1)))
+  (put 'let-closed tag '((1 1 quote) (0 t 1)))
+  (put 'lexpr tag '((1 1 lambda-list) (0 t 1)))
+  (put 'macro tag '((1 1 lambda-list) (0 t 1)))
+  (put 'nlambda tag '((1 1 lambda-list) (0 t 1)))
+  (put '*throw tag 1)
+  )
 
-(put 'c-declare 'franz-lisp-indent-hook '((1 t 1) (0 t 0)))
-(put '*catch 'franz-lisp-indent-hook 1)
-(put 'def 'franz-lisp-indent-hook '((1 2 ((1 1 lambda-list) (0 t 1))) (0 t 1)))
-(put 'defcmacro 'franz-lisp-indent-hook '((1 2 lambda-list) (0 t 2)))
-(put 'defsubst 'franz-lisp-indent-hook '((1 2 lambda-list) (0 t 2)))
-(put 'errset 'franz-lisp-indent-hook 1)
-(put 'fexpr 'franz-lisp-indent-hook '((1 1 lambda-list) (0 t 1)))
-(put 'if 'franz-lisp-indent-hook
-     '(lisp-indent-keyword-list
-       nil nil 4 0 0 nil "then" "thenret" "else" ("elseif" . 1)))
-(put 'let-closed 'franz-lisp-indent-hook '((1 1 quote) (0 t 1)))
-(put 'lexpr 'franz-lisp-indent-hook '((1 1 lambda-list) (0 t 1)))
-(put 'macro 'franz-lisp-indent-hook '((1 1 lambda-list) (0 t 1)))
-(put 'nlambda 'franz-lisp-indent-hook '((1 1 lambda-list) (0 t 1)))
-(put '*throw 'franz-lisp-indent-hook 1)
-
-;;;;;;;;;;;;;;;;;;;;;;;;; GNU Emacs Lisp ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(put 'condition-case 'emacs-lisp-indent-hook 2)
-(put 'defconst 'emacs-lisp-indent-hook 2)
-(put 'save-excursion 'emacs-lisp-indent-hook 0)
-(put 'save-restriction 'emacs-lisp-indent-hook 0)
-(put 'save-window-excursion 'emacs-lisp-indent-hook 0)
-(put 'setq-default 'emacs-lisp-indent-hook 1)
-(put 'while 'emacs-lisp-indent-hook 1)
-(put 'with-output-to-temp-buffer 'emacs-lisp-indent-hook 1)
+(let ((tag 'emacs-lisp-indent-hook))
+  (put 'condition-case tag 2)
+  (put 'defconst tag 2)
+  (put 'save-excursion tag 0)
+  (put 'save-restriction tag 0)
+  (put 'save-window-excursion tag 0)
+  (put 'setq-default tag 1)
+  (put 'while tag 1)
+  (put 'with-output-to-temp-buffer tag 1)
+  )
