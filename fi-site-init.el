@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.69 1995/02/06 00:24:11 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.70 1995/11/15 21:53:29 smh Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -45,7 +45,7 @@ function, it is changed to a list of functions."
     (or (if (consp function)
 	    (member function (symbol-value hook))
 	  (memq function (symbol-value hook)))
-	(set hook 
+	(set hook
 	     (if append
 		 (nconc (symbol-value hook) (list function))
 	       (cons function (symbol-value hook)))))))
@@ -89,6 +89,10 @@ function, it is changed to a list of functions."
 (autoload 'fi:clman         "fi-clman" nil t)
 (autoload 'fi:clman-mode    "fi-clman" nil t)
 (autoload 'fi:clman-apropos "fi-clman" nil t)
+
+(condition-case nil
+    (load "local-fi-developer-hooks.elc")
+  (error nil))
 
 (setq fi:package-loaded t)
 

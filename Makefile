@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.113 1995/04/07 01:37:13 georgej Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.114 1995/11/15 21:53:27 smh Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -14,7 +14,8 @@ elcs = fi-modes.elc fi-indent.elc fi-subproc.elc fi-sublisp.elc fi-filec.elc \
        fi-gnu.elc fi-utils.elc fi-clman.elc Doc.elc \
        fi-basic-lep.elc fi-lep.elc fi-lze.elc fi-db.elc \
        fi-stream.elc fi-dmode.elc fi-composer.elc fi-changes.elc \
-       fi-leep0.elc fi-leep.elc fi-leep-xemacs.elc makeman.elc
+       fi-leep0.elc fi-leep.elc fi-leep-xemacs.elc makeman.elc \
+       local-fi-developer-hooks.elc
 
 # use cl.el instead of cl because of a bug in emacs 18.59 (the
 # cl.elc in the distribution is bogus and doesn't expand setf methods
@@ -40,6 +41,16 @@ fi-leep-xemacs.elc:
 
 .el.elc:
 	$(emacs) -nw -batch -q $(compile_time_env) -f batch-byte-compile $*.el
+
+# This file contains only some obscure local developer hooks andis not
+# distributed.  These rules cause it to be ignored cleanly.
+
+local-fi-developer-hooks.el:
+
+local-fi-developer-hooks.elc:	local-fi-developer-hooks.el
+	@if test -f $*.el; then\
+	  $(emacs) -nw -batch -q $(compile_time_env) -f batch-byte-compile $*.el;\
+	fi
 
 docs: UserGuide.doc RefMan.doc RefCard.doc
 
@@ -196,15 +207,16 @@ clman-dist:	all_clman
 ###############################################################################
 
 # removed: biggie fax louie girls
-hosts = ox akbar clay hyper sole fridge hefty
+hosts = ox akbar clay sole fridge hefty
 elib_root = /usr/fi/emacs-lib
 to = $(elib_root)/fi
 
 rdist = /usr/ucb/rdist
 
-rdist: all
+rdist: all local-fi-*.elc
 	rm -fr DIST
 	${rdist} -qc Makefile Doc.el ChangeLog *.doc fi-*.el fi-*.elc \
+		local-fi-*.el local-fi-*.elc \
 		clman.c clman.h clmanaux.c \
 		gc-mode-line.cl gc-mode-line.c \
 		"`hostname`:`pwd`/DIST"

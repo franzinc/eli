@@ -1,3 +1,18 @@
+Wed Nov 15 13:47:00 1995  Steve Haflich  <smh@vapor>
+
+	* Makefile:
+	Compile local-fi-developer-hooks.el if it exists.
+	Add local-fi-developer-hooks.el to rdist.
+	Remove host hyper from the rdist.
+
+	* fi-site-init.el:
+	Load local-fi-developer-hooks.elc if it exists.
+
+	* local-fi-developer-hooks.el:
+	New file.  Contains only local-write-file-hooks for common-lisp and c
+	mode buffers to do some automatic source-file id tagging.
+	This file is not distributed and is ignored by the Makefile if absent.
+
 Sun Mar 19 13:49:48 1995  George Jacob  <georgej@vapor>
 
 	* fi-clman.el (math): Allow uppercase symbols to work (spr10564)
