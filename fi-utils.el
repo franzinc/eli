@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.50 1993/09/08 00:22:08 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.51 1993/12/04 00:39:20 duane Exp $
 
 ;;; Misc utilities
 
@@ -117,11 +117,15 @@ nil if non-exists.  Yes, a value of nil and no local value are the same."
 
 (defun fi::find-path (path file)
   "Using PATH, find FILE, return the full pathname."
-  (let ((done nil) res)
+  (let ((done nil) res temp)
     (while (and (not done) path)
+      ;; accommodate nil's in the exec-path (bug3159)
+      (setq temp (car path))
+      (if (null temp)
+	  (setq temp default-directory))
       (if (file-exists-p
-	   (setq res (concat (car path)
-			     (unless (string-match "/$" (car path)) "/")
+	   (setq res (concat temp
+			     (unless (string-match "/$" temp) "/")
 			     file)))
 	  (setq done t)
 	(setq res nil))

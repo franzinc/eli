@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.101 1993/09/17 06:23:18 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.102 1993/12/04 00:39:14 duane Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -161,7 +161,7 @@ clman_version = 4.1-v2
 
 clman_files_common	  = clman.c clman.h clmanaux.c \
 			    makeman.c makeman.el
-acl_clman_release_files	  = $(clman_files_common) manual/OBLIST.el clman.data
+acl_clman_release_files	  = $(clman_files_common) manual/OBLIST.el clman clman.data
 clman_release_files       = $(clman_files_common) \
 			    -C small_manual manual/OBLIST.el \
 			    -C small_manual clman.data
