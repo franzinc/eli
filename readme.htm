@@ -1,0 +1,103 @@
+<html>
+
+<head>
+<title></title>
+</head>
+
+<body>
+
+<h1 align="center">Release Notes for Emacs-Lisp interface</h1>
+
+<p align="center">version %%VERSION%%</p>
+
+<p><!--webbot bot="PurpleText" PREVIEW="$Id: readme.htm,v 2.1 1997/12/18 00:16:58 layer Exp $" --></p>
+
+<p>This document describes how to obtain, install and use emacs-lisp interface version
+%%VERSION%%.&nbsp; This version of eli works with the following versions of emacs: 
+
+<ul>
+  <li>GNU Emacs 19.34</li>
+  <li>GNU Emacs 20.2, with the following caveat: eli works, but a bug in the handling of
+    `load-file-name' prevents loading the interface the normal way, by just loading
+    &quot;fi-site-init.el&quot;. You must put the directory which contains fi-site-init.el in
+    your `load-path'. See examples/emacs.el for an example of how to do this. The bug should
+    be fixed in GNU Emacs 20.3, when it comes out.</li>
+  <li>XEmacs 19.16</li>
+  <li>XEmacs 20.3 (with and without Mule support)</li>
+</ul>
+
+<p>You may ftp this new version from:</p>
+
+<blockquote>
+  <pre>ftp://ftp.franz.com/pri/acl/eli/%%TGZFILE%%</pre>
+</blockquote>
+
+<p>To install it do this:</p>
+
+<blockquote>
+  <pre>gzip -d &lt; %%TGZFILE%% | tar xf -</pre>
+</blockquote>
+
+<p>to create %%DIR%% in the directory where the above command is executed.</p>
+
+<p>To use the interface, just load</p>
+
+<blockquote>
+  <pre>%%DIR%%/fi-site-init</pre>
+</blockquote>
+
+<p>in your ~/.emacs.</p>
+
+<p>If you have questions or comments, please direct them to <a
+href="mailto:bugs@franz.com">bugs@franz.com</a>. Thank you.</p>
+
+<hr>
+
+<p>Changes from version 2.0.20 (shipped with Allegro CL 4.3.2 on Windows 95/NT) to
+%%VERSION%%:
+
+<ul>
+  <li>New variable, <font face="Courier New">fi:common-lisp-image-file</font>, is used by <font
+    face="Courier New">fi:common-lisp</font> to default the <font face="Courier New">image-file</font>
+    argument (when calling from a program) and question (when calling interactively).</li>
+  <li><font face="Courier New">fi:common-lisp-image-name</font> can no longer be a cons, the <font
+    face="Courier New">cdr</font> being the Lisp image file.&nbsp; See <font
+    face="Courier New">fi:common-lisp-image-file</font> above.</li>
+  <li>The clman facility is no longer distributed.&nbsp; It was out of date.&nbsp; It will be
+    replaced in the near future with an HTML version.</li>
+  <li>Allegro CL <font face="Courier New">if*</font> macro now available in Emacs Lisp.</li>
+  <li>Building on UNIX: type <em>make</em> in the <em>eli</em>/ directory.&nbsp; The number of
+    warnings during the compile has been reduced to 1.</li>
+  <li>Bug fix: make sure the case mode of Lisp and Emacs never get out of sync.</li>
+  <li>Lisp mode bindings: the <font face="Courier New">C-c<em>&lt;upper case character&gt;</em></font>
+    bindings are now available as <font face="Courier New">C-c<em>&lt;lower case character&gt;</em></font>,
+    too.</li>
+  <li>New Lisp mode binding: <font face="Courier New">C-cC-t</font> is bound to <font
+    face="Courier New">fi:trace-definer</font>.</li>
+</ul>
+
+<hr>
+
+<p>Changes from version 2.0.19 (shipped with Allegro CL 4.3 and 4.3.1) to 2.0.20 (shipped
+with Allegro CL 4.3.2), all to support using eli on Windows:
+
+<ul>
+  <li>The <font face="Courier New">fi:common-lisp</font> function takes an additional optional
+    argument, when called from a program, the Lisp image file to use.&nbsp; The <font
+    face="Courier New">image-file</font> argument is the sixth optional argument to <font
+    face="Courier New">fi:common-lisp</font>.&nbsp; When called interactively, <font
+    face="Courier New">fi:common-lisp</font> now asks for the name of the Lisp image file.
+    &nbsp; This question is fourth of five questions.</li>
+  <li><font face="Courier New">fi:common-lisp-image-name</font> can now be a cons, the <font
+    face="Courier New">car</font> being the Lisp executable and the <font face="Courier New">cdr</font>
+    being the Lisp image file.</li>
+  <li>On Windows, the host argument to <font face="Courier New">fi:common-lisp</font> always
+    defaults to <font face="Courier New">&quot;localhost&quot;</font>.&nbsp; There is
+    currently no support for remotely running Lisp.</li>
+  <li>Build procedure on Windows is to just load <em><font face="Calisto MT">fi-site-init</font></em>.
+    &nbsp; The necessary files will be automatically compiled before loading.&nbsp; If you
+    want this behavior on UNIX, set <font face="Courier New">fi:compile-at-load-time</font> to
+    <font face="Courier New">t</font> in your ~/.emacs.</li>
+</ul>
+</body>
+</html>

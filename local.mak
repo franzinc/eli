@@ -1,4 +1,4 @@
-# $Id: local.mak,v 2.3 1997/12/12 17:14:43 layer Exp $
+# $Id: local.mak,v 2.4 1997/12/18 00:16:58 layer Exp $
 
 TGZFILE = eli-$(VERSION).tar.gz
 DIR = eli-$(VERSION)
@@ -15,8 +15,8 @@ dist:	FORCE
 	sed -e 's/%%VERSION%%/$(VERSION)/g' \
 	    -e 's/%%TGZFILE%%/$(TGZFILE)/g' \
 	    -e 's/%%DIR%%/$(DIR)/g' \
-		< relnotes.txt \
-		> README-$(VERSION)
+		< readme.htm \
+		> readme-$(VERSION).htm
 	cp -p $(release_files) eli-$(VERSION)
 	echo '# intentionally empty' > eli-$(VERSION)/local.mak
 	gtar zcf eli-$(VERSION).tar.gz eli-$(VERSION)

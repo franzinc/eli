@@ -7,6 +7,22 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.pre-beta.10
+
+Wed Dec 17 16:14:52 1997  Kevin Layer  <layer@ultra>
+
+    removed files:
+	* README_RELEASE
+	* relnotes.txt
+    added files:
+	* readme.htm
+    changed files:
+	* fi-subproc.el: protect against a cons fi:common-lisp-image-name
+	value.
+	* local.mak: relnotes.txt renamed readme.htm
+	* examples/emacs.el: fix some more based on lwolf's input
+
+*******************************************************************************
 2.0.21.pre-beta.9
 
 Wed Dec 17 09:01:58 1997    <layer@HOBART>
@@ -244,6 +260,10 @@ Wed Jan 15 16:54:45 1997    <layer@HOBART>
 	is a ( at the beginning of the thing we are completing.  In this
 	case, it just adds a space to the end of the thing we are
 	completing if that is what the user typed.
+
+*******************************************************************************
+**** 4.3.2 release ****
+*******************************************************************************
 
 *******************************************************************************
 2.0.20.pre-beta.7

@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.194 1997/12/11 01:21:04 layer Exp $
+;; $Id: fi-subproc.el,v 1.195 1997/12/18 00:16:58 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -359,7 +359,11 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	  (fi::buffer-number-to-buffer name current-prefix-arg)
 	(get-buffer-create name)))
     (or fi:common-lisp-directory default-directory)
-    fi:common-lisp-image-name
+    (progn
+      (when (consp image-name)
+	(error "3rd argument to fi:common-lisp must \
+be a string. Use the 6th argument for image file."))
+      fi:common-lisp-image-name)
     fi:common-lisp-image-arguments
     (or fi:common-lisp-host (system-name))
     fi:common-lisp-image-file))
@@ -384,7 +388,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	      executable-image-name
 	    (when (consp executable-image-name)
 	      (error "3rd argument to fi:common-lisp must \
-be a string. Use 6th argument for image file."))
+be a string. Use the 6th argument for image file."))
 	    (or executable-image-name
 		fi:common-lisp-image-name)))
 	 (image-file
