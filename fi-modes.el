@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.39 1991/01/31 14:47:39 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.40 1991/01/31 16:36:52 layer Exp $
 
 ;;;; Mode initializations
 
@@ -69,6 +69,14 @@ This variable should be set before this package is loaded.")
 
 (defvar fi:subprocess-mode nil
   "Non-nil when buffer has a subprocess.")
+
+(defvar fi:lisp-mode-hook
+    '(lambda ()
+      (if (and (boundp 'fi:package) fi:package)
+	  (setq mode-line-process '("; package: " fi:package))))
+  "*The initial value of this hook, which is run whenever a Lisp mode is
+entered, causes the `package' to be displayed in the mode line.  It uses
+MODE-LINE-PROCESS, which has no use in non-subprocess buffers.")
 
 ;;;;
 ;;; The Modes
@@ -192,7 +200,7 @@ in the above order."
   (setq mode-name "Common Lisp")
   (set-syntax-table fi:lisp-mode-syntax-table)
   (fi::lisp-edit-mode-setup)
-  (fi::check-for-package-info)
+  (fi:parse-mode-line-and-package)
   (if (null fi:common-lisp-mode-map)
       (progn
 	(setq fi:common-lisp-mode-map (make-sparse-keymap))
@@ -220,7 +228,7 @@ in the above order."
   (setq mode-name "Franz Lisp")
   (set-syntax-table fi:lisp-mode-syntax-table)
   (fi::lisp-edit-mode-setup)
-  (fi::check-for-package-info)
+  (fi:parse-mode-line-and-package)
   (if (null fi:franz-lisp-mode-map)
       (progn
 	(setq fi:franz-lisp-mode-map (make-sparse-keymap))
@@ -295,7 +303,8 @@ Entry to this mode runs the fi:emacs-lisp-mode-hook hook."
 	(setq fi::lisp-indent-state-temp
 	  (list nil nil nil nil nil nil nil)))))
 
-(defun fi::check-for-package-info ()
+(defun fi:parse-mode-line-and-package ()
+  (interactive)
   (save-excursion
     ;; look for -*- ... package: xxx; .... -*-
     (let (beg end)
