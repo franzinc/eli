@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.17 1991/01/29 17:18:29 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.18 1991/01/31 10:00:07 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface:
 ;;
@@ -41,5 +41,7 @@
   (if fi::lep-loaded
       (progn
 	(load "fi/query.elc")
-	(load "fi/ltags.elc"))
-    (load "fi/lep/lep-init")))
+	(load "fi/ltags.elc")
+	(setq fi::lep-loaded nil))
+    (load "fi/lep/lep-init")
+    (setq fi::lep-loaded t)))
