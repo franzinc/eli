@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.113 1991/06/20 20:22:42 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.114 1991/06/27 15:26:09 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -319,9 +319,13 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	 (local (or (string= "localhost" host)
 		    (string= host (system-name))))
 	 (startup-message
-	  (format "\n%s\nStarting image `%s'\n  in directory `%s'\n  on machine `%s'.\n\n"
-		  "====================================================="
-		  image-name directory host))
+	  (concat
+	   "\n==============================================================\n"
+	   (format "Starting image `%s'\n" image-name)
+	   (format "  with arguments `%s'\n" image-args)
+	   (format "  in directory `%s'\n" directory)
+	   (format "  on machine `%s'.\n" host)
+	   "\n"))
 	 (proc (fi::make-subprocess
 		startup-message
 		"common-lisp"
@@ -386,15 +390,17 @@ the buffer name is the second optional argument."
 	  (not (fi:process-running-p
 		(get-process fi::common-lisp-backdoor-main-process-name))))
       (error "Common Lisp must be running to open a lisp listener."))
-  (let ((proc (fi::make-tcp-connection
-	       (or buffer-name "lisp-listener")
-	       buffer-number
-	       'fi:lisp-listener-mode
-	       fi:common-lisp-prompt-pattern
-	       (fi::get-buffer-host fi::common-lisp-backdoor-main-process-name)
-	       (fi::get-buffer-port fi::common-lisp-backdoor-main-process-name)
-	       (fi::get-buffer-password fi::common-lisp-backdoor-main-process-name)
-	       (fi::get-buffer-ipc-version fi::common-lisp-backdoor-main-process-name))))
+  (let* ((buffer
+	  (process-buffer
+	   (get-process fi::common-lisp-backdoor-main-process-name)))
+	 (proc (fi::make-tcp-connection (or buffer-name "lisp-listener")
+					buffer-number
+					'fi:lisp-listener-mode
+					fi:common-lisp-prompt-pattern
+					(fi::get-buffer-host buffer)
+					(fi::get-buffer-port buffer)
+					(fi::get-buffer-password buffer)
+					(fi::get-buffer-ipc-version buffer))))
     proc))
 
 (defun fi:franz-lisp (&optional buffer-name directory image-name
@@ -683,15 +689,14 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		     (get-buffer-create buffer-name)))
 	 (default-dir default-directory)
 	 (buffer-name (buffer-name buffer))
-	 (host (or given-host
-		   (fi::get-buffer-host
-		    fi::common-lisp-backdoor-main-process-name)))
-	 (service (or given-service
-		      (fi::get-buffer-port
-		       fi::common-lisp-backdoor-main-process-name)))
+	 (process-buffer
+	  (if (get-process fi::common-lisp-backdoor-main-process-name)
+	      (process-buffer
+	       (get-process fi::common-lisp-backdoor-main-process-name))))
+	 (host (or given-host (fi::get-buffer-host process-buffer)))
+	 (service (or given-service (fi::get-buffer-port process-buffer)))
 	 (password (or given-password
-		       (fi::get-buffer-password
-			fi::common-lisp-backdoor-main-process-name)))
+		       (fi::get-buffer-password process-buffer)))
 	 (proc (get-buffer-process buffer)))
     
     (funcall fi:display-buffer-function buffer)
