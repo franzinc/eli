@@ -1,6 +1,6 @@
 ;; Sample .emacs file
 ;;
-;; $Header: /repo/cvs.copy/eli/examples/emacs.el,v 1.3 1991/09/11 15:22:47 layer Exp $
+;; $Header: /repo/cvs.copy/eli/examples/emacs.el,v 1.4 1993/09/01 23:12:49 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; The following code implements selection of a particular version of the
@@ -15,7 +15,7 @@
 
 (defvar emacs-interface-directory-version-alist
     '(("-1.5.2" . "/net/ice/usr/emacs/lisp-interface/Dists/dist-1.5.2"))
-  "*An alist of the command line switch and directory in which fi/site-init
+  "*An alist of the command line switch and directory in which fi-site-init
 lives for that version.")
 
 (defun handle-command-line-argument (arg function)
@@ -53,7 +53,7 @@ lives for that version.")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Load the Franz Emacs-Lisp Interface.
-(load "fi/site-init")
+(load "fi-site-init")
 
 ;; Default args for fi:common-lisp.
 ;; Change these to match your specific setup.

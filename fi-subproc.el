@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.153 1993/09/01 03:24:40 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.154 1993/09/01 23:12:34 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -66,7 +66,16 @@ buffer-local symbol.  Use setq-default to set the default value for this
 symbol.")
 (make-variable-buffer-local 'fi:subprocess-enable-superkeys)
 
-(defvar fi:display-buffer-function 'switch-to-buffer
+(defvar fi:new-screen-for-common-lisp-buffer nil
+  "*If non-nil, then starting Common Lisp will cause emacs to create a new
+screen for the *common-lisp* buffer, if this version of emacs is capable of
+creating separate screens.  If you redefine fi:display-buffer-function this
+variable will be ignored.")
+
+(defvar fi:display-buffer-function
+    (if (eq fi::emacs-type 'lemacs19)
+	'fi::switch-to-buffer-new-screen
+      'fi::switch-to-buffer)
   "*If non-nil, then the value should be a function taking one argument,
 a buffer, which is used to display a buffer when a subprocess is created.")
 
@@ -97,10 +106,10 @@ Lisp process so that the symbols are read into the correct Lisp package.")
 modes and will be nil or a string which names a readtable in the Lisp
 world--ie, in a Lisp subprocess running as an inferior of Emacs in some
 buffer.  It is used when expressions are sent from an Emacs buffer to a
-Lisp process so that the symbols are read using the correct readtable.")
+Lisp process so that the expressions are read using the correct
+readtable.")
 
 (make-variable-buffer-local 'fi:readtable)
-
 
 ;;;;
 ;;; Common Lisp Variables and Constants
@@ -636,7 +645,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
        (if (and (consp val) (eq 'error (car val)))
 	   (progn
 	     (message "%s" (cdr val))
-	     (switch-to-buffer "*Help*"))
+	     (fi::switch-to-buffer "*Help*"))
 	 (fi::subprocess-filter process output stay cruft))))))
 
 (defun fi::common-lisp-subprocess-filter-1 (process)
@@ -719,54 +728,64 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	    (setq image-file (substitute-in-file-name image-file)))
 	  (if (and (not remote) (= ?~ (aref image-file 0)))
 	      (setq image-file (expand-file-name image-file)))))
-    
-    (funcall fi:display-buffer-function buffer)
-    
-    (if runningp
-	(goto-char (point-max))
-      (goto-char (point-max))
-      (if (stringp startup-message) (insert startup-message))
-      (if (and directory (file-exists-p directory))
-	  (setq default-directory directory))
-      (if process (delete-process process))
-      (fi::set-environment fi:subprocess-env-vars)
-      (setq process
-	(apply 'start-process
-	       (append (list buffer-name buffer image-file)
-		       image-args)))
-      (set-process-sentinel process 'fi::subprocess-sentinel)
 
-      ;; do the following after the sentinel is established so we don't get
-      ;; an ugly message in the subprocess buffer
-      ;;
-      (when (not (fi:process-running-p process))
-	(error "Couldn't startup %s" image-file))
+    (unless runningp
+      (save-excursion
+	(save-window-excursion
+	  (switch-to-buffer buffer)
+	  (goto-char (point-max))
+	  (if (stringp startup-message) (insert startup-message))
+	  (if (and directory (file-exists-p directory))
+	      (setq default-directory directory))
+	  (if process (delete-process process))
+	  (fi::set-environment fi:subprocess-env-vars)
+	  (setq process
+	    (apply 'start-process
+		   (append (list buffer-name buffer image-file)
+			   image-args)))
+	  (set-process-sentinel process 'fi::subprocess-sentinel)
+
+	  ;; do the following after the sentinel is established so we don't get
+	  ;; an ugly message in the subprocess buffer
+	  ;;
+	  (when (not (fi:process-running-p process))
+	    (error "Couldn't startup %s" image-file))
       
-      (set-process-filter process (or filter 'fi::subprocess-filter))
-      (setq start-up-feed-name
-	(if image-file
-	    (concat "~/.emacs_" (file-name-nondirectory image-file))))
-      (cond
-	((and start-up-feed-name (file-exists-p start-up-feed-name))
-	 (sleep-for 1) ;; I hope 1 second is enough!
-	 (goto-char (point-max))
-	 (insert-file-contents start-up-feed-name)
-	 (setq start-up-feed-name (buffer-substring (point) (point-max)))
-	 (delete-region (point) (point-max))
-	 (send-string process start-up-feed-name)))
-      (goto-char (point-max))
-      (set-marker (process-mark process) (point))
-      (condition-case ()
-	  (let ((saved-input-ring fi::input-ring)
-		(saved-input-ring-yank-pointer fi::input-ring-yank-pointer))
-	    (apply mode-function mode-hook mode-hook-arguments)
-	    (setq fi::input-ring saved-input-ring)
-	    (setq fi::input-ring-yank-pointer saved-input-ring-yank-pointer))
-	(error nil))
-      (make-local-variable 'subprocess-prompt-pattern)
-      (setq subprocess-prompt-pattern image-prompt)
-      (fi::make-subprocess-variables)
-      (when initial-func (funcall initial-func process)))
+	  (set-process-filter process (or filter 'fi::subprocess-filter))
+	  (setq start-up-feed-name
+	    (if image-file
+		(concat "~/.emacs_" (file-name-nondirectory image-file))))
+	  (cond
+	   ((and start-up-feed-name (file-exists-p start-up-feed-name))
+	    (sleep-for 1) ;; I hope 1 second is enough!
+	    (goto-char (point-max))
+	    (insert-file-contents start-up-feed-name)
+	    (setq start-up-feed-name (buffer-substring (point) (point-max)))
+	    (delete-region (point) (point-max))
+	    (send-string process start-up-feed-name)))
+	  (goto-char (point-max))
+	  (set-marker (process-mark process) (point))
+	  (condition-case ()
+	      (let ((saved-input-ring fi::input-ring)
+		    (saved-input-ring-yank-pointer
+		     fi::input-ring-yank-pointer))
+		(apply mode-function mode-hook mode-hook-arguments)
+		(setq fi::input-ring saved-input-ring)
+		(setq fi::input-ring-yank-pointer
+		  saved-input-ring-yank-pointer))
+	    (error nil))
+	  (make-local-variable 'subprocess-prompt-pattern)
+	  (setq subprocess-prompt-pattern image-prompt)
+	  (fi::make-subprocess-variables)
+	  (when initial-func (funcall initial-func process)))))
+
+    ;; display last so we can do proper screen creation on lemacs
+    (condition-case nil
+	(funcall fi:display-buffer-function buffer)
+      (error (fi::switch-to-buffer buffer)))
+    
+    (goto-char (point-max))
+
     process))
 
 (defun fi::calc-buffer-name (buffer-name process-name)

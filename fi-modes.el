@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.55 1993/09/01 03:24:33 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.56 1993/09/01 23:12:27 layer Exp $
 
 ;;;; Mode initializations
 
@@ -54,15 +54,17 @@ fi:common-lisp-mode.")
 (defvar fi:subprocess-mode nil
   "Non-nil when buffer has a subprocess.")
 
-(defvar fi:lisp-mode-hook
+(defvar fi:common-lisp-mode-hook
     (function
      (lambda ()
-       (let ((ml nil))
-	 (when (and (boundp 'fi:package) fi:package)
-	   (setq ml (nconc ml '("; pkg:" fi:package))))
-	 (when (and (boundp 'fi:readtable) fi:readtable)
-	   (setq ml (nconc ml '("; rt:" fi:readtable))))
-	 (setq mode-line-process ml))))
+       (when (not (fi:member-equal "; pkg:" mode-line-process))
+	 (setq mode-line-process
+	   (append mode-line-process
+		   '((fi:package ("; pkg:" fi:package))))))
+       (when (not (fi:member-equal "; rt:" mode-line-process))
+	 (setq mode-line-process
+	   (append mode-line-process
+		   '((fi:readtable ("; rt:" fi:readtable))))))))
   "*The initial value of this hook, which is run whenever a Lisp mode is
 entered, causes the `package' and readtable (if any) to be displayed in the
 mode line.  It uses MODE-LINE-PROCESS, which has no use in non-subprocess
@@ -85,6 +87,8 @@ If nil, no automatic package tracking will be done.")
 ;;;;
 ;;; The Modes
 ;;;;
+
+(put 'fi:inferior-common-lisp-mode 'screen-name 'common-lisp)
 
 (defun fi:inferior-common-lisp-mode (&optional mode-hook &rest mode-hook-args)
   "Major mode for interacting with Common Lisp subprocesses.

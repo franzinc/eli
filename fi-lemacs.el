@@ -10,25 +10,22 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/Attic/fi-lemacs.el,v 2.6 1993/08/12 23:45:06 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-lemacs.el,v 2.7 1993/09/01 23:12:21 layer Exp $
 
 (defconst fi:allegro-file-menu
     '("ACLFile"
-      ["Run/Restart Common Lisp" fi:common-lisp fi::connection-not-open]
+      ["Run/Restart Common Lisp" fi:menu-common-lisp fi::connection-not-open]
       ["New Listener" fi:open-lisp-listener fi::connection-open]
       "----"
-      ("Compile"
-       ["top-level form" fi:lisp-compile-defun fi::connection-open]
+      ["Compile active region or top-level form"
+       fi:lisp-compile-active-region-or-defun
+       fi::connection-open]
+      ("Compile other"
        ["region" fi:lisp-compile-region fi::connection-open]
        ["last s-exp" fi:lisp-compile-last-sexp fi::connection-open]
        ["buffer" fi:lisp-compile-current-buffer fi::connection-open])
-      ("Evaluate"
-       ["top-level form" fi:lisp-eval-defun fi::connection-open]
-       ["region" fi:lisp-eval-region fi::connection-open]
-       ["last s-exp" fi:lisp-eval-last-sexp fi::connection-open]
-       ["buffer" fi:lisp-eval-current-buffer fi::connection-open])      
       ["Compile file" fi:compile-file fi::connection-open]
-      ["Load file" fi:compile-file fi::connection-open]
+      ["Load file" fi:load-file fi::connection-open]
       "----"
       ["List buffer definitions" fi:list-buffer-definitions
        fi::connection-open]
@@ -109,51 +106,55 @@
 
 (defconst fi:composer-menu
     '("Composer"
-      ["Start Composer" fi:start-composer fi::connection-open]
+      ["Start Composer" fi:start-composer
+       fi::connection-open-composer-loaded-and-stopped]
       ["Start Composer w/mouse line" fi:start-composer-mouse-line
-       fi::connection-open]
+       fi::connection-open-composer-loaded-and-stopped]
       "----"
       ("CLOS"
-       ["Inspect class" fi:inspect-class fi::connection-open]
-       ["Inspect generic function" fi:inspect-function fi::connection-open]
-       ["Show class subclasses" fi:show-subclasses fi::connection-open]
-       ["Show class superclasses" fi:show-superclasses fi::connection-open]
+       ["Inspect class" fi:inspect-class fi::composer-connection-open]
+       ["Inspect generic function" fi:inspect-function
+	fi::composer-connection-open]
+       ["Show class subclasses" fi:show-subclasses
+	fi::composer-connection-open]
+       ["Show class superclasses" fi:show-superclasses
+	fi::composer-connection-open]
        )
       ("Xref"
-       ["Show calls to" fi:show-calls-to fi::connection-open]
-       ["Show calls from" fi:show-calls-from fi::connection-open]
-       ["Show calls to and from" fi:xxx fi::connection-open]
-       ["Discard info" fi:xxx fi::connection-open]
+       ["Show calls to" fi:show-calls-to fi::composer-connection-open]
+       ["Show calls from" fi:show-calls-from fi::composer-connection-open]
+       ["Show calls to and from" fi:xxx fi::composer-connection-open]
+       ["Discard info" fi:xxx fi::composer-connection-open]
        )
       ("Profiler"
        ["Start time profiler" fi:composer-start-time-profiler
-	fi::connection-open]
+	fi::composer-connection-open]
        ["Start space profiler" fi:composer-start-space-profiler
-	fi::connection-open]
-       ["Stop profiler" fi:composer-stop-profiler fi::connection-open]
+	fi::composer-connection-open]
+       ["Stop profiler" fi:composer-stop-profiler fi::composer-connection-open]
        ["Display time" fi:composer-display-time-profiler
-	fi::connection-open]
+	fi::composer-connection-open]
        ["Display space" fi:composer-display-space-profiler
-	fi::connection-open]
-       ["Options" fi:composer-profiler-options fi::connection-open]
+	fi::composer-connection-open]
+       ["Options" fi:composer-profiler-options fi::composer-connection-open]
        )
       ("Other"
-       ["Inspect" fi:inspect-value fi::connection-open]
+       ["Inspect" fi:inspect-value fi::composer-connection-open]
        ["Presenting Listener" composer::make-presenting-listener
-	fi::connection-open]
-       ["Processes" fi:composer-process-browser fi::connection-open]
-       ["Systems" fi:composer-defsys-browser fi::connection-open]
+	fi::composer-connection-open]
+       ["Processes" fi:composer-process-browser fi::composer-connection-open]
+       ["Systems" fi:composer-defsys-browser fi::composer-connection-open]
        ["Reinitialize resources" fi:composer-reinitialize-resources
-	fi::connection-open]
-       ["Options" fi:composer-other-options fi::connection-open]
+	fi::composer-connection-open]
+       ["Options" fi:composer-other-options fi::composer-connection-open]
        )
       ("Help"
-       ["Help" fi:composer-help fi::connection-open]
+       ["Help" fi:composer-help fi::composer-connection-open]
        ["Current pointer gesture bindings" fi:composer-help-gesture-bindings
-	fi::connection-open])
+	fi::composer-connection-open])
       "----"
       ["Exit Composer/Common Windows" fi:composer-exit
-       fi::connection-open]
+       fi::composer-connection-open]
       ))
 
 (defun fi::connection-open ()
@@ -165,6 +166,47 @@
 (defun fi::connection-once-open ()
   (and (not (fi::lep-open-connection-p))
        (not fi::common-lisp-first-time)))
+
+(defvar fi::connection-open-composer-loaded nil)
+(defvar fi::composer-cached-connection nil)
+
+(defun fi::connection-open-composer-loaded ()
+  (unless (eq fi::*connection* fi::composer-cached-connection)
+    (setq fi::connection-open-composer-loaded nil))
+  (and (fi::lep-open-connection-p)
+       (or (unless fi::connection-open-composer-loaded
+	     (if (fi:eval-in-lisp "(when (find-package :wt) t)")
+		 (progn
+		   (setq fi::connection-open-composer-loaded 'yes)
+		   (setq fi::composer-cached-connection fi::*connection*))
+	       (setq fi::connection-open-composer-loaded 'no))
+	     nil)
+	   (eq fi::connection-open-composer-loaded 'yes))))
+
+(defvar fi::connection-open-composer-loaded-and-stopped nil)
+
+(defun fi::connection-open-composer-loaded-and-stopped ()
+  (and (fi::connection-open-composer-loaded)
+       (or (unless fi::connection-open-composer-loaded-and-stopped
+	     (if (fi:eval-in-lisp
+		  "(when (and (find-package :wt)
+                              (not (wt::common-windows-initialized-p)))
+                     t)")
+		 (setq fi::connection-open-composer-loaded-and-stopped 'yes)
+	       (setq fi::connection-open-composer-loaded-and-stopped 'no))
+	     nil)
+	   (eq fi::connection-open-composer-loaded-and-stopped 'yes))))
+
+(defvar fi::composer-connection-open nil)
+
+(defun fi::composer-connection-open ()
+  (and (fi::connection-open-composer-loaded)
+       (or (unless fi::composer-connection-open
+	     (if (fi:eval-in-lisp "(wt::connected-to-epoch-p)")
+		 (setq fi::composer-connection-open 'yes)
+	       (setq fi::composer-connection-open 'no))
+	     nil)
+	   (eq fi::composer-connection-open 'yes))))
 
 (defun fi::install-menubar (menu-bar)
   (set-menubar (delete (assoc (car menu-bar) current-menubar)
@@ -180,22 +222,58 @@
 	  (fi::install-menubar fi:composer-menu)))
       fi::initialization-forms)
 
+(defun fi:menu-common-lisp ()
+  (interactive)
+  (let ((fi:new-screen-for-common-lisp-buffer t))
+    (call-interactively 'fi:common-lisp)))
+
+(defun fi:lisp-compile-active-region-or-defun ()
+  (interactive)
+  (if (and zmacs-regions (mark-marker))
+      ;; region is active
+      (fi:lisp-compile-region)
+    (fi:lisp-compile-defun)))
+
 (defun fi:exit-lisp ()
   (interactive)
-  (fi:eval-in-lisp "(exit 0 :quiet t)"))
+  (message "Exiting Allegro CL...")
+  (fi:eval-in-lisp
+   "(mp:process-interrupt
+      (mp:process-name-to-process \"Initial Lisp Listener\")
+      #'excl:exit 0)")
+  (let ((cl-buffer (get-buffer fi:common-lisp-buffer-name)))
+    (when (and cl-buffer (get-buffer-window cl-buffer))
+      (set-buffer cl-buffer)
+      (if (eq fi::emacs-type 'lemacs19)
+	  (let* ((screen (selected-screen)))
+	    (if (and (string= (symbol-name (get major-mode 'screen-name))
+			      (screen-name screen))
+		     (one-window-p)
+;;;; delete-screen causes lemacs to die with a segv:
+		     nil
+		     )
+		(delete-screen screen)
+	      (bury-buffer)))
+	(bury-buffer))))
+  (message "Exiting Allegro CL...done."))
 
 (defun fi:start-composer ()
   (interactive)
-  (fi:eval-in-lisp "(progn(wt::start-composer :mouse-line nil)nil)"))
+  (message "Starting Allegro Composer...")
+  (fi:eval-in-lisp "(progn(wt::start-composer :mouse-line nil)nil)")
+  (message "Starting Allegro Composer...done."))
 
 (defun fi:start-composer-mouse-line ()
   (interactive)
-  (fi:eval-in-lisp "(progn(wt::start-composer :mouse-line t)nil)"))
+  (message "Starting Allegro Composer...")
+  (fi:eval-in-lisp "(progn(wt::start-composer :mouse-line t)nil)")
+  (message "Starting Allegro Composer...done."))
   
 (defun fi:composer-other-options ()
   (interactive)
-  (fi:eval-in-lisp
-   "(progn(wt::set-options-command t)nil)"))
+  (message "Creating Composer options dialog...")
+  (fi:eval-in-lisp "(progn(wt::set-options-command t)nil)")
+  (message "Creating Composer options dialog...done."))
 
 (defun fi:composer-help ()
   (interactive)
@@ -211,40 +289,58 @@
 
 (defun fi:composer-process-browser ()
   (interactive)
-  (fi:eval-in-lisp "(progn(composer::process-browser)nil)"))
+  (message "Starting process browser...")
+  (fi:eval-in-lisp "(progn(composer::process-browser)nil)")
+  (message "Starting process browser...done."))
 
 (defun fi:composer-reinitialize-resources ()
   (interactive)
-  (fi:eval-in-lisp "(progn(composer::init-resource-database)nil)"))
+  (message "Reinitializing resources...")
+  (fi:eval-in-lisp "(progn(composer::init-resource-database)nil)")
+  (message "Reinitializing resources...done."))
 
 (defun fi:composer-defsys-browser ()
   (interactive)
-  (fi:eval-in-lisp "(progn(composer::defsys-browser)nil)"))
+  (message "Starting defsystem browser...")
+  (fi:eval-in-lisp "(progn(composer::defsys-browser)nil)")
+  (message "Starting defsystem browser...done."))
 
 (defun fi:composer-start-time-profiler ()
   (interactive)
-  (fi:eval-in-lisp "(progn(composer::start-profiler-command-1 :time)nil)"))
+  (message "Starting time profiler...")
+  (fi:eval-in-lisp "(progn(composer::start-profiler-command-1 :time)nil)")
+  (message "Starting time profiler...done."))
 
 (defun fi:composer-start-space-profiler ()
   (interactive)
-  (fi:eval-in-lisp "(progn(composer::start-profiler-command-1 :space)nil)"))
+  (message "Starting space profiler...")
+  (fi:eval-in-lisp "(progn(composer::start-profiler-command-1 :space)nil)")
+  (message "Starting space profiler...done."))
 
 (defun fi:composer-display-time-profiler ()
   (interactive)
-  (fi:eval-in-lisp "(progn(composer::display-profile-command-1 :time)nil)"))
+  (message "Displaying time profile graph...")
+  (fi:eval-in-lisp "(progn(composer::display-profile-command-1 :time)nil)")
+  (message "Displaying time profile graph...done."))
 
 (defun fi:composer-display-space-profiler ()
   (interactive)
-  (fi:eval-in-lisp "(progn(composer::display-profile-command-1 :space)nil)"))
+  (message "Displaying space profile graph...")
+  (fi:eval-in-lisp "(progn(composer::display-profile-command-1 :space)nil)")
+  (message "Displaying space profile graph...done."))
 
 (defun fi:composer-stop-profiler ()
   (interactive)
-  (fi:eval-in-lisp "(progn(composer::stop-profiler-command-1)nil)"))
+  (message "Stopping the profiler...")
+  (fi:eval-in-lisp "(progn(composer::stop-profiler-command-1)nil)")
+  (message "Stopping the profiler...done."))
 
 (defun fi:composer-profiler-options ()
   (interactive)
+  (message "Creating profiler options dialog...")
   (fi:eval-in-lisp
-   "(progn(wt::run-motif-application 'wt::make-profiler-options)nil)"))
+   "(progn(wt::run-motif-application 'wt::make-profiler-options)nil)")
+  (message "Creating profiler options dialog...done."))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -258,6 +354,9 @@
       ["Recursive macroexpand" fi:lisp-macroexpand-recursively
        fi::connection-open]
       "----"
+      ["Compile active region or top-level form"
+       fi:lisp-compile-active-region-or-defun
+       fi::connection-open]
       ["Compile and load file" fi:menu-compile-and-load-file
        fi::connection-open]
       ["Load file" fi:menu-load-file fi::connection-open]

@@ -1,3 +1,23 @@
+Wed Sep  1 16:08:59 1993  Kevin Layer  (layer at sole)
+
+	* fi-lemacs.el: lots of fixes, improvements
+
+	* fi-lze.el: remove fi::error-if-request-in-progress, since it was
+	turned off anyway; remove fi:reset-background-request since it was
+>>>	never documented or needed; fi:lisp-evals-always-compile initial
+	value is `t'; fix docstrings.
+
+	* fi-modes.el: use fi:common-lisp-mode-hook instead of
+	fi:lisp-mode-hook to hack mode-line-process; put readtable in
+	mode-line-process; lemacs hacks
+
+>>>	* fi-subproc.el: new fi:display-buffer-function for lemacs; new
+	variable fi:new-screen-for-common-lisp-buffer.
+
+	* fi-utils.el: fi::switch-to-buffer-new-screen and support
+
+	* examples/emacs.el: fix for new fi-site-init
+
 Tue Aug 31 20:00:00 1993  Kevin Layer  (layer@sole)
 
 >>>	* fi-subproc.el: add fi:readtable defvar

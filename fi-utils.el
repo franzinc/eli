@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.47 1993/08/31 23:26:11 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.48 1993/09/01 23:12:39 layer Exp $
 
 ;;; Misc utilities
 
@@ -324,7 +324,7 @@ Can't connect to host %s.  The error from open-network-stream was:
 (defun fi:note (format-string &rest args)
   (let ((string (apply 'format format-string args)))
     (delete-other-windows)
-    (switch-to-buffer "*Help*")
+    (fi::switch-to-buffer "*Help*")
     (erase-buffer)
     (insert string)
     (beginning-of-buffer)))
@@ -685,6 +685,30 @@ created by fi:common-lisp."
       (setq ptr (cdr ptr)))
     result))
 
+(defun fi::switch-to-buffer-new-screen (buffer)
+  (cond
+   ((and (eq fi:common-lisp-buffer-name (buffer-name buffer))
+	 fi:new-screen-for-common-lisp-buffer)
+    (let ((screen (get-screen-for-buffer buffer t)))
+      (select-screen screen)
+      ;; make sure the buffer is visible
+      (fi::switch-to-buffer buffer)))
+   (t (fi::switch-to-buffer buffer))))
+
+(defun fi::switch-to-buffer (buffer)
+  ;; if buffer is in some window, go to it, otherwise switch-to-buffer
+  (let ((start (selected-window))
+	(current (next-window (selected-window) t))
+	(found nil))
+    (while (and (not (eq current start))
+		(not found))
+      (if (eq buffer (window-buffer current))
+	  (setq found current))
+      (setq current (next-window current t)))
+    (if (null found)
+	(switch-to-buffer buffer)
+      (select-window found))))
+    
 (defun fi::insert-string (string start end)
   (do ((p start (1+ p)))
       ((eq p end))

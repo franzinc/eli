@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.30 1993/07/23 03:49:05 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.31 1993/09/01 23:12:24 layer Exp $
 ;;
 ;; Code the implements evaluation in via the backdoor
 
@@ -42,65 +42,47 @@
       (and item (rplacd item (list ""))))
     (setq fi::show-compilation-status nil)))
 
-(defun fi::error-if-request-in-progress ()
-  (and nil ;; turn off this feature for now...
-       fi::show-compilation-status
-       (eq (fi::connection-process fi::*connection*)
-	   fi::show-compilation-status)
-       (error "A background eval/compile request is pending, please wait...")))
-
-(defun fi:reset-background-request ()
-  (setq fi::show-compilation-status nil))
-
 ;;;;;;;;;;;;;
 
-(defvar fi:lisp-evals-always-compile nil
+(defvar fi:lisp-evals-always-compile t
   "*This variable controls whether or not the fi:lisp-eval-or-compile-*
-functions will compile or evaluated when those functions are not given a
-prefix argument.  If non-nil, then compilation is the default, otherwise
-evaluation is the default.  When one is the default, the other
-functionality can be invoked by using a prefix argument.")
+functions will compile or evaluate their forms.  If non-nil, then
+compilation is the default,otherwise evaluation is the default.
+When one is the default, the other functionality can be invoked by using a
+prefix argument.")
+
+(defun fi::decode-prefix-argument-for-eval-or-compile ()
+  ;; return `t' for compile, `nil' for eval
+  (list (if current-prefix-arg
+	    (not fi:lisp-evals-always-compile)
+	  fi:lisp-evals-always-compile)))
 
 (defun fi:lisp-eval-or-compile-defun (compilep)
   "Send the current top-level (or nearest previous) form to the Lisp
 subprocess associated with this buffer.  A `top-level' form is one that
-starts in column 1.  With a prefix argument, the source sent to the
-subprocess is compiled."
-  (interactive "P")
-  (if (or (and fi:lisp-evals-always-compile (null compilep))
-	  (and (null fi:lisp-evals-always-compile) compilep))
-      (fi:lisp-compile-defun)
-    (fi:lisp-eval-defun)))
+starts in column 1.  See the documentation for
+fi:lisp-evals-always-compile."
+  (interactive (fi::decode-prefix-argument-for-eval-or-compile))
+  (if compilep (fi:lisp-compile-defun) (fi:lisp-eval-defun)))
 
 (defun fi:lisp-eval-or-compile-region (compilep)
   "Send the text in the region to the Lisp subprocess associated with this
 buffer, one expression at a time if there is more than one complete
-expression.  With a prefix argument, the source sent to the subprocess is
-compiled."
-  (interactive "P")
-  (if (or (and fi:lisp-evals-always-compile (null compilep))
-	  (and (null fi:lisp-evals-always-compile) compilep))
-      (fi:lisp-compile-region)
-    (fi:lisp-eval-region)))
+expression.  See the documentation for fi:lisp-evals-always-compile."
+  (interactive (fi::decode-prefix-argument-for-eval-or-compile))
+  (if compilep (fi:lisp-compile-region) (fi:lisp-eval-region)))
 
 (defun fi:lisp-eval-or-compile-last-sexp (compilep)
   "Send the sexp before the point to the Lisp subprocess associated with
-this buffer.  With a prefix argument, the source sent to the subprocess is
-compiled."
-  (interactive "P")
-  (if (or (and fi:lisp-evals-always-compile (null compilep))
-	  (and (null fi:lisp-evals-always-compile) compilep))
-      (fi:lisp-compile-last-sexp)
-    (fi:lisp-eval-last-sexp)))
+this buffer.  See the documentation for fi:lisp-evals-always-compile."
+  (interactive (fi::decode-prefix-argument-for-eval-or-compile))
+  (if compilep (fi:lisp-compile-last-sexp) (fi:lisp-eval-last-sexp)))
 
 (defun fi:lisp-eval-or-compile-current-buffer (compilep)
   "Send the entire buffer to the Lisp subprocess associated with this
-buffer."
-  (interactive "P")
-  (if (or (and fi:lisp-evals-always-compile (null compilep))
-	  (and (null fi:lisp-evals-always-compile) compilep))
-      (fi:lisp-compile-current-buffer)
-    (fi:lisp-eval-current-buffer)))
+buffer.  See the documentation for fi:lisp-evals-always-compile."
+  (interactive (fi::decode-prefix-argument-for-eval-or-compile))
+  (if compilep (fi:lisp-compile-current-buffer) (fi:lisp-eval-current-buffer)))
 
 ;;;;;;;;;;
 
@@ -175,7 +157,6 @@ with this buffer."
 ;;;;;;;;;;;;;
 
 (defun fi::eval-region-internal (start end compilep &optional ignore-package)
-  (fi::error-if-request-in-progress)
   (fi::note-background-request compilep)
   (let ((buffer (current-buffer)))
     (fi::make-request

@@ -2,7 +2,7 @@
 			      User Guide
 			    Release 2.0.8
 
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.47 1993/09/01 03:31:47 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.48 1993/09/01 23:12:18 layer Exp $
 
 			     Introduction
 
@@ -480,6 +480,7 @@ Functions and Variables for Interacting with a Common Lisp subprocess
 %% fi:emacs-to-lisp-transaction-directory
 %% fi:default-input-ring-max
 %% fi:display-buffer-function
+%% fi:new-screen-for-common-lisp-buffer
 %% fi:eval-in-lisp
 %% fi:eval-in-lisp-asynchronous
 %% fi:filename-frobber-hook
