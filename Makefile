@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.28 1989/02/15 23:18:43 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.29 1989/02/17 19:04:25 layer Exp $
 
 cl = /usr/local/cl3.0
 emacs = /usr/local/emacs
@@ -18,7 +18,6 @@ precompile = (set-case-mode :case-sensitive-lower)(require :process)(require :fo
 	echo '$(precompile)(compile-file "$*.cl")' | $(cl) -qq -batch
 
 default:	ipc.fasl emacs.fasl depend spec.out
-	@rm -f stamp; date > stamp
 
 all:	default
 	@make HOST=frisky CL=ipc.cl FASL=ipc_sun4.fasl ipc_sun4.fasl
