@@ -1,4 +1,4 @@
-;; Copyright (c) 1987-2001 Franz Inc, Berkeley, Ca.
+;; Copyright (c) 1987-2002 Franz Inc, Berkeley, Ca.
 ;;
 ;; Permission is granted to any individual or institution to use, copy,
 ;; modify, and distribute this software, and to distribute modified
@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-rlogin.el,v 1.31.24.1 2001/06/05 16:01:44 layer Exp $
+;; $Id: fi-rlogin.el,v 1.31.24.2 2002/02/07 16:41:34 layer Exp $
 
 (defvar fi:rlogin-mode-map nil
   "The rlogin major-mode keymap.")

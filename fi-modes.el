@@ -1,4 +1,4 @@
-;; Copyright (c) 1987-2001 Franz Inc, Berkeley, Ca.
+;; Copyright (c) 1987-2002 Franz Inc, Berkeley, Ca.
 ;;
 ;; Permission is granted to any individual or institution to use, copy,
 ;; modify, and distribute this software, and to distribute modified
@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-modes.el,v 1.74.2.3 2001/10/22 16:26:58 layer Exp $
+;; $Id: fi-modes.el,v 1.74.2.4 2002/02/07 16:41:34 layer Exp $
 
 ;;;; Mode initializations
 

@@ -1,4 +1,4 @@
-;; Copyright (c) 1987-2001 Franz Inc, Berkeley, Ca.
+;; Copyright (c) 1987-2002 Franz Inc, Berkeley, Ca.
 ;;
 ;; Permission is granted to any individual or institution to use, copy,
 ;; modify, and distribute this software, and to distribute modified
@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-basic-lep.el,v 1.47.6.4 2001/12/12 01:45:51 layer Exp $
+;; $Id: fi-basic-lep.el,v 1.47.6.5 2002/02/07 16:41:34 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 

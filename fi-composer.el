@@ -1,4 +1,4 @@
-;; Copyright (c) 1987-2001 Franz Inc, Berkeley, Ca.
+;; Copyright (c) 1987-2002 Franz Inc, Berkeley, Ca.
 ;;
 ;; Permission is granted to any individual or institution to use, copy,
 ;; modify, and distribute this software, and to distribute modified
@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-composer.el,v 1.22.22.1 2001/06/05 16:01:41 layer Exp $
+;; $Id: fi-composer.el,v 1.22.22.2 2002/02/07 16:41:34 layer Exp $
 
 (defun composer::make-listener (new-screen-p)
 ;;;; epoch specific:

@@ -1,4 +1,4 @@
-;; Copyright (c) 1987-2001 Franz Inc, Berkeley, Ca.
+;; Copyright (c) 1987-2002 Franz Inc, Berkeley, Ca.
 ;;
 ;; Permission is granted to any individual or institution to use, copy,
 ;; modify, and distribute this software, and to distribute modified
@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-filec.el,v 1.22.42.2 2001/06/05 16:01:42 layer Exp $
+;; $Id: fi-filec.el,v 1.22.42.3 2002/02/07 16:41:34 layer Exp $
 
 ;; Command and file name completion
 
