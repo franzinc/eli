@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.16 1991/05/28 16:17:36 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.17 1991/06/19 22:16:43 layer Exp $
 
 ;;; Misc utilities
 
@@ -268,3 +268,14 @@ that starts with ~."
        (list* (list 'quote (first list)) (second list)
 	      (fi::quote-every-other-one (cddr list)))))
 
+(defun fi:verify-emacs-support ()
+  "A function used to test the GNU Emacs in which it is run to see if the
+minimum require support for the Emacs-Lisp interface exists."
+  (interactive)
+  (condition-case condition
+      (accept-process-output 1 2)
+    (wrong-number-of-arguments
+     (error "accept-process-output does not accept two arguments."))
+    (wrong-type-argument
+     nil))
+  (message "everything looks fine!"))
