@@ -1,3 +1,8 @@
+2004-10-04    <layer@HOBART>
+
+	* fi-subproc.el: bug14846: windows startup was incomplete: handle
+	  case of process already existing
+
 2004-09-30  Charles A. Cox  <cox@fritter>
 
 	* fi-lep.el: spr29385: Fix for using unix-mode files on windows.
@@ -5001,4 +5006,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.9.2.8 $
+$Revision: 3.9.2.9 $

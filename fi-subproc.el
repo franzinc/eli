@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 3.7.2.5 2004/09/28 20:42:13 layer Exp $
+;; $Id: fi-subproc.el,v 3.7.2.6 2004/10/04 20:56:11 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -509,11 +509,20 @@ be a string. Use the 6th argument for image file."))
 			  (fi::remove-windows-arguments real-args))
 		      real-args))
 	 (process-connection-type fi::common-lisp-connection-type) ;bug3033
+	 (buffer nil)
 	 (proc
-	  (if (and (on-ms-windows) fi::process-is-local)
+	  (cond
+	   ((and (on-ms-windows) fi::process-is-local)
+	    (setq buffer (get-buffer-create buffer-name))
+	    (cond
+	     ((or (null fi::common-lisp-backdoor-main-process-name)
+		  (not (fi:process-running-p
+			(get-process
+			 fi::common-lisp-backdoor-main-process-name)
+			buffer-name)))
 	      (let ((proc
 		     (save-excursion
-		       (set-buffer (get-buffer-create buffer-name))
+		       (set-buffer buffer)
 		       (setq default-directory directory)
 		       (fi::socket-start-lisp fi::cl-process-name
 					      executable-image-name
@@ -533,7 +542,9 @@ be a string. Use the 6th argument for image file."))
 		  ;; *fi:open-lisp-listener.
 		  (fi::common-lisp-1-windows proc host buffer-name directory
 					     executable-image-name image-file
-					     image-args)))
+					     image-args))))
+	     (t (fi::goto-lisp-buffer buffer))))
+	   (t ;; NOT windows...
 	    (let ((p (fi::common-lisp-1-unix host buffer-name directory
 					     executable-image-name image-file
 					     image-args real-args)))
@@ -544,7 +555,7 @@ be a string. Use the 6th argument for image file."))
 		(process-send-string p fi::set-emacs-mule-terminal-io)
 		(process-send-string p "\n")
 		(fi::set-emacs-mule-process-coding p))
-	      p))))
+	      p)))))
     (setq fi::common-lisp-first-time nil
 	  fi:common-lisp-buffer-name buffer-name
 	  fi:common-lisp-image-name executable-image-name
@@ -1168,19 +1179,27 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	  (fi::make-subprocess-variables)
 	  (when initial-func (funcall initial-func process)))))
 
-    ;; display last so we can do proper screen creation on xemacs
-    (condition-case nil
-	(funcall fi:display-buffer-function buffer)
-      (error (fi::switch-to-buffer buffer)))
-
-    (goto-char (point-max))
-    (set-marker (if (numberp fi::last-input-end)
-		    (make-marker)
-		  fi::last-input-end)
-		(point)
-		buffer)
+    (fi::goto-lisp-buffer buffer)
 
     process))
+
+(defun fi::goto-lisp-buffer (buffer)
+  ;; display last so we can do proper screen creation on xemacs
+  (condition-case nil
+      (funcall fi:display-buffer-function buffer)
+    (error (fi::switch-to-buffer buffer)))
+
+  (goto-char (point-max))
+
+  ;; The recenter fixes the behavior of initial display with FSF 19.23, but
+  ;; needs to be checked across other Emacs.
+  (recenter (- (window-height) 2))
+  
+  (set-marker (if (numberp fi::last-input-end)
+		  (make-marker)
+		fi::last-input-end)
+	      (point)
+	      buffer))
 
 (defun fi::calc-buffer-name (buffer-name process-name)
   (cond ((stringp buffer-name) buffer-name)
@@ -1272,16 +1291,8 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	  (setq fi::prompt-pattern image-prompt)
 	  (fi::make-subprocess-variables))))
 
-    ;; display last so we can do proper screen creation on xemacs
-    (condition-case nil
-	(funcall fi:display-buffer-function buffer)
-      (error (fi::switch-to-buffer buffer)))
-
-    ;; The recenter fixes the behavior of initial display with FSF 19.23, but
-    ;; needs to be checked across other Emacs.
-    (goto-char (point-max))
-    (recenter (- (window-height) 2))
-
+    (fi::goto-lisp-buffer buffer)
+    
     proc))
 
 (defun fi::subprocess-sentinel (process status)
