@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.17 1991/06/19 22:16:43 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.18 1991/08/23 08:57:54 layer Exp $
 
 ;;; Misc utilities
 
@@ -275,7 +275,29 @@ minimum require support for the Emacs-Lisp interface exists."
   (condition-case condition
       (accept-process-output 1 2)
     (wrong-number-of-arguments
-     (error "accept-process-output does not accept two arguments."))
+     (fi:error "
+accept-process-output does not accept two arguments.  This means that the C
+kernel of this version of emacs does not have the necessary modifications
+to process.c to run the Franz Inc. emacs-lisp interface.  Please
+refer to the installation guide for further information."))
     (wrong-type-argument
      nil))
-  (message "everything looks fine!"))
+  (if (not (boundp 'process-environment))
+      (fi:error
+       "
+process-environment is does not have a value.  This means that the C
+pre-processor variable MAINTAIN_ENVIRONMENT was defined in some header file
+when emacs was built (maybe config.h).  Certain features of the emacs-lisp
+interface rely on process-environment being maintained by emacs.  Please
+rebuild emacs with MAINTAIN_ENVIRONMENT undefined."))
+  (if (interactive-p)
+      (message "everything looks fine!")))
+
+(defun fi:error (format-string &rest args)
+  (let ((string (apply 'format format-string args)))
+    (delete-other-windows)
+    (switch-to-buffer "*Help*")
+    (erase-buffer)
+    (insert string)
+    (beginning-of-buffer)
+    (beep)))
