@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.64 1995/02/02 23:18:38 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.65 1995/04/29 18:34:38 smh Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -126,13 +126,12 @@ at file visit time."
 					&optional what from-fspec)
   (when (not (fi::lep-open-connection-p))
     (error "connection to ACL is down--can't find tag"))
-  (message "Finding %s for %s..."
-	   (or what "definition") something)
+  (message "Finding %s for %s..." (or what "definition") something)
   (fi::push-metadot-session
    (or what "definition")
    something
    from-fspec
-   (fi::make-complex-request 
+   (fi::make-complex-request
     (scm::metadot-session :package (fi::string-to-keyword fi:package)
 			  :type t	; used to be (or type t), but
 					; `type' is not bound in this
@@ -143,12 +142,24 @@ at file visit time."
      (fi::show-found-definition (if (symbolp something)
 				    (symbol-name something)
 				  something)
-				pathname point n-more other-window-p
+				pathname
+				point n-more other-window-p
 				(eq 0 n-more))
      (if (= 0 n-more) (fi::pop-metadot-session)))
     (() (error)
 	(when (fi::pop-metadot-session)
 	  (fi::show-error-text "%s" error))))))
+
+(defun ensure-translated-pathname (pathname)
+  (if (position ?: pathname)
+      (or (ignore-errors
+	   (fi::translate-putative-logical-pathname pathname))
+	  pathname)
+    pathname))
+
+(defun fi::translate-putative-logical-pathname (pathname)
+  (fi:eval-in-lisp "(ignore-errors (namestring (translate-logical-pathname \"%s\")))"
+		   pathname))
 
 (defun fi:lisp-find-next-definition ()
   "Continue last tags search, started by fi:lisp-find-definition.
@@ -159,7 +170,7 @@ time."
   (interactive)
   (message "Finding next %s..." (lep::meta-dot-what))
   (if (not (lep::meta-dot-session)) (error "No more definitions"))
-  (fi::make-request-in-existing-session 
+  (fi::make-request-in-existing-session
    (lep::meta-dot-session)
    (:next)
    (() (pathname point n-more)
@@ -228,20 +239,17 @@ time."
   (setq lep::meta-dot-from-fspec nil)
   (setq lep::meta-dot-session nil))
 
-
 (defun fi::show-found-definition (thing pathname point n-more
-				  &optional other-window-p
-					    pop-stack)
+				  &optional other-window-p pop-stack)
   (if pathname
       (if (eq pathname ':top-level)
-	  (message
-	   "%s was defined somewhere at the top-level, %d more definitions"
-	   thing n-more)
+	  (message "%s was defined somewhere at the top-level, %d more definitions"
+		   thing n-more)
 	(let ((mess "")
-	      (xb nil))
-	  (if fi:filename-frobber-hook
-	      (setq pathname (funcall fi:filename-frobber-hook pathname)))
-	  ;;
+	      (xb nil)
+	      (pathname (ensure-translated-pathname pathname)))
+	  (when fi:filename-frobber-hook
+	    (setq pathname (funcall fi:filename-frobber-hook pathname)))
 	  (setq xb (get-file-buffer pathname))
 	  (if other-window-p
 	      (find-file-other-window pathname)
@@ -268,11 +276,7 @@ time."
 			  (lep::meta-dot-what)
 			  (or (lep::meta-dot-from-fspec) thing))))
 	  (when pop-stack (fi::pop-metadot-session))))
-    (message "cannot find file for %s" point)))
-
-
-
-
+    (message "cannot find file for %s" thing)))
 
 (defun scm::return-buffer-status (pathname write-if-modified)
   "This returns information about the status of the buffer: whether it
@@ -280,7 +284,7 @@ exists, if it is modified, last tick (when implemented), and optionally
 return the pathname of temp file."
   (let ((buffer (get-file-buffer pathname)))
     (if buffer
-	(list ':exists 
+	(list ':exists
 	      (buffer-modified-p buffer)
 	      (and write-if-modified
 		   (or (not (integerp write-if-modified))
@@ -325,7 +329,7 @@ since the Emacs-Lisp interface will not create it."
   "Create a mail buffer which contains information about the Common Lisp
 environment in which the bug occurs.  A :zoom and other related information
 is obtained from the \"Initial Lisp Listener\".  See M-x mail for more
-information on how to send the mail." 
+information on how to send the mail."
   (interactive)
   (fi::make-request
       (lep::bug-report-session
@@ -347,9 +351,9 @@ information on how to send the mail."
         (insert "<<Please enter any comments or explanations here>>\n\n")
 	(insert "\n------------------------------\n\n")
 	(insert stack)
-	(insert "\n------------------------------\n\n")	     
+	(insert "\n------------------------------\n\n")
 	(insert lisp-info)
-	(insert "\n------------------------------\n\n")	     
+	(insert "\n------------------------------\n\n")
 	(insert (format "Emacs version: %s\n"
 			(emacs-version)))
 	(insert (format "Emacs-Lisp interface version: %s\n\n"
@@ -400,18 +404,18 @@ buffer, the package is parsed at file visit time."
 (defun fi::lisp-macroexpand-common (expander type)
   (fi::make-request
       (lep::macroexpand-session
-       :expander expander :package
-       (fi::string-to-keyword fi:package)
+       :expander expander :package (fi::string-to-keyword fi:package)
        :form (let ((start (condition-case ()
 			      (fi::find-other-end-of-list)
 			    (error nil))))
-	       (if start
-		   (buffer-substring start (point))
-		 (read-string (format "form to %s: " type)))))
+	       (format "%s"
+		       (if start
+			   (buffer-substring start (point))
+			 (read-string (format "form to %s: " type))))))
     (() (expansion)
-      (fi:show-some-text fi:package expansion))
+     (fi:show-some-text fi:package expansion))
     (() (error)
-      (fi::show-error-text "Cannot macroexpand: %s" error))))
+     (fi::show-error-text "Cannot macroexpand: %s" error))))
 
 
 ;;; Symbol completion
@@ -471,7 +475,7 @@ beginning of words in target symbols."
 	   ;; this into something like list-all-comp...
 	   (delete-region real-beg end)
 	   (insert (fi::abbrev-to-symbol pattern alist))
-	   
+
 	   (message "Making completion list...")
 	   (with-output-to-temp-buffer "*Help*"
 	     (display-completion-list (mapcar 'cdr alist)))
@@ -492,7 +496,7 @@ beginning of words in target symbols."
 	     (display-completion-list
 	      (mapcar 'cdr alist))))
 ;;;;
-	  
+
 	  ((null (string= pattern completion))
 	   (let ((new (cdr (assoc completion alist))))
 	     (if new
@@ -517,7 +521,7 @@ beginning of words in target symbols."
     (let ((fi::inside-lisp-complete-1 t))
       (condition-case nil
 	  (let ((completions
-		 (car (lep::eval-session-in-lisp 
+		 (car (lep::eval-session-in-lisp
 		       'lep::list-all-completions-session
 		       ':pattern (fi::frob-case-to-lisp pattern)
 		       ':buffer-package (fi::string-to-keyword fi:package)
@@ -554,7 +558,7 @@ beginning of words in target symbols."
 	      completions))))
 
 (defun lep::find-file (filename)
-  (list (find-file filename)))
+  (list (find-file (ensure-translated-pathname filename))))
 
 (defun lep::display-string-in-buffer (string buffer)
   "Display a string in buffer"
@@ -588,7 +592,7 @@ beginning of words in target symbols."
 	       (if xpackage
 		   (concat fi:package "::" string)
 		 string))))
-	  (:file-name (read-file-name 
+	  (:file-name (read-file-name
 		       prompt
 		       (fi::getf-property options ':directory)
 		       (fi::getf-property options ':default)
@@ -608,9 +612,8 @@ beginning of words in target symbols."
 (defun lep::completing-read-complete (pattern predicate what)
   (let* ((inhibit-quit nil)
 	 (matchp (string-match ":?:" pattern))
-
 	 (xpackage (and matchp (substring pattern 0 matchp)))
-	 (string (if matchp 
+	 (string (if matchp
 		     (substring pattern (match-end 0))
 		   pattern))
 	 (package-prefix (and xpackage
@@ -622,10 +625,10 @@ beginning of words in target symbols."
 	     session
 	     ':complete
 	     (fi::frob-case-to-lisp string)
-	     (and xpackage 
+	     (and xpackage
 		  (intern
-		  (fi::frob-case-to-lisp 
-		   (concat ":" 
+		  (fi::frob-case-to-lisp
+		   (concat ":"
 			   (if (equal "" xpackage)
 			       "keyword"
 			     xpackage)))))))))
@@ -638,10 +641,10 @@ beginning of words in target symbols."
       (lambda (eq completion t)))))
 
 (defun lep::show-clman (string)
-  (if string 
+  (if string
       (fi:clman string)
     (call-interactively 'fi:clman)))
-  
+
 (defun lep::buffer-region (buffer start end)
   (set-buffer buffer)
   (list (buffer-substring (or start (point-min)) (or end (point-max)))))
@@ -657,7 +660,7 @@ the package is parsed at file visit time."
   (interactive "P")
   (message "Killing definition...")
   (fi::make-request
-   (lep::undefine-reply :buffer (buffer-name) 
+   (lep::undefine-reply :buffer (buffer-name)
 			:start-point (point)
 			:end-point (save-excursion
 				     (forward-sexp)
@@ -665,7 +668,7 @@ the package is parsed at file visit time."
 			:doit do-kill)
    ((do-kill) (form)
     (unless do-kill
-      (end-of-defun) 
+      (end-of-defun)
       (save-excursion
 	(insert form)
 	(insert "\n")))
@@ -700,7 +703,7 @@ for tracing methods."
   (interactive "P")
   (message "Tracing definition...")
   (fi::make-request
-   (lep::trace-definition-reply :buffer (buffer-name) 
+   (lep::trace-definition-reply :buffer (buffer-name)
 				:start-point (point)
 				:break break
 				:end-point (save-excursion
@@ -911,7 +914,7 @@ environment."
 			((eq ':compile operation)
 			 (setq compilep t)
 			 "Compiling")
-			(t 
+			(t
 			 (setq compilep t)
 			 "Compiling and loading"))
 		  (file-name-nondirectory file))))

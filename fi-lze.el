@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.33 1995/01/07 00:49:08 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.34 1995/04/29 18:34:41 smh Exp $
 ;;
 ;; Code the implements evaluation in via the backdoor
 
@@ -47,9 +47,8 @@
 (defvar fi:lisp-evals-always-compile t
   "*This variable controls whether or not the fi:lisp-eval-or-compile-*
 functions will compile or evaluate their forms.  If non-nil, then
-compilation is the default,otherwise evaluation is the default.
-When one is the default, the other functionality can be invoked by using a
-prefix argument.")
+compilation is the default, otherwise evaluation is the default.
+The non-default functionality can be selected by using a prefix argument.")
 
 (defun fi::decode-prefix-argument-for-eval-or-compile ()
   ;; return `t' for compile, `nil' for eval

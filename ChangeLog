@@ -6,9 +6,29 @@ Sun Mar 19 13:49:48 1995  George Jacob  <georgej@vapor>
 
 	* Doc.el: Added description at beginning of file
 
+Mon Feb 27 13:14:15 1995  Steve Haflich  <smh@vapor>
+
+	* clman.c (main): Still some more byte-order conversions needed.
+
+Fri Feb 24 13:58:36 1995  Steve Haflich  <smh@vapor>
+
+	* fi-stream.el:
+	Call fi::ensure-buffer-visible when a listener stream is created.
+
+Thu Feb 16 13:24:15 1995  Steve Haflich  <smh@vapor>
+
+	* fi-lep.el
+	fi::lisp-macroexpand-common needs to defontify buffer-subtring
+	in Emacs 19.2x.
+
 *******************************************************************************
 2.0.18 public release
 *******************************************************************************
+
+Tue Jan 31 11:55:02 1995  Steve Haflich  <smh@vapor>
+
+	* fi-clman.el
+	Protect against bogus process return code in old copies of Nemacs.
 
 *******************************************************************************
 2.0.17 public release

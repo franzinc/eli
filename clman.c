@@ -1,6 +1,6 @@
 /* Copyright (C) 1993, Franz Inc., Berkeley, CA.  All rights reserved. */
 
-/* $Header: /repo/cvs.copy/eli/Attic/clman.c,v 2.4 1994/08/01 22:48:04 smh Exp $ */
+/* $Header: /repo/cvs.copy/eli/Attic/clman.c,v 2.5 1995/04/29 18:34:35 smh Exp $ */
 
 #include "clman.h"
 #include <netinet/in.h>
@@ -28,7 +28,7 @@ main(argc, argv)
 	exit(failed);
     }
     name = argv[2];
-    
+
     if ((fd = open(argv[1], O_RDONLY)) < 0) {
 	perror(argv[1]);
 	fprintf(stderr, "couldn't open %s\n", argv[1]);
@@ -39,6 +39,10 @@ main(argc, argv)
 	fprintf(stderr, "couldn't read header\n");
 	exit(failed);
     }
+
+    h.entry_table_size = ntohl(h.entry_table_size);
+    h.string_table_size = ntohl(h.string_table_size);
+    h.data_size = ntohl(h.data_size);
 
     table = (struct Entry *)malloc(h.entry_table_size);
     if (read(fd, table, h.entry_table_size) != h.entry_table_size) {

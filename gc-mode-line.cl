@@ -1,4 +1,4 @@
-;;; gc-mode-line.cl	-[Thu Jul 28 17:29:05 1994 by smh]-
+;;; gc-mode-line.cl	-[Fri Mar 17 20:59:47 1995 by smh]-
 
 ;;; This and the accompanying gc-mode-line.c file implement `Run Bars' in the
 ;;; Emacs mode line for Common Lisp buffers, both interaction and source buffers.
@@ -38,8 +38,8 @@
 (unless (fboundp 'run_bar_hook)
   ;;(load (merge-pathnames "gc-mode-line.o" *load-pathname*))
   (ff:defforeign-list '((run_bar_hook)
-			(mode_line_run)
-			(mode_line_wait))))
+			#+never (mode_line_run)
+			#+never (mode_line_wait))))
 
 (defun excl::run-status-process (&optional (stream *terminal-io*))
   (flet ((mode-line-caller (arg1 arg2)

@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.158 1995/01/10 00:43:41 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.159 1995/04/29 18:34:46 smh Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -122,9 +122,10 @@ When using Lisp and Emacs on different machines, this directory must be
 accessible on both machine with the same pathname (via the wonders of NFS).")
 
 (defvar fi:echo-evals-from-buffer-in-listener-p nil
-  "*If non-nil, forms evalutated directly in fi:common-lisp-mode by the
-functions which compile or eval the region, a form or the entire buffer
-will be echoed by Common Lisp.")
+  "*If non-nil, functions which eval a region, form, or an entire buffer will
+echo evaluated forms and results directly in the initial Lisp listener buffer.
+If nil, the results of evalation will be printed in the minibuffer if they
+fit, or otherwise in a popup buffer.")
 
 (defvar fi:start-lisp-interface-arguments
     (function
@@ -799,7 +800,8 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	       name)))))
 
 (defvar fi::tcp-listener-table nil)
-(defvar fi::tcp-listener-generation 0)
+;; Start counting at 2 because initial lisp listener is assigned 1.
+(defvar fi::tcp-listener-generation 2)
 
 (defun fi::tcp-listener-generation (proc)
   (let ((gen fi::tcp-listener-generation))
