@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.22 1991/06/19 22:16:16 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.23 1991/09/10 11:19:18 layer Exp $
 
 (defvar fi:rlogin-mode-map nil
   "The rlogin major-mode keymap.")
@@ -102,8 +102,9 @@ The rlogin image file and image arguments are taken from the variables
 `fi:rlogin-image-name' and `fi:rlogin-image-arguments'."
   (interactive "p\nsRemote login to host: ")
   (let ((fi:subprocess-env-vars
-	 '(("EMACS" . "t")
-	   ("TERM" . "dumb")
+	 '(("TERM" . "dumb")
+	   ;; these two aren't passed, actually (bummer!)
+	   ("EMACS" . "t")
 	   ("DISPLAY" . (getenv "DISPLAY")))))
     (fi::make-subprocess nil
 			 host
@@ -112,7 +113,7 @@ The rlogin image file and image arguments are taken from the variables
 			 'fi:rlogin-mode
 			 fi:rlogin-prompt-pattern
 			 fi:rlogin-image-name
-			 (cons host fi:rlogin-image-arguments)
+			 (append fi:rlogin-image-arguments (list host))
 			 'fi::rlogin-filter)))
 
 (defun fi::rlogin-filter (process output)
