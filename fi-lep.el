@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 1.78 1997/10/30 00:46:37 layer Exp $
+;; $Id: fi-lep.el,v 1.79 1997/12/06 19:54:10 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -752,6 +752,67 @@ for tracing methods."
    (() (error)
     (fi::show-error-text "Cannot trace current definition: %s" error))))
 
+(defun fi::substr-sexp ()
+  ;; Moves point!
+  (let ((start (point)))
+    (forward-sexp 1)
+    (buffer-substring start (point))))
+
+(defun fi:trace-definer (current-prefix-arg)
+  "Dynamically toggle, in the Common Lisp environment, tracing for the
+function defined by the top-level form around the cursor position.  The
+form can be a defun, defgeneric, defmethod, define-compiler-macro, or
+deftype.  The defmethod case is most useful, as the function spec for
+the particular method is extraced from the qualifiers and specializers.
+If tracing is already turned on, then it will be turned off.  With a
+prefix arg, cause the debugger to be invoked via a call to BREAK when
+the function is called.  fi:package is used to determine from which
+Common Lisp package the operation is done.  In a subprocess buffer, the
+package is tracked automatically.  In source buffer, the package is
+parsed at file visit time."
+  (interactive "P")
+  (save-excursion
+    (let (definer spec name qualifiers specializers)
+      (forward-char 1)
+      (beginning-of-defun)
+      (unless (looking-at "(def")
+	(error "Can't parse a top-level defining form"))
+      (forward-char 1)			;open paren
+      (setq definer (fi::substr-sexp))
+      (setq name (fi::substr-sexp))
+      (cond ((fi::string-equal-nocase definer "defmethod")
+	     (loop as subform = (read-from-string (fi::substr-sexp))
+		   as next = (car subform)
+		   while (symbolp next)
+		   collect next into quals
+		   finally do (setq qualifiers (apply 'concat (mapcar 'symbol-name quals)))
+		   (setq specializers
+		     (loop for spec in next
+			   until (member spec '(&optional &rest &key &aux &allow-other-keys))
+			   collect (if (atom spec) 't (cadr spec)))))
+	     (setq spec
+	       (concat "(method " name " "
+		       qualifiers " "
+		       (format "%S" specializers)
+		       " )")))
+	    ((or (fi::string-equal-nocase definer "defun")
+		 (fi::string-equal-nocase definer "defmacro")
+		 (fi::string-equal-nocase definer "defgeneric"))
+	     (setq spec name))
+	    ((fi::string-equal-nocase definer "deftype")
+	     (setq spec (format "(excl::deftype-expander %s)" name)))
+	    ((fi::string-equal-nocase definer "define-compiler-macro")
+	     (setq spec (format "(:property %s excl::.compiler-macro.)" name)))
+	    (t (error "Can't trace a %s" definer)))
+      (fi::make-request
+	  (lep::toggle-trace :fspec (fi::defontify-string spec) :break current-prefix-arg)
+	;; Normal continuation
+	(() (what tracep)
+	 (message (if tracep "%s is now traced" "%s is now untraced")
+		  what))
+	;; Error continuation
+	((spec) (error)
+	 (fi::show-error-text "Cannot (un)trace %s: %s" spec error))))))
 
 ;;;; list and edit somethings
 

@@ -1,12 +1,26 @@
 For more detailed instructions on filling in the ChangeLog form, see 
 `/fi/doc/procedures/changelogs.txt'.
 *******************************************************************************
-<version for this commit>
+<version for this commit> (in fi-site-init.el)
 
 Documentation changes:	<`none' or give pointer to them>
 
 <standard changelog date stamp>
 	* <changes go here...>
+
+*******************************************************************************
+2.0.21.pre-beta.4
+
+Documentation changes:	<`none' or give pointer to them>
+
+Sat Dec 06 08:19:15 1997    <layer@SLOWZONE>
+
+	* fi-basic-lep.el: handle return value from emacs-version in
+	xemacs 20.x.
+	* fi-keys.el: put C-c bindings on lower-case char, too; put smh's
+	fi:trace-definer on C-cC-t
+	* fi-lep.el: fi:trace-definer
+	* fi-subproc.el: handle +n windows argument
 
 *******************************************************************************
 

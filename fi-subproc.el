@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.191 1997/10/30 00:46:38 layer Exp $
+;; $Id: fi-subproc.el,v 1.192 1997/12/06 19:54:11 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -560,7 +560,8 @@ be a string. Use 6th argument for image file."))
     (while arguments
       (setq arg (car arguments))
       (cond ((or (string= "+c" arg) (string= "+p" arg)
-		 (string= "+B" arg) (string= "+m" arg))
+		 (string= "+B" arg) (string= "+m" arg)
+		 (string= "+n" arg))
 	     (push arg dlisp-args))
 	    ((or (string= "+s" arg) (string= "+d" arg)
 		 (string= "+t" arg) (string= "+b" arg))

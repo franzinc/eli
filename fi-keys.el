@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 1.110 1997/10/30 00:46:37 layer Exp $
+;; $Id: fi-keys.el,v 1.111 1997/12/06 19:54:10 layer Exp $
 
 (cond ((eq fi::emacs-type 'xemacs19)
        (require 'tags "etags"))
@@ -192,12 +192,20 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
       (define-key map "\eW"	'fi:lisp-macroexpand-recursively))
     (define-key map "\C-c\t"	'fi:lisp-complete-symbol)
     (define-key map "\C-cA"	'fi:lisp-arglist)
+    (define-key map "\C-ca"	'fi:lisp-arglist)
     (define-key map "\C-cC"	'fi:list-who-calls)
+    (define-key map "\C-cc"	'fi:list-who-calls)
     (define-key map "\C-cD"	'fi:describe-symbol)
+    (define-key map "\C-cd"	'fi:describe-symbol)
     (define-key map "\C-cF"	'fi:lisp-function-documentation)
+    (define-key map "\C-cf"	'fi:lisp-function-documentation)
     (define-key map "\C-cM"	'fi:lisp-macroexpand)
+    (define-key map "\C-cm"	'fi:lisp-macroexpand)
     (define-key map "\C-cT"	'fi:toggle-trace-definition)
+    (define-key map "\C-ct"	'fi:toggle-trace-definition)
     (define-key map "\C-cW"	'fi:lisp-macroexpand-recursively)
+    (define-key map "\C-cw"	'fi:lisp-macroexpand-recursively)
+    (define-key map "\C-c\C-t"	'fi:trace-definer)
     (define-key map "\C-c "	'fi:lisp-delete-pop-up-window))
 
   (when (eq major-mode 'fi:emacs-lisp-mode)

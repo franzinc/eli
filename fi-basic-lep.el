@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-basic-lep.el,v 1.43 1997/02/27 17:33:09 layer Exp $
+;; $Id: fi-basic-lep.el,v 1.44 1997/12/06 19:54:10 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -210,16 +210,17 @@ emacs-lisp interface cannot be started.
 	   ;; Send the class of the editor to the lisp.
 	   ;; This might affect something!
 	   ;; For example, gnu 19 has some good features.
-	   (process-send-string process (format "\"%s\"\n" (emacs-version)))
+	   (process-send-string
+	    process
+	    (format "\"%s\"\n" (remove ?\" (emacs-version))))
 	   (prog1
 	       (setq fi::*connection*
 		 (fi::make-connection (current-buffer) host process))
-	     (set-menubar-dirty-flag)	;smh 31oct94
-	     )))
+	     (set-menubar-dirty-flag))))
 	(t
 	 (fi:error
 	  "
-The Allegro CL ipc version is ``%s'' (from the variable ipc::*ipc-version*
+The Allegro CL ipc version is ``%s'' (from the variable excl::*ipc-version*
 in the Lisp environment).  This version of the emacs-lisp interface
 requires version ``%s''.  This mismatch would most likely be caused by the
 Emacs and Lisp not being from the same distribution.  If the obtained ipc
