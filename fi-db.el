@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.19 1991/07/24 14:02:04 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.20 1991/08/22 21:29:21 layer Exp $
 ;;
 
 (defconst fi::ss-help
@@ -80,30 +80,31 @@ process. With argument ALL, do a \":zoom :all t\"."
   (let ((process-name (fi::buffer-process))
 	(from-buffer (when fi:subprocess-mode
 		       (current-buffer))))
-    (make-request (lep::zoom-session :process-name process-name
-				     :all (or fi::ss-show-all-frames all))
-		  ;; Normal continuation
-		  ((from-buffer process-name) (stack)
-		   (let ((buffer-name (format "*debugger:%s*"
-					      (fi::make-pretty-process-name
-					       process-name))))
-		     (pop-to-buffer buffer-name)
-		     (if buffer-read-only (toggle-read-only))
-		     (erase-buffer)
-		     (insert (format fi::ss-help
-				     (buffer-name
-				      (or from-buffer
-					  fi::ss-debugger-from-buffer))))
-		     (when (null fi:scan-stack-mode-display-help)
-		       (fi:ss-hide-help-text))
-		     (insert stack)
-		     (beginning-of-buffer)
-		     (re-search-forward fi::ss-current-frame-regexp)
-		     (beginning-of-line)
-		     (fi:scan-stack-mode from-buffer process-name)))
-		  ;; Error continuation
-		  (() (error)
-		   (message "Cannot zoom on stack: %s" error)))))
+    (fi::make-request
+     (lep::zoom-session :process-name process-name
+			:all (or fi::ss-show-all-frames all))
+     ;; Normal continuation
+     ((from-buffer process-name) (stack)
+      (let ((buffer-name (format "*debugger:%s*"
+				 (fi::make-pretty-process-name
+				  process-name))))
+	(pop-to-buffer buffer-name)
+	(if buffer-read-only (toggle-read-only))
+	(erase-buffer)
+	(insert (format fi::ss-help
+			(buffer-name
+			 (or from-buffer
+			     fi::ss-debugger-from-buffer))))
+	(when (null fi:scan-stack-mode-display-help)
+	  (fi:ss-hide-help-text))
+	(insert stack)
+	(beginning-of-buffer)
+	(re-search-forward fi::ss-current-frame-regexp)
+	(beginning-of-line)
+	(fi:scan-stack-mode from-buffer process-name)))
+     ;; Error continuation
+     (() (error)
+      (message "Cannot zoom on stack: %s" error)))))
 
 (defun fi::make-pretty-process-name (process-name)
   ;; spaces to hyphens, and remove *'s
@@ -272,7 +273,7 @@ that will next be executed if the current error can be continued."
   (interactive)
   (let ((process-name (fi::buffer-process))
 	(offset (fi::offset-from-current-frame)))
-    (make-request
+    (fi::make-request
      (lep::disassemble-session :process-name process-name :offset offset)
      ((offset) (text pc)
       (when offset (fi::make-stack-frame-current offset))
@@ -294,7 +295,7 @@ variables in the debugger."
   (interactive)
   (let ((process-name (fi::buffer-process))
 	(offset (fi::offset-from-current-frame)))
-    (make-request
+    (fi::make-request
      (lep::local-session :process-name process-name
 			 :offset offset)
      ((offset) (text)
@@ -309,7 +310,7 @@ buffer."
   (interactive)
   (let ((process-name (fi::buffer-process))
 	(offset (fi::offset-from-current-frame)))
-    (make-request
+    (fi::make-request
      (lep::pprint-frame-session :process-name process-name
 				:offset offset)
      ((offset) (text)
@@ -348,26 +349,26 @@ buffer."
   (let ((process-name (fi::buffer-process))
 	(offset (when set-current-frame
 		  (fi::offset-from-current-frame))))
-    (make-request (lep::tpl-command-session
-		   :process-name process-name
-		   :command command
-		   :args args
-		   :done done
-		   :offset offset)
-		  ;; Normal continuation
-		  ((offset) (done)
-		   (if done
-		       (fi:ss-quit)
-		     (when offset (fi::make-stack-frame-current offset))))
-		  ;; Error continuation
-		  ((process-name) (error)
-		   (message "Lisp error: %s" error)
-		   (beep)
-		   (sit-for 2)
-		   (if (y-or-n-p
-			(format "Revert stack from process \"%s\"? "
-				process-name))
-		       (fi:scan-stack))))))
+    (fi::make-request
+     (lep::tpl-command-session :process-name process-name
+			       :command command
+			       :args args
+			       :done done
+			       :offset offset)
+     ;; Normal continuation
+     ((offset) (done)
+      (if done
+	  (fi:ss-quit)
+	(when offset (fi::make-stack-frame-current offset))))
+     ;; Error continuation
+     ((process-name) (error)
+      (message "Lisp error: %s" error)
+      (beep)
+      (sit-for 2)
+      (if (y-or-n-p
+	   (format "Revert stack from process \"%s\"? "
+		   process-name))
+	  (fi:scan-stack))))))
 
 (defun fi::offset-from-current-frame ()
   (beginning-of-line)

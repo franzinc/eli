@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.16 1991/06/27 15:25:39 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.17 1991/08/22 21:29:22 layer Exp $
 ;;
 
 ;; Create a mode in which each line is a definition and . on that
@@ -168,18 +168,19 @@ back to the previous contents of the definition-mode buffer."
 use the current buffer and display all the definitions contained in it."
   (interactive)
   (let ((buffer (current-buffer)))
-    (make-request (scm::file-definitions-session
-		   :pathname (buffer-file-name buffer))
-		  ;; Normal continuation
-		  ((buffer fi:package) (the-definitions)
-		   (lep:display-some-definitions 
-		    fi:package
-		    the-definitions
-		    (list 'lep::find-buffer-definition buffer)))
-		  ;; Error continuation
-		  ((buffer) (error)
-		   (message "Cannot find the definitions of buffer %s: %s"
-			    buffer error)))))
+    (fi::make-request
+     (scm::file-definitions-session
+      :pathname (buffer-file-name buffer))
+     ;; Normal continuation
+     ((buffer fi:package) (the-definitions)
+      (lep:display-some-definitions 
+       fi:package
+       the-definitions
+       (list 'lep::find-buffer-definition buffer)))
+     ;; Error continuation
+     ((buffer) (error)
+      (message "Cannot find the definitions of buffer %s: %s"
+	       buffer error)))))
 
 (defun lep::dmode-mouse-select (info)
   (pop-to-buffer (second info))
@@ -260,21 +261,22 @@ in definition mode."
 
 (defun lep::find-buffer-definition (string type list-buffer buffer)
   (unless (bufferp buffer) (setq buffer (find-file-noselect buffer)))
-  (make-request (scm::find-buffer-definition-session
-		 :pathname (buffer-file-name buffer) 
-		 :fspec string
-		 :type type
-		 :package (save-excursion (set-buffer buffer) 
-					  (fi::string-to-keyword fi:package)))
-		  ;; Normal continuation
-		  ((string list-buffer) (pathname point n-more)
-		   (fi::show-found-definition string pathname point n-more t)
-		   (recenter 0)
-		   (switch-to-buffer-other-window list-buffer))
-		  ;; Error continuation
-		  ((string buffer) (error)
-		   (error "Cannot find the definition of %s in %s: %s"
-			  string buffer error))))
+  (fi::make-request
+   (scm::find-buffer-definition-session
+    :pathname (buffer-file-name buffer) 
+    :fspec string
+    :type type
+    :package (save-excursion (set-buffer buffer)
+			     (fi::string-to-keyword fi:package)))
+   ;; Normal continuation
+   ((string list-buffer) (pathname point n-more)
+    (fi::show-found-definition string pathname point n-more t)
+    (recenter 0)
+    (switch-to-buffer-other-window list-buffer))
+   ;; Error continuation
+   ((string buffer) (error)
+    (error "Cannot find the definition of %s in %s: %s"
+	   string buffer error))))
 
 (defun lep:display-some-definitions (package buffer-definitions
 				     fn-and-arguments

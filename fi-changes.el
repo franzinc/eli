@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-changes.el,v 1.6 1991/05/28 16:18:16 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-changes.el,v 1.7 1991/08/22 21:29:17 layer Exp $
 
 ;;; Support for changed definitions
 
@@ -107,16 +107,17 @@ OLD-FILE."
   (interactive "fNew file: \nfOld file: ")
   (find-file new-file)
   (let ((package fi:package))
-    (make-request (scm::list-changed-definitions
-		   :operation ':list
-		   :old-file old-file
-		   :new-file new-file)
-		   ((package) (changes)
-		    (if changes
-			(fi::show-changes changes nil package)
-		      (message "There are no changes.")))
-		   (() (error)
-		    (error "Cannnot list changed definitions: %s" error)))))
+    (fi::make-request
+     (scm::list-changed-definitions
+      :operation ':list
+      :old-file old-file
+      :new-file new-file)
+     ((package) (changes)
+      (if changes
+	  (fi::show-changes changes nil package)
+	(message "There are no changes.")))
+     (() (error)
+      (error "Cannnot list changed definitions: %s" error)))))
 
 ;;; The guts of the problem
 
@@ -180,29 +181,30 @@ OLD-FILE."
 
 (defun fi::do-buffer-changed-definitions-1 (copy-file-name actual-file
 					    old-file new-file)
-    (make-request (scm::list-changed-definitions
-		   :operation operation
-		   :copy-file-name copy-file-name
-		   :actual-file actual-file
-		   :old-file old-file
-		 :new-file new-file
-		 :since since)
-		  ((operation copy-file-name) (changes)
-		   (if changes
-		       (progn
-			 (if (eq operation ':copy)
-			     (fi::insert-file-contents-into-kill-ring
-			      copy-file-name))
-			 (fi::show-changes changes))
-		     (message "There are no changes.")))
-		((operation) (error)
-		 (error 		 
-		  (ecase operation
-		    (:copy "copy changed definitions: %s")
-		    (:list "Cannnot list changed definitions: %s")
-		    (:eval "Cannnot evaluate changed definitions: %s")
-		    (:compile "Cannnot compile changed definitions: %s"))
-		  error))))
+  (fi::make-request
+   (scm::list-changed-definitions
+    :operation operation
+    :copy-file-name copy-file-name
+    :actual-file actual-file
+    :old-file old-file
+    :new-file new-file
+    :since since)
+   ((operation copy-file-name) (changes)
+    (if changes
+	(progn
+	  (if (eq operation ':copy)
+	      (fi::insert-file-contents-into-kill-ring
+	       copy-file-name))
+	  (fi::show-changes changes))
+      (message "There are no changes.")))
+   ((operation) (error)
+    (error 		 
+     (ecase operation
+       (:copy "copy changed definitions: %s")
+       (:list "Cannnot list changed definitions: %s")
+       (:eval "Cannnot evaluate changed definitions: %s")
+       (:compile "Cannnot compile changed definitions: %s"))
+     error))))
 
 (defun fi::show-changes (changes &optional buffer-name package)
   (lep:display-some-definitions (or package fi:package)

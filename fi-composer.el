@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.11 1991/06/19 22:18:02 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.12 1991/08/22 21:29:19 layer Exp $
 
 (defun composer::make-listener (new-screen-p)
   (when (and new-screen-p (fboundp 'create-screen))
@@ -63,13 +63,13 @@
   (fi::inspect-something something 'eval "Inspect"))
 
 (defun fi::inspect-something (something function descr)
-  (make-request (composer::inspect-something-session
-		 :fspec something :function function)
-		;; Normal continuation
-		(() ())
-		;; Error continuation
-		((something) (error)
-		 (message "Cannot inspect %s: %s" something error))))
+  (fi::make-request
+   (composer::inspect-something-session :fspec something :function function)
+   ;; Normal continuation
+   (() ())
+   ;; Error continuation
+   ((something) (error)
+    (message "Cannot inspect %s: %s" something error))))
 
 ;;;Todo?
 ;;; show-callers
@@ -86,11 +86,12 @@
   (fi::show-calls function  ':kid "Could not show calls from %s"))
 
 (defun fi::show-calls (function direction msg)
-  (make-request (composer::show-calls-session
-		 :direction direction :fspec (fi::frob-case-to-lisp function))
-		(() () ())
-		((msg) (error)
-		 (message msg error))))
+  (fi::make-request
+   (composer::show-calls-session
+    :direction direction :fspec (fi::frob-case-to-lisp function))
+   (() () ())
+   ((msg) (error)
+    (message msg error))))
 
 ;;;
 
@@ -105,11 +106,12 @@
   (fi::show-subsuper-classes class ':parent "Could not show superclasses: %s"))
 
 (defun fi::show-subsuper-classes (class direction msg)
-  (make-request (composer::show-classes-session 
-		 :direction direction :fspec (fi::frob-case-to-lisp class))
-		(() () ())
-		((msg) (error)
-		 (message msg error))))
+  (fi::make-request
+   (composer::show-classes-session 
+    :direction direction :fspec (fi::frob-case-to-lisp class))
+   (() () ())
+   ((msg) (error)
+    (message msg error))))
   
 ;;; Perhaps with Epoch we should create buttons such that mousing invokes.
 ;;; Should we think about drawing classes.
