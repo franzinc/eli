@@ -8,13 +8,14 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.20 1991/10/15 11:40:25 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.21 1991/10/21 20:04:30 layer Exp $
 
 ;; Create a mode in which each line is a definition and . on that
 ;; definition brings up the definition in another window
 
 (defvar lep::definition-mode-saved-window-configuration nil)
-(defvar lep::inverse-definition-mode-saved-window-configuration nil)
+
+(make-variable-buffer-local 'lep::definition-mode-saved-window-configuration)
 
 (defvar fi:definition-mode-map nil)
 (defvar fi:inverse-definition-mode-map nil)
@@ -199,8 +200,7 @@ before definition mode was entered."
 was before inverse-definition mode was entered."
   (interactive)
   (bury-buffer)
-  (set-window-configuration
-   lep::inverse-definition-mode-saved-window-configuration))
+  (set-window-configuration lep::definition-mode-saved-window-configuration))
 
 (defun fi:definition-mode-goto-definition ()
   "Find the definition associated with the entry on the current line.  This
