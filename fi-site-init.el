@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.45 1993/08/31 19:03:44 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.46 1993/08/31 23:26:09 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -6,8 +6,19 @@
 (defvar fi::required-ipc-version 1)
 (defvar fi::load-subprocess-files t)
 (defvar fi::build-time nil)
+(defvar fi::emacs-type nil)
+
+(load "fi-version.el")
 
 (require 'cl)
+
+(when (eq fi::emacs-type 'emacs19)
+  ;; needed for setf expanations (on some version 19.xx) when they are
+  ;; compiled when non-version 19 
+  ;; byte-compilers
+  (condition-case nil
+      (require 'cl-compat)
+    (error nil)))
 
 (defvar fi::initialization-forms nil)
 (defun fi::initialize-emacs-lisp-interface ()
@@ -35,11 +46,11 @@
   (load "fi-db.elc")
   (load "fi-stream.elc")
 
-  (when (boundp 'epoch::version)
+  (when (eq fi::emacs-type 'epoch)
     (load "fi-leep0.elc")
     (load "fi-leep.elc"))
 
-  (when (string-match "ucid" emacs-version)
+  (when (eq fi::emacs-type 'lemacs19)
     (load "fi-leep0.elc")
     (load "fi-leep-lemacs.elc"))
 
@@ -61,15 +72,18 @@
 ;; the test for GNU Emacs 19 has to be after that for lemacs, because
 ;; the version of lemacs is 19.* too!
 
-(cond ((string-match "ucid" emacs-version)
-       (load "fi-lemacs"))
-      ((string-match "GNU Emacs 19\." emacs-version)
-       (load "fi-emacs19")))
+(when (eq fi::emacs-type 'lemacs19)
+  (load "fi-lemacs"))
+
+(when (eq fi::emacs-type 'emacs19)
+  (load "fi-emacs19"))
+
+(defun fi::top-level ()
+  (fi::initialize-emacs-lisp-interface)
+  (eval fi::build-time))
 
 (if fi::build-time
-    (setq top-level
-      (list
-       'lambda nil
-       '(fi::initialize-emacs-lisp-interface)
-       top-level))
+    (progn
+      (setq fi::build-time top-level)
+      (setq top-level '(fi::top-level)))
   (fi::initialize-emacs-lisp-interface))

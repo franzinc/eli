@@ -8,13 +8,13 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.85 1993/08/11 17:06:30 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.86 1993/08/31 23:25:59 layer Exp $
 
-(if (string-match "ucid" emacs-version)
-    (require 'tags "etags")
-  (if (string-match "^19\." emacs-version)
-      (require 'etags "etags")
-    (require 'tags)))
+(cond ((eq fi::emacs-type 'lemacs19)
+       (require 'tags "etags"))
+      ((eq fi::emacs-type 'emacs19)
+       (require 'etags "etags"))
+      (t (require 'tags)))
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -928,12 +928,12 @@ arguments are START and END."
   "Make the *CL-temp* buffer disappear and restore the window configuration
 as it was before it was made visible."
   (interactive)
-  (if (boundp 'epoch::version)
+  (if (eq fi::emacs-type 'epoch)
       (fi::epoch-lisp-delete-pop-up-window)
     (fi::emacs-lisp-delete-pop-up-window)))
 
 (defun fi:lisp-push-window-configuration ()
-  (if (boundp 'epoch::version)
+  (if (eq fi::emacs-type 'epoch)
       (fi::epoch-lisp-push-window-configuration)
     (fi::emacs-lisp-push-window-configuration)))
 

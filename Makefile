@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.89 1993/08/31 19:03:37 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.90 1993/08/31 23:25:55 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -20,7 +20,8 @@ elcs = fi-modes.elc fi-indent.elc fi-subproc.elc fi-sublisp.elc fi-filec.elc \
 # cl.elc in the distribution is bogus and doesn't expand setf methods
 # properly).
 
-compile_time_env = -l cl.el -l bytecomp -l `pwd`/fi-utils -l `pwd`/fi-basic-lep
+compile_time_env = -l fi-version.el -l cl.el -l bytecomp \
+	-l `pwd`/fi-utils -l `pwd`/fi-basic-lep
 
 default:	elcs test.out clman
 

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-leep.el,v 1.10 1993/07/23 03:48:58 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-leep.el,v 1.11 1993/08/31 23:26:06 layer Exp $
 
 ;; The epoch side of presentations in a lisp-listener window.
 
@@ -70,7 +70,8 @@
     (epoch::set-attribute-style fi::highlighted-zone-style
 				fi::highlighted-style)))
 
-(push '(if (boundp 'epoch::version) (fi::initialize-for-presenting-listeners))
+(push '(if (eq fi::emacs-type 'epoch)
+	   (fi::initialize-for-presenting-listeners))
       fi::initialization-forms)
 
 (defun composer::setup-buffer-for-presentations (buffer)
@@ -102,7 +103,7 @@
   (fi:setup-epoch-gesture-bindings))
 
 (defvar fi:default-epoch-gesture-binding-list
-    (and (boundp 'epoch::version)
+    (and (eq fi::emacs-type 'epoch)
 	 (list (list 'fi:epoch-gesture-describe   mouse-left   (+ mouse-shift))
 	       (list 'fi:epoch-gesture-inspect    mouse-left   (+ mouse-control))
 	       (list 'fi:epoch-gesture-edit       mouse-middle 0)

@@ -59,12 +59,12 @@ if you want to install the on-line manual pages then do this:
 This will extract a new more files.  Next, to build the `clman'
 program, type:
 
-	% make
+	% make clman
 
 This will ensure that everything is up-to-date.  If you don't have gcc
 installed, then you'll have to type
 
-	% make CC=cc
+	% make CC=cc clman
 
 where `cc' is the name of the C compiler on your system.
 
