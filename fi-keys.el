@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.4 1988/05/12 10:41:31 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.5 1988/05/12 22:58:47 layer Exp $
 
 ;;;;
 ;;; Key defs
@@ -69,8 +69,6 @@ shell, rlogin, sub-lisp or tcp-lisp."
   "Define subprocess mode commands on MAP, using SUPERMAP as the supermap.
 MODE is either sub-lisp, tcp-lisp, shell or rlogin."
   (define-key map "\C-m" 'fi:subprocess-send-input)
-  (if (not (eq 'rlogin mode))
-      (define-key map "\C-i" 'fi:shell-file-name-completion))
   (if fi:subprocess-enable-superkeys
       (progn
 	(define-key map "\C-a"  'fi:subprocess-superkey)
@@ -90,6 +88,7 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
 
   (if supermap (define-key map "\C-c" supermap))
   
+  (define-key map "\t"		'lisp-indent-line)
   (define-key map "\e\C-q"	'indent-sexp)
   (define-key map "\C-?"	'backward-delete-char-untabify)
   
@@ -170,18 +169,17 @@ process, or listener when using TCP/IP-style communication."
 		;; not a complete sexp, so newline and indent
 		(progn
 		  (newline)
-		  (funcall indent-line-function)
-		  )))
+		  (funcall indent-line-function))))
 	  ;; a non-list s-exp, so just send it off...
 	  (fi:subprocess-send-input)))
-    (fi:subprocess-send-input)))
+    (fi:inferior-lisp-send-sexp-input)))
 
-(defun fi:inferior-lisp-send-sexp-input (arg)
+(defun fi:inferior-lisp-send-sexp-input (&optional arg)
   "Send s-expression(s) to the Lisp subprocess."
   (interactive "P")
   (fi:inferior-lisp-send-input arg 'sexp))
 
-(defun fi:inferior-lisp-send-list-input (arg)
+(defun fi:inferior-lisp-send-list-input (&optional arg)
   "Send list(s) to the Lisp subprocess."
   (interactive "P")
   (fi:inferior-lisp-send-input arg 'lists))
@@ -252,11 +250,28 @@ source sent to the subprocess is compiled."
 		(if sdefault
 		    (format "%s: (default %s) " prompt sdefault)
 		  (format "%s: " prompt)))))
-    (list 
-     (fi::add-package-info
-      (if (equal spec "")
-	  sdefault
-	spec)))))
+    (list (if (equal spec "") sdefault spec))))
+
+(defun fi:lisp-find-tag (tag &optional next)
+  "Find the Common Lisp source for a symbol, using the characters around
+the point as the default tag."
+  (interactive (if current-prefix-arg
+		   '(nil t)
+		 (fi::get-default-symbol "Lisp locate source")))
+  (fi::lisp-find-tag-common tag next nil))
+
+(defun fi:lisp-find-tag-other-window (tag &optional next)
+  "Find the Common Lisp source for a symbol, using the characters around
+the point as the default tag."
+  (interactive (if current-prefix-arg
+		   '(nil t)
+		 (fi::get-default-symbol "Lisp locate source other window")))
+  (fi::lisp-find-tag-common tag next t))
+
+(defun fi:lisp-tags-loop-continue ()
+  "Find the next occurrence of the tag last used by fi:lisp-find-tag."
+  (interactive)
+  (fi:lisp-tags-loop-continue-common))
 
 (defun fi:lisp-arglist (symbol)
   "Print the arglist (using excl:arglist) for a symbol, which is read from
@@ -312,44 +327,6 @@ With a prefix argument, macroexpand the code as the compiler would."
   (interactive "P")
   (fi::lisp-macroexpand-common
    (if arg "excl::compiler-walk" "excl::walk")))
-
-(defun fi:lisp-find-tag (symbol &optional next)
-  "Find the Common Lisp source for a symbol, using the characters around
-the point as the default tag."
-  (interactive (if current-prefix-arg
-		   '(nil t)
-		 (fi::get-default-symbol "Source for symbol")))
-  (if next
-      (fi:lisp-tags-loop-continue)
-    (let ((s (fi::add-package-info symbol)))
-      (condition-case ()
-	  (process-send-string
-	   (fi::background-sublisp-process)
-	   (format "(format t \"\2~s\" (cons '%s (source-file '%s t)))\n"
-		   s s))
-	(error;; the backdoor-lisp-listener is not listening...
-	 (setq fi::tag-state nil)
-	 (fi::lisp-find-etag (symbol-name symbol)))))))
-
-(defun fi:lisp-tags-loop-continue ()
-  "Find the next occurrence of the tag last used by fi:lisp-find-tag."
-  (interactive)
-  (if (and fi::tag-state (cdr fi::tag-state))
-      (let ((symbol (car fi::tag-state))
-	    (info (cdr (cdr fi::tag-state))))
-	(cond (info
-	       (setq fi::tag-state (cons symbol info))
-	       (fi::find-source-from-lisp-info symbol info t))
-	      (t (setq fi::tag-state (cons symbol nil))
-		 (if (y-or-n-p
-		      "no more source info from lisp, use tags file? ")
-		     (progn
-		       ;; the following is a crock, but it works
-		       (setq last-tag (symbol-name symbol))
-		       (find-tag nil t))))))
-    (if fi::tag-state
-	(setq last-tag (symbol-name (car fi::tag-state))))
-    (find-tag nil t)))
 
 (defun fi:tcp-lisp-send-eof ()
   "Do a db:debug-pop on the TCP listener."
