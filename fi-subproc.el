@@ -19,7 +19,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.128 1991/09/30 11:39:06 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.129 1991/10/03 12:45:41 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -307,7 +307,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
   (interactive
    (fi::get-lisp-interactive-arguments fi::common-lisp-first-time
 				       fi:common-lisp-buffer-name
-				       (let ((name "*common-lisp*"))
+				       (let ((name fi:common-lisp-buffer-name))
 					 (if (numberp current-prefix-arg)
 					     (fi::buffer-number-to-buffer
 					      name current-prefix-arg)
@@ -318,7 +318,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 				       fi:common-lisp-image-arguments
 				       fi:common-lisp-host))
   (let* ((buffer-name (if (interactive-p)
-			  (or buffer-name buffer-name)
+			  (or buffer-name fi:common-lisp-buffer-name)
 			fi:common-lisp-buffer-name))
 	 (directory (if (interactive-p)
 			(expand-file-name directory)
@@ -456,7 +456,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
   (interactive
    (fi::get-lisp-interactive-arguments fi::franz-lisp-first-time
 				       fi:franz-lisp-buffer-name
-				       (let ((name "*franz-lisp*"))
+				       (let ((name fi:franz-lisp-buffer-name))
 					 (if (numberp current-prefix-arg)
 					     (fi::buffer-number-to-buffer
 					      name current-prefix-arg)
@@ -557,9 +557,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		     (not (get-buffer-process buffer))
 		     (not (fi:process-running-p
 			   (get-buffer-process buffer))))))
-	(list (setq buffer-name
-		(or current-prefix-arg
-		    (read-buffer "Buffer: " buffer-name)))
+	(list (setq buffer-name (read-buffer "Buffer: " buffer-name))
 	      (progn
 		(setq host (read-string "Host: " host))
 		(setq local (or (string= "localhost" host)
