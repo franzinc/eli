@@ -1,9 +1,11 @@
 	      Franz Inc. GNU Emacs/Common Lisp Interface
 			     Release 1.4beta
 
+;; $Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.43 1989/08/28 20:12:33 layer Rel $
+
 This document is a specification of the Franz Inc. GNU Emacs interface
 to Common Lisp, which is written entirely in GNU Emacs Lisp (for GNU
-Emacs version 18.50).
+Emacs version 18).
 
 0. Concepts and Terminology
 
