@@ -24,41 +24,87 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.10 1991/02/15 23:18:12 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.11 1991/02/22 00:44:23 layer Exp $
 ;;
-;;;;;; This LEP file redefines many of the fi:functions in the fi/keys.el file
 
-;;;; Implementation of arglist
+(defvar fi:always-in-a-window nil)
 
-
-
-(defun fi:lisp-arglist (string)
-  (interactive (fi::get-default-symbol "Arglist for"))
-  (make-request (lep::arglist-session :fspec string)
-		;; Normal continuation
-		(() (what arglist)
-		 (show-some-short-text "The arglist of %s is %s"
-				       what arglist))
-		;; Error continuation
-		((string) (error)
-		 (message "Cannot get the arglist of %s: %s" string error))))
-
-(defvar fi:always-in-a-window t)
-
-(defun show-some-short-text (text &rest args)
+(defun fi:show-some-text (package text &rest args)
   (when args (setq text (apply (function format) text args)))
+  (let ((n (string-match "\n$" text)))
+    (when n (setq text (substring text 0 n))))
   (if fi:always-in-a-window
-      (show-some-text text fi:package)
-  (let* ((window (minibuffer-window))
-	 (height (1- (window-height window)))
-	 (width (window-width window))
-	 (lines/len (frob-string text)))
-    (if (and (< (car lines/len) 2)
-	     (<= (second lines/len) width))
-	(message text)
-      (show-some-text text fi:package)))))
+      (fi::show-some-text-1 text (or package fi:package))
+    (let* ((window (minibuffer-window))
+	   (height (1- (window-height window)))
+	   (width (window-width window))
+	   (lines/len (fi::frob-string text)))
+      (setq layer (cons lines/len width))
+      (setq layer2 text)
+      (if (and (< (car lines/len) 2)
+	       (<= (second lines/len) width))
+	  (message text)
+	(fi::show-some-text-1 text (or package fi:package))))))
 
-(defun frob-string (text)
+(defun fi::show-some-text-1 (text package)
+  "Display TEXT in a temporary buffer putting that buffer setting that
+buffers package to the package of PACKAGE."
+  (let* ((from-window (selected-window))
+	 (real-from-window nil)
+	 (from-window-orig-height (1- (window-height))) ; minus mode line
+	 (buffer (get-buffer-create "*CL-temp*"))
+	 (buffer-window (get-buffer-window buffer))
+	 (lines nil))
+    
+    ;; fill the buffer
+    (save-excursion
+      (set-buffer buffer)
+      (erase-buffer)
+      (fi:common-lisp-mode)
+      (setq fi:package package)
+      (insert text)
+      (beginning-of-buffer)
+      (setq lines (count-lines (point-min) (point-max))))
+
+    ;; get to the proper window
+    ;;
+    (cond (buffer-window
+	   (when (not (eq (selected-window) buffer-window))
+	     (select-window buffer-window)))
+	  ((eq (current-buffer) buffer))
+	  ((one-window-p)
+	   (setq from-window-orig-height (1- (window-height)))
+	   (split-window)
+	   (save-window-excursion
+	     (other-window 1)
+	     (setq from-window (selected-window)))
+	   (switch-to-buffer buffer))
+	  (t
+	   (setq real-from-window (selected-window))
+	   (select-window (get-largest-window))
+	   (if (eq real-from-window (selected-window))
+	       (setq real-from-window nil))
+	   (setq from-window-orig-height (1- (window-height)))
+	   (split-window)
+	   (save-window-excursion
+	     (other-window 1)
+	     (setq from-window (selected-window)))
+	   (switch-to-buffer buffer)))
+
+    (unless (one-window-p)
+      (let* ((window-min-height 2)
+	     (target-size
+	      (max window-min-height
+		   (min lines (/ from-window-orig-height 2)))))
+	(if (< target-size (window-height))
+	    (shrink-window (- (window-height) target-size 1))
+	  (if (> target-size (window-height))
+	      (enlarge-window (- target-size (window-height) -1))))))
+    
+    (bury-buffer buffer)
+    (select-window (or real-from-window from-window))))
+
+(defun fi::frob-string (text)
   (let ((start 0)
 	(lines 0)
 	(length (length text))
@@ -78,12 +124,21 @@
     (list lines max-length)))
     
 	
+;;;; Implementation of arglist
+
+(defun fi:lisp-arglist (string)
+  (interactive (fi::get-default-symbol "Arglist for"))
+  (make-request (lep::arglist-session :fspec string)
+		;; Normal continuation
+		(() (what arglist)
+		 (fi:show-some-text nil
+				    "The arglist of %s is %s"
+				    what arglist))
+		;; Error continuation
+		((string) (error)
+		 (message "Cannot get the arglist of %s: %s" string error))))
+
     
-;;;; Mmmm... that did not seem to painful.
-;;;; We should try and implement everything else this way also
-;;;; Find definition is the fun one.
-
-
 
 ;;; Metadot implementation
 
@@ -314,69 +369,11 @@ the point is used as the default."
 		 :package (string-to-keyword fi:package) :fspec symbol)
 		;; Normal continuation
 		((symbol) (description)
-		 (show-some-text description fi:package))
+		 (fi:show-some-text fi:package description))
 		;; Error continuation
 		((symbol) (error)
 		 (message "Cannot describe %s: %s" symbol error))))
 
-
-(defun show-some-text (text package)
-  "Display TEXT in a temporary buffer putting that buffer setting that
-buffers package to the package of PACKAGE."
-  (let* ((from-window (selected-window))
-	 (real-from-window nil)
-	 (from-window-orig-height (1- (window-height))) ; minus mode line
-	 (buffer (get-buffer-create "*CL-temp*"))
-	 (buffer-window (get-buffer-window buffer))
-	 (lines nil))
-    
-    ;; fill the buffer
-    (save-excursion
-      (set-buffer buffer)
-      (erase-buffer)
-      (fi:common-lisp-mode)
-      (setq fi:package package)
-      (insert text)
-      (beginning-of-buffer)
-      (setq lines (count-lines (point-min) (point-max))))
-
-    ;; get to the proper window
-    ;;
-    (cond (buffer-window
-	   (when (not (eq (selected-window) buffer-window))
-	     (select-window buffer-window)))
-	  ((eq (current-buffer) buffer))
-	  ((one-window-p)
-	   (setq from-window-orig-height (1- (window-height)))
-	   (split-window)
-	   (save-window-excursion
-	     (other-window 1)
-	     (setq from-window (selected-window)))
-	   (switch-to-buffer buffer))
-	  (t
-	   (setq real-from-window (selected-window))
-	   (select-window (get-largest-window))
-	   (if (eq real-from-window (selected-window))
-	       (setq real-from-window nil))
-	   (setq from-window-orig-height (1- (window-height)))
-	   (split-window)
-	   (save-window-excursion
-	     (other-window 1)
-	     (setq from-window (selected-window)))
-	   (switch-to-buffer buffer)))
-
-    (unless (one-window-p)
-      (let* ((window-min-height 2)
-	     (target-size
-	      (max window-min-height
-		   (min lines (/ from-window-orig-height 2)))))
-	(if (< target-size (window-height))
-	    (shrink-window (- (window-height) target-size 1))
-	  (if (> target-size (window-height))
-	      (enlarge-window (- target-size (window-height) -1))))))
-    
-    (bury-buffer buffer)
-    (select-window (or real-from-window from-window))))
 
 ;;; Function documentation
 
@@ -389,7 +386,7 @@ the point is used as the default."
    ;; Normal continuation
    ((symbol) (documentation)
     (if documentation
-	(show-some-text documentation fi:package)
+	(fi:show-some-text fi:package documentation)
       (message "There is no documentation for %s" symbol)))
    ;; Error continuation
    ((symbol) (error)
@@ -421,7 +418,7 @@ With a prefix argument, macroexpand the code as the compiler would."
 		(buffer-substring start (point))
 	      (read-string (format "form to %s: " type)))))
 		(() (expansion)
-		 (show-some-text expansion fi:package))
+		 (fi:show-some-text fi:package expansion))
 		(() (error)
 		 (message "Cannot macroexpand: %s" error))))
 
@@ -515,7 +512,7 @@ from the sexp around the point."
 		 ;; It might be good to make this list mouse sensitive so that
 		 ;; we can mouse there
 		 ;; dmode should be a minor mode???
-		 (show-some-text text  fi:package))
+		 (fi:show-some-text fi:package text))
 		((msg) (error)
 		 (message msg error))))
 

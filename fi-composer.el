@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.3 1991/02/12 17:17:52 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.4 1991/02/22 00:44:04 layer Exp $
 ;;
 ;;;;;;;;;;;;;;;;;; Composer 2 related stuff
 ;;; Perhaps some of this is generally useful
@@ -110,7 +110,7 @@
 		 :fspec something :function function)
 		;; Normal continuation
 		(() (what)
-		 (show-some-short-text what))
+		 (fi:show-some-text nil what))
 		;; Error continuation
 		((something) (error)
 		 (message "Cannot describe %s: %s" something error))))

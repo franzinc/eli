@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.5 1991/02/15 23:37:53 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.6 1991/02/22 00:44:21 layer Exp $
 ;;
 ;; Code the implements evaluation in via the backdoor
 
@@ -43,7 +43,7 @@ due to an error)."
 		 :compilep (if compilep t nil))
 		(() (results)
 		 (when results
-		   (show-some-short-text results)))
+		   (fi:show-some-text nil results)))
 		(() (error)
 		 (message "Error occurred during evaluation: %s" error))))
 
