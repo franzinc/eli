@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.5 1988/05/12 10:41:29 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.6 1988/05/12 11:53:38 layer Exp $
 
 (defvar fi:rlogin-mode-map nil
   "The rlogin major-mode keymap.")
@@ -99,7 +99,8 @@ See fi:explicit-shell."
 	  buffer-number host 'fi:rlogin-mode
 	  fi:rlogin-prompt-pattern fi:rlogin-image-name
 	  (append (list host) fi:rlogin-image-arguments))))
-    (set-process-filter proc 'fi::rlogin-filter)))
+    (set-process-filter proc 'fi::rlogin-filter)
+    proc))
 
 (defun fi:explicit-rlogin (&optional buffer-number host
 				     image-name image-arguments)
@@ -112,7 +113,8 @@ are read from the minibuffer."
 	  buffer-number host 'fi:rlogin-mode
 	  fi:rlogin-prompt-pattern image-name
 	  (append (list host) image-arguments))))
-    (set-process-filter proc 'fi::rlogin-filter)))
+    (set-process-filter proc 'fi::rlogin-filter)
+    proc))
 
 (defun fi:rlogin-send-eof ()
   "Send eof to process running through remote login subprocess buffer."
