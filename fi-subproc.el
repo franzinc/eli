@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.182.2.1 1997/01/27 19:45:48 layer Exp $
+;; $Id: fi-subproc.el,v 1.182.2.2 1997/01/31 16:12:29 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -372,6 +372,10 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	     (or (y-or-n-p "A make-dist might be in progress.  Continue? ")
 		 (error "fi:common-lisp aborted.")))
     (setq fi::shell-buffer-for-common-lisp-interaction-host-name nil))
+  ;; Should do this, but we should only do it when there is no existing
+  ;; lisp process.
+;;;  (setq fi::tcp-listener-table nil
+;;;	fi::tcp-listener-generation 2)
   (let* ((process-environment process-environment)
 	 (buffer-name (if (interactive-p)
 			  buffer-name
@@ -541,6 +545,10 @@ be a string. Use 6th argument for image file."))
 	(progn
 	  (fi::start-backdoor-interface proc)
 	  (fi::ensure-lep-connection)
+	  (cond ((consp fi:start-lisp-interface-hook)
+		 (mapcar 'funcall fi:start-lisp-interface-hook))
+		(fi:start-lisp-interface-hook
+		 (funcall fi:start-lisp-interface-hook)))
 	  (setq fi:common-lisp-image-name
 	    (cons executable-image-name executable-image-file))
 	  (setq fi::common-lisp-first-time nil

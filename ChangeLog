@@ -11,6 +11,18 @@ Tests for new features:	<`no new features', `no tests for new features', or
 	* <changes go here...>
 
 *******************************************************************************
+2.0.20.beta.9
+
+Documentation changes:	none
+Tests for new features:	no new features
+
+Fri Jan 31 08:11:45 1997    <layer@HOBART>
+
+	* fi-keys.el: fix ^M's on input/output on Windows 95
+	* fi-subproc.el: make sure fi:start-lisp-interface-hook is run on
+	Windows
+
+*******************************************************************************
 2.0.20.pre-beta.8
 
 Documentation changes:	none
