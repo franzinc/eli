@@ -1,5 +1,3 @@
-(setq load-path (list (expand-file-name "~/emacs/lisp")))
-
 (load "fi/site-init.el")
 
 (defun xxx-doc-xxx ()
