@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.53 1994/09/21 22:43:26 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.54 1995/01/07 00:49:14 smh Exp $
 
 ;;; Misc utilities
 
@@ -428,12 +428,13 @@ at the beginning of the line."
 	   (save-excursion
 	     (while (looking-at "\\sw\\|\\s_")
 	       (forward-char 1))
-	     (buffer-substring
-	      (point)
-	      (progn (forward-sexp -1)
-		     (while (looking-at "\\s'")
-		       (forward-char 1))
-		     (point)))))
+	     (fi::defontify-string
+		 (buffer-substring
+		  (point)
+		  (progn (forward-sexp -1)
+			 (while (looking-at "\\s'")
+			   (forward-char 1))
+			 (point))))))
 	  (t
 	   (condition-case ()
 	       (save-excursion
@@ -462,12 +463,13 @@ at the beginning of the line."
 		   (forward-char 1))
 		 (if (re-search-backward "\\sw\\|\\s_" nil t)
 		     (progn (forward-char 1)
-			    (buffer-substring
-			     (point)
-			     (progn (forward-sexp -1)
-				    (while (looking-at "\\s'")
-				      (forward-char 1))
-				    (point))))
+			    (fi::defontify-string
+				(buffer-substring
+				 (point)
+				 (progn (forward-sexp -1)
+					(while (looking-at "\\s'")
+					  (forward-char 1))
+					(point)))))
 		   nil))
 	     (error nil))))))
     (or symbol

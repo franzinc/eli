@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.60 1994/12/21 22:36:22 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.61 1995/01/07 00:49:11 smh Exp $
 
 ;;;; Mode initializations
 
@@ -424,7 +424,7 @@ the readtable used for evaluations given to Lisp from emacs."
       (when messagep
 	(if found
 	    (message "%s specification is `%s'" key value)
-	  (message "using default key specification of `%s'"
+	  (message "using default %s specification of `%s'"
 		   key value)))
       value)))
 

@@ -1,3 +1,27 @@
+Fri Jan  6 16:40:48 1995  Steve Haflich  <smh@vapor>
+
+	* Makefile
+	Add fi-emacs18.el to the Makefile.
+
+	* fi-emacs18.el New file.
+
+	* fi-emacs18.el
+	* fi-emacs19.el
+	* fi-lemacs.el
+	New function fi::defontify-string which receives buffer-substrings
+	passed from Emacs to CL.  The only nontrivial version is for FSF,
+	which needs to suppress font info the printer preserves by default.
+
+	* fi-lze.el
+	Change to call fi::defontify-string instead of stripping font info
+	inline.
+
+	* fi-utils.el
+	Call fi::defontify-string from fi::get-symbol-at-point.
+
+	* fi-modes.el
+	Fix format string typo.
+
 Thu Dec  8 14:16:49 1994  Steve Haflich  (smh@vapor)
 
 	* fi-site-load.el renamed to

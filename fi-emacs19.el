@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-emacs19.el,v 2.8 1994/12/21 22:36:12 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-emacs19.el,v 2.9 1995/01/07 00:49:04 smh Exp $
 
 
 (unless (string-match "^18." emacs-version) ;Allows compilation on 18.
@@ -39,6 +39,9 @@
 (defun fi::ensure-minibuffer-visible ()
   (let ((frame (window-frame (minibuffer-window))))
     (when frame (raise-frame frame))))
+
+(defun fi::defontify-string (str)
+  (format "%s" str))
 
 (defun fi::source-buffer-p ()
   (and (fi::connection-open)
