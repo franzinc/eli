@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.7 1991/02/27 16:21:10 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.8 1991/02/28 23:05:43 layer Exp $
 ;;
 
 (defconst lep:current-frame-regexp "^ ->")
@@ -37,6 +37,7 @@
   C-cC-p :pop
   C-cC-r :reset
   .      make frame under the point the current frame
+  D      disassemble the function associated with the current frame
   R      restart the current frame (give prefix to specify different form)
   a      toggle all frames visible (by default a subset are visible)
   d      next line
@@ -118,6 +119,7 @@ Type SPACE to hide this help summary.
 	
 	(define-key map " "	'lep:ss-hide-help-text)
 	(define-key map "."	'lep:ss-set-current)
+	(define-key map "D"	'lep:ss-disassemble)
 	(define-key map "R"	'lep:ss-restart)
 	(define-key map "d"	'next-line)
 	(define-key map "a"	'lep:ss-toggle-all)
@@ -189,6 +191,24 @@ Type SPACE to hide this help summary.
   (interactive)
   (set-window-configuration lep::db-saved-window-configuration)
   (end-of-buffer))
+
+(defun lep:ss-disassemble ()
+  (interactive)
+  (let ((process-name (lep::buffer-process))
+	(offset (lep::offset-from-current-frame)))
+    (make-request
+     (lep::disassemble-session :process-name process-name :offset offset)
+     ((offset) (text pc)
+      (when offset (lep::make-current offset))
+      (fi::show-some-text-1 text nil 'lep::disassemble-hook pc))
+     (() (error)
+      (message "Cannot dissassemble: %s" error)))))
+
+(defun lep::disassemble-hook (pc)
+  (when pc
+    (when (re-search-forward (format "^[ \t]*%s:" pc) nil t)
+      (beginning-of-line)
+      (insert ">"))))
 
 (defun lep:ss-display-locals-for-frame ()
   (interactive)
