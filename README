@@ -16,9 +16,13 @@ dot.login	additions for ~/.login
 
 ====================
 
-clman-oblist.el	database for clman.el
-clman.el	online manual for Common Lisp the Reference and
+clman-oblist.el	index of database for clman.el
+clman.el	online manual interface for Common Lisp the Reference and
 		windows manuals.
+			NOTE: the database is not currently
+			      distributed electronically since it is
+			      quite large (> 3MB).  Contact Franz Inc.
+			      if you wish to acquire it.
 filec.el	File name completion for subprocess buffers
 keys.el		interactive function definitions
 ltags.el	Lisp `find-tag' facility
