@@ -1,9 +1,60 @@
 ;;; subprocess-lisp.el
 ;;;   functions to send lisp source code to the sublisp process
 ;;;
-;;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.8 1988/02/26 12:16:51 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.9 1988/02/26 18:38:59 layer Exp $
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Description
+;;;
+;;;  The code in this file implements the interactively and user callable
+;;;  function while in lisp mode, some of which need a socket connection to
+;;;  the lisp to be able to work.
+;;;
+;;;  The commands which need the socket connection are conceptually
+;;;  commands that need information from the lisp environment to be able
+;;;  work.  Emacs uses a dedicated "backdoor" lisp listener connected by a
+;;;  socket to avoid having to type at the listener in the regular inferior
+;;;  lisp buffer. The strategy is only to send rather short known forms to
+;;;  the backdoor listener, and to have it read all large and
+;;;  possibly-erroneous forms out of a temp file. This reduces the
+;;;  possibility of the listener getting hung up because someone has
+;;;  strange lisp syntax in his buffer, or broken reader macros, or broken
+;;;  regular macros.
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Variables
+;;;
+
+(defvar unix-domain t
+  "It non-nil, then unix-domain-socket specifies the name of the socket
+file, otherwise excl-service-name specifies the /etc/services name of the
+service.")
+
+(defvar unix-domain-socket (expand-file-name "~/.excl_to_emacs")
+  "The name of the socket file that lisp and emacs use to communicate.")
+
+(defvar local-host-name "localhost"
+  "On BSD 4.2 (on SUN) the name of 127.1--usually localhost or loopback.")
+
+(defvar excl-service-name "excl"
+  "The service name from /etc/services (`tcp' type).")
+
+(defvar source-info-not-found-hook 'find-tag
+  "The value of this variable is funcalled when source information is not
+present for a symbol.  The function is given one argument, the name for
+which source is desired (a string).  The null string means use the word at
+the dot as the search word.")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; User Visible/Interactive Functions
+;;;
 
 (defun inferior-lisp-newline ()
+  "Bound to newline in an inferior lisp buffer so that indentation of lisp
+forms is done."
   (interactive)
   (if (eobp)
       (let ((start (marker-position
@@ -38,6 +89,363 @@
   "Send list(s) to the Lisp subprocess."
   (interactive "P")
   (inferior-lisp-send-input arg 'lists))
+
+(defun fi:eval-last-sexp (compile-file-p)
+  "Send sexp before point to the Lisp subprocess sublisp-name.
+If sublisp-name is nil, startup an appropriate sublisp, based on
+the major-mode of the buffer."
+  (interactive "P")
+  (let* ((stab (syntax-table))
+	 (start  (unwind-protect
+		     (save-excursion
+		       (set-syntax-table fi:lisp-mode-syntax-table)
+		       (forward-sexp -1)
+		       (point))
+		   (set-syntax-table stab))))
+    (fi:eval-send start (point) compile-file-p)))
+
+(defun fi:eval-defun (compile-file-p)
+  "Send the current `defun' to the Lisp subprocess sublisp-name.
+If sublisp-name is nil, startup an appropriate sublisp, based on
+the major-mode of the buffer."
+  (interactive "P")
+  (let* ((end (save-excursion (end-of-defun) (point)))
+	 (start (save-excursion
+		  (beginning-of-defun)
+		  (point))))
+    (fi:eval-send start end compile-file-p)))
+
+(defun fi:eval-region (compile-file-p)
+  "Send the region to the Lisp subprocess sublisp-name an sexp at a time.
+If sublisp-name is nil, startup an appropriate sublisp, based on
+the major-mode of the buffer."
+  (interactive "P")
+  (fi:eval-send (min (point) (mark))
+		(max (point) (mark))
+		compile-file-p))
+
+(defun fi:eval-current-buffer (compile-file-p)
+  "Send the entire current buffer to the Lisp subprocess sublisp-name.
+If sublisp-name is nil, startup an appropriate sublisp, based on
+the major-mode of the buffer."
+  (interactive "P")
+  (fi:eval-send (point-min) (point-max) compile-file-p))
+
+(defun set-associated-sublisp (buffer-name)
+  "Set the sublisp associated with a franz lisp or common lisp source file."
+  (interactive "sSublisp name: ")
+  (if (get-process buffer-name)
+      (setq sublisp-name buffer-name)
+    (error "No such process buffer.")))
+
+;;;
+;;; Interactive commands requiring the socket to lisp
+;;;
+
+(defun fi:lisp-arglist (&optional symbol)
+  "Asks the sublisp to run arglist on a symbol."
+  (interactive (get-cl-symbol nil t "Function: "))
+  (setq symbol (get-cl-symbol symbol t))
+  (process-send-string
+   (background-sublisp-process)
+   (format
+    "(progn
+      (format t  \"~:[()~;~:*~{~a~^ ~}~]\"
+       (cond
+	((special-form-p '%s) '(\"%s is a special form\"))
+	((macro-function '%s) '(\"%s is a macro\"))
+	((not (fboundp '%s)) '(\"%s has no function binding\"))
+	(t (excl::arglist '%s))))
+      (values))\n"
+    symbol symbol symbol symbol symbol symbol symbol)))
+
+(defun fi:lisp-describe (&optional symbol)
+  "Asks the sublisp to describe a symbol."
+  (interactive (get-cl-symbol nil nil "Describe symbol: "))
+  (setq symbol (get-cl-symbol symbol nil))
+  (process-send-string
+   (background-sublisp-process)
+   (format "(progn (lisp:describe '%s) (values))\n" symbol)))
+
+(defun fi:lisp-function-documentation (&optional symbol)
+  "Asks the sublisp for function documentation of symbol."
+  (interactive (get-cl-symbol nil nil "Function documentation for symbol: "))
+  (setq symbol (get-cl-symbol symbol nil))
+  (process-send-string
+   (background-sublisp-process)
+   (format "(princ (lisp:documentation '%s 'lisp:function))\n" symbol)))
+
+(defun fi:lisp-find-tag (&optional symbol)
+  "Find the common lisp source for SYMBOL."
+  (interactive (get-cl-symbol nil nil "Source for symbol: "))
+  (setq symbol (get-cl-symbol symbol nil))
+  (condition-case ()
+      (process-send-string
+       (background-sublisp-process)
+       (format "(format t \"\2~s\" (cons '%s (source-file '%s t)))\n"
+	       symbol symbol))
+    (error
+     ;; the backdoor-lisp-listener is not listening...
+     (if source-info-not-found-hook
+	 (funcall source-info-not-found-hook symbol)
+       (message "The source location of `%s' is unknown." symbol)))))
+
+(defun fi:lisp-tags-loop-continue (&optional symbol)
+  )
+
+(defun fi:tcp-lisp-send-eof ()
+  "Do a debug-pop to the TCP listener."
+  (interactive)
+  (backdoor-eval 
+   "(db:debug-pop (mp::process-name-to-process \"%s\"))\n"
+   (buffer-name (current-buffer))))
+
+(defun fi:tcp-lisp-kill-process ()
+  (interactive)
+  (backdoor-eval 
+   "(mp:process-kill (mp::process-name-to-process \"%s\"))\n"
+   (buffer-name (current-buffer))))
+
+(defun fi:tcp-lisp-interrupt-process ()
+  "Interrupt the TCP lisp via a process-interrupt in the backdoor!  How's
+that for a hack??"
+  (interactive)
+  (backdoor-eval 
+   "(mp:process-interrupt
+      (mp::process-name-to-process \"%s\")
+      #'break \"interrupt from emacs\")\n"
+   (buffer-name (current-buffer))))
+
+(defun fi:lisp-macroexpand ()
+  "Macroexpand the form at the cursor using the backdoor Lisp process."
+  (interactive)
+  (save-excursion
+    (skip-chars-forward " \t")
+    (if (not (looking-at "("))
+      (up-list -1))
+    (let ((filename (format "/tmp/emlisp%d"
+		      (process-id (get-process
+				    freshest-common-sublisp-name))))
+	  (start (point)))
+      (forward-sexp)
+      (write-region start (point) filename nil 'nomessage)
+      (background-sublisp-process)
+      (process-send-string
+       background-sublisp-process
+       (format "(progn
+                  (errorset
+                   (let ((*print-pretty* t)(excl::*print-nickname* t)
+                         (*package* %s))
+                     (with-open-file (*standard-input* \"%s\")
+                        (lisp:prin1 (lisp:macroexpand (lisp:read)))))
+                  t)
+                (values))\n"
+	       (if (and (boundp 'package) package)
+		 (format "(or (find-package :%s) (make-package :%s))"
+			 package package)
+		 "*package*")
+	       filename)))))
+
+(defun run-common-lisp-tcp (&optional host)
+  "Make a new buffer connected to the Lisp Listener Daemon on the given host,
+which defaults to the local host.  A fresh buffer is made for each
+invocation."
+  (interactive)
+  (let ((buffer (generate-new-buffer "*tcplisp*"))
+	(host (or host local-host-name))
+	proc)
+    (save-excursion
+      (set-buffer buffer)
+      (if unix-domain
+	  (setq proc (open-network-stream
+		      (buffer-name buffer) buffer unix-domain-socket 0))
+	(setq proc (open-network-stream (buffer-name buffer) buffer
+					local-host-name
+					excl-service-name)))
+      (process-send-string proc (format "\"%s\"\n" (buffer-name buffer)))
+      (goto-char (point-max))
+      (set-marker (process-mark proc) (point)))
+    (switch-to-buffer buffer)
+    (fi:tcp-lisp-mode common-lisp-prompt-pattern)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;; Internals
+;;;
+
+(defvar background-sublisp-process nil
+  "Process connected to sublist socket for fi:lisp-arglist and friends.")
+
+(defvar background-sublisp-form
+ "(progn
+ (loop
+  (princ \"\n\")
+  (errorset (eval (read)) t)))\n"
+ "The program executed by the backdoor lisp listener.")
+
+(defun background-sublisp-process (&optional nomake)
+  (if (or (null background-sublisp-process)
+	  (not (eq (process-status background-sublisp-process) 'open)))
+    (if nomake
+      (setq background-sublisp-process nil)
+      (progn
+	(message "starting a backdoor lisp listener")
+	(and background-sublisp-process
+	     (delete-process background-sublisp-process))
+	(setq background-sublisp-process
+	  (if unix-domain
+	      (open-network-stream "sublisp-back" nil unix-domain-socket 0)
+	    (open-network-stream "sublisp-back" nil local-host-name
+				 excl-service-name)))
+	(setq sublisp-returns-state nil)
+	(process-send-string 		; first send the process name
+	 background-sublisp-process
+	 (format "\"%s\"" "GNU Listener"))
+	(process-send-string background-sublisp-process
+			     background-sublisp-form)
+	(set-process-filter background-sublisp-process
+			    'sublisp-backdoor-filter))))
+  background-sublisp-process)
+
+;; This is the filter for the back door lisp process.
+;; It collects output until it sees a ctl-A\n, then prints the preceding
+;; collected text.  If the text fits on one line, it is printed to the message
+;; area.  Otherwise it goes to a temporary pop up buffer.
+
+(defvar sublisp-returns "")
+(defvar sublisp-returns-state nil)
+
+(defun sublisp-backdoor-filter (proc string)
+  ;; This collects everything returned until a ^A\n prompt is seen,
+  ;; then displays it.  The first time is special cased to throw away
+  ;; the initial prompt without display.  Someday we should use the state
+  ;; variable for detecting screwups and coordinating reset.
+  ;; The \n is part of the prompt so that a subsequent prettyprint isn't
+  ;; confused about the starting column.
+  ;;
+  ;; If the input back from lisp starting with the following has special
+  ;; meaning:
+  ;;  \1  throw away the results (see backdoor-eval)
+  ;;  \2  the result is source-file info (see find-source-from-lisp-info)
+  ;;
+  (setq sublisp-returns (concat sublisp-returns string))
+  (let ((len (length sublisp-returns)))
+    (if (and (= 10 (aref sublisp-returns (- len 1))); newline
+	     (= 1 (aref sublisp-returns (- len 2))))
+	(if (eq sublisp-returns-state nil); ignore the startup response
+	    (setq sublisp-returns-state t
+		  sublisp-returns "")
+	  (progn (setq sublisp-returns
+		   (substring sublisp-returns
+			      (progn (string-match "\n*" sublisp-returns)
+				     (match-end 0))
+			      -2))
+		 (let ((first-char (elt sublisp-returns 0)))
+		   (cond
+		     ((= first-char 1)
+		      ;; throw away the result
+		      (setq sublisp-returns "")
+		      )
+		     ((= first-char 2)	; display source-file
+		      (let* ((temp (get-buffer-create " *lisp temp*"))
+			     (form (substring sublisp-returns 1)))
+			;; first remove all #p's
+			(save-excursion
+			  (set-buffer temp)
+			  (erase-buffer)
+			  (princ form temp)
+			  (beginning-of-buffer)
+			  (replace-string "#p" "")
+			  (setq form (car (read-from-string (buffer-string))))
+			  (kill-buffer temp))
+			(setq sublisp-returns "")
+			(if (cdr form)
+			    (find-source-from-lisp-info (car form) (cdr form))
+			  (if source-info-not-found-hook
+			      (funcall source-info-not-found-hook
+				       (symbol-name (car form)))
+			    (message "The source location of `%s' is unknown."
+				     (car form))))))
+		     (t  
+		      (if (or (> (length sublisp-returns) 78)
+			      ;; should be mbuf width
+			      (string-match "\n" sublisp-returns nil))
+			  (with-output-to-temp-buffer "*Help*"
+			    (princ sublisp-returns))
+			(message sublisp-returns))
+		      (setq sublisp-returns "")))))))))
+
+
+(defun backdoor-eval (string &rest args)
+  (process-send-string
+   (background-sublisp-process)
+   (format "(progn (format t \"\1\") %s)\n"
+	   (apply 'format string args))))
+
+(defun find-source-from-lisp-info (xname info)
+  ;; info is an alist of (type . filename)
+  (if (= 1 (length info))
+      (setq info (car info))
+    (let ((completion-ignore-case t)
+	  (string-info (mapcar '(lambda (x)
+				 (rplaca x (symbol-name (car x)))
+				 x)
+			       (copy-alist info))))
+      (setq info
+	(assoc (intern-soft
+		(completing-read (format "Find `%s' of what type? " xname)
+				 string-info
+				 nil t nil))
+	       info))))
+  (let* ((type (car info))
+	 (file (cdr info))
+	 (name (symbol-name xname))
+	 (search-form nil))
+    (if (not (file-exists-p file))
+	(error "can't file source file `%s'" file))
+    (find-file-other-window file)
+    (beginning-of-buffer)
+    (cond ((eq ':function type) (setq search-form "un"))
+	  ((eq ':macro type) (setq search-form "macro"))
+	  (t (setq search-form "\\(\\w\\)*")))
+    (let ((start (string-match "::?" name))
+	  (end (match-end 0)))
+      (if start
+	  (setq name
+	    (format "\\(%s\\)*[:]*%s"
+		    (substring name 0 start)
+		    (substring name end))))
+      (if (re-search-forward
+	   (format "^(def%s %s" search-form name)
+	   nil t)
+	  (beginning-of-line)
+	(message "couldn't find form in file")))))
+
+(defun get-cl-symbol (symbol up-p &optional interactive)
+  ;; Ask the user for a CL symbol to be investigated.
+  ;; If INTERACTIVE, then that prompt is used.
+  ;; If UP-P, then the default is the symbol at the car of the form at the
+  ;; cursor.  Otherwise, it is the symbol at the cursor.
+  (if interactive (setq symbol (read-string interactive)))
+  (if (or (null symbol) (equal symbol ""))
+    (setq symbol
+      (if up-p
+	(save-excursion
+	  (buffer-substring (progn (up-list -1)
+				   (forward-char 1)
+				   (point))
+			    (progn (forward-sexp 1) (point))))
+	(save-excursion
+	  (buffer-substring (progn (forward-char 1)
+				   (backward-sexp 1)
+				   (skip-chars-forward "#'")
+				   (point))
+			    (progn (forward-sexp 1) (point)))))))
+  (if (and (boundp 'package)
+	   package
+	   (not (string-match ":" symbol nil)))
+    (setq symbol (format "%s::%s" package symbol)))
+  (if interactive (list symbol) symbol))
 
 (defun inferior-lisp-send-input (arg type)
   "Send s-expression(s) or list(s) to the Lisp subprocess.
@@ -120,47 +528,6 @@ If lists are being parsed:
     (input-ring-save last-input-start (1- last-input-end))
     (set-marker (process-mark process) (point))))
 
-(defun fi:eval-last-sexp (compile-file-p)
-  "Send sexp before point to the Lisp subprocess sublisp-name.
-If sublisp-name is nil, startup an appropriate sublisp, based on
-the major-mode of the buffer."
-  (interactive "P")
-  (let* ((stab (syntax-table))
-	 (start  (unwind-protect
-		     (save-excursion
-		       (set-syntax-table fi:lisp-mode-syntax-table)
-		       (forward-sexp -1)
-		       (point))
-		   (set-syntax-table stab))))
-    (fi:eval-send start (point) compile-file-p)))
-
-(defun fi:eval-defun (compile-file-p)
-  "Send the current `defun' to the Lisp subprocess sublisp-name.
-If sublisp-name is nil, startup an appropriate sublisp, based on
-the major-mode of the buffer."
-  (interactive "P")
-  (let* ((end (save-excursion (end-of-defun) (point)))
-	 (start (save-excursion
-		  (beginning-of-defun)
-		  (point))))
-    (fi:eval-send start end compile-file-p)))
-
-(defun fi:eval-region (compile-file-p)
-  "Send the region to the Lisp subprocess sublisp-name an sexp at a time.
-If sublisp-name is nil, startup an appropriate sublisp, based on
-the major-mode of the buffer."
-  (interactive "P")
-  (fi:eval-send (min (point) (mark))
-		(max (point) (mark))
-		compile-file-p))
-
-(defun fi:eval-current-buffer (compile-file-p)
-  "Send the entire current buffer to the Lisp subprocess sublisp-name.
-If sublisp-name is nil, startup an appropriate sublisp, based on
-the major-mode of the buffer."
-  (interactive "P")
-  (fi:eval-send (point-min) (point-max) compile-file-p))
-
 (defun fi:eval-send (start end compile-file-p)
   "Send the text from START to END over to the sublisp, in the
 correct package, of course."
@@ -173,13 +540,6 @@ correct package, of course."
     (switch-to-buffer-other-window (process-buffer sublisp-process))
     ;;(input-ring-save-string stuff)
     (goto-char (point-max))))
-  
-(defun set-associated-sublisp (buffer-name)
-  "Set the sublisp associated with a franz lisp or common lisp source file."
-  (interactive "sSublisp name: ")
-  (if (get-process buffer-name)
-      (setq sublisp-name buffer-name)
-    (error "No such process buffer.")))
 
 (defun fi:sublisp-select ()
   "Find a sublisp for eval commands to send code to.  Result stored in
@@ -189,7 +549,6 @@ If sublisp-name is nil, or if there is no process buffer with that name, then
 try for freshest-<franz,common>-sublisp-name, which should contain the name of
 the most recently started sublisp.  If neither of these exist, runs the command
 franz-lisp or common-lisp, depending on the major mode of the buffer."
-  (interactive)
   ;;; see if sublisp is named yet.  if its not, name it intelligently.
   (cond (sublisp-name t)
 	((eql major-mode 'franz-lisp-mode)
@@ -256,287 +615,3 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 	     (format ":cl \"%s\"" emacs-to-lisp-transaction-file)
 	   (format ":ld \"%s\"" emacs-to-lisp-transaction-file))))
     (send-string-split process load-string nl-to-cr)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;
-;;;; TCP/backdoor lisp listener
-;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; The backdoor lisp listener functions.
-
-;; Certain commands are typically invoked while editing lisp text, e.g.
-;; arglist or macroexpand.  These a sent to the inferior lisp to be evaluated
-;; in that lisp world.  Gnu uses a dedicated "backdoor" lisp listener connected
-;; by a socket to avoid having to type at the listener in the regular inferior
-;; lisp window.
-;; The strategy is only to send rather short known forms to the backdoor
-;; listener, and to have it read all large and possibly-erroneous forms out
-;; of a temp file.  (See lisp-send-defun and sublisp-macroexpand.)
-;;  This reduces the possibility of the listener getting hung up
-;; because someone has strange lisp syntax in his buffer, or broken
-;; reader macros, or broken regular macros, ...
-
-(defvar unix-domain t)
-(defvar unix-domain-socket (expand-file-name "~/.excl_to_emacs"))
-
-(defvar local-host-name "localhost")
-(defvar excl-service-name "excl")
-
-(defun run-common-lisp-tcp (&optional host)
-  "Make a new buffer connected to the Lisp Listener Daemon on the given host,
-which defaults to the local host.  A fresh buffer is made for each invocation.
-Does not yet have provision for signals (e.g. ^C)."
-  (interactive)
-  (let ((buffer (generate-new-buffer "*tcplisp*"))
-	(host (or host local-host-name))
-	proc)
-    (save-excursion
-      (set-buffer buffer)
-      (if unix-domain
-	  (setq proc (open-network-stream
-		      (buffer-name buffer) buffer unix-domain-socket 0))
-	(setq proc (open-network-stream (buffer-name buffer) buffer
-					local-host-name
-					excl-service-name)))
-      (goto-char (point-max))
-      (set-marker (process-mark proc) (point)))
-    (switch-to-buffer buffer)
-    (fi:inferior-lisp-mode common-lisp-prompt-pattern)))
-
-(defvar background-sublisp-process nil
-  "Process connected to sublist socket for sublisp-arglist and friends.")
-
-(defun background-sublisp-process (&optional nomake)
-  (if (or (null background-sublisp-process)
-	  (not (eq (process-status background-sublisp-process) 'open)))
-    (if nomake
-      (setq background-sublisp-process nil)
-      (progn
-	(message "starting a backdoor lisp listener")
-	(and background-sublisp-process
-	     (delete-process background-sublisp-process))
-	(setq background-sublisp-process
-	  (if unix-domain
-	      (open-network-stream "sublisp-back" nil unix-domain-socket 0)
-	    (open-network-stream "sublisp-back" nil local-host-name
-				 excl-service-name)))
-	(setq sublisp-returns-state nil)
-	(process-send-string background-sublisp-process
-			     background-sublisp-form)
-	(set-process-filter background-sublisp-process
-			    'sublisp-backdoor-filter))))
-  background-sublisp-process)
-
-(defvar background-sublisp-form
- "(progn
- (setf (mp:process-name mp:*current-process*) \"Gnu Listener\")
- (loop
-  (princ \"\n\")
-  (errorset (eval (read)) t)))\n"
- "The program executed by the backdoor lisp listener.")
-
-
-;; This is the filter for the back door lisp process.
-;; It collects output until it sees a ctl-A\n, then prints the preceding
-;; collected text.  If the text fits on one line, it is printed to the message
-;; area.  Otherwise it goes to a temporary pop up buffer.
-
-(defvar sublisp-returns "")
-(defvar sublisp-returns-state nil)
-
-(defvar source-info-not-found-hook
-  '(lambda (tagname) (find-tag name))
-  "The value of this variable is funcalled when source information is not
-present for a symbol.  The function is given one argument, the name for
-which source is desired.  The null string means use the word at the dot as
-the search word.")
-
-(defun sublisp-backdoor-filter (proc string)
-  ;; This collects everything returned until a ^A\n prompt is seen,
-  ;; then displays it.  The first time is special cased to throw away
-  ;; the initial prompt without display.  Someday we should use the state
-  ;; variable for detecting screwups and coordinating reset.
-  ;; The \n is part of the prompt so that a subsequent prettyprint isn't
-  ;; confused about the starting column.
-  (setq sublisp-returns (concat sublisp-returns string))
-  (let ((len (length sublisp-returns)))
-    (if (and (= 10 (aref sublisp-returns (- len 1))) ; newline
-	     (= 1 (aref sublisp-returns (- len 2))))
-      (if (eq sublisp-returns-state nil) ; ignore the startup response
-	(setq sublisp-returns-state t
-	      sublisp-returns "")
-	(progn (setq sublisp-returns
-		 (substring sublisp-returns
-			    (progn (string-match "\n*" sublisp-returns)
-				   (match-end 0))
-			    -2))
-	       (let ((first-char (elt sublisp-returns 0)))
-		 (cond
-		   ((= first-char 2)	; display source-file
-		    (let* ((temp (get-buffer-create " *lisp temp*"))
-			   (form (substring sublisp-returns 1)))
-		      ;; first remove all #p's
-		      (save-excursion
-			(set-buffer temp)
-			(erase-buffer)
-			(princ form temp)
-			(beginning-of-buffer)
-			(replace-string "#p" "")
-			(setq form (car (read-from-string (buffer-string))))
-			(kill-buffer temp))
-		      (setq sublisp-returns "")
-		      (if (cdr form)
-			  (find-source-from-info (car form) (cdr form))
-			(if source-info-not-found-hook
-			    (funcall source-info-not-found-hook
-				     (symbol-name (car form)))
-			  (message "The source location of `%s' is unknown."
-				   (car form))))))
-		   (t  
-		    (if (or (> (length sublisp-returns) 78)
-			    ;; should be mbuf width
-			    (string-match "\n" sublisp-returns nil))
-			(with-output-to-temp-buffer "*Help*"
-			  (princ sublisp-returns))
-		      (message sublisp-returns))
-		    (setq sublisp-returns "")))))))))
-
-(defun find-source-from-info (xname info)
-  ;; info is an alist of (type . filename)
-  (if (= 1 (length info))
-      (setq info (car info))
-    (let ((completion-ignore-case t)
-	  (string-info (mapcar '(lambda (x)
-				 (rplaca x (symbol-name (car x)))
-				 x)
-			       (copy-alist info))))
-      (setq info
-	(assoc (intern-soft
-		(completing-read (format "Find `%s' of what type? " xname)
-				 string-info
-				 nil t nil))
-	       info))))
-  (let* ((type (car info))
-	 (file (cdr info))
-	 (name (symbol-name xname))
-	 (search-form nil))
-    (if (not (file-exists-p file))
-	(error "can't file source file `%s'" file))
-    (find-file-other-window file)
-    (beginning-of-buffer)
-    (cond ((eq ':function type) (setq search-form "un"))
-	  ((eq ':macro type) (setq search-form "macro"))
-	  (t (setq search-form "\\(\\w\\)*")))
-    (let ((start (string-match "::?" name))
-	  (end (match-end 0)))
-      (if start
-	  (setq name
-	    (format "\\(%s\\)*[:]*%s"
-		    (substring name 0 start)
-		    (substring name end))))
-      (if (re-search-forward
-	   (format "^(def%s %s" search-form name)
-	   nil t)
-	  (beginning-of-line)
-	(message "couldn't find form in file")))))
-
-(defun get-cl-symbol (symbol up-p &optional interactive)
-  ;; Ask the user for a CL symbol to be investigated.
-  ;; If INTERACTIVE, then that prompt is used.
-  ;; If UP-P, then the default is the symbol at the car of the form at the
-  ;; cursor.  Otherwise, it is the symbol at the cursor.
-  (if interactive (setq symbol (read-string interactive)))
-  (if (or (null symbol) (equal symbol ""))
-    (setq symbol
-      (if up-p
-	(save-excursion
-	  (buffer-substring (progn (up-list -1)
-				   (forward-char 1)
-				   (point))
-			    (progn (forward-sexp 1) (point))))
-	(save-excursion
-	  (buffer-substring (progn (forward-char 1)
-				   (backward-sexp 1)
-				   (skip-chars-forward "#'")
-				   (point))
-			    (progn (forward-sexp 1) (point)))))))
-  (if (and (boundp 'package)
-	   package
-	   (not (string-match ":" symbol nil)))
-    (setq symbol (format "%s::%s" package symbol)))
-  (if interactive (list symbol) symbol))
-
-(defun sublisp-arglist (&optional symbol)
-  "Asks the sublisp to run arglist on a symbol."
-  (interactive (get-cl-symbol nil t "Function: "))
-  (setq symbol (get-cl-symbol symbol t))
-  (process-send-string
-   (background-sublisp-process)
-   (format
-    "(progn
-      (format t  \"~:[()~;~:*~{~a~^ ~}~]\"
-       (cond
-	((special-form-p '%s) '(\"%s is a special form\"))
-	((macro-function '%s) '(\"%s is a macro\"))
-	((not (fboundp '%s)) '(\"%s has no function binding\"))
-	(t (excl::arglist '%s))))
-      (values))\n"
-    symbol symbol symbol symbol symbol symbol symbol)))
-
-(defun sublisp-describe (&optional symbol)
-  "Asks the sublisp to describe a symbol."
-  (interactive (get-cl-symbol nil nil "Describe symbol: "))
-  (setq symbol (get-cl-symbol symbol nil))
-  (process-send-string
-   (background-sublisp-process)
-   (format "(progn (lisp:describe '%s) (values))\n" symbol)))
-
-(defun sublisp-function-documentation (&optional symbol)
-  "Asks the sublisp for function documentation of symbol."
-  (interactive (get-cl-symbol nil nil "Function documentation for symbol: "))
-  (setq symbol (get-cl-symbol symbol nil))
-  (process-send-string
-   (background-sublisp-process)
-   (format "(princ (lisp:documentation '%s 'lisp:function))\n" symbol)))
-
-(defun sublisp-display-source (&optional symbol)
-  "Find the common lisp source for SYMBOL."
-  (interactive (get-cl-symbol nil nil "Source for symbol: "))
-  (setq symbol (get-cl-symbol symbol nil))
-  (process-send-string
-   (background-sublisp-process)
-   (format "(format t \"\2~s\" (cons '%s (source-file '%s t)))\n"
-	   symbol symbol)))
-
-(defvar sublisp-macroexpand-command
- "(progn
-    (errorset
-     (let ((*print-pretty* t)(excl::*print-nickname* t)(*package* %s))
-       (with-open-file (*standard-input* \"%s\")
-	 (lisp:prin1 (lisp:macroexpand (lisp:read)))))
-     t)
-    (values))\n")
-
-(defun sublisp-macroexpand ()
-  "Macroexpand the form at the cursor using the backdoor Lisp process."
-  (interactive)
-  (save-excursion
-    (skip-chars-forward " \t")
-    (if (not (looking-at "("))
-      (up-list -1))
-    (let ((filename (format "/tmp/emlisp%d"
-		      (process-id (get-process
-				    freshest-common-sublisp-name))))
-	  (start (point)))
-      (forward-sexp)
-      (write-region start (point) filename nil 'nomessage)
-      (background-sublisp-process)
-      (process-send-string
-       background-sublisp-process
-       (format sublisp-macroexpand-command
-	       (if (and (boundp 'package) package)
-		 (format "(or (find-package :%s) (make-package :%s))"
-			 package package)
-		 "*package*")
-	       filename)))))
