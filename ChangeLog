@@ -1,3 +1,11 @@
+Fri Jan 13 13:13:19 1995  Steve Haflich  <smh@vapor>
+
+	* fi-keys.el
+	Skip replacing self-insert-command with fi:self-insert-command when
+	running under Mule, as wnn input translation is incompatible with raw.
+	Until we have a better solution, fi:raw-mode will be inoperable under
+	Mule.
+
 Tue Jan 10 12:02:21 1995  Steve Haflich  <smh@vapor>
 
 	* fi-version.el

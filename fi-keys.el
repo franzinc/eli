@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.89 1995/01/10 00:43:35 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.90 1995/01/13 21:16:28 smh Exp $
 
 (cond ((eq fi::emacs-type 'xemacs19)
        (require 'tags "etags"))
@@ -187,9 +187,13 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
   (let ((i (1+ ?\C-z))
 	(l 128				; use this instead of (length map)
 	   ))
-    (while (< i l)
-      (define-key map (char-to-string i) 'fi:self-insert-command)
-      (setq i (1+ i))))
+    ;; For now we can't implement raw mode and also work with wnn kanji
+    ;; input translation.  Until we figure out a good solution, raw mode
+    ;; will be disabled in Mule.
+    (unless (boundp 'mule-version)
+      (while (< i l)
+	(define-key map (char-to-string i) 'fi:self-insert-command)
+	(setq i (1+ i)))))
   (define-key map (char-to-string 31) nil) ; fix C-_
   (fi::lisp-mode-commands (fi::subprocess-mode-commands map supermap 'sub-lisp)
 			  supermap
