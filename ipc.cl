@@ -1,4 +1,4 @@
-;;					-[Wed Feb 22 16:14:24 1989 by layer]-
+;;					-[Mon May 22 15:10:39 1989 by layer]-
 ;;
 ;; Allegro CL IPC interface
 ;;
@@ -16,14 +16,8 @@
 ;; at private expense as specified in DOD FAR 52.227-7013 (c) (1) (ii).
 ;;
 ;;
-;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.20 1989/03/02 15:45:13 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.21 1989/05/22 15:33:14 layer Exp $
 ;; $Locker: layer $
-;;
-;; This code is a preliminary IPC interface for ExCL. The functionality
-;; will be extended apace, but right now it only implements a Common Lisp
-;; Server.  The server can be started by a CL and it establishes a daemon
-;; listening to a socket.  Any process wanting to talk to the lisp
-;; can connect to the socket and a new Lisp Listener will be started.
 
 (provide :ipc)
 
@@ -40,6 +34,11 @@
   "If non-nil then use a UNIX domain socket, otherwise use an internet
 domain port (see *inet-port* variable).")
 
+(defvar *socket-pathname* nil
+  "When the UNIX domain is used, then if non-nil this is the pathname of
+the socket file to use for the communication between GNU Emacs and Allegro
+CL.")
+
 (defparameter *inet-port* 6789
   "The internet service port number on which Lisp listens for connections.
 The value is this variable is only used when *unix-domain* is non-nil, in
@@ -53,43 +52,6 @@ which case a UNIX domain socket is used.")
 
 (defconstant *sock-stream* 1
   "The SOCK_STREAM constant from /usr/include/sys/socket.h.")
-
-(defvar *junk-name* (make-array 1))
-(defvar *junk-address* (make-array 1 :element-type '(unsigned-byte 32)))
-
-(defun entry-point-exists-p (string)
-  (setf (aref *junk-name* 0) string)
-  (setf (aref *junk-address* 0) 0)
-  (= 0 (get-entry-points *junk-name* *junk-address*)))
-
-(defvar lisp-listener-daemon-ff-loaded nil)
-(defvar lisp-listener-daemon nil)
-
-(defparameter *needed-funcs*
-  (mapcar #'convert-to-lang
-	  '("socket" "bind" "listen" "accept" "getsockname" "gethostbyname"
-	    "connect" "bcopy" "bcmp" "bzero")))
-
-(eval-when (load eval)
-  (unless lisp-listener-daemon-ff-loaded
-    (unless (eql (excl::machine-code) '#.comp::machine-code-tek4300)
-      (unless (or (eq '#.comp::machine-code-apollo (excl::machine-code))
-		  (dolist (name *needed-funcs* t)
-		    (if (not (entry-point-exists-p name))
-			(return nil))))
-	(princ ";  Loading from C library...")
-	(force-output)
-	(unless (load "" :verbose nil :unreferenced-lib-names *needed-funcs*)
-	  (error "foreign load failed"))
-	(princ "done")
-	(terpri)))
-    (setq lisp-listener-daemon-ff-loaded t)
-    (defforeign-list '((getuid) (socket) (bind) (accept)
-		       (getsockname) (gethostbyname) (select)
-		       (connect) (bcopy) (bzero) (bcmp) (perror)
-		       (unix-listen :entry-point #,(convert-to-lang "listen"))
-		       (unix-close :entry-point #,(convert-to-lang "close")))
-	:print nil)))
 
 (defcstruct sockaddr-in
   (family :unsigned-short)
@@ -116,18 +78,62 @@ which case a UNIX domain socket is used.")
   (length :long)
   (addr * :char))
 
+(defvar .lisp-listener-daemon-ff-loaded. nil)
+(defvar .lisp-listener-daemon. nil)
+
+(defparameter .needed-funcs.
+  (mapcar #'convert-to-lang
+	  '("socket" "bind" "listen" "accept" "getsockname" "gethostbyname"
+	    "connect" "bcopy" "bcmp" "bzero")))
+
+(defvar .junk-name. (make-array 1))
+(defvar .junk-address. (make-array 1 :element-type '(unsigned-byte 32)))
+
+(defun entry-point-exists-p (string)
+  (setf (aref .junk-name. 0) string)
+  (setf (aref .junk-address. 0) 0)
+  (= 0 (get-entry-points .junk-name. .junk-address.)))
+
+(eval-when (load eval)
+  (unless .lisp-listener-daemon-ff-loaded.
+    (excl::machine-case :host
+      ((:apollo :tek4300))
+      (t (unless (dolist (name .needed-funcs. t)
+		   (if (not (entry-point-exists-p name))
+		       (return nil)))
+	   (princ ";  Loading TCP routines from C library...")
+	   (force-output)
+	   (unless (load "" :verbose nil :unreferenced-lib-names
+			 .needed-funcs.)
+	     (error "foreign load failed"))
+	   (princ "done")
+	   (terpri))))
+
+    (setq .lisp-listener-daemon-ff-loaded. t)
+    (defforeign-list '((getuid) (socket) (bind) (accept)
+		       (getsockname) (gethostbyname) (select)
+		       (connect) (bcopy) (bzero) (bcmp) (perror)
+		       (unix-listen :entry-point #,(convert-to-lang "listen"))
+		       (unix-close :entry-point #,(convert-to-lang "close")))
+	:print nil)))
+
 (defun start-lisp-listener-daemon ()
   "This function starts a process which listens to a socket for attempts to
 connect, and starts a lisp listener for each connection.  If the Lisp
 listener ever completes, it makes sure files are closed."
-  (unless lisp-listener-daemon
-    (setq lisp-listener-daemon
+  (unless .lisp-listener-daemon.
+    (setq .lisp-listener-daemon.
       (process-run-function "TCP Listener Socket Daemon"
 			    'lisp-listener-socket-daemon))
-    (setf (getf (process-property-list lisp-listener-daemon) ':no-interrupts)
-          t)))
 
-(defvar *socket-pathname* nil)
+    #+(or allegro-v3.0 allegro-v3.1)
+    (progn
+      (setf (getf (process-property-list .lisp-listener-daemon.)
+		  ':no-interrupts)
+	't)
+      (setf (getf (process-property-list .lisp-listener-daemon.)
+		  ':survive-dumplisp)
+	't))))
 
 (defun lisp-listener-socket-daemon ()
   (let (listen-socket-fd
@@ -150,7 +156,7 @@ listener ever completes, it makes sure files are closed."
     (setf (timeval-sec timeval) 0
 	  (timeval-usec timeval) 0)
     (unwind-protect
-	(progn
+	 (progn
 	  (if *unix-domain* (errorset (delete-file *socket-pathname*)))
 	  (setq listen-socket-fd (socket
 				  (if *unix-domain* *af-unix* *af-inet*)
@@ -169,7 +175,7 @@ listener ever completes, it makes sure files are closed."
 	     then (setf (sockaddr-un-family listen-sockaddr) *af-unix*)
 		  ;; Set pathname.
 		  (dotimes (i (length *socket-pathname*)
-			    (setf (sockaddr-un-path listen-sockaddr i) 0))
+			     (setf (sockaddr-un-path listen-sockaddr i) 0))
 		    (setf (sockaddr-un-path listen-sockaddr i)
 		      (char-int (elt *socket-pathname* i))))
 	     else ;; a crock:
@@ -189,51 +195,52 @@ listener ever completes, it makes sure files are closed."
 	    (perror "listen")
 	    (return-from lisp-listener-socket-daemon nil))
 	  (loop
-	   (process-wait "waiting for a connection"
-			 #'(lambda (mask mask-obj timeout)
-			     (setf (unsigned-long-unsigned-long mask-obj) mask)
-			     (not (zerop (select 32 mask-obj 0 0 timeout))))
-			 mask mask-obj timeval)
-	   (setf (unsigned-long-unsigned-long int)
-	     (if *unix-domain*
-		 (ff::cstruct-len 'sockaddr-un)
-	       (ff::cstruct-len 'sockaddr-in)))
-	   (setq fd (accept listen-socket-fd listen-sockaddr int))
-	   (when (< fd 0)
-	     (perror "accept")
-	     (return-from lisp-listener-socket-daemon nil))
+	    (process-wait "waiting for a connection"
+	     #'(lambda (mask mask-obj timeout)
+		 (setf (unsigned-long-unsigned-long mask-obj) mask)
+		 (not (zerop (select 32 mask-obj 0 0 timeout))))
+	     mask mask-obj timeval)
+	    (setf (unsigned-long-unsigned-long int)
+	      (if *unix-domain*
+		  (ff::cstruct-len 'sockaddr-un)
+		(ff::cstruct-len 'sockaddr-in)))
+	    (setq fd (accept listen-socket-fd listen-sockaddr int))
+	    (finish-output *standard-output*)
+	    (finish-output *error-output*)
+	    (when (< fd 0)
+	      (perror "accept")
+	      (return-from lisp-listener-socket-daemon nil))
+	    
+	    (setq stream (excl::make-buffered-terminal-stream fd fd t t))
 	   
-	   (setq stream
-	     (excl::make-buffered-terminal-stream fd fd t t))
+	    ;; the first thing that comes over the stream is the name of the
+	    ;; emacs buffer which was created--we name the process the same.
+	    (setq proc-name (read stream))
 	   
-	   ;; the first thing that comes over the stream is the name of the
-	   ;; emacs buffer which was created--we name the process the same.
-	   (setq proc-name (read stream))
-	   
-	   (if* *unix-domain*
-	      then (process-run-function
-		    proc-name
-		    'lisp-listener-with-stream-as-terminal-io stream)
-	      else (let ((hostaddr (logand
-				    (sockaddr-in-addr listen-sockaddr) #xff)))
-		     (format t ";;; starting listener-~d (host ~d)~%" fd
-			     hostaddr)
-		     (if* (and nil
-			       ;; the next line checks that the connection
-			       ;; is coming from the current machine
-			       (not (eql 1 hostaddr))
-			       )
-			then (format t ";;; access denied for addr ~s~%"
-				     hostaddr)
-			     (refuse-connection fd)
-			else (process-run-function
-			      proc-name
-			      'lisp-listener-with-stream-as-terminal-io
-			      stream))))))
+	    (if* *unix-domain*
+	       then (process-run-function
+		     proc-name
+		     'lisp-listener-with-stream-as-terminal-io
+		     stream)
+	       else (let ((hostaddr (logand
+				     (sockaddr-in-addr listen-sockaddr) #xff)))
+		      (format t ";;; starting listener-~d (host ~d)~%" fd
+			      hostaddr)
+		      (if* (and nil
+				;; the next line checks that the connection
+				;; is coming from the current machine
+				(not (eql 1 hostaddr)))
+			 then (format t ";;; access denied for addr ~s~%"
+				      hostaddr)
+			      (refuse-connection fd)
+			 else (process-run-function
+			       proc-name
+			       'lisp-listener-with-stream-as-terminal-io
+			       stream))))))
       (when listen-socket-fd
 	(mp::mpunwatchfor listen-socket-fd)
 	(unix-close listen-socket-fd)
-	(setq lisp-listener-daemon nil)))))
+	(setq .lisp-listener-daemon. nil)))))
 
 (defun refuse-connection (fd &aux s)
   (setq s (excl::make-buffered-terminal-stream fd fd t t))
