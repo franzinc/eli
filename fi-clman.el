@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.13 1991/01/11 10:10:21 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.14 1991/03/15 12:43:05 layer Exp $
 
 (defvar fi:clman-package-info nil
   "*A list of (PRODUCT DIRECTORY) which tells where the manual pages are (in
@@ -477,7 +477,7 @@ Return the full pathname of the file the symbol is in. "
 
 (if fi:clman-mode-map
     nil
-  (setq fi:clman-mode-map (make-sparse-keymap))
+  (setq fi:clman-mode-map (make-keymap))
   (define-key fi:clman-mode-map "\C-C\C-C" 'fi:clman-flush-doc)
   (define-key fi:clman-mode-map "a" 'fi:clman-apropos)
   (define-key fi:clman-mode-map "m" 'fi:clman)

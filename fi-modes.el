@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.41 1991/03/12 18:29:54 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.42 1991/03/15 12:42:51 layer Exp $
 
 ;;;; Mode initializations
 
@@ -92,7 +92,11 @@ Entry to this mode runs the following hooks:
 	fi:subprocess-mode-hook
 	fi:inferior-common-lisp-mode-hook
 
-in the above order."
+in the above order.
+
+When calling from a program, arguments are MODE-HOOK and MODE-HOOK-ARGS,
+the former is applied to the latter just after killing all local variables
+but before doing any other mode setup."
   (interactive)
   (kill-all-local-variables)
   (if mode-hook (apply mode-hook mode-hook-args))
@@ -103,20 +107,21 @@ in the above order."
   (if (null fi:inferior-common-lisp-mode-super-key-map)
       (progn
 	(setq fi:inferior-common-lisp-mode-super-key-map
-	  (make-sparse-keymap))
+	  (make-keymap))
 	(fi::subprocess-mode-super-keys
 	 fi:inferior-common-lisp-mode-super-key-map 'sub-lisp)))
   (if (null fi:inferior-common-lisp-mode-map)
       (setq fi:inferior-common-lisp-mode-map
 	(fi::inferior-lisp-mode-commands
-	 (make-sparse-keymap) fi:inferior-common-lisp-mode-super-key-map)))
+	 (make-keymap)
+	 fi:inferior-common-lisp-mode-super-key-map)))
   (use-local-map fi:inferior-common-lisp-mode-map)
   (setq fi:subprocess-super-key-map fi:inferior-common-lisp-mode-super-key-map)
   (setq fi:lisp-indent-hook-property 'fi:common-lisp-indent-hook)
   (run-hooks 'fi:lisp-mode-hook 'fi:subprocess-mode-hook
 	     'fi:inferior-common-lisp-mode-hook))
 
-(defun fi:inferior-franz-lisp-mode (&optional mode-hook)
+(defun fi:inferior-franz-lisp-mode (&optional mode-hook &rest mode-hook-args)
   "Major mode for interacting with Franz Lisp subprocesses.
 The keymap for this mode is bound to fi:inferior-franz-lisp-mode-map:
 \\{fi:inferior-franz-lisp-mode-map}
@@ -126,10 +131,14 @@ Entry to this mode runs the following hooks:
 	fi:subprocess-mode-hook
 	fi:inferior-franz-lisp-mode-hook
 
-in the above order."
+in the above order.
+
+When calling from a program, arguments are MODE-HOOK and MODE-HOOK-ARGS,
+the former is applied to the latter just after killing all local variables
+but before doing any other mode setup."
   (interactive)
   (kill-all-local-variables)
-  (if mode-hook (funcall mode-hook))
+  (if mode-hook (apply mode-hook mode-hook-args))
   (setq major-mode 'fi:inferior-franz-lisp-mode)
   (setq mode-name "Inferior Franz Lisp")
   (set-syntax-table fi:lisp-mode-syntax-table)
@@ -137,13 +146,14 @@ in the above order."
   (if (null fi:inferior-franz-lisp-mode-super-key-map)
       (progn
 	(setq fi:inferior-franz-lisp-mode-super-key-map
-	  (make-sparse-keymap))
+	  (make-keymap))
 	(fi::subprocess-mode-super-keys
 	 fi:inferior-franz-lisp-mode-super-key-map 'sub-lisp)))
   (if (null fi:inferior-franz-lisp-mode-map)
       (setq fi:inferior-franz-lisp-mode-map
 	(fi::inferior-lisp-mode-commands
-	 (make-sparse-keymap) fi:inferior-franz-lisp-mode-super-key-map)))
+	 (make-keymap)
+	 fi:inferior-franz-lisp-mode-super-key-map)))
   (use-local-map fi:inferior-franz-lisp-mode-map)
   (setq fi:subprocess-super-key-map fi:inferior-franz-lisp-mode-super-key-map)
   (setq fi:lisp-indent-hook-property 'fi:franz-lisp-indent-hook)
@@ -160,7 +170,11 @@ Entry to this mode runs the following hooks:
 	fi:subprocess-mode-hook
 	fi:lisp-listener-mode-hook
 
-in the above order."
+in the above order.
+
+When calling from a program, argument is MODE-HOOK,
+which is funcall'd just after killing all local variables but before doing
+any other mode setup."
   (interactive)
   (kill-all-local-variables)
   (if mode-hook (funcall mode-hook))
@@ -170,13 +184,14 @@ in the above order."
   (fi::lisp-subprocess-mode-variables)
   (if (null fi:lisp-listener-mode-super-key-map)
       (progn
-	(setq fi:lisp-listener-mode-super-key-map (make-sparse-keymap))
+	(setq fi:lisp-listener-mode-super-key-map (make-keymap))
 	(fi::subprocess-mode-super-keys
 	 fi:lisp-listener-mode-super-key-map 'tcp-lisp)))
   (if (null fi:lisp-listener-mode-map)
       (setq fi:lisp-listener-mode-map
 	(fi::lisp-listener-mode-commands
-	 (make-sparse-keymap) fi:lisp-listener-mode-super-key-map)))
+	 (make-keymap)
+	 fi:lisp-listener-mode-super-key-map)))
   (use-local-map fi:lisp-listener-mode-map)
   (setq fi:subprocess-super-key-map fi:lisp-listener-mode-super-key-map)
   (setq fi:lisp-indent-hook-property 'fi:common-lisp-indent-hook)
@@ -192,7 +207,11 @@ Entry to this mode runs the following hooks:
 	fi:lisp-mode-hook
 	fi:common-lisp-mode-hook
 
-in the above order."
+in the above order.
+
+When calling from a program, argument is MODE-HOOK,
+which is funcall'd just after killing all local variables but before doing
+any other mode setup."
   (interactive)
   (kill-all-local-variables)
   (if mode-hook (funcall mode-hook))
@@ -203,10 +222,10 @@ in the above order."
   (fi:parse-mode-line-and-package)
   (if (null fi:common-lisp-mode-map)
       (progn
-	(setq fi:common-lisp-mode-map (make-sparse-keymap))
+	(setq fi:common-lisp-mode-map (make-keymap))
 	(fi::lisp-mode-commands fi:common-lisp-mode-map nil nil)))
   (use-local-map fi:common-lisp-mode-map)
-  (setq fi::process-name fi:common-lisp-process-name)
+  (setq fi::process-name fi::common-lisp-backdoor-main-process-name)
   (setq fi:lisp-indent-hook-property 'fi:common-lisp-indent-hook)
   (run-hooks 'fi:lisp-mode-hook 'fi:common-lisp-mode-hook))
 
@@ -219,7 +238,11 @@ Entry to this mode runs the following hooks:
 	fi:lisp-mode-hook
 	fi:franz-lisp-mode-hook
 
-in the above order."
+in the above order.
+
+When calling from a program, argument is MODE-HOOK,
+which is funcall'd just after killing all local variables but before doing
+any other mode setup."
   (interactive)
   (kill-all-local-variables)
   (if mode-hook (funcall mode-hook))
@@ -230,7 +253,7 @@ in the above order."
   (fi:parse-mode-line-and-package)
   (if (null fi:franz-lisp-mode-map)
       (progn
-	(setq fi:franz-lisp-mode-map (make-sparse-keymap))
+	(setq fi:franz-lisp-mode-map (make-keymap))
 	(fi::lisp-mode-commands fi:franz-lisp-mode-map nil nil)))
   (use-local-map fi:franz-lisp-mode-map)
   (setq fi::process-name fi:franz-lisp-process-name)
@@ -241,7 +264,11 @@ in the above order."
   "Major mode for editing Lisp code to run in Emacs Lisp.
 The keymap for this mode is bound to fi:emacs-lisp-mode-map:
 \\{fi:emacs-lisp-mode-map}
-Entry to this mode runs the fi:emacs-lisp-mode-hook hook."
+Entry to this mode runs the fi:emacs-lisp-mode-hook hook.
+
+When calling from a program, argument is MODE-HOOK,
+which is funcall'd just after killing all local variables but before doing
+any other mode setup."
   (interactive)
   (kill-all-local-variables)
   (if mode-hook (funcall mode-hook))
@@ -251,7 +278,7 @@ Entry to this mode runs the fi:emacs-lisp-mode-hook hook."
   (fi::lisp-edit-mode-setup)
   (if (null fi:emacs-lisp-mode-map)
       (progn
-	(setq fi:emacs-lisp-mode-map (make-sparse-keymap))
+	(setq fi:emacs-lisp-mode-map (make-keymap))
 	(fi::lisp-mode-commands fi:emacs-lisp-mode-map nil nil)))
   (use-local-map fi:emacs-lisp-mode-map)
   (setq fi:lisp-indent-hook-property 'fi:emacs-lisp-indent-hook)
@@ -303,7 +330,10 @@ Entry to this mode runs the fi:emacs-lisp-mode-hook hook."
 
 (defun fi:parse-mode-line-and-package ()
   "Determine the current package in which the buffer is defined.
-IN-PACKAGE and the -*- mode line are parsed for this information."
+The buffer's IN-PACKAGE form and the -*- mode line are parsed for this
+information.  This function is automatically called when a Common Lisp
+source file is visited, but may be executed explicitly to re-parse the
+package."
   (interactive)
   (save-excursion
     ;; look for -*- ... package: xxx; .... -*-

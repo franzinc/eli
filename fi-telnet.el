@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-telnet.el,v 1.6 1991/03/12 18:30:33 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-telnet.el,v 1.7 1991/03/15 12:42:49 layer Exp $
 
 (defvar fi:telnet-mode-map nil
   "The telnet major-mode keymap.")
@@ -61,7 +61,11 @@ Entry to this mode runs the following hooks:
 	fi:subprocess-mode-hook
 	fi:telnet-mode-hook
 
-in the above order."
+in the above order.
+
+When calling from a program, argument is MODE-HOOK,
+which is funcall'd just after killing all local variables but before doing
+any other mode setup."
   (interactive)
   (kill-all-local-variables)
   (if mode-hook (funcall mode-hook))
@@ -69,14 +73,14 @@ in the above order."
   (setq mode-name "Telnet")
 
   (if (null fi:telnet-mode-super-key-map)
-      (let ((map (make-sparse-keymap)))
+      (let ((map (make-keymap)))
 	(setq map (fi::subprocess-mode-super-keys map 'rlogin))
 	(define-key map "m"	'fi:telnet-start-garbage-filter)
 	(setq fi:telnet-mode-super-key-map map)))
 
   (if (null fi:telnet-mode-map)
       (setq fi:telnet-mode-map
-	(fi::subprocess-mode-commands (make-sparse-keymap)
+	(fi::subprocess-mode-commands (make-keymap)
 				      fi:telnet-mode-super-key-map
 				      'telnet)))
   (use-local-map fi:telnet-mode-map)
@@ -113,6 +117,7 @@ The telnet image file and image arguments are taken from the variables
 			 'fi::telnet-filter)))
 
 (defun fi:telnet-start-garbage-filter ()
+  "Start a filter that removes ^M's at the end of lines." 
   (interactive)
   (set-process-filter (get-buffer-process (current-buffer))
 		      'fi::telnet-garbage-filter))

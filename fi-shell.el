@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-shell.el,v 1.13 1991/03/12 18:30:30 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-shell.el,v 1.14 1991/03/15 12:43:02 layer Exp $
 
 (defvar fi:shell-mode-map nil
   "The shell major-mode keymap.")
@@ -57,7 +57,11 @@ Entry to this mode runs the following hooks:
 	fi:subprocess-mode-hook
 	fi:shell-mode-hook
 
-in the above order."
+in the above order.
+
+When calling from a program, argument is MODE-HOOK,
+which is funcall'd just after killing all local variables but before doing
+any other mode setup."
   (interactive)
   (kill-all-local-variables)
   (if mode-hook (funcall mode-hook))
@@ -66,12 +70,12 @@ in the above order."
 
   (if (null fi:shell-mode-super-key-map)
       (progn
-	(setq fi:shell-mode-super-key-map (make-sparse-keymap))
+	(setq fi:shell-mode-super-key-map (make-keymap))
 	(fi::subprocess-mode-super-keys fi:shell-mode-super-key-map 'shell)))
 
   (if (null fi:shell-mode-map)
       (setq fi:shell-mode-map
-	(fi::subprocess-mode-commands (make-sparse-keymap)
+	(fi::subprocess-mode-commands (make-keymap)
 				      fi:shell-mode-super-key-map
 				      'shell)))
   (use-local-map fi:shell-mode-map)

@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.96 1991/03/14 10:16:19 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.97 1991/03/15 12:43:07 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -134,9 +134,6 @@ line argument.")
   "*The default host on which fi:common-lisp starts the Common Lisp
 subprocess.  \"localhost\" means use the host on which emacs is running.")
 
-(defvar fi:common-lisp-process-name nil
-  "The name of the process last created by fi:common-lisp.")
-
 (defvar fi:common-lisp-prompt-pattern
   "^\\(\\[[0-9]+c?\\] \\|\\[step\\] \\)?<[-A-Za-z]* ?[0-9]*?> "
   "*The regular expression which matches the Common Lisp prompt.
@@ -199,6 +196,10 @@ buffer.")
 
 ;;;;;;;;;;;;;;;;;;;;;; common lisp mode specific internal variables
 
+(defvar fi::common-lisp-backdoor-main-process-name nil
+  "The name of the Common Lisp process to which we have a backdoor
+connection.")
+
 (defvar fi::lisp-case-mode ':unknown
   "The case in which the Common Lisp we are connected to lives.")
 
@@ -235,9 +236,12 @@ buffer local.")
 (defun fi:start-backdoor-interface (process)
   "Send a string to PROCESS, which should be a Lisp, that starts the
 Emacs-Lisp interface.  This only works in Allegro CL, currently."
-  (send-string
-   process
-   "(progn
+  (unless (or (and fi:use-lep (lep::lep-open-connection-p))
+	      (and (not fi:use-lep) (fi:backdoor-is-running-p)))
+    (setq fi::common-lisp-backdoor-main-process-name (process-name process))
+    (send-string
+     process
+     "(progn
       (princ \";; Starting socket daemon\n\")
       (force-output)
       (excl::require :ipc
@@ -248,7 +252,7 @@ Emacs-Lisp interface.  This only works in Allegro CL, currently."
        (find-symbol (symbol-name :start-lisp-listener-daemon) :ipc)
        #+allegro-v4.1 '(:use-lep t :unix-domain nil)
        #-allegro-v4.1 nil)
-      (values))\n"))
+      (values))\n")))
 
 (defun fi:common-lisp (&optional buffer-name process-directory image-name
 				 image-arguments host)
@@ -317,7 +321,6 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 			   (cd dir)
 			 (error nil))))))
 		local host process-directory)))
-    (setq fi:common-lisp-process-name (process-name proc))
     (setq fi::common-lisp-first-time nil)
     proc))
 
@@ -330,19 +333,19 @@ prefix arguments > 1.  If a negative prefix argument is given, then the
 first \"free\" buffer name is found and used.  When called from a program,
 the buffer name is the second optional argument."
   (interactive "p")
-  (if (or (null fi:common-lisp-process-name)
+  (if (or (null fi::common-lisp-backdoor-main-process-name)
 	  (not (fi:process-running-p
-		(get-buffer-process fi:common-lisp-process-name))))
+		(get-process fi::common-lisp-backdoor-main-process-name))))
       (error "Common Lisp must be running to open a lisp listener."))
   (let ((proc (fi::make-tcp-connection
 	       (or buffer-name "lisp-listener")
 	       buffer-number
 	       'fi:lisp-listener-mode
 	       fi:common-lisp-prompt-pattern
-	       (fi::get-buffer-host fi:common-lisp-process-name)
-	       (fi::get-buffer-port fi:common-lisp-process-name)
-	       (fi::get-buffer-password fi:common-lisp-process-name)
-	       (fi::get-buffer-ipc-version fi:common-lisp-process-name))))
+	       (fi::get-buffer-host fi::common-lisp-backdoor-main-process-name)
+	       (fi::get-buffer-port fi::common-lisp-backdoor-main-process-name)
+	       (fi::get-buffer-password fi::common-lisp-backdoor-main-process-name)
+	       (fi::get-buffer-ipc-version fi::common-lisp-backdoor-main-process-name))))
     proc))
 
 (defun fi:franz-lisp (&optional buffer-name process-directory image-name
@@ -436,7 +439,9 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	local)
     (if (or first-time current-prefix-arg)
 	(prog1
-	    (list (setq buffer-name (read-buffer "Buffer: " buffer-name))
+	    (list (setq buffer-name
+		    (or current-prefix-arg
+			(read-buffer "Buffer: " buffer-name)))
 		  (progn
 		    (setq host (read-string "Host: " host))
 		    (setq local (or (string= "localhost" host)
@@ -488,8 +493,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	  (if (and (fi::fast-search-string 1 output)
 		   (string-match
 		    "\\([^\0]*\\)\\(.*\\)\\([^\0]*\\)"
-		    output)
-		   (setq *frammis* output))
+		    output))
 	      (let* ((res (concat
 			   (substring output (match-beginning 1)
 				      (match-end 1))
@@ -615,8 +619,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 					  given-service
 					  given-password
 					  given-ipc-version)
-
-  (if (not fi:common-lisp-process-name)
+  (if (not fi::common-lisp-backdoor-main-process-name)
       (error "A Common Lisp subprocess has not yet been started."))
   (let* ((buffer-name
 	  (fi::buffer-number-to-name (concat "*" buffer-name "*")
@@ -626,11 +629,14 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	 (default-dir default-directory)
 	 (buffer-name (buffer-name buffer))
 	 (host (or given-host
-		   (fi::get-buffer-host fi:common-lisp-process-name)))
+		   (fi::get-buffer-host
+		    fi::common-lisp-backdoor-main-process-name)))
 	 (service (or given-service
-		      (fi::get-buffer-port fi:common-lisp-process-name)))
+		      (fi::get-buffer-port
+		       fi::common-lisp-backdoor-main-process-name)))
 	 (password (or given-password
-		       (fi::get-buffer-password fi:common-lisp-process-name)))
+		       (fi::get-buffer-password
+			fi::common-lisp-backdoor-main-process-name)))
 	 (proc (get-buffer-process buffer)))
     
     (funcall fi:display-buffer-function buffer)

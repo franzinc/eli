@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.46 1991/03/12 18:30:01 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.47 1991/03/15 12:43:14 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -102,13 +102,13 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
   map)
 
 (defun fi::lisp-mode-commands (map supermap mode)
-  (define-key map "\e" (make-sparse-keymap))
-  (define-key map "\C-x" (make-sparse-keymap))
+  (define-key map "\e" (make-keymap))
+  (define-key map "\C-x" (make-keymap))
 
   (if supermap
       (define-key map "\C-c" supermap)
     ;; editing mode
-    (let ((c-map (make-sparse-keymap)))
+    (let ((c-map (make-keymap)))
       (define-key map "\C-c" c-map)
       (define-key c-map "-"	'fi:log-functional-change)))
   
@@ -143,12 +143,12 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
      (define-key map "\e\t"	'fi:lisp-complete-symbol)
      (define-key map "\eA"	'fi:lisp-arglist)
      (define-key map "\eC"	'fi:lisp-who-calls)
-     (define-key map "\eD"	'fi:lisp-describe)
+     (define-key map "\eD"	'fi:describe-symbol)
      (define-key map "\eF"	'fi:lisp-function-documentation)
      (define-key map "\eM"	'fi:lisp-macroexpand)
      (define-key map "\eT"	'fi:toggle-trace-definition)
      (define-key map "\eW"	'fi:lisp-macroexpand-recursively)
-     (let ((4-map (make-sparse-keymap)))
+     (let ((4-map (make-keymap)))
        (define-key map "\C-x4" 4-map)
        (define-key 4-map "." 	'fi:lisp-find-tag-other-window))))
   (cond
@@ -175,7 +175,8 @@ MODE is either sub-lisp, tcp-lisp, shell or rlogin."
 ;;;;;;;;;;;;;;;;;;;;; inferior lisp mode related functions
 
 (defun fi:lisp-mode-newline ()
-  "Inserts a newline at the point."
+  "Insert a newline at the point.  Users wishing to have newline do
+indentation, can redefine this function to indent, newline and indent."
   (interactive)
   (newline))
 
@@ -249,7 +250,8 @@ it to the Lisp subprocess."
 	(error "couldn't find start of input")))))
     
 (defun fi:subprocess-input-region (start end)
-  "Send the region defined by the point and mark to the Lisp subprocess."
+  "Send the region defined by the point and mark to the Lisp subprocess.
+When called from a program give START and END buffer positions."
   (interactive "r")
   (let* ((process (get-buffer-process (current-buffer)))
 	 (string (buffer-substring start end)))
@@ -265,15 +267,15 @@ it to the Lisp subprocess."
     (set-marker (process-mark process) (point))))
 
 (defun fi:inferior-lisp-input-sexp (&optional arg)
-  "Send the sexp on which the point resides to the Lisp subprocess.  With a
-numeric prefix argument, send that many sexps."
-  (interactive "P")
+  "Send the s-expression after the point to the Lisp subprocess.
+With prefix arg, ARG, send that many s-expressions."
+  (interactive "p")
   (fi:inferior-lisp-send-input arg 'sexp))
 
 (defun fi:inferior-lisp-input-list (&optional arg)
-  "Send the list before the point to the Lisp subprocess.  With a numeric
-prefix argument, send that many lists."
-  (interactive "P")
+  "Send the list before the point to the Lisp subprocess.
+With prefix arg, ARG, send that many lists."
+  (interactive "p")
   (fi:inferior-lisp-send-input arg 'lists))
 
 ;;;;;;;;;;;;;;;;;;;;; TCP lisp mode related functions
@@ -314,9 +316,11 @@ prefix argument, send that many lists."
     (list symbol)))
 
 (defun fi:remote-lisp-send-eof ()
-  "Simulate sending a real EOF to a Lisp subprocess that was started on a
+  "Simulate sending an EOF to a Lisp subprocess that was started on a
 remote machine (with respect to the machine on which emacs is running).
-This is done by doing a debugger:debug-pop on the \"Initial Lisp Listener\"
+The remote process was most likely started with `rsh', and sending an EOF
+to a remote process started in this way closes down the pipe.  The fake EOF
+is done by doing a debugger:debug-pop on the \"Initial Lisp Listener\"
 process via the backdoor."
   (interactive)
   (fi:backdoor-eval 
@@ -324,24 +328,38 @@ process via the backdoor."
    (buffer-name (current-buffer))))
 
 (defun fi:tcp-lisp-listener-send-eof ()
-  "Simulate an EOF on the tcp-lisp process via a db:debug-pop spoken to the
-backdoor Common Lisp listener."
+  "Simulate sending an EOF on the Lisp Listener pseudo-process.  It is not
+a real process because it is a network connection to the Common Lisp
+UNIX process, and EOF has no meaning (out-of-band data is not handled in
+either Emacs or Common Lisp, at this time).  The fake EOF is simulated by
+doing a debugger:debug-pop on the Common Lisp process tied to the Lisp
+Listener buffer via the backdoor."
   (interactive)
   (fi:backdoor-eval 
    "(db:debug-pop (mp::process-name-to-process \"%s\"))\n"
    (buffer-name (current-buffer))))
 
 (defun fi:tcp-lisp-listener-kill-process ()
-  "Kill a tcp-lisp process via a mp:process-kill spoken to the backdoor
-Common Lisp listener."
+  "Simulate sending a SIGQUIT to the Lisp Listener pseudo-process,
+meaning kill the Common Lisp thread associated with the Lisp Listener
+buffer.  It is not a real process because it is a network connection to the
+Common Lisp UNIX process, and since there is no tty control there is no
+character which is interpreted as `quit'.  The fake `quit' is simulated by
+doing a mp:process-kill on the Common Lisp process tied to the Lisp
+Listener buffer via the backdoor."
   (interactive)
   (fi:backdoor-eval 
    "(mp:process-kill (mp::process-name-to-process \"%s\"))\n"
    (buffer-name (current-buffer))))
 
 (defun fi:tcp-lisp-listener-interrupt-process ()
-  "Interrupt the tcp-lisp process via a mp:process-interrupt spoken to the
-backdoor Common Lisp listener."
+  "Simulate sending a SIGINT to the Lisp Listener pseudo-process,
+meaning interrupt the Common Lisp thread associated with the Lisp Listener
+buffer.  It is not a real process because it is a network connection to the
+Common Lisp UNIX process, and since there is no tty control there is no
+character which is interpreted as `interrupt'.  The fake `interrupt' is
+simulated by doing a mp:process-interrupt on the Common Lisp process tied
+to the Lisp Listener buffer via the backdoor."
   (interactive)
   (fi:backdoor-eval 
    "(mp:process-interrupt
@@ -352,18 +370,16 @@ backdoor Common Lisp listener."
 
 ;;;;;;;;;;;;;;;;;;;;; general subprocess related functions
 
-(defun fi:subprocess-superkey (&optional special-binding)
-  "This function implements superkeys in subprocess buffers.
-A superkey is treated specially when at the end of a subprocess buffer,
-but has its normal, global, binding when used elsewhere in the buffer.
-At the end of the buffer the key has SPECIAL-BINDING.  If SPECIAL-BINDING
-is not given, the key takes its binding from the
-fi:subprocess-super-key-map keymap."
+(defun fi:subprocess-superkey ()
+  "This function implements superkeys in subprocess buffers.  Any key which
+is bound to this function is, by definition, a superkey.  A superkey is
+treated specially when at the end of a subprocess buffer, but has its
+normal, global, binding when used elsewhere in the buffer.
+The key takes its binding from the fi:subprocess-super-key-map keymap,
+which is a buffer local variable."
   (interactive)
   (if (eobp)
-      (if special-binding
-	  (call-interactively special-binding)
-	(fi::subprocess-reprocess-keys fi:subprocess-super-key-map))
+      (fi::subprocess-reprocess-keys fi:subprocess-super-key-map)
     (fi::subprocess-reprocess-keys global-map)))
 
 (defun fi::subprocess-reprocess-keys (&optional map key)
@@ -388,31 +404,35 @@ other than at the end of the buffer."
       (ding))))
 
 (defun fi:subprocess-beginning-of-line (arg)
-  "Moves point to beginning of line, just like (beginning-of-line),
+  "Moves point to beginning of line, just like
+	(beginning-of-line arg),
 except that if the pattern at the beginning of the line matches the
-current subprocess prompt pattern, this function skips over it."
-  (interactive "P")
+current subprocess prompt pattern, this function skips over it.
+With argument ARG non nil or 1, move forward ARG - 1 lines first."
+  (interactive "p")
   (beginning-of-line arg)
   (if (looking-at subprocess-prompt-pattern)
       (re-search-forward subprocess-prompt-pattern nil t)))
 
-(defun fi:subprocess-backward-kill-word (words)
+(defun fi:subprocess-backward-kill-word (arg)
   "Kill previous word in current subprocess input line.  This function
-takes care not to delete past the beginning of the the current input."
+takes care not to delete past the beginning of the the current input.
+With argument ARG, kill that many words."
   (interactive "p")
   (save-restriction
     (narrow-to-region
      (marker-position (process-mark (get-buffer-process (current-buffer))))
      (point))
-    (backward-kill-word words)))
+    (backward-kill-word arg)))
 
 (defun fi:subprocess-send-input ()
-  "Send input to the subprocess.  At end of buffer, sends all text after
+  "Send input to the subprocess.  At end of buffer, send all text after
 last output as input to the subshell, including a newline inserted at the
-end. Not at end, copies current line to the end of the buffer and sends it,
-after first attempting to discard any prompt at the beginning of the line
-by matching the regexp that is the value of subprocess-prompt-pattern if
-possible.  This regexp should start with \"^\"."
+end.  When not at end, copy current line to the end of the buffer and
+send it,after first attempting to discard any prompt at the beginning of
+the line by matching the regexp that is the value of
+the buffer-local subprocess-prompt-pattern, which is initialized by each
+subprocess mode."
   (interactive)
   (if fi::shell-completions-window (fi::shell-completion-cleanup))
   (end-of-line)
@@ -438,12 +458,13 @@ possible.  This regexp should start with \"^\"."
     (set-marker (process-mark process) (point))))
 
 (defun fi:subprocess-send-eof ()
-  "Send an EOF (end of file) to the subprocess."
+  "Send an EOF (end of file) to the current subprocess."
   (interactive)
   (process-send-eof))
 
 (defun fi:rlogin-send-eof ()
-  "Send eof to process running through remote login subprocess buffer."
+  "Send an EOF to the process running as in the remote shell in the current
+subprocess buffer."
   (interactive)
   (send-string (get-buffer-process (current-buffer)) "\C-d"))
 
@@ -457,7 +478,7 @@ convenient way to delete the output from the last command."
   (set-marker (process-mark (get-buffer-process (current-buffer))) (point)))
 
 (defun fi:subprocess-send-flush ()
-  "Send the `flush output' character (^O) to subprocess."
+  "Send the `flush output' character (^O) to current subprocess."
   (interactive)
   (send-string (get-buffer-process (current-buffer)) "\C-o"))
 
@@ -469,12 +490,13 @@ Also move the point there."
   (goto-char fi::last-input-end))
 
 (defun fi:subprocess-interrupt ()
-  "Interrupt the current subprocess."
+  "Send a kill (SIGINT) signal to the current subprocess."
   (interactive)
   (interrupt-process nil t))
 
 (defun fi:rlogin-send-interrupt ()
-  "Send interrupt to process running through remote login subprocess buffer."
+  "Send an interrupt (SIGINT) to the process running as in the current
+subprocess buffer."
   (interactive)
   (send-string (get-buffer-process (current-buffer)) "\C-c"))
 
@@ -484,27 +506,29 @@ Also move the point there."
   (kill-process nil t))
 
 (defun fi:subprocess-quit ()
-  "Send a quit (SIGQUIT) signal to the subprocess."
+  "Send a quit (SIGQUIT) signal to the current subprocess."
   (interactive)
   (quit-process nil t))
 
 (defun fi:rlogin-send-quit ()
-  "Send quit to process running through remote login subprocess buffer."
+  "Send a quit (SIGQUIT) to the process running as in the current
+subprocess buffer."
   (interactive)
   (send-string (get-buffer-process (current-buffer)) "\C-\\"))
 
 (defun fi:subprocess-suspend ()
-  "Suspend, with a SIGSTOP, the current subprocess."
+  "Suspend the current subprocess."
   (interactive)
   (stop-process nil t))
 
 (defun fi:rlogin-send-stop ()
-  "Send stop to process running through remote login subprocess buffer."
+  "Send a stop (SIGSTOP) signal to the process running as in the current
+subprocess buffer."
   (interactive)
   (send-string (get-buffer-process (current-buffer)) "\C-z"))
 
 (defun fi:subprocess-kill-input ()
-  "Kill all input since the last output by the subprocess."
+  "Kill all input since the last output by the current subprocess."
   (interactive)
   (kill-region (process-mark (get-buffer-process (current-buffer)))
 	       (point)))
@@ -526,7 +550,7 @@ making the shell conform to the value of default-directory."
    (format "cd %s\n" default-directory)))
 
 (defun fi:log-functional-change ()
-  "Indicate that a function has changed by putting in a description message
+  "Indicate that a function has changed by putting in a descriptive message
 at the head of the function."
   (interactive)
   (let* ((case-fold-search t)
@@ -563,17 +587,18 @@ at the head of the function."
 	res)
     comment-start))
 
-(defun fi:beginning-of-defun (&optional n)
-  "Move the point to the start of the current top-level form.  With a
-prefix argument, do it this many times.  Returns t, unless beginning of
-buffer is hit."
+(defun fi:beginning-of-defun (&optional arg)
+  "Move the point to the start of the current top-level form.
+With argument ARG, do it that many times.  For when called from a program,
+return t, unless beginning of the buffer is reached before finding the
+target."
   (interactive "p")
   (or (looking-at "^\\s(")
       (if fi:subprocess-mode
 	  (goto-char (process-mark (get-buffer-process (current-buffer))))
 	(progn
-	  (and n (< n 0) (forward-char 1))
-	  (and (re-search-backward "^\\s(" nil 'move (or n 1))
+	  (and arg (< arg 0) (forward-char 1))
+	  (and (re-search-backward "^\\s(" nil 'move (or arg 1))
 	       (progn (beginning-of-line) t))))))
 
 (defun fi:end-of-defun ()
@@ -603,7 +628,8 @@ form.  If there are too many parens delete them.  The form is also indented."
   (forward-sexp 1))
 
 (defun fi:find-unbalanced-parenthesis ()
-  "Verify that parentheses in the current Lisp buffer are balanced."
+  "Verify that parentheses in the current Lisp source buffer are balanced.
+If they are not, position the point at the first syntax error found."
   (interactive)
   (let ((started-here (point)))
     (goto-char (point-min))
@@ -616,8 +642,8 @@ form.  If there are too many parens delete them.  The form is also indented."
 
 (defun fi:fill-paragraph (arg)
   "Properly fill paragraphs of Lisp comments by inserting the appropriate
-semicolons at the beginning of lines.  Prefix argument means justify
-paragraph as well."
+semicolons at the beginning of lines.  With prefix argument, ARG, justify
+the paragraph as well."
   (interactive "P")
   (save-excursion
     (beginning-of-line 0)
@@ -627,24 +653,24 @@ paragraph as well."
 	  (fill-paragraph arg))
       (fill-paragraph arg))))
 
-(defun fi:extract-list (n)
-  "Take the s-expression to which the cursor points and remove the outer N,
-defaults to 1, s-expressions."
+(defun fi:extract-list (arg)
+  "Take the list after the point and and remove the surrounding list.  With
+argument ARG do it that many times." 
   (interactive "p")
   (let ((string (progn
 		  (mark-sexp 1)
 		  (buffer-substring (point) (mark)))))
-    (backward-up-list (or n 1))
+    (backward-up-list (or arg 1))
     (mark-sexp 1)
     (delete-region (point) (mark))
     (insert string)
     (backward-sexp 1)))
 
 (defun fi:comment-region (start end &optional arg)
-  "Comment out all lines in the current region.  With a prefix argument,
-uncomments the region that was commented by this function. 
-When calling from a program, the arguments are the START
-and END of the region, and the optional ARG."
+  "Comment all lines in the current region.  With prefix arg, uncomment the
+region (it should have been commented with this function).
+When calling from a program, arguments are START and END, both buffer
+positions, and ARG."
   (interactive "r\nP")
   (save-excursion
     (let ((start (progn (goto-char (max start (point-min)))

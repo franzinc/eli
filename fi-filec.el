@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-filec.el,v 1.12 1990/08/31 23:45:46 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-filec.el,v 1.13 1991/03/15 12:43:03 layer Exp $
 
 ;; Command and file name completion
 
@@ -36,7 +36,9 @@ as Common Lisp or rlogin buffers)."
 	  (call-interactively 'fi:shell-command-completion)))))
 
 (defun fi:shell-file-name-completion ()
-  "Perform file name completion in subprocess modes."
+  "Perform file name completion in subprocess modes.  A completion buffer
+is displayed when there is more than one completion for a partially
+completed file name."
   (interactive)
   (let ((shell-expand-string
 	 (substitute-in-file-name
@@ -73,10 +75,13 @@ as Common Lisp or rlogin buffers)."
 	  (search-backward shell-expand-file)
 	  (replace-match shell-expand-completion t t))))))
 
-(defun fi:shell-command-completion (shell-expand-string)
-  "Perform file name completion in subprocess modes."
-  (interactive (list (fi::shell-completion-default-prefix)))
-  (let ((completions nil)
+(defun fi:shell-command-completion ()
+  "Perform command name completion in subprocess modes.  A completion buffer
+is displayed when there is more than one completion for a partially
+completed file name."
+  (interactive)
+  (let ((shell-expand-string (fi::shell-completion-default-prefix))
+	(completions nil)
 	(complete-alist nil)
 	(dirs exec-path))
     ;;
@@ -149,7 +154,8 @@ as Common Lisp or rlogin buffers)."
      (point))))
 
 (defun fi::shell-completion-cleanup ()
-  "Clean up windows after shell file name completion."
+  "Clean up the window used for name completion after shell file name or
+command completion."
   (interactive)
   (if fi::shell-completions-window
       (save-excursion

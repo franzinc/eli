@@ -31,7 +31,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.54 1991/03/12 18:30:57 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.55 1991/03/15 12:42:57 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -63,40 +63,38 @@ into the correct Lisp package.")
   "*If non-nil, forms evalutated directly in fi:common-lisp-mode by the
 fi:lisp-eval-* functions will be echoed by Common Lisp.")
 
-(defun fi:set-associated-sublisp (buffer-name)
-  "When evaluated in a Lisp source buffer causes further `eval'
-commands (those which send expressions from Emacs to Lisp) to use
-BUFFER-NAME as the buffer which contains a Lisp subprocess.  If evaluated
-when not in a Lisp source buffer, then the process type is read from the
-minibuffer (\"common-lisp\" or \"franz-lisp\").  The buffer name is
-interactively read and must be the name of an existing buffer.  New buffers
-with the same mode as the current buffer will also use BUFFER-NAME for
-future `eval' commands."
-  (interactive "bBuffer name containing a Lisp process: ")
-  (let* ((process (get-buffer-process (get-buffer buffer-name)))
-	 (mode (or (and (memq major-mode '(fi:common-lisp-mode
-					   fi:franz-lisp-mode))
-			major-mode)
-		   (let* ((alist '(("common-lisp" . fi:common-lisp-mode)
-				   ("franz-lisp" . fi:franz-lisp-mode)))
-			  (type (completing-read "Lisp type: "
-						 alist nil t "common-lisp")))
-		     (cdr (assoc type alist))))))
-    (if process
-	(let ((buffers (buffer-list))
-	      (proc-name (process-name process)))
-	  (cond ((eq mode 'fi:common-lisp-mode)
-		 (setq fi:common-lisp-process-name proc-name))
-		((eq mode 'fi:franz-lisp-mode)
-		 (setq fi:franz-lisp-process-name proc-name)))
-	  (while buffers
-	    (if (eq mode (fi::symbol-value-in-buffer 'major-mode
-						     (car buffers)))
-		(fi::set-in-buffer 'fi::process-name proc-name
-				   (car buffers)))
-	    (setq buffers (cdr buffers))))
-      (error "There is no process associated with buffer %s!"
-	     buffer-name))))
+(defun fi:set-associated-sublisp (buffer-name mode)
+  "Use BUFFER-NAME as the name of a buffer which contains a Lisp subprocess
+to be used for Emacs-Lisp interactions (evaluating expressions, etc) in all
+buffers in MODE.  New buffers created in MODE will also use BUFFER-NAME."
+  (interactive
+   (let* ((buffer-name
+	   (read-buffer "Buffer name containing a Lisp process: " nil t))
+	  
+	  (mode (or (and (memq major-mode '(fi:common-lisp-mode
+					    fi:franz-lisp-mode))
+			 major-mode)
+		    (let* ((alist '(("common-lisp" . fi:common-lisp-mode)
+				    ("franz-lisp" . fi:franz-lisp-mode)))
+			   (type (completing-read "Lisp type: "
+						  alist nil t "common-lisp")))
+		      (cdr (assoc type alist))))))
+     (list buffer-name mode)))
+  (let* ((buffers (buffer-list))
+	 (process (or (get-buffer-process (get-buffer buffer-name))
+		      (error "There is no process associated with buffer %s!"
+			     buffer-name)))
+	 (proc-name (process-name process)))
+    (cond ((eq mode 'fi:common-lisp-mode)
+	   (setq fi::common-lisp-backdoor-main-process-name proc-name))
+	  ((eq mode 'fi:franz-lisp-mode)
+	   (setq fi:franz-lisp-process-name proc-name)))
+    (while buffers
+      (if (eq mode (fi::symbol-value-in-buffer 'major-mode
+					       (car buffers)))
+	  (fi::set-in-buffer 'fi::process-name proc-name
+			     (car buffers)))
+      (setq buffers (cdr buffers)))))
 
 ;;;;
 ;;; Internals
@@ -217,15 +215,15 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
   (cond (fi::process-name)
 	((or (eq major-mode 'fi:inferior-common-lisp-mode)
 	     (eq major-mode 'fi:lisp-listener-mode))
-	 (setq fi::process-name fi:common-lisp-process-name))
+	 (setq fi::process-name fi::common-lisp-backdoor-main-process-name))
 	((eq major-mode 'fi:inferior-franz-lisp-mode)
 	 (setq fi::process-name fi:franz-lisp-process-name))
 	((eq major-mode 'fi:franz-lisp-mode)
 	 (if fi:franz-lisp-process-name
 	     (setq fi::process-name fi:franz-lisp-process-name)))
 	((eq major-mode 'fi:common-lisp-mode)
-	 (if fi:common-lisp-process-name
-	     (setq fi::process-name fi:common-lisp-process-name)))
+	 (if fi::common-lisp-backdoor-main-process-name
+	     (setq fi::process-name fi::common-lisp-backdoor-main-process-name)))
 	(t (error "Cant start a subprocess for Major mode %s." major-mode)))
   ;; start-up the sublisp process if necessary and possible
   (cond ((and fi::process-name
@@ -237,9 +235,9 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 	     (setq fi::process-name fi:franz-lisp-process-name)
 	   (setq fi::process-name (save-excursion (fi:franz-lisp)))))
 	((eq major-mode 'fi:common-lisp-mode)
-	 (if (and fi:common-lisp-process-name 
-		  (get-process fi:common-lisp-process-name))
-	     (setq fi::process-name fi:common-lisp-process-name)
+	 (if (and fi::common-lisp-backdoor-main-process-name 
+		  (get-process fi::common-lisp-backdoor-main-process-name))
+	     (setq fi::process-name fi::common-lisp-backdoor-main-process-name)
 	   (setq fi::process-name (save-excursion (fi:common-lisp)))))
 	(t (error "Can't start a subprocess for sublisp-name %s."
 		  fi::process-name)))

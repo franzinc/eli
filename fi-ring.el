@@ -30,7 +30,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-ring.el,v 1.11 1991/03/12 18:30:43 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-ring.el,v 1.12 1991/03/15 12:42:55 layer Exp $
 
 ;; This code is very similar to the kill-ring implementation
 ;; and implements the fi::subprocess input ring.  Each fi::subprocess buffer
@@ -72,12 +72,13 @@
 	      (concat (car fi::input-ring) string))))
 
 (defun fi::input-region (beg end)
-  "Delete text between point and mark and save in input ring.
+  "Delete the region and save the text in input ring.
 This is the primitive for programs to kill text into the input ring.
-Supply two arguments, character numbers indicating the stretch of text to
-be killed.  If the previous command was also a kill command, the text
-killed this time appends to the text killed last time to make one entry in
-the subprocess input ring." 
+When called from a program, BEG and END are character numbers indicating
+the beginning and end buffer position of text to be killed.
+If the previous command was also a kill command, the text killed this time
+appends to the text killed last time to make one entry in the subprocess
+input ring."
   (interactive "*r")
   (setq fi::last-command-was-successful-search nil)
   (fi::input-ring-save beg end)
@@ -116,7 +117,7 @@ the subprocess input ring."
 
 (defun fi:pop-input (&optional arg)
   "Yank previous text from input ring, and cycle through input ring with
-each successive invocation."
+each successive invocation.  With argument ARG, do it that many times."
   (interactive "*p")
   (setq fi::last-command-was-successful-search nil)
   (if (not (memq last-command '(fi::yank-input
@@ -136,7 +137,8 @@ each successive invocation."
 
 (defun fi:push-input (&optional arg)
   "Yank next text from input ring, and cycle through input ring in reverse
-order with each successive invocation."
+order with each successive invocation.  With argument ARG, do it that many
+times."
   (interactive "*p")
   (setq fi::last-command-was-successful-search nil)
   (if (not (memq last-command '(fi::yank-input
@@ -171,9 +173,9 @@ See also the command fi::yank-input-pop."
       (exchange-point-and-mark)))
 
 (defun fi:list-input-ring (arg &optional reflect)
-  "Display contents of input ring, starting at arg.  The list is displayed
-in reverse order if called from a program and the optional second parameter
-is non-nil."
+  "Display contents of input ring.  With argument ARG, start at command
+number ARG.  The list is displayed in reverse order if called from a
+program and the optional second parameter is non-nil."
   (interactive "p")
   (let* ((input-ring-for-list fi::input-ring)
 	 (input-ring-max-for-list fi::input-ring-max)
@@ -266,8 +268,8 @@ Set fi::input-ring-yank-pointer to text."
     return-value))
 
 (defun fi:re-search-backward-input (arg regexp)
-  "Search backward in the input ring for the ARG occurance of text that
-matches REGEXP and yank it."
+  "Search backward in the input ring for an occurance of text that
+matches REGEXP and yank it.  With argument, find the ARG match."
   (interactive "*p\nsRE search input backward: ")
   (if (string= regexp "") (setq regexp fi::last-input-search-string))
   (if fi::last-command-was-successful-search
@@ -287,8 +289,8 @@ matches REGEXP and yank it."
       (message "Matching string not found in input ring.")))
 
 (defun fi:re-search-forward-input (arg regexp)
-  "Search forward in the input ring for the ARG occurance of text that
-matches REGEXP and yank it."
+  "Search forward in the input ring for an occurance of text that
+matches REGEXP and yank it.  With argument, find the ARG match."
   (interactive "*p\nsRE search input forward: ")
   (if fi::last-command-was-successful-search
       (fi::rotate-yank-input-pointer -1))

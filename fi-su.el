@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-su.el,v 1.7 1991/03/12 18:30:15 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-su.el,v 1.8 1991/03/15 12:42:50 layer Exp $
 
 (defvar fi:su-mode-map nil
   "The su major-mode keymap.")
@@ -57,7 +57,11 @@ Entry to this mode runs the following hooks:
 	fi:subprocess-mode-hook
 	fi:su-mode-hook
 
-in the above order."
+in the above order.
+
+When calling from a program, argument is MODE-HOOK,
+which is funcall'd just after killing all local variables but before doing
+any other mode setup."
   (interactive)
   (kill-all-local-variables)
   (if mode-hook (funcall mode-hook))
@@ -66,12 +70,12 @@ in the above order."
 
   (if (null fi:su-mode-super-key-map)
       (progn
-	(setq fi:su-mode-super-key-map (make-sparse-keymap))
+	(setq fi:su-mode-super-key-map (make-keymap))
 	(fi::subprocess-mode-super-keys fi:su-mode-super-key-map 'shell)))
 
   (if (null fi:su-mode-map)
       (setq fi:su-mode-map
-	(fi::subprocess-mode-commands (make-sparse-keymap)
+	(fi::subprocess-mode-commands (make-keymap)
 				      fi:su-mode-super-key-map
 				      'shell)))
   (use-local-map fi:su-mode-map)
@@ -79,7 +83,19 @@ in the above order."
   (run-hooks 'fi:subprocess-mode-hook 'fi:su-mode-hook))
 
 (defun fi:remote-su-mode (&optional mode-hook)
-  "Major mode for interacting with an inferior su."
+  "Major mode for interacting with an remote inferior su.
+The keymap for this mode is bound to fi:remote-su-mode-map:
+\\{fi:remote-su-mode-map}
+Entry to this mode runs the following hooks:
+
+	fi:subprocess-mode-hook
+	fi:rlogin-mode-hook
+
+in the above order.
+
+When calling from a program, argument is MODE-HOOK,
+which is funcall'd just after killing all local variables but before doing
+any other mode setup."
   (interactive)
   (kill-all-local-variables)
   (if mode-hook (funcall mode-hook))
@@ -88,13 +104,13 @@ in the above order."
 
   (if (null fi:remote-su-mode-super-key-map)
       (progn
-	(setq fi:remote-su-mode-super-key-map (make-sparse-keymap))
+	(setq fi:remote-su-mode-super-key-map (make-keymap))
 	(fi::subprocess-mode-super-keys fi:remote-su-mode-super-key-map
 					'rlogin)))
 
   (if (null fi:remote-su-mode-map)
       (setq fi:remote-su-mode-map
-	(fi::subprocess-mode-commands (make-sparse-keymap)
+	(fi::subprocess-mode-commands (make-keymap)
 				      fi:remote-su-mode-super-key-map
 				      'rlogin)))
   (use-local-map fi:remote-su-mode-map)
@@ -103,11 +119,11 @@ in the above order."
 
 (defun fi:su (&optional buffer-number)
   "Start an su in a buffer whose name is determined from the optional
-prefix argument BUFFER-NUMBER.  Shell buffer names start with `*root'
-and end with `*', with an optional `-N' in between.  If BUFFER-NUMBER is
-not given it defaults to 1.  If BUFFER-NUMBER is >= 0, then the buffer is
-named `*root-<BUFFER-NUMBER>*'.  If BUFFER-NUMBER is < 0, then the first
-available buffer name is chosen."
+prefix argument BUFFER-NUMBER.  Su buffer names start with `*su*'
+and end with an optional \"<N>\".  If BUFFER-NUMBER is not given it defaults
+to 1.  If BUFFER-NUMBER is 1, then the trailing \"<1>\" is omited.  If
+BUFFER-NUMBER is < 0, then the first available buffer name is chosen (a
+buffer with no process attached to it."
   (interactive "p")
   (fi::make-subprocess "root"
 		       buffer-number
@@ -119,12 +135,14 @@ available buffer name is chosen."
 		       'fi::su-filter))
 
 (defun fi:remote-root-login (&optional buffer-number host)
-  "Start an su in a buffer whose name is determined from the optional
-prefix argument BUFFER-NUMBER.  Shell buffer names start with `*root'
-and end with `*', with an optional `-N' in between.  If BUFFER-NUMBER is
-not given it defaults to 1.  If BUFFER-NUMBER is >= 0, then the buffer is
-named `*root-<BUFFER-NUMBER>*'.  If BUFFER-NUMBER is < 0, then the first
-available buffer name is chosen."
+  "Start a remote root rlogin in a buffer whose name is determined from the
+optional prefix argument BUFFER-NUMBER and the HOST.  Remote root Rlogin
+buffer names start with `*root-HOST*' and end with an optional \"<N>\".  If
+BUFFER-NUMBER is not given it defaults to 1.  If BUFFER-NUMBER is 1, then
+the trailing \"<1>\" is omited.  If BUFFER-NUMBER is < 0, then the first
+available buffer name is chosen (a buffer with no process attached to it.
+
+The host name is read from the minibuffer."
   (interactive "p\nsRemote host: ")
   (let ((fi:subprocess-env-vars
 	 '(("EMACS" . "t")
