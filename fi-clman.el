@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 2.0 1993/03/23 11:05:48 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 2.1 1993/03/23 11:10:13 layer Exp $
 
 (defun fi::figure-out-mandir ()
   (do* ((path load-path (cdr path))
@@ -91,6 +91,7 @@ clman buffer, from anywhere in the buffer."
 	(beginning-of-line))))
 
 (defun fi:clman-next-entry ()
+  "Find the DESCRIPTION section."
   (interactive)
   (if (search-forward "DESCRIPTION" nil t)
       (progn (beginning-of-line)(forward-line 1))
