@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.80 1993/07/22 23:04:35 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.81 1993/07/23 03:48:29 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -14,7 +14,7 @@ elcs = fi-modes.elc fi-indent.elc fi-subproc.elc fi-sublisp.elc fi-filec.elc\
 	fi-utils.elc fi-clman.elc Doc.elc\
 	fi-basic-lep.elc fi-lep.elc fi-lze.elc fi-db.elc\
 	fi-stream.elc fi-dmode.elc fi-composer.elc fi-changes.elc\
-	fi-leep0.elc fi-leep.elc
+	fi-leep0.elc fi-leep.elc fi-leep-lemacs.elc
 
 # cl.el instead of cl is needed because of a bug in emacs 18.59 (the
 # cl.elc there is bogus and doesn't expand setf methods prooperly).
@@ -24,6 +24,10 @@ compile_time_env = -l cl.el -l bytecomp -l `pwd`/fi-utils -l `pwd`/fi-basic-lep
 all:	elcs test.out docs tags
 
 fi-leep.elc:
+	$(emacs) -nw -batch -q $(compile_time_env)\
+		-l `pwd`/fi-leep0.elc -f batch-byte-compile $*.el
+
+fi-leep-lemacs.elc:
 	$(emacs) -nw -batch -q $(compile_time_env)\
 		-l `pwd`/fi-leep0.elc -f batch-byte-compile $*.el
 

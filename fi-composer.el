@@ -1,4 +1,4 @@
-;; Copyright (c) 1987-1991 Franz Inc, Berkeley, Ca.
+;; Copyright (c) 1987-1993 Franz Inc, Berkeley, Ca.
 ;;
 ;; Permission is granted to any individual or institution to use, copy,
 ;; modify, and distribute this software, provided that this complete
@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.15 1993/07/22 23:04:52 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.16 1993/07/23 03:48:39 layer Exp $
 
 (defun composer::make-listener (new-screen-p)
   (when (and new-screen-p (fboundp 'create-screen))

@@ -1,4 +1,5 @@
 ;; Copyright (C) 1985, 1986, 1987 Free Software Foundation, Inc.
+;; Copyright (c) 1987-1993 Franz Inc, Berkeley, Ca.
 ;;
 ;; This file is derived from part of GNU Emacs.
 ;;
@@ -17,7 +18,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-ring.el,v 1.15 1993/06/29 22:01:56 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-ring.el,v 1.16 1993/07/23 03:49:11 layer Exp $
 
 ;; This code is very similar to the kill-ring implementation
 ;; and implements the fi::subprocess input ring.  Each fi::subprocess buffer

@@ -1,4 +1,4 @@
-;; Copyright (c) 1987-1991 Franz Inc, Berkeley, Ca.
+;; Copyright (c) 1987-1993 Franz Inc, Berkeley, Ca.
 ;;
 ;; Permission is granted to any individual or institution to use, copy,
 ;; modify, and distribute this software, provided that this complete
@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.83 1993/07/15 00:02:02 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.84 1993/07/23 03:48:53 layer Exp $
 
 (if (string-match "ucid" emacs-version)
     (require 'tags "etags")

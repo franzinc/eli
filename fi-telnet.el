@@ -1,4 +1,4 @@
-;; Copyright (c) 1987-1991 Franz Inc, Berkeley, Ca.
+;; Copyright (c) 1987-1993 Franz Inc, Berkeley, Ca.
 ;;
 ;; Permission is granted to any individual or institution to use, copy,
 ;; modify, and distribute this software, provided that this complete
@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-telnet.el,v 1.9 1991/09/30 11:38:48 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-telnet.el,v 1.10 1993/07/23 03:49:33 layer Exp $
 
 (defvar fi:telnet-mode-map nil
   "The telnet major-mode keymap.")

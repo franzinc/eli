@@ -1,4 +1,4 @@
-;; Copyright (c) 1987-1991 Franz Inc, Berkeley, Ca.
+;; Copyright (c) 1987-1993 Franz Inc, Berkeley, Ca.
 ;;
 ;; Permission is granted to any individual or institution to use, copy,
 ;; modify, and distribute this software, provided that this complete
@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.43 1993/07/22 23:05:10 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.44 1993/07/23 03:49:35 layer Exp $
 
 ;;; Misc utilities
 
@@ -115,18 +115,17 @@ nil if non-exists.  Yes, a value of nil and no local value are the same."
       (setq result (concat result (char-to-string xxx))))
     result))
 
-(defun fi::find-path (file)
-  "Find FILE in load-path, return the full pathname."
-  (let ((p load-path)
-	(done nil) res)
-    (while (and (not done) p)
+(defun fi::find-path (path file)
+  "Using PATH, find FILE, return the full pathname."
+  (let ((done nil) res)
+    (while (and (not done) path)
       (if (file-exists-p
-	   (setq res (concat (car p)
-			     (unless (string-match "/$" (car p)) "/")
+	   (setq res (concat (car path)
+			     (unless (string-match "/$" (car path)) "/")
 			     file)))
 	  (setq done t)
 	(setq res nil))
-      (setq p (cdr p)))
+      (setq path (cdr path)))
     res))
 
 (defun fi::command-exists-p (command)
@@ -668,8 +667,11 @@ created by fi:common-lisp."
       (setq ptr (cdr ptr)))
     result))
 
-(if (string-match "Lucid" emacs-version)
-    ;; lemacs 19.6:
+(defun fi::insert-string (string start end)
+  (do ((p start (1+ p)))
+      ((eq p end))
+    (insert-char (aref string p) 1)))
+
+(if (string-match "ucid" emacs-version)
     (defun fi::mark () (mark t))
-  ;; the rest of the world:
   (defun fi::mark () (mark)))

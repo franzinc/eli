@@ -1,6 +1,7 @@
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
 ;; Copyright (C) 1985, 1986, 1987 Free Software Foundation, Inc.
+;; Copyright (c) 1987-1993 Franz Inc, Berkeley, Ca.
 ;;
 ;; This file is derived from part of GNU Emacs.
 ;;
@@ -19,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.149 1993/07/15 00:02:15 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.150 1993/07/23 03:49:29 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -863,12 +864,21 @@ the first \"free\" buffer name and start a subprocess in that buffer."
     "\n---------------------------------------------------------------------\n"))
   t)
 
+(make-variable-buffer-local 'fi::subprocess-filter-output-preprocess-hook)
+(setq-default fi::subprocess-filter-output-preprocess-hook nil)
+
+(make-variable-buffer-local 'fi::subprocess-filter-insert-output-hook)
+(setq-default fi::subprocess-filter-insert-output-hook nil)
+
 (defun fi::subprocess-filter (process output &optional stay cruft)
   "Filter output from processes tied to buffers.
 This function implements continuous output to visible buffers."
   (let ((inhibit-quit t))
     (if cruft
 	(setq output (fi::substitute-chars-in-string '((?\r)) output)))
+    (when fi::subprocess-filter-output-preprocess-hook
+      (setq output
+	(funcall fi::subprocess-filter-output-preprocess-hook output)))
     (let* ((old-buffer (current-buffer))
 	   (buffer (process-buffer process))
 	   (in-buffer (eq buffer old-buffer))
@@ -917,8 +927,10 @@ This function implements continuous output to visible buffers."
 	;;   `(insert-string)' followed by `(set-marker)' to avoid this
 	;;   problem.  This also happens to be the way
 	;;   `handle_process_output()' deals with this in `process.c'.
-	(insert-string output)
-	(set-marker marker (point)))
+	(if fi::subprocess-filter-insert-output-hook
+	    (funcall fi::subprocess-filter-insert-output-hook output marker)
+	  (insert-string output)
+	  (set-marker marker (point))))
       (if (not in-buffer)
 	  (if (and fi:subprocess-continuously-show-output-in-visible-buffer
 		   point-not-before-marker)

@@ -1,4 +1,4 @@
-;; Copyright (c) 1987-1991 Franz Inc, Berkeley, Ca.
+;; Copyright (c) 1987-1993 Franz Inc, Berkeley, Ca.
 ;;
 ;; Permission is granted to any individual or institution to use, copy,
 ;; modify, and distribute this software, provided that this complete
@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-su.el,v 1.12 1992/01/12 11:48:13 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-su.el,v 1.13 1993/07/23 03:49:20 layer Exp $
 
 (defvar fi:su-mode-map nil
   "The su major-mode keymap.")

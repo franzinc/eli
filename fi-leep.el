@@ -1,4 +1,4 @@
-;; Copyright (c) 1987-1991 Franz Inc, Berkeley, Ca.
+;; Copyright (c) 1987-1993 Franz Inc, Berkeley, Ca.
 ;;
 ;; Permission is granted to any individual or institution to use, copy,
 ;; modify, and distribute this software, provided that this complete
@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-leep.el,v 1.9 1993/07/22 23:04:59 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-leep.el,v 1.10 1993/07/23 03:48:58 layer Exp $
 
 ;; The epoch side of presentations in a lisp-listener window.
 
@@ -82,6 +82,8 @@
   (make-local-variable 'window-stream-presentation)
   (setq window-stream-presentation (make-presentation :start 0 :end 8388607))
   
+  ;; The presentation-stack local variable is a stack of presentations opened
+  ;; but not yet closed.
   (make-local-variable 'presentation-stack)
   (setq presentation-stack (list window-stream-presentation))
   
@@ -160,23 +162,6 @@ The function should be defined in this way:
     (composer::setup-buffer-for-presentations buffer)
     (set-process-filter proc 'fi::leep-subprocess-filter)
     proc))
-
-;; The presentation-stack local variable is a stack of presentations opened
-;; but not yet closed.
-
-;; This defstruct is moved to file leep0.el because the cruftly compiler
-;; doesn't understand a defstruct in the same file.
-
-;(defstruct presentation
-;  start
-;  end
-;  data
-;  subpresentation-vector)
-
-(defun fi::insert-string (string start end)
-  (do ((p start (1+ p)))
-      ((eq p end))
-    (insert-char (aref string p) 1)))
 
 (defun fi::leep-subprocess-filter (process output &optional stay cruft)
   "Filter output to buffer including presentations."
@@ -408,9 +393,7 @@ The function should be defined in this way:
   (pop-event 'motion)
   (pop-event 'button))
 
-;;; Install.
-(when (boundp 'epoch::version)
-  (fi::add-leep-mouse-tracker))
+(push '(fi::add-leep-mouse-tracker) fi::initialization-forms)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

@@ -1,4 +1,4 @@
-;; Copyright (c) 1987-1991 Franz Inc, Berkeley, Ca.
+;; Copyright (c) 1987-1993 Franz Inc, Berkeley, Ca.
 ;;
 ;; Permission is granted to any individual or institution to use, copy,
 ;; modify, and distribute this software, provided that this complete
@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.29 1993/06/29 22:01:54 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.30 1993/07/23 03:49:05 layer Exp $
 ;;
 ;; Code the implements evaluation in via the backdoor
 

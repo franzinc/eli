@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.42 1993/07/22 23:05:07 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.43 1993/07/23 03:49:16 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -37,6 +37,10 @@
   (when (boundp 'epoch::version)
     (load "fi-leep0.elc")
     (load "fi-leep.elc"))
+
+  (when (string-match "ucid" emacs-version)
+    (load "fi-leep0.elc")
+    (load "fi-leep-lemacs.elc"))
 
   (load "fi-ring.elc")
   (load "fi-filec.elc")

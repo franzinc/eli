@@ -1,4 +1,4 @@
-;; Copyright (c) 1987-1991 Franz Inc, Berkeley, Ca.
+;; Copyright (c) 1987-1993 Franz Inc, Berkeley, Ca.
 ;;
 ;; Permission is granted to any individual or institution to use, copy,
 ;; modify, and distribute this software, provided that this complete
@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.53 1993/07/22 23:56:46 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.54 1993/07/23 03:49:02 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -353,7 +353,7 @@ information on how to send the mail."
 	(insert (format "Emacs-Lisp interface version: %s\n\n"
 			fi:emacs-lisp-interface-version))
 	(insert (format "load-path: %s\n\n" load-path))
-	(let* ((file (fi::find-path "fi-site-init.el"))
+	(let* ((file (fi::find-path load-path "fi-site-init.el"))
 	       (dir (when file
 		      (file-name-directory file))))
 	  (if dir

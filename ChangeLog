@@ -1,3 +1,21 @@
+Thu Jul 22 20:45:32 1993  Kevin Layer  (layer at sole)
+
+	* Makefile: new file fi-leep-lemacs.el
+
+	* fi-clman.el: look in exec-path for `clman'
+
+	* fi-leep-lemacs.el: presenting listeners work for lemacs!
+
+	* fi-leep.el: push more stuff on fi::initialization-forms
+
+	* fi-site-init.el: load fi-leep-lemacs.elc, when in lemacs
+
+	* fi-subproc.el: generalize and hooks to fi::subprocess-filter so
+	that the fi-leep-lemacs.el can use it.
+
+	* fi-utils.el: add fi::insert-string (used by epoch and lemacs
+	leeps)
+
 Thu Jul 22 16:55:18 1993  Kevin Layer  (layer at sole)
 
 	* fi-lemacs.el: more menu hacking
