@@ -61,6 +61,17 @@ buffer-local variables."
   (kill-all-local-variables)
   (setq major-mode 'fi:shell-mode)
   (setq mode-name "Shell")
+
+  (if (null fi:shell-mode-super-key-map)
+      (progn
+	(setq fi:shell-mode-super-key-map (make-sparse-keymap))
+	(fi::subprocess-mode-super-keys fi:shell-mode-super-key-map 'shell)))
+
+  (if (null fi:shell-mode-map)
+      (setq fi:shell-mode-map
+	(fi::subprocess-mode-commands (make-sparse-keymap)
+				      fi:shell-mode-super-key-map
+				      'shell)))
   (use-local-map fi:shell-mode-map)
   (setq fi:subprocess-super-key-map fi:shell-mode-super-key-map)
   (run-hooks 'fi:subprocess-mode-hook 'fi:shell-mode-hook))
@@ -75,14 +86,3 @@ buffer-local variables."
 This function always creates a new subprocess and buffer."
   (interactive)
   (fi::make-process "shell" "shell" 'fi:shell-mode nil t))
-
-(if (null fi:shell-mode-super-key-map)
-    (progn
-      (setq fi:shell-mode-super-key-map (make-sparse-keymap))
-      (fi::subprocess-mode-super-keys fi:shell-mode-super-key-map 'shell)))
-
-(if (null fi:shell-mode-map)
-    (setq fi:shell-mode-map
-      (fi::subprocess-mode-commands (make-sparse-keymap)
-				    fi:shell-mode-super-key-map
-				    'shell)))

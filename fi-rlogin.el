@@ -42,6 +42,21 @@ are the names of functions."
   (kill-all-local-variables)
   (setq major-mode 'fi:rlogin-mode)
   (setq mode-name "Rlogin")
+
+  (if (null fi:rlogin-mode-super-key-map)
+      (let ((map (make-sparse-keymap)))
+	(setq map (fi::subprocess-mode-super-keys map 'rlogin))
+	(define-key map "\C-z"	'fi:rlogin-send-stop)
+	(define-key map "\C-c"	'fi:rlogin-send-interrupt)
+	(define-key map "\C-d"	'fi:rlogin-send-eof)
+	(define-key map "\C-\\"	'fi:rlogin-send-quit)
+	(setq fi:rlogin-mode-super-key-map map)))
+
+  (if (null fi:rlogin-mode-map)
+      (setq fi:rlogin-mode-map
+	(fi::subprocess-mode-commands (make-sparse-keymap)
+				      fi:rlogin-mode-super-key-map
+				      'rlogin)))
   (use-local-map fi:rlogin-mode-map)
   (setq fi:subprocess-super-key-map fi:rlogin-mode-super-key-map)
   (setq fi:shell-popd-regexp nil)
@@ -100,18 +115,3 @@ Watch for the first shell prompt from the remote login, then send the string
 	  (fi::send-string-split process "stty -echo nl\n" nil)))
     (if old-buffer
 	(set-buffer old-buffer))))
-
-(if (null fi:rlogin-mode-super-key-map)
-    (let ((map (make-sparse-keymap)))
-      (setq map (fi::subprocess-mode-super-keys map 'rlogin))
-      (define-key map "\C-z"	'fi:rlogin-send-stop)
-      (define-key map "\C-c"	'fi:rlogin-send-interrupt)
-      (define-key map "\C-d"	'fi:rlogin-send-eof)
-      (define-key map "\C-\\"	'fi:rlogin-send-quit)
-      (setq fi:rlogin-mode-super-key-map map)))
-
-(if (null fi:rlogin-mode-map)
-    (setq fi:rlogin-mode-map
-      (fi::subprocess-mode-commands (make-sparse-keymap)
-				    fi:rlogin-mode-super-key-map
-				    'rlogin)))
