@@ -1,6 +1,6 @@
 /* Copyright (C) 1993, Franz Inc., Berkeley, CA.  All rights reserved. */
 
-/* $Id: makeman.c,v 2.3 1996/08/01 22:36:50 layer Exp $ */
+/* $Id: makeman.c,v 2.4 1996/10/03 07:21:10 layer Exp $ */
 
 #include "clman.h"
 
@@ -179,9 +179,9 @@ write_file(name, fd)
 	   nsymbols, data_size, table_byte_size);
 #endif
 
-    h.entry_table_size = table_byte_size;
-    h.string_table_size = string_table_size;
-    h.data_size = data_size;
+    h.entry_table_size = htonl(table_byte_size);
+    h.string_table_size = htonl(string_table_size);
+    h.data_size = htonl(data_size);
 
     if (write(fd, &h, sizeof(h)) != sizeof(h)) {
 	perror(name);

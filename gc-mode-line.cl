@@ -1,8 +1,9 @@
-;;; gc-mode-line.cl	-[Thu Aug  1 15:31:51 1996 by layer]-
-;;; $Id: gc-mode-line.cl,v 2.3 1996/08/01 22:36:48 layer Exp $
+;;; gc-mode-line.cl	-[Wed Oct  2 17:35:08 1996 by layer]-
+;;; $Id: gc-mode-line.cl,v 2.4 1996/10/03 07:21:09 layer Exp $
 
 ;;; This and the accompanying gc-mode-line.c file implement `Run Bars' in the
-;;; Emacs mode line for Common Lisp buffers, both interaction and source buffers.
+;;; Emacs mode line for Common Lisp buffers, both interaction and source
+;;; buffers.
 
 ;;; This file may be used with Allegro CL version 4.2 and the Franz Emacs-Lisp
 ;;; interface version 2.0.12 or later.  In versions after 4.2 this code will be

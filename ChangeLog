@@ -1,4 +1,17 @@
 *******************************************************************************
+2.0.20.alpha.5 release for ACL on Windows
+*******************************************************************************
+
+Thu Oct  3 00:13:21 1996  Kevin Layer  <layer@freezer>
+
+	* clman.data added to repository
+	* manual/OBLIST.el added to repository
+	* clman.h: include netinet/in.h for htonl() macro
+	* makeman.c: convert to network byte order
+ 	* fi-clman.el: make more friendly in the face of no manual/
+	directory.
+	
+*******************************************************************************
 2.0.20 alpha.4 release for ACL on Windows
 *******************************************************************************
 

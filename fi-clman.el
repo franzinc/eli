@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-clman.el,v 2.14 1996/09/26 19:27:34 layer Exp $
+;; $Id: fi-clman.el,v 2.15 1996/10/03 07:21:05 layer Exp $
 
 (defvar fi::clman-prog)
 (setq fi::clman-prog
@@ -20,15 +20,11 @@
   (format "%sclman.data" (file-name-directory load-file-name)))
 
 (defvar fi::manual-dir)
-(setq fi::manual-dir
-  (let ((m (format "%smanual/" (file-name-directory load-file-name))))
-    (or (file-exists-p m)
-	(error "%s does not exist" m))
-    m))
+(setq fi::manual-dir (format "%smanual/" (file-name-directory load-file-name)))
 
 (defvar fi::clman-big-oblist)
 (unless (boundp 'fi::clman-big-oblist)
-  (load (concat fi::manual-dir "OBLIST")))
+  (condition-case nil (load (concat fi::manual-dir "OBLIST")) (error nil)))
 
 (defvar fi:clman-mode-map nil
   "*Major mode key definitions for viewing a clman page.")
@@ -48,7 +44,8 @@ math:).  The buffer that is displayed will be in CLMAN mode."
    (let* ((symbol-at-point (fi::get-symbol-at-point t))
 	  (res (completing-read (format "CLMAN for Symbol (default %s): "
 					symbol-at-point)
-				fi::clman-big-oblist
+				(or fi::clman-big-oblist
+				    (error "OBLIST not loaded"))
 				nil
 				nil
 				nil)))
@@ -81,7 +78,8 @@ math:).  The buffer that is displayed will be in CLMAN mode."
 	(message "%d additional clman pages at end of buffer"
 		 (- exit-status 1)))))
    (t
-    (let ((files (cdr (assoc symbol fi::clman-big-oblist))))
+    (let ((files (cdr (assoc symbol (or fi::clman-big-oblist
+					(error "OBLIST not loaded"))))))
       (if files
 	  (progn
 	    (fi::clman-display-file fi:clman-displaying-buffer files)
@@ -99,7 +97,8 @@ buffer will be in CLMAN mode."
     (if (not (eq buf (current-buffer)))
       (switch-to-buffer buf))
     (erase-buffer)
-    (dolist (obj fi::clman-big-oblist)
+    (dolist (obj (or fi::clman-big-oblist
+		     (error "OBLIST not loaded")))
       (if  (and (string-match ".+:" (car obj))
 		(string-match string (car obj)))
 	  (insert (car obj) "\n")))
