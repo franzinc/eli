@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 3.5 2004/05/04 23:39:12 layer Exp $
+;; $Id: fi-subproc.el,v 3.6 2004/05/05 18:24:34 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -753,7 +753,10 @@ be a string. Use the 6th argument for image file."))
     (apply (function start-process)
 	   process-name
 	   nil ;; buffer-name
-	   image (mapcar 'shell-quote-argument arguments))))
+	   image
+	   (if (on-ms-windows)
+	       (mapcar 'shell-quote-argument arguments)
+	     arguments))))
 
 (defun fi:open-lisp-listener (&optional buffer-number buffer-name
 					setup-function)

@@ -1,3 +1,8 @@
+2004-05-05  Kevin Layer  <layer@gemini>
+
+	* fi-subproc.el: bug14313: fix for non-windows
+	* fi-utils.el: bug14313: fix for non-windows
+
 2004-05-04    <layer@HOBART>
 
 	* fi-subproc.el: bug14313: make compatible with older ELI's
@@ -4927,4 +4932,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.7 $
+$Revision: 3.8 $

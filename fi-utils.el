@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 3.2 2004/05/04 23:39:12 layer Exp $
+;; $Id: fi-utils.el,v 3.3 2004/05/05 18:24:34 layer Exp $
 
 ;;; Misc utilities
 
@@ -1178,6 +1178,16 @@ created by fi:common-lisp."
 
 (defun fi::start-lisp-interface (use-background-streams
 				 &optional lisp-image-name)
+  (if (on-ms-windows)
+      (fi::start-lisp-interface-windows use-background-streams
+					lisp-image-name)
+    (fi::start-lisp-interface-unix use-background-streams lisp-image-name)))
+
+(defun fi::start-lisp-interface-windows (use-background-streams
+					 &optional lisp-image-name)
+  ;; On Windows there is a very small limit on the size of a command line.
+  ;; So, we have to jump through hoops to get the below form evaluated by
+  ;; lisp. 
   (let* ((temp-file
 	  (format "%s\\elidaemon%s" (fi::temporary-directory)
 		  (emacs-pid)))
@@ -1211,5 +1221,24 @@ created by fi:common-lisp."
      (excl::new-start-emacs-lisp-interface :background-streams %s)\
    (excl:start-emacs-lisp-interface %s))\n"
 	  use-background-streams use-background-streams))))
+    
+    args))
+
+(defun fi::start-lisp-interface-unix (use-background-streams
+				      &optional lisp-image-name)
+  (let ((args
+	 (list
+	  "-e"
+	  (format
+	   "\
+ (if (fboundp (quote excl::new-start-emacs-lisp-interface))\
+     (excl::new-start-emacs-lisp-interface :background-streams %s)\
+   (excl:start-emacs-lisp-interface %s))"
+	   use-background-streams use-background-streams))))
+
+    (when lisp-image-name
+      (when (string-match "^~" lisp-image-name)
+	(setq lisp-image-name (expand-file-name lisp-image-name)))
+      (setq args (append (list "-I" lisp-image-name) args)))
     
     args))
