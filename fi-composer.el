@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.10 1991/04/24 10:06:20 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.11 1991/06/19 22:18:02 layer Exp $
 
 (defun composer::make-listener (new-screen-p)
   (when (and new-screen-p (fboundp 'create-screen))
@@ -39,7 +39,7 @@
 
 
 (defun composer::find-definition-in-editor ()
-  (call-interactively 'fi:lisp-find-tag))
+  (call-interactively 'fi:lisp-find-definition))
 
 
 ;;;;Todo:

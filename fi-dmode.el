@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.13 1991/05/28 16:18:18 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-dmode.el,v 1.14 1991/06/19 22:17:59 layer Exp $
 ;;
 
 ;; Create a mode in which each line is a definition and . on that
@@ -76,7 +76,7 @@ Entry to this mode runs the fi:definition-mode-hook."
   (if (null fi:definition-mode-map)
       (let ((map (make-keymap)))
 	(define-key map "\C-_" 'fi:definition-mode-undo)
-	(define-key map "\e."  'fi:lisp-find-tag)
+	(define-key map "\e."  'fi:lisp-find-definition)
 	(define-key map "."    'fi:definition-mode-goto-definition)
 	(define-key map "n"    'fi:definition-mode-goto-next)
 	(define-key map "p"    'fi:definition-mode-goto-previous)
@@ -135,7 +135,7 @@ Entry to this mode runs the fi:inverse-definition-mode-hook."
   (if (null fi:inverse-definition-mode-map)
       (let ((map (make-keymap)))
 	(define-key map "\C-_" 'fi:definition-mode-undo)
-	(define-key map "\e."  'fi:lisp-find-tag)
+	(define-key map "\e."  'fi:lisp-find-definition)
 	(define-key map "."    'fi:definition-mode-goto-definition)
 	(define-key map "n"    'fi:definition-mode-goto-next)
 	(define-key map "c"    'fi:inverse-definition-who-calls)
