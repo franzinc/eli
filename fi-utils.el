@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 1.72 2000/06/27 21:52:38 layer Exp $
+;; $Id: fi-utils.el,v 1.72.6.1 2000/09/19 03:50:40 layer Exp $
 
 ;;; Misc utilities
 
@@ -954,6 +954,8 @@ created by fi:common-lisp."
 ;;;; ...end fi changes.
     t))
 
+(defvar fi::auto-fill-hyphen-special t)
+
 (defun fi::find-fill-prefix-from-current-line ()
   (save-excursion
     (let ((bol (progn (beginning-of-line) (point)))
@@ -966,7 +968,18 @@ created by fi:common-lisp."
 	(if (match-beginning 1)
 	    ;; there is only a comment on this line, so determining the
 	    ;; fill-prefix is simple, just the entire match:
-	    (buffer-substring m0-start m0-end)
+	    (let ((prefix (buffer-substring m0-start m0-end)))
+	      (cond
+	       ((null fi::auto-fill-hyphen-special)
+		(buffer-substring m0-start m0-end))
+	       ((string-match "\\(.*\\)\\( [-0-9]+\\.? \\)" prefix)
+		(concat
+		 (substring prefix (match-beginning 1) (match-end 1))
+		 (make-string (length
+			       (substring prefix
+					  (match-beginning 2) (match-end 2)))
+			      ? )))
+	       (t prefix)))
 	  ;; There is something other than a comment on this line, so we
 	  ;; have to do work to find the real fill-prefix.	  
 ;;;;(setq eol (progn (end-of-line) (point)))

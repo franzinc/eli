@@ -7,6 +7,18 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.1.1
+
+2000-09-18  Kevin Layer  <layer@ultra>
+
+	* fi-keys.el: make fill-paragraph handle more than one space
+	beyond the ;;.
+	* fi-utils.el: make auto-fill of comments handle ";; - " special:
+	don't fill to ";; - " but rather ";;   ".  The variable
+	fi::auto-fill-hyphen-special controls this, in case someone
+	doesn't like it.
+
+*******************************************************************************
 2.1.0
 
 2000-09-05  Kevin Layer  <layer@ultra>

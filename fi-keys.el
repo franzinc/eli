@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 1.117 2000/06/22 20:48:54 layer Exp $
+;; $Id: fi-keys.el,v 1.117.6.1 2000/09/19 03:50:40 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -909,7 +909,7 @@ the paragraph as well."
   (interactive "P")
   (save-excursion
     (beginning-of-line 0)
-    (if (re-search-forward "\\(^[ \t]*[;]+ \\)" nil t)
+    (if (re-search-forward "\\(^[ \t]*[;]+[ ]+\\)" nil t)
 	(let ((fill-prefix (buffer-substring (match-beginning 1)
 					     (match-end 1))))
 	  (fill-paragraph arg))
