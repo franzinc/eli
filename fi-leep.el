@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-leep.el,v 1.4 1991/11/11 14:43:38 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-leep.el,v 1.5 1991/12/05 16:52:26 layer Exp $
 
 ;; The epoch side of presentations in a lisp-listener window.
 
@@ -138,6 +138,7 @@ The function should be defined in this way:
 
 (defun fi::leep-subprocess-filter (process output &optional stay cruft)
   "Filter output to buffer including presentations."
+  ;;(set-buffer (process-buffer process))
   (let ((inhibit-quit t))
     (if cruft
 	(setq output (fi::substitute-chars-in-string '((?\r)) output)))
@@ -208,11 +209,12 @@ The function should be defined in this way:
 	       (set-marker marker (point))))
 	  (unless (eq pnt index)
 	    (fi::insert-string output pnt index)
-	    (set-marker marker (point)))
+	    (set-marker marker (point))
+	    (setq pnt index))
 	  (setq index (+ index 1))
 	  (cond ((eq index len)
 		 (setq incomplete-input "&"
-			 pnt len))
+		       pnt len))
 		((eq (aref output index) ?&)
 		 (insert-char ?& 1)
 		 (set-marker marker (point))
