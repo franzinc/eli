@@ -7,6 +7,14 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.1.6
+	
+2001-05-14  Charles A. Cox  <cox@freezer>
+
+	* fi-basic-lep.cl: Use emacs-mule coding system when communicating
+	with lisp.
+
+*******************************************************************************
 2.1.5
 
 2001-01-05  Kevin Layer  <layer@ultra>
