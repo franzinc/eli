@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-emacs19.el,v 2.23.6.1 2001/06/05 16:01:42 layer Exp $
+;; $Id: fi-emacs19.el,v 2.23.6.2 2001/12/12 01:45:51 layer Exp $
 
 (cond
  ((and (eq fi::emacs-type 'emacs19)
@@ -41,7 +41,10 @@
     (when frame (raise-frame frame))))
 
 (defun fi::defontify-string (str)
-  (format "%s" str))
+  (cond ((fboundp 'set-text-properties)
+	 (set-text-properties 0 (length str) nil str)
+	 str)
+	(t (format "%s" str))))
 
 (defun fi::source-buffer-p ()
   (and (fi::connection-open)

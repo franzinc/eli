@@ -1,4 +1,4 @@
-;; $Id: fi-compile.el,v 2.10.6.2 2000/10/22 00:35:38 layer Exp $
+;; $Id: fi-compile.el,v 2.10.6.3 2001/12/12 01:45:51 layer Exp $
 
 (require 'cl)
 
@@ -27,6 +27,10 @@
     "fi-indent" "fi-keys" "fi-leep0"
     "fi-lep" "fi-lze" "fi-modes" "fi-ring" "fi-rlogin" "fi-shell"
     "fi-stream" "fi-su" "fi-sublisp" "fi-subproc" "fi-telnet" "fi-utils"))
+
+(when (or (eq fi::emacs-type 'xemacs19)
+	  (eq fi::emacs-type 'xemacs20))
+  (setq fi-files (append fi-files '("fi-xemacs"))))
 
 (setq fi-developer-files '("localfidev"))
 

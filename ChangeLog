@@ -7,6 +7,10 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 ******************************************************************************
+join from acl61 to acl6 branch
+command: ../../join.sh acl61 acl61_to_acl6_merge1 acl61_to_acl6_merge2 eli
+
+******************************************************************************
 2.3.0
 
 2001-12-10  Kevin Layer  <layer@crikey>
@@ -16,6 +20,40 @@ For more detailed instructions on filling in the ChangeLog form, see
 ******************************************************************************
 join from acl61 to acl6 branch
 command: ../../join.sh acl61 acl61 acl61_to_acl6_merge1 eli
+
+******************************************************************************
+post-release patch
+
+2001-11-29  Kevin Layer  <layer@crikey>
+
+	* fi-basic-lep.el: fi::lep-debug is history, as it is now needed
+	all the time because of a change I made to
+	lep::make-session-for-lisp (to fix another bug).
+	* fi-utils.el: fi:start-interface-via-file: bind do not set
+	fi:connect-to-windows to `t'.
+
+2001-11-14  Kevin Layer  <layer@crikey>
+
+	* fi-site-init.el: for emacs 21
+	* fi-emacs19.el: for emacs 21
+
+2001-11-13  Kevin Layer  <layer@crikey>
+
+	* fi-xemacs.el: fix for fix below
+
+2001-11-12  Kevin Layer  <layer@crikey>
+
+	* fi-basic-lep.el: bug10572: killing buffer can sometimes lead to
+	an error in emacs.  It's a timing thing that only happens on some
+	emacs and operating system combos.
+	* fi-compile.el: make sure fi-xemacs.el is byte compiled!
+
+2001-11-01  Kevin Layer  <layer@crikey>
+
+    from mikel for spr24742
+	* fi-xemacs.el: don't contact lisp over and over again, cache the
+	value used for the first menu item, and uncache it on the last. 
+
 ******************************************************************************
 2.2.6
 
