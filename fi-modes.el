@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.62 1995/10/02 14:57:09 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.63 1996/05/31 19:06:48 layer Exp $
 
 ;;;; Mode initializations
 
@@ -46,7 +46,9 @@ Lisp mode.")
 
 (defvar fi:common-lisp-file-types '(".cl" ".lisp" ".lsp")
   "*A list of the file types which are automatically put in
-fi:common-lisp-mode.")
+fi:common-lisp-mode.  NOTE: the value of this variable is only used at
+interface load time.  Setting after the interface is loaded will have no
+effect.")
 
 (defvar fi:lisp-do-indentation t
   "*When non-nil, do FI-style indentation in Lisp modes.")

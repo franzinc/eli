@@ -1,3 +1,7 @@
+Fri May 31 12:06:13 1996  Kevin Layer  <layer@freezer>
+
+	* fi-modes.el: fix doc string per an spr
+
 Fri May 31 11:36:32 1996    <layer@hobart.franz.com>
 
 	* fi-shell.el: for emacs 19.31 on windows
