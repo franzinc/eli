@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.31 1989/05/19 11:45:14 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.32 1989/05/19 18:34:32 layer Exp $
 
 cl = /usr/local/cl3.0
 emacs = /usr/local/emacs
@@ -6,7 +6,7 @@ emacs = /usr/local/emacs
 elc-files = modes.elc indent.elc subproc.elc sublisp.elc filec.elc ring.elc\
 	    rlogin.elc shell.elc keys.elc tcplisp.elc\
 	    utils.elc ltags.elc clman.elc clman-oblist.elc\
-	    ../tools/doc.elc
+	    ../../tools/doc.elc
 
 precompile = (set-case-mode :case-sensitive-lower)(require :process)(require :foreign)(require :cstructs)
 
@@ -22,7 +22,7 @@ default:	ipc.fasl emacs.fasl depend spec.out
 
 depend: ${elc-files}
 
-spec.out:	../doc/spec.n ${elc-files}
-	$(emacs) -batch -q -l ../tools/doc.elc
+spec.out:	../../doc/spec.n ${elc-files}
+	$(emacs) -batch -q -l ../../tools/doc.elc
 
-tags:;	(cd ..; etags fi/*.el local/*.el)
+tags:;	(cd ../..; etags lisp/fi/*.el lisp/local/*.el)
