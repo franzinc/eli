@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/Attic/fi-lemacs.el,v 2.12 1993/09/10 17:34:59 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-lemacs.el,v 2.13 1993/09/13 20:50:16 layer Exp $
 
 (defconst fi:allegro-file-menu
     '("ACLFile"
@@ -127,8 +127,9 @@
       ("Xref"
        ["Show calls to" fi:show-calls-to (fi::composer-connection-open)]
        ["Show calls from" fi:show-calls-from (fi::composer-connection-open)]
-       ["Show calls to and from" fi:xxx (fi::composer-connection-open)]
-       ["Discard info" fi:xxx (fi::composer-connection-open)]
+       ["Show calls to and from" fi:show-calls-to-and-from
+	(fi::composer-connection-open)]
+       ["Discard info" fi:discard-xref-info (fi::connection-open)]
        )
       ("Profiler"
        ["Start time profiler" fi:composer-start-time-profiler
@@ -300,6 +301,12 @@
   (message "Starting Allegro Composer...done.")
   (setq fi::composer-running 'yes)
   (setq fi::composer-connection-open 'yes))
+
+(defun fi:discard-xref-info ()
+  (interactive)
+  (message "Discarding cross reference info...")
+  (fi:eval-in-lisp "(progn(xref:discard-all-xref-info)nil)")
+  (message "Discarding cross reference info...done."))
   
 (defun fi:composer-other-options ()
   (interactive)

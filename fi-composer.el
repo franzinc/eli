@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.16 1993/07/23 03:48:39 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.17 1993/09/13 20:50:13 layer Exp $
 
 (defun composer::make-listener (new-screen-p)
   (when (and new-screen-p (fboundp 'create-screen))
@@ -83,6 +83,14 @@ This command will only work in a Common Lisp image that has Allegro
 Composer loaded and initialized."
   (interactive (fi::get-default-symbol "Function"))
   (fi::show-calls function  ':kid "Could not show calls from %s"))
+
+(defun fi:show-calls-to-and-from (function)
+  "Show a graph of the calls to and from FUNCTION.
+
+This command will only work in a Common Lisp image that has Allegro
+Composer loaded and initialized."
+  (interactive (fi::get-default-symbol "Function"))
+  (fi::show-calls function  ':both "Could not show calls to and from %s"))
 
 (defun fi::show-calls (function direction msg)
   (fi::make-request
