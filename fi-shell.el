@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-shell.el,v 1.3 1988/04/25 15:16:29 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-shell.el,v 1.4 1988/05/09 17:21:28 layer Exp $
 
 (defvar fi:shell-mode-map nil
   "The shell major-mode keymap.")
@@ -45,7 +45,7 @@
 (defvar fi:explicit-shell-image-arguments nil
   "Explicit Shell image arguments when invoked from (fi:shell).")
 
-(defvar fi:default-shell-file-name "sh"
+(defvar fi:default-shell-file-name "csh"
   "Default Shell image to invoke from (fi:shell).")
 
 (defvar fi:default-shell-image-arguments '("-i")
