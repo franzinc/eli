@@ -1,3 +1,9 @@
+Fri May 31 11:36:32 1996    <layer@hobart.franz.com>
+
+	* fi-shell.el: for emacs 19.31 on windows
+	* fi-subproc.el: for windows
+	* fi-version.el: fix on-ms-windows function
+
 Tue May 21 13:04:00 1996  layer  (layer at HOBART)
 
 	* fi-keys.el: rfe2356: duplicate global bindings on C-c

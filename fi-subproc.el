@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.160 1996/05/16 21:51:16 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.161 1996/05/31 18:38:08 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -132,7 +132,7 @@ fit, or otherwise in a popup buffer.")
      (lambda (use-background-streams)
        (if (on-ms-windows)
 ;;;; this is temporary, while we get the emacs-lisp interface to work on NT
-	   (list "-I" "dcl.img")
+	   nil ;; (list "-I" "dcl.img")
 	 (list "-e"
 	       (format "(excl:start-emacs-lisp-interface %s)"
 		       use-background-streams)))))

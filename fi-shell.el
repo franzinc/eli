@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-shell.el,v 1.20 1993/07/23 03:49:15 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-shell.el,v 1.21 1996/05/31 18:38:06 layer Exp $
 
 (defvar fi:shell-mode-map nil
   "The shell major-mode keymap.")
@@ -16,14 +16,20 @@
 (defvar fi:shell-mode-super-key-map nil
   "Used for super-key processing in shell mode.")
 
-(defvar fi:shell-image-name "csh"
+(defvar fi:shell-image-name
+    (if (on-ms-windows)
+	"C:\\COMMAND.COM"
+      "csh")
   "*Default Shell image to invoke from (fi:shell).  If the value
 is a string then it names the image file or image path that
 `fi:shell' invokes.  Otherwise, the value of this variable is given
 to funcall, the result of which should yield a string which is the image
 name or path.")
 
-(defvar fi:shell-image-arguments '("-i")
+(defvar fi:shell-image-arguments
+    (if (on-ms-windows)
+	nil
+      '("-i"))
   "*Default Shell image arguments when invoked from (fi:shell).")
 
 (defvar fi:shell-prompt-pattern
