@@ -31,7 +31,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.30 1991/07/30 20:50:42 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.31 1991/08/22 21:28:15 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If non-nil, semicolons that begin comments are indented as they are
@@ -239,7 +239,9 @@ little consing as possible.")
 	((integerp spec) (list (- (current-column) spec) nil))
 	(t (error "Bad comment indentation specification for count %d."
 		  count)))))))
- 
+
+(defvar fi::lisp-doing-electric-semicolon nil)
+
 (defun fi:lisp-semicolon ()
   "Lisp semicolon hook."
   (interactive)
@@ -247,7 +249,8 @@ little consing as possible.")
   (if fi:lisp-electric-semicolon
       (save-excursion
 	(skip-chars-backward ";")
-	(fi::indent-lisp-semicolon))))
+	(let ((fi::lisp-doing-electric-semicolon t))
+	  (fi::indent-lisp-semicolon)))))
  
 (defun fi::indent-lisp-semicolon (&optional at last-state)
   "Indent Lisp semicolon at point.
@@ -289,6 +292,7 @@ status of that parse."
 	      (let ((to-column (funcall comment-indent-hook (point)))
 		    (old-column (current-column)))
 		(if (and (second fi::comment-indent-hook-values)
+			 (null fi::lisp-doing-electric-semicolon)
 			 (save-excursion
 			   (skip-chars-backward "\t ")
 			   (not (bolp))))
@@ -624,7 +628,10 @@ of the start of the containing expression."
       (get (intern-soft (if fi:indent-methods-case-sensitive
 			    name
 			  (downcase name)))
-	   'fi:lisp-indent-hook)))
+	   'fi:lisp-indent-hook)
+      (and (or (string-match "^with-" name)
+	       (string-match "^do-" name))
+	   1)))
 
 (defun fi::lisp-invoke-method (form-start method depth count state
 			       indent-point)
@@ -1559,7 +1566,7 @@ if matched at the beginning of a line, means don't indent that line."
 	       t			; keyword-arg-pairs-p
 	       t			; keyword-count
 	       t			; special-keyword-count
-	       1			; special-count
+	       0			; special-count
 	       nil			; ignore-after-count
 	       ;; keywords recognized:
 	       "named" "initially" "finally" "nodeclare" "do" "doing"
