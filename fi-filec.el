@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-filec.el,v 1.10 1988/11/03 17:09:21 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-filec.el,v 1.11 1989/05/19 11:44:12 layer Rel $
 
 ;; Command and file name completion
 
@@ -19,7 +19,6 @@ as Common Lisp or rlogin buffers)."
   ;; it doesn't matter).
   (interactive)
   (let* ((completion-ignore-case nil)
-	 (completion-ignored-extensions nil)
 	 (opoint (point))
 	 (input-start
 	  (save-excursion
