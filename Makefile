@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.138.4.8 1999/02/01 19:14:23 layer Exp $
+# $Id: Makefile,v 1.138.4.9 1999/03/19 18:55:22 layer Exp $
 # This makefile requires GNU make.
 
 include version.mak
@@ -7,10 +7,10 @@ SHELL = /bin/sh
 
 # $(OS) is from the environment on Windows NT
 ifeq ($(OS),Windows_NT)
-emacsdir = $(shell perl emacsdir.pl)
+emacsdir = $(shell perl.exe emacsdir.pl)
 emacs = $(emacsdir)/bin/emacs.exe
 # ../bin/pwd prints like c:/... instead of //c/... like the cygnus version.
-pwd = $(shell ../bin/pwd)
+pwd = $(shell ../bin/pwd.exe)
 else
 xemacs = xemacs
 emacs = emacs
