@@ -11,6 +11,9 @@ For more detailed instructions on filling in the ChangeLog form, see
 
 Wed Mar 18 10:32:16 1998  Kevin Layer  <layer@ultra>
 
+    new files:
+	* emacsdir.pl
+    changed files:
 	* Makefile: use script to find emacs dir on windows
 	* fi-subproc.el: only set fi:common-lisp-directory when it is
 	non-nil
