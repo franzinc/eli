@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 1.89 2003/09/29 23:28:23 layer Exp $
+;; $Id: fi-lep.el,v 1.90 2003/10/08 18:42:42 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -174,8 +174,9 @@ at file visit time."
     pathname))
 
 (defun fi::translate-putative-logical-pathname (pathname)
-  (fi:eval-in-lisp "cl:(ignore-errors (namestring (translate-logical-pathname \"%s\")))"
-		   pathname))
+  (fi:eval-in-lisp
+   "cl:(ignore-errors (namestring (translate-logical-pathname \"%S\")))"
+   pathname))
 
 (defun fi:lisp-find-next-definition ()
   "Continue last tags search, started by fi:lisp-find-definition.
@@ -546,10 +547,25 @@ beginning of words in target symbols."
 	 (functions-only (if (eq (char-after (1- real-beg)) ?\() t nil))
 	 (downcase (not (fi::all-upper-case-p pattern)))
 	 (xxalist (fi::lisp-complete-1 pattern xpackage functions-only))
+	 temp
+	 (package-override nil)
 	 (xalist
 	  (if (and xpackage (cdr xxalist))
 	      (fi::package-frob-completion-alist xxalist)
-	    xxalist))
+	    (if (and (not xpackage)
+		     ;; current package of buffer is not the same as the
+		     ;; single completion match 
+		     (null (cdr xxalist)) ;; only one
+		     (setq temp (fi::extract-package-from-symbol
+				 (cdr (car xxalist))))
+		     (not
+		      (string= (fi::full-package-name
+				(or fi:package "cl-user"))
+			       (fi::full-package-name temp))))
+		(progn
+		  (setq package-override t)
+		  xxalist)
+	      xxalist)))
 	 (alist (if downcase
 		    (mapcar 'fi::downcase-alist-elt xalist)
 		  xalist))
@@ -559,18 +575,17 @@ beginning of words in target symbols."
 		    (if (string= ":" xpackage)
 			"keyword"
 		      (when xpackage
-			(fi:eval-in-lisp "(package-name (find-package %s))"
-					 xpackage))))
+			(fi::full-package-name xpackage))))
 		   (full-package-name
 		    (when xfull-package-name
 		      (if downcase
 			  (downcase xfull-package-name)
 			xfull-package-name))))
-	      (when full-package-name
+	      (when (or full-package-name package-override)
 		(setq pattern
 		  (format "%s::%s" full-package-name pattern)))
 	      (try-completion pattern alist)))))
-
+    
     (cond ((eq completion t)
 	   (message "Completion is unique."))
 	  ((and (null completion) (null alist))
@@ -629,6 +644,17 @@ beginning of words in target symbols."
 	      (mapcar 'cdr alist)))
 	   (message "Making completion list...done")))))
 
+(defun fi::extract-package-from-symbol (s)
+  (when (string-match fi::*package-prefix* s)
+    (substring s (match-beginning 1) (match-end 1))))
+
+(defun fi::full-package-name (s)
+  (fi:eval-in-lisp
+   "cl:(let ((p (find-package :%s)))
+        (or (and excl:*print-nickname* (car (package-nicknames p)))
+	    (package-name p)))"
+   s))
+
 (defvar fi::inside-lisp-complete-1 nil)
 
 (defun fi::lisp-complete-1 (pattern xpackage functions-only
@@ -655,7 +681,7 @@ beginning of words in target symbols."
 	(quit
 	 (fi:eval-in-lisp
 	  "(when (fboundp 'lep::kill-list-all-completions-session)
-	     (lep::kill-list-all-completions-session))"))))))
+     (lep::kill-list-all-completions-session))"))))))
 
 (defun fi::lisp-complete-2 (completions &optional dont-strip-package)
   (if (consp completions)

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 1.75 2003/09/29 23:28:23 layer Exp $
+;; $Id: fi-utils.el,v 1.76 2003/10/08 18:42:42 layer Exp $
 
 ;;; Misc utilities
 
@@ -492,32 +492,12 @@ at the beginning of the line."
 			 (match-end 2)))
     s))
 
-;;;(defun fi::try-completion (string alist)
-;;;  (let* ((strings (mapcar #'car alist))
-;;;	 (prefix (reduce 'fi::package-prefix strings))
-;;;	 (new-alist
-;;;	  (mapcar (function
-;;;		   (lambda (x)
-;;;		     (let ((s (car x)))
-;;;		       (if (string-match "[^:]+:?:\\(.*\\)" s)
-;;;			   (setq s
-;;;			     (substring s (match-beginning 1) (match-end 1)))
-;;;			 s)
-;;;		       (cons s (cdr x)))))
-;;;		  alist))
-;;;	 (res (try-completion string new-alist)))
-;;;    
-;;;    (cond
-;;;     ((eq nil res) nil)
-;;;     ((eq t res) t)
-;;;     (t
-;;;      (when (not (string-match prefix
-;;;			       (buffer-substring (point-min) (point-max))))
-;;;	(insert prefix))
-;;;      (concat prefix res)))))
+;; fi::try-completion removed
+
+(defvar fi::*package-prefix* "\\([^:]+\\)\\([:]+\\)")
 
 (defun fi::package-prefix (s1 s2)
-  (let ((regexp "\\([^:]+\\)\\([:]+\\)")
+  (let ((regexp fi::*package-prefix*)
 	p1 p2 c1 c2)
     (and s1
 	 s2
@@ -873,18 +853,28 @@ created by fi:common-lisp."
 
 (defun fi::mark-hack () (mark t))
 
-(defun fi::prin1-to-string-hack (form)
+(defun fi::prin1-to-string-xemacs (form)
   (let ((print-escape-newlines nil))
     (prin1-to-string form)))
+
+(defun fi::prin1-to-string-mule (form) ;; bug8475
+  (let ((print-escape-multibyte nil)
+	(print-escape-nonascii nil)
+	(print-escape-newlines nil))
+    ;; For print-escape-nonascii to be used we must use prin1, which means
+    ;; we have to use with-output-to-string.
+    (with-output-to-string (prin1 form))))
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
        (fset 'fi::mark 'fi::mark-hack)
-       (fset 'fi::prin1-to-string 'fi::prin1-to-string-hack))
-      ((or (eq fi::emacs-type 'emacs19)
-	   (eq fi::emacs-type 'emacs20))
+       (fset 'fi::prin1-to-string 'fi::prin1-to-string-xemacs))
+      ((eq fi::emacs-type 'emacs19)
        (fset 'fi::mark 'fi::mark-hack)
        (fset 'fi::prin1-to-string 'prin1-to-string))
+      ((eq fi::emacs-type 'emacs20)
+       (fset 'fi::mark 'fi::mark-hack)
+       (fset 'fi::prin1-to-string 'fi::prin1-to-string-mule))
       (t
        (fset 'fi::mark 'mark)
        (fset 'fi::prin1-to-string 'prin1-to-string)))
