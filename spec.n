@@ -67,9 +67,8 @@ Lisp/Emacs interface.
 
    The purpose of this package is to enhance the Lisp environment.  To
 this end, GNU Emacs and Lisp have been tightly coupled, and in the
-case of Sun Common Lisp 3.0 (or Allegro CL 3.0) the interface uses
-TCP/IP UNIX or internet domain sockets.  This interface can be broken
-down into three modes:
+case of Allegro CL 3.0 the interface uses TCP/IP UNIX or internet
+domain sockets.  This interface can be broken down into three modes:
 
 	* Common Lisp,
 	* Inferior Common Lisp, and
@@ -332,9 +331,6 @@ Inferior Common Lisp and TCP Common Lisp modes.
 is taken from the following variables:
 
 %% fi:common-lisp-image-name
-
-NOTE: The Sun Common Lisp 3.0 binary is called `lisp', not `cl'
-      which is the initial value of `fi:common-lisp-image-name'.
 
    After the image name as been determined and the process has been
 started, a file in the user's home directory called .emacs_<IMAGE>,
