@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-emacs19.el,v 2.19 1997/10/30 00:46:36 layer Exp $
+;; $Id: fi-emacs19.el,v 2.20 1998/03/06 19:05:33 layer Exp $
 
 (cond
  ((and (eq fi::emacs-type 'emacs19)
@@ -601,15 +601,24 @@
 (add-hook 'fi:inferior-common-lisp-mode-hook 'fi::install-mode-menus)
 (add-hook 'fi:common-lisp-mode-hook 'fi::install-mode-menus)
 
-(defvar lisp-font-lock-keywords-2)
+(require 'font-lock)
 
-(add-hook 'fi:common-lisp-mode-hook
-	  (function
-	   (lambda ()
-	     (when window-system	;Is fontification possible?
-	       (require 'font-lock)
-	       (when (boundp 'lisp-font-lock-keywords-2)
-		 (setq font-lock-keywords lisp-font-lock-keywords-2))))))
+(add-hook 'fi:common-lisp-mode-hook 'turn-on-font-lock)
+(add-hook 'fi:emacs-lisp-mode-hook 'turn-on-font-lock)
+
+(setq fi::lisp-font-lock-keywords
+  '(("^(\\(def\\(\\(const\\(\\|ant\\)\\|ine-key\\(\\|-after\\)\\|var\\)\\|\\(class\\|struct\\|type\\)\\|\\([^ \t\n()]+\\)\\)\\)[ \t'(]*\\([-.a-zA-Z0-9]+\\)?"
+     (1 font-lock-keyword-face) (8 (cond ((match-beginning 3) font-lock-variable-name-face) ((match-beginning 6) font-lock-type-face) (t font-lock-function-name-face)) nil t))))
+
+(push '(fi:common-lisp-mode
+	(fi::lisp-font-lock-keywords)
+	nil
+	nil
+	(("+-*/.<>=!?$%_&~^:" . "w"))
+	beginning-of-defun
+	(font-lock-comment-start-regexp . ";")
+	(font-lock-mark-block-function . mark-defun))
+      font-lock-defaults-alist)
 
 ;;why redefine this????
 ;;(defun set-menubar-dirty-flag ()	;smh 31oct94

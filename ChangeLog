@@ -7,6 +7,16 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.pre-beta.18
+
+Fri Mar 06 09:42:53 1998    <layer@HOBART>
+
+	* fi-emacs19.el: font-lock mode changes (let's see how we like the
+	changes...)
+	* fi-subproc.el: don't expand image name, unless it starts with a
+	~ or $
+
+*******************************************************************************
 2.0.21.pre-beta.17
 
 Tue Feb 03 09:58:17 1998    <layer@HOBART>
