@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.46 1992/01/12 11:48:50 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.47 1992/01/24 18:50:55 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -303,6 +303,23 @@ return the pathname of temp file."
 		       file)))
 	      (lep::buffer-modified-tick))
       (list ':does-not-exist))))
+
+(defun scm::signal-transaction-file-error (pathname)
+  (fi:note "
+Can't find transaction file in %s, which is the directory that
+Emacs and Lisp use to communicate.  Most likely Emacs and Lisp are running
+on different machines.  Please check the value of the Emacs variable
+fi:emacs-to-lisp-transaction-directory.
+The value of this Emacs variable should be a string which names a directory
+which is accessible from the machines on which Emacs and Lisp are running.
+Put something like this form in your ~/.emacs file:
+
+  (setq fi:emacs-to-lisp-transaction-directory (expand-file-name \"~/tmp\"))
+
+before the load of fi/site-init.  Don't forget to make sure ~/tmp exists,
+since the Emacs-Lisp interface will not create it."
+	    fi:emacs-to-lisp-transaction-directory pathname)
+  nil)
 
 (defun lep::buffer-modified-tick ()
   "Get the buffer tick if it is supported"
