@@ -2,7 +2,7 @@
 			      User Guide
 			    Release 2.0.8
 
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.46 1993/09/01 03:24:26 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.47 1993/09/01 03:31:47 layer Exp $
 
 			     Introduction
 
@@ -598,10 +598,16 @@ Packages
 				is ignored, which should be the name of
 				the package.
 
+	readtable: name		`name' is the name of the readtable
+				for this buffer.  See the Allegro CL
+				documentation for EXCL:NAMED-READTABLE
+				for information on creating and using
+				named readtables.
+
    Fields in the file mode line are separated by semicolons.  For
   example, this is a possible mode line:
 
-	;; -*- mode: fi:common-lisp-mode; package: foo-the-bar -*-
+	;; -*- mode: common-lisp; package: mysys; readtable: myrt -*-
 
    The file mode line is parsed by the standard Emacs Lisp function
    set-auto-mode, which has been modified by this interface to look
@@ -612,15 +618,8 @@ Packages
 The display mode line
 
    The display mode line is used to display status information about
-   buffers.  In particular, the package in which the buffer is defined
-   can be displayed in the mode line with the following addition to
-   $HOME/.emacs (which can be found in "fi/examples/Package.el"):
-
-      (setq fi:lisp-mode-hook
-	(function
-	 (lambda ()
-	   (if (and (boundp 'fi:package) fi:package)
-	       (setq mode-line-process '("; package: " fi:package))))))
+   buffers.  In particular, the package and readtable (if any) are
+   displayed in the mode line. 
 
 Syntactic modification of Common Lisp source code
 
