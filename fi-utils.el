@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 3.3.2.1 2004/08/05 21:00:05 layer Exp $
+;; $Id: fi-utils.el,v 3.3.2.2 2004/09/20 17:53:06 layer Exp $
 
 ;;; Misc utilities
 
@@ -1112,10 +1112,10 @@ created by fi:common-lisp."
 
 (defun fi:start-interface-via-file (host buffer connection-file)
   (interactive "sHost: \nBBuffer name: \nfConnection data file: ")
-  (fi::start-interface-via-file-1 host buffer connection-file)
   ;; Can't bind this, or background errors will not be handled
   ;; correctly.
-  (setq fi::started-via-file t))
+  (setq fi::started-via-file t)
+  (fi::start-interface-via-file-1 host buffer connection-file))
 
 (defun fi::start-interface-via-file-1 (host buffer connection-file)
   ;; On the lisp side, you would do something like this:

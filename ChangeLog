@@ -1,3 +1,9 @@
+2004-09-20  Kevin Layer  <layer@gemini>
+
+	* fi-utils.el (fi:start-interface-via-file): fix spr29390: set
+	  fi::started-via-file before calling
+	  fi::start-interface-via-file-1.
+
 2004-08-13  Kevin Layer  <layer@gemini>
 
 	* fi-keys.el (fi:super-paren): bug14287: don't delete extra stuff
@@ -4987,4 +4993,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.9.2.5 $
+$Revision: 3.9.2.6 $
