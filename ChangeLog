@@ -10,6 +10,7 @@ For more detailed instructions on filling in the ChangeLog form, see
 post-6.2 release changes: 
 
 2003-08-28  Kevin Layer  <layer@crikey>
+2.4.1
 
 	* fi-sublisp.el,
 	* fi-subproc.el,
@@ -26,6 +27,7 @@ post-6.2 release changes:
 	* Makefile: fi-vers.el change not put into makefile!
 
 2003-08-14  Kevin Layer  <layer@crikey>
+2.4.0
 
 	* fi-keys.el: improve fi:subprocess-beginning-of-line for
 	  non-prompt lines
@@ -101,7 +103,6 @@ post-6.2 release changes:
 	* fi-xemacs.el: implement fi:menu-bar-single-item on xemacs
 
 2003-08-05  Kevin Layer  <layer@crikey>
-2.4.0
 
     for rfe5611: improve menus; follow major mode conventions, and
 	* fi-basic-lep.el: changes for new menu code
