@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-xemacs.el,v 2.11.30.1 2001/11/02 01:01:59 layer Exp $
+;; $Id: fi-xemacs.el,v 2.11.30.2 2001/11/13 22:22:34 layer Exp $
 
 (defun fi-find-buffer-visiting (filename)
   (get-file-buffer filename))
@@ -257,19 +257,20 @@
 	   (eq fi::composer-connection-open 'yes))))
 
 (defun fi::composer-connection-open-uncache ()
-  (and (fi::connection-open-composer-loaded-cached)
-       (or (unless fi::composer-connection-open
-	     (if (let ((fi:package nil))
-		   (fi:eval-in-lisp
-		    "wt::(and ;;(connected-to-epoch-p)
+  (prog1
+      (and (fi::connection-open-composer-loaded-cached)
+        (or (unless fi::composer-connection-open
+            (if (let ((fi:package nil))
+                 (fi:eval-in-lisp
+                       "wt::(and ;;(connected-to-epoch-p)
  			      (common-windows-initialized-p)
 			      (connected-to-server-p))"))
-		 (setq fi::composer-connection-open 'yes)
-	       (setq fi::composer-connection-open 'no))
-	     (set-menubar-dirty-flag)
-	     nil)
-	   (eq fi::composer-connection-open 'yes)))
-  (setq fi::connection-open-composer-loaded-cached nil))
+                  (setq fi::composer-connection-open 'yes)
+            (setq fi::composer-connection-open 'no))
+            (set-menubar-dirty-flag)
+              nil)
+        (eq fi::composer-connection-open 'yes)))
+    (setq fi::connection-open-composer-loaded-cached nil)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

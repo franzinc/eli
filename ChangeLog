@@ -9,6 +9,10 @@ For more detailed instructions on filling in the ChangeLog form, see
 *******************************************************************************
 post-6.0 release changes:
 
+2001-11-13  Kevin Layer  <layer@crikey>
+
+	* fi-xemacs.el: fix for fix below
+
 2001-11-01  Kevin Layer  <layer@crikey>
 
     from mikel for spr24742
