@@ -1,4 +1,4 @@
-;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.15 1988/03/22 09:23:43 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.16 1988/03/28 17:32:45 layer Exp $
 ;;;
 ;;; Low-level subprocess mode guts
 
@@ -225,8 +225,8 @@ function always creates a new subprocess and buffer.  See
   (if tcp-lisp
       (let ((buffer
 	     (get-buffer-create
-	      (concat "*" (fi::generate-new-buffer-name
-			   "common-lisp" nil) "*")))
+	      (concat "*" (fi::generate-new-buffer-name "common-lisp" nil)
+		      "*")))
 	    (host fi:local-host-name)
 	    proc)
 	(save-excursion
@@ -597,7 +597,9 @@ Returns the name of the created subprocess without the asterisks."
 	      temp)
 	 (while (and (setq temp (get-buffer (concat "*" new-name "*")))
 		     (setq temp (get-buffer-process temp))
-		     (eq 'run (process-status temp)))
+		     (setq temp (process-status temp))
+		     (or (eq 'run temp)
+			 (eq 'open temp)))
 	   (setq new-number (1+ new-number))
 	   (setq new-name (concat name separator new-number)))
 	 new-name)))))
