@@ -9,9 +9,13 @@ For more detailed instructions on filling in the ChangeLog form, see
 *******************************************************************************
 post-6.0 release changes:
 
+2001-06-20  Kevin Layer  <layer@crikey>
+
+	* fi-basic-lep.el: spr24414
+
 2001-05-22  Charles A. Cox  <cox@pie>
 
-	* cl/src/eli/fi-basic-lep.el: use emacs-mule encoding.  bug10686
+	* fi-basic-lep.el: use emacs-mule encoding.  bug10686
 
 2001-01-05  Kevin Layer  <layer@ultra>
 
