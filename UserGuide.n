@@ -1,4 +1,4 @@
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.4 1991/03/15 20:53:09 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.5 1991/03/16 00:24:34 layer Exp $
 
 			     Introduction
 
@@ -324,7 +324,7 @@ Typing input to Common Lisp
    agreement.  For example, the following is a rather complex Common
    Lisp prompt that is quite nice when debugging applications that use
    multiprocessing.  For $HOME/.clinit.cl (which can be found in
-   "fi/Prompt.cl"):
+   "fi/examples/Prompt.cl"):
 
       (setq top-level:*prompt*
 	#'(lambda (n)
@@ -341,7 +341,7 @@ Typing input to Common Lisp
 		       then (format nil "P:~a"  (mp:process-name
 						 mp:*current-process*))))))
 
-   and for $HOME/.emacs (which can be found in "fi/Prompt.el"):
+   and for $HOME/.emacs (which can be found in "fi/examples/Prompt.el"):
 
       (setq fi:common-lisp-prompt-pattern
 	"^\\(\\[[0-9]+c?\\] \\|\\[step\\] \\)?[-<>:A-Za-z0-9]* ")
@@ -380,7 +380,8 @@ Tracking package changes
 
    The following addition to $HOME/.emacs will cause the current
    package to be display in the mode-line for the *common-lisp*
-   buffer (the following can be found in the file "fi/Package.el"):
+   buffer (the following can be found in the file
+   "fi/examples/Package.el"):
 
       (make-variable-buffer-local 'package-mode-info)
       (setq package-mode-info nil)
@@ -615,7 +616,7 @@ The display mode line
    The display mode line is used to display status information about
    buffers.  In particular, the package in which the buffer is defined
    can be displayed in the mode line with the following addition to
-   $HOME/.emacs (which can be found in "fi/Package.el"):
+   $HOME/.emacs (which can be found in "fi/examples/Package.el"):
 
       (setq fi:lisp-mode-hook
 	(function
