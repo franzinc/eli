@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.211 2003/07/03 21:05:02 layer Exp $
+;; $Id: fi-subproc.el,v 1.212 2003/09/29 23:23:25 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -299,10 +299,6 @@ connection.")
 "Password to use in getting new listeners from remote lisp.  Buffer local.")
 (make-variable-buffer-local 'fi::lisp-password)
 
-(defvar fi::lisp-ipc-version nil
-  "The version of the IPC to which will connect. Buffer local")
-(make-variable-buffer-local 'fi::lisp-ipc-version)
-
 (defvar fi::lisp-is-remote nil
   "Non-nil if the lisp process tied to the current buffer is on another
 machine, which implies that it was started via an `rsh'.  This variable is
@@ -313,8 +309,7 @@ buffer local.")
   (unless fi:common-lisp-host (setq fi:common-lisp-host "localhost"))
   (unless fi::lisp-host (setq-default fi::lisp-host "localhost"))
   (unless fi::lisp-port (setq-default fi::lisp-port 9666))
-  (unless fi::lisp-password (setq-default fi::lisp-password 0))
-  (unless fi::lisp-ipc-version (setq-default fi::lisp-ipc-version 1)))
+  (unless fi::lisp-password (setq-default fi::lisp-password 0)))
 
 ;;;;
 ;;; User visible functions
@@ -478,8 +473,6 @@ be a string. Use the 6th argument for image file."))
                 (unless fi::lisp-host (setq-default fi::lisp-host host))
                 (unless fi::lisp-port (setq-default fi::lisp-port 9666))
                 (unless fi::lisp-password (setq-default fi::lisp-password 0))
-                (unless fi::lisp-ipc-version
-		  (setq-default fi::lisp-ipc-version 1))
 		(fi::set-environment fi:subprocess-env-vars)
 		(while
 		    (condition-case nil
@@ -491,7 +484,7 @@ be a string. Use the 6th argument for image file."))
 			       'fi:lisp-listener-mode
 			       fi:common-lisp-prompt-pattern
 			       fi::lisp-host fi::lisp-port
-			       fi::lisp-password fi::lisp-ipc-version
+			       fi::lisp-password
 			       'fi::setup-tcp-connection)))
 			  nil)
 		      (error
@@ -689,7 +682,6 @@ the buffer name is the second optional argument."
 			       fi::lisp-host
 			       fi::lisp-port
 			       fi::lisp-password
-			       fi::lisp-ipc-version
 			       (or setup-function 'fi::setup-tcp-connection))
     (let* ((buffer (process-buffer
 		    (get-process fi::common-lisp-backdoor-main-process-name))))
@@ -700,7 +692,6 @@ the buffer name is the second optional argument."
 			       (fi::get-buffer-host buffer)
 			       (fi::get-buffer-port buffer)
 			       (fi::get-buffer-password buffer)
-			       (fi::get-buffer-ipc-version buffer)
 			       (or setup-function
 				   'fi::setup-tcp-connection)))))
 
@@ -957,14 +948,6 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	  (car (setq xx (read-from-string
 			 (fi::frob-case-from-lisp command)
 			 (cdr xx))))
-	(error nil)))
-    ;; This is optional also
-    (setq fi::lisp-ipc-version
-      (condition-case ()
-	  (if (not (eq (cdr xx) (length command)))
-	      (car (setq xx (read-from-string
-			     (fi::frob-case-from-lisp command)
-			     (cdr xx)))))
 	(error nil)))))
 
 (defun fi::make-subprocess (startup-message process-name buffer-name
@@ -1083,7 +1066,6 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 				&optional given-host
 					  given-service
 					  given-password
-					  given-ipc-version
 					  setup-function)
   (if (and (not fi:connect-to-windows)
 	   (not fi::common-lisp-backdoor-main-process-name))
@@ -1133,10 +1115,9 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	  ;; in Emacs and Lisp.
 	  ;;
 
-	  (when given-ipc-version
-	    (process-send-string
-	     proc
-	     (format "%s\n" (fi::prin1-to-string fi::listener-protocol))))
+	  (process-send-string
+	   proc
+	   (format "%s\n" (fi::prin1-to-string fi::listener-protocol)))
 	  (process-send-string proc (format "\"%s\"\n" (buffer-name buffer)))
 	  (process-send-string proc (format "%d\n" password))
 
@@ -1533,12 +1514,6 @@ to your `.cshrc' after the `set cdpath=(...)' in the same file."
     (set-buffer buffer)
     fi::lisp-password))
 
-
-(defun fi::get-buffer-ipc-version (buffer)
-  "Given BUFFER returns the values in this buffer of fi::lisp-password"
-  (save-excursion
-    (set-buffer buffer)
-    fi::lisp-ipc-version))
 
 (defun fi::env-vars ()
   (concat (mapconcat '(lambda (x)

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 1.73 2002/07/09 22:15:31 layer Exp $
+;; $Id: fi-utils.el,v 1.74 2003/09/29 23:23:25 layer Exp $
 
 ;;; Misc utilities
 
@@ -1087,19 +1087,17 @@ created by fi:common-lisp."
 	  (fi:connect-to-windows t)
 	  (host fi::lisp-host)
 	  (port fi::lisp-port)
-	  (pw fi::lisp-password)
-	  (version fi::lisp-ipc-version))
+	  (pw fi::lisp-password))
       (fi::make-tcp-connection buffer 1
 			       'fi:lisp-listener-mode
 			       fi:common-lisp-prompt-pattern
 			       fi::lisp-host fi::lisp-port
-			       fi::lisp-password fi::lisp-ipc-version
+			       fi::lisp-password
 			       'fi::setup-tcp-connection)
       (setq-default fi::lisp-host host)
       (setq-default fi::lisp-port port)
-      (setq-default fi::lisp-password pw)
-      (setq-default fi::lisp-ipc-version version))
+      (setq-default fi::lisp-password pw))
     ;; Make the backdoor connection, too:
     (fi::make-connection-to-lisp fi::lisp-host fi::lisp-port
-				 fi::lisp-password fi::lisp-ipc-version)
+				 fi::lisp-password)
     (fi:show-run-status)))

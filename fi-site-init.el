@@ -1,4 +1,4 @@
-;; $Id: fi-site-init.el,v 1.118 2003/07/03 21:05:02 layer Exp $
+;; $Id: fi-site-init.el,v 1.119 2003/09/29 23:23:25 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -27,7 +27,6 @@
 	    "%s is not supported by this version of the emacs-lisp interface."
 	    emacs-version)))))
 
-(defvar fi::required-ipc-version 1)
 (defvar fi::load-subprocess-files t)
 (defvar fi::install-acl-menubar t)
 (defvar fi::build-time nil)

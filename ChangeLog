@@ -7,6 +7,19 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.3.6
+
+2003-09-29  Kevin Layer  <layer@crikey>
+
+	* fi-lep.el: bugs@franz.com -> support@franz.com
+
+	* fi-basic-lep.el,
+	* fi-site-init.el,
+	* fi-subproc.el,
+	* fi-utils.el: remove ipc-version from protcol (it was optional
+	  anyway)
+
+*******************************************************************************
 join from acl62 to trunk on 7/3/03
 command:
   join.sh acl62 acl62_to_trunk_merge3 acl62_to_trunk_merge_070303 eli

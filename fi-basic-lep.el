@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-basic-lep.el,v 1.49 2003/07/03 21:05:02 layer Exp $
+;; $Id: fi-basic-lep.el,v 1.50 2003/09/29 23:23:25 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -187,64 +187,48 @@ emacs-lisp interface cannot be started.
 (defun fi::start-connection ()
   (fi::make-connection-to-lisp fi::lisp-host
 			       fi::lisp-port
-			       fi::lisp-password
-			       fi::lisp-ipc-version))
+			       fi::lisp-password))
 
-(defun fi::make-connection-to-lisp (host port passwd ipc-version)
-  (cond ((eq ipc-version fi::required-ipc-version)
-	 (let* ((proc-name (format " *LEP %s %d %d*" host port passwd))
-		;; buffer-name used to be non-nil only when fi::lep-debug
-		;; was non-nil, but changes to lep::make-session-for-lisp
-		;; depend on there being a buffer associated with the
-		;; process.  So, we now do this in all cases.
-		(buffer-name proc-name)
-		(buffer (when buffer-name
-			  (get-buffer-create buffer-name)))
-		(process (fi::open-network-stream proc-name nil host port)))
-	   (when buffer
-	     (bury-buffer buffer)
-	     (save-excursion (set-buffer buffer) (erase-buffer))
-	     (set-process-buffer process buffer))
-	   ;; cac 20dec00
-	   (when (and (fboundp 'set-process-coding-system)
-		      ;; spr24414
-		      (member 'emacs-mule (coding-system-list)))
-	     (set-process-coding-system process 'emacs-mule 'emacs-mule))
-	   (set-process-filter process 'fi::lep-connection-filter)
-	   ;; new stuff to indicate that we want the lisp editor protocol
-	   (process-send-string process ":lep\n")
-	   (process-send-string process (format "\"%s\"\n" proc-name))
-	   (process-send-string process (format "%d \n" passwd))
-	   ;; Send the class of the editor to the lisp.
-	   ;; This might affect something!
-	   ;; For example, gnu 19 has some good features.
-	   (process-send-string
-	    process
-	    (format "\"%s\"\n"
+(defun fi::make-connection-to-lisp (host port passwd)
+  (let* ((proc-name (format " *LEP %s %d %d*" host port passwd))
+	 ;; buffer-name used to be non-nil only when fi::lep-debug
+	 ;; was non-nil, but changes to lep::make-session-for-lisp
+	 ;; depend on there being a buffer associated with the
+	 ;; process.  So, we now do this in all cases.
+	 (buffer-name proc-name)
+	 (buffer (when buffer-name
+		   (get-buffer-create buffer-name)))
+	 (process (fi::open-network-stream proc-name nil host port)))
+    (when buffer
+      (bury-buffer buffer)
+      (save-excursion (set-buffer buffer) (erase-buffer))
+      (set-process-buffer process buffer))
+    ;; cac 20dec00
+    (when (and (fboundp 'set-process-coding-system)
+	       ;; spr24414
+	       (member 'emacs-mule (coding-system-list)))
+      (set-process-coding-system process 'emacs-mule 'emacs-mule))
+    (set-process-filter process 'fi::lep-connection-filter)
+    ;; new stuff to indicate that we want the lisp editor protocol
+    (process-send-string process ":lep\n")
+    (process-send-string process (format "\"%s\"\n" proc-name))
+    (process-send-string process (format "%d \n" passwd))
+    ;; Send the class of the editor to the lisp.
+    ;; This might affect something!
+    ;; For example, gnu 19 has some good features.
+    (process-send-string
+     process
+     (format "\"%s\"\n"
 ;;;; The following works in xemacs 20.x when this file is compiled
 ;;;; with emacs 19.x, but we don't want to install this hack since
 ;;;; there are hundreds of other places a similar hack would have to
 ;;;; be installed.
-		    ;;(remove (aref "\"" 0) (emacs-version))
-		    (remove ?\" (emacs-version))))
-	   (prog1
-	       (setq fi::*connection*
-		 (fi::make-connection (current-buffer) host process))
-	     (set-menubar-dirty-flag))))
-	(t
-	 (fi:error
-	  "
-The Allegro CL ipc version is ``%s'' (from the variable excl::*ipc-version*
-in the Lisp environment).  This version of the emacs-lisp interface
-requires version ``%s''.  This mismatch would most likely be caused by the
-Emacs and Lisp not being from the same distribution.  If the obtained ipc
-version is `nil', then it is most likely you are using the emacs-lisp
-interface from ACL 4.1 or later with an older Lisp.
-
-See lisp/fi/examples/emacs.el for code to correctly startup different
-versions of the emacs-lisp interface.
-"
-	  ipc-version fi::required-ipc-version))))
+	     ;;(remove (aref "\"" 0) (emacs-version))
+	     (remove ?\" (emacs-version))))
+    (prog1
+	(setq fi::*connection*
+	  (fi::make-connection (current-buffer) host process))
+      (set-menubar-dirty-flag))))
 
 (defvar fi::debug-subprocess-filter nil)
 (defvar fi::debug-subprocess-filter-output nil)
