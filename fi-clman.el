@@ -1,3 +1,4 @@
+;;                  		-[Wed May 22 11:21:09 1991 by layer]-
 ;;
 ;; copyright (C) 1987, 1988, 1989, 1990, 1991 Franz Inc, Berkeley, Ca.
 ;;
@@ -24,7 +25,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.17 1991/04/23 21:05:23 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.18 1991/05/28 16:17:45 layer Exp $
 
 (defun fi::setup-default-clman-package-info ()
   ;;  Returns a list that 
@@ -118,7 +119,9 @@ math:).  The buffer that is displayed will be in CLMAN mode."
 buffer which lists all documented symbols which match the string.  The
 buffer will be in CLMAN mode."
   (interactive)
-  (if (null fi:clman-package-info)
+  (if (or (not (boundp 'fi::clman-oblist))
+	  (null fi::clman-oblist)
+	  (null fi:clman-package-info))
       (fi::setup-clman-oblist))
   (let* ((string (downcase (read-string "clman apropos: ")))
 	 (apropos-buffer-name "*CLMan-Apropos*"))
@@ -242,7 +245,9 @@ clman buffer, from anywhere in the buffer."
 	(error "Directory %s not found" doc-dir))
     (if (not (setq names (fi::clman-file-nameify pack
 						 (fi::clman-downcase sym))))
-	(error "Could not file-nameify %s and %s"))	
+	(error "Could not file-nameify %s and %s" 
+	       pack 
+	       (fi::clman-downcase sym)))	
     (let ((files nil))
       (while names
 	(setq doc-page (concat doc-dir (car (car names))))
@@ -257,7 +262,7 @@ clman buffer, from anywhere in the buffer."
 
 (defun fi::clman-file-nameify (package str)
   (if (string= package "") (error "Specified package is NIL"))
-  (if (string= package "") (error "Specified string is NIL"))
+  (if (string= str "") (error "Specified string is NIL"))
   (let* ((oblist-name  (concat "fi::clman-" package "-oblist"))
 	 (oblist-symbol (car (read-from-string oblist-name)))
 	 (oblist nil)
@@ -334,23 +339,13 @@ clman buffer, from anywhere in the buffer."
 	;; There is a leading package qualifier
 	(let ((first-string (substring str 0 (+ 1 pos)))
 	      (second-string (substring str (+ 2 pos) (length str))))
-	  (if (not (string= second-string ""))
-	      (if (string= (substring second-string 0 1) ":")
-		  (setq second-string 
-		    (substring second-string 1 (length second-string)))))
+;;	  (if (not (string= second-string ""))
+;;	      (if (string= (substring second-string 0 1) ":")
+;;		  (setq second-string 
+;;		    (substring second-string 1 (length second-string)))))
 	  (list first-string second-string))
       (list "" str))))
 
-(defun fi::clman-retrieve-doc-page (str table doc-dir)
-  "Retrieve the documentation page for the string argument, which is 
-the name of a symbol that we want to look up. If the symbol is 
-not found, you will be prompted for an alternate package. If you just
-hit return, this function returns nil."
-  (let ((name (fi::clman-man-page-lookup str table doc-dir)))
-    ;; name is the full pathname of the doc page we want
-    (bury-buffer)
-    (if name name nil)))
-		       
 (defun fi::clman-display-file (buf names)
   "Display name, which is an clman .doc file according to a displaying
 style. The displaying style is the value of the global var
@@ -417,46 +412,12 @@ Return the full pathname of the file the symbol is in. "
       (backward-char)
       (concat doc-dir "/" (buffer-substring begin (point))))))
 
-(defun fi::clman-backward-copy-sexp-as-kill ()
-  (backward-sexp)
-  (let* ((begin (point)) end sym)
-    (forward-sexp)
-    (fi::clman-remove-chars-from-string '(?\ ?\n)
-					(buffer-substring begin (point)))))
-
 (defun fi::clman-backward-copy-symbol-as-kill ()
-  (skip-chars-backward "[&a-zA-Z\-~:+*#0-9]")
+  (skip-chars-backward "[&a-zA-Z\-_~:+*#0-9]")
   (let* ((begin (point)) end sym)
-    (skip-chars-forward "[&a-zA-Z\-:+~*#0-9]")
+    (skip-chars-forward "[&a-zA-Z\-_:+~*#0-9]")
     (fi::clman-remove-chars-from-string '(?\ ?\n)
 					(buffer-substring begin (point)))))
-
-(defun fi::clman-escape-funny-chars (sym)
-  ;; the shell requires that certain chars be preceded by \
-  ;; and that entire command be surrounded by '  '
-  (let ((temp sym)
-	(star "*")
-        (circumflex "^")
-        (dollar "$")
-	(result "")
-        (leftbrack "\[")
-        (rightbrack "\]")
-        (quote "'")
-        (backquote "`")
-        (counter 1))
-    (while (not (string= temp ""))
-      (setq ch (substring temp 0 1))
-      (if (or (string= ch star)
-              (string= ch circumflex)
-              (string= ch dollar)
-              (string= ch leftbrack)
-              (string= ch rightbrack)
-              (string= ch quote)
-              (string= ch backquote))
-	  (setq result (concat result "\\" ch))
-	(setq result (concat result ch)))
-      (setq temp (substring temp 1)))
-    (setq result (concat "\"" result "\""))))
 
 (defun fi::clman-sub-chars-in-string (char-assoc-list string)
   "Substitute character pairs of CHAR-ASSOC-LIST in STRING."
@@ -555,21 +516,6 @@ Return the full pathname of the file the symbol is in. "
 		(append (eval oblist) result))))
 	(setq lis (cdr lis)))
       result)))
-       
-
-
-
-(defun fi:clman-help ()
-  (with-output-to-temp-buffer "*CLMAN-NICKNAMES"
-    (princ  "HERE ARE ALL THE PACKAGES")
-    (princ "\n")
-    (let ((lis   (fi:clman-package-nicknames)))
-      (while lis
-	(prin1 (car (read-from-string (car lis))))
-	(princ "\n")
-	(setq lis (cdr lis))))
-    (save-excursion (switch-to-buffer  "*CLMAN-NICKNAMES")
-		    (fi:clman-mode))))
 
 (if fi:clman-mode-map
     nil
