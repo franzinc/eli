@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.57 1990/09/02 18:33:44 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.58 1990/09/02 20:40:13 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -223,6 +223,7 @@ See fi:explicit-common-lisp."
 	       fi:common-lisp-image-arguments)))
     (setq fi::freshest-common-sublisp-name (process-name proc))
     (fi::set-buffer-host (process-buffer proc) (system-name))
+    (fi::start-tcp-lisp-interface proc)
     proc))
 
 (defun fi:explicit-common-lisp (&optional buffer-number
@@ -242,6 +243,7 @@ are read from the minibuffer."
 	       image-name image-arguments)))
     (setq fi::freshest-common-sublisp-name (process-name proc))
     (fi::set-buffer-host (process-buffer proc) (system-name))
+    (fi::start-tcp-lisp-interface proc)
     proc))
 
 (defun fi:remote-common-lisp (&optional buffer-number host)
@@ -272,6 +274,7 @@ See fi:explicit-remote-common-lisp."
 		       fi:common-lisp-image-arguments))))
     (setq fi::freshest-common-sublisp-name (process-name proc))
     (fi::set-buffer-host (process-buffer proc) host)
+    (fi::start-tcp-lisp-interface proc)
     proc))
 
 (defun fi:explicit-remote-common-lisp (&optional buffer-number host
@@ -293,6 +296,7 @@ arguments are read from the minibuffer."
 	       (append (list host image-name) image-arguments))))
     (setq fi::freshest-common-sublisp-name (process-name proc))
     (fi::set-buffer-host (process-buffer proc) host)
+    (fi::start-tcp-lisp-interface proc)
     proc))
 
 (defun fi:tcp-common-lisp (&optional buffer-number)
@@ -527,6 +531,15 @@ are read from the minibuffer."
 	   (t (concat "*" name "*")))))
     (or (get-buffer buffer-name)
 	(get-buffer-create buffer-name))))
+
+(defun fi::start-tcp-lisp-interface (process)
+  (send-string
+   process
+   (if fi:unix-domain
+       "(progn(require :ipc)(require :emacs))
+	(progn(setq ipc:*unix-domain* t)(ipc:start-lisp-listener-daemon))\n"
+     "(progn(require :ipc)(require :emacs))
+      (ipc:start-lisp-listener-daemon)\n")))
 
 (defun fi::make-subprocess-variables ()
   (setq fi::input-ring-max fi:default-input-ring-max)
