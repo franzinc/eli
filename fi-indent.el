@@ -19,7 +19,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.33 1991/09/30 11:38:43 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.34 1991/10/15 11:39:51 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If non-nil, semicolons that begin comments are indented as they are
@@ -433,7 +433,12 @@ of the start of the containing expression."
 				(cdr fi::lisp-most-recent-parse-result))
 	    (rplaca fi::lisp-most-recent-parse-result (point))
 	    (cond
-	     ((looking-at "\\s(")
+	     ((and nil			; 10/13/91 - dkl - this
+					; optimization screws things like
+					; (defmethod foo :around ((a b)
+					; &key c d) d), if you type RET
+					; after the form `c'
+		   (looking-at "\\s("))
 	      ;; Looking at a list.  Don't call hook.
 	      (if (not (> (save-excursion (forward-line 1) (point))
 			  last-sexp))
