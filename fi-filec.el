@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-filec.el,v 1.17 1992/08/19 08:02:17 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-filec.el,v 1.18 1992/08/19 13:37:55 layer Exp $
 
 ;; Command and file name completion
 
@@ -81,8 +81,7 @@ completed file name."
 
     ;; display the results
     (if (eq shell-expand-completion t) (message "Sole completion")
-      (if (or (eq shell-expand-completion nil)
-	      (string= "" shell-expand-completion))
+      (if (eq shell-expand-completion nil)
 	  (message "No match")
 	(if (equal shell-expand-completion shell-expand-file)
 	    (progn
