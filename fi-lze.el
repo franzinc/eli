@@ -24,23 +24,29 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.8 1991/03/15 12:44:03 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.9 1991/03/28 12:58:05 layer Exp $
 ;;
 ;; Code the implements evaluation in via the backdoor
 
 (defun lep::eval-region-internal (start end compilep)
-  (message "Evaluating...")
+  (if compilep
+      (message "Compiling...")
+    (message "Evaluating..."))
   (make-request (lep::evaluation-request
 		 :text (buffer-substring start end)
+		 :echo fi:echo-evals-from-buffer-in-listener-p
 		 :partialp (not 
 			    (and (eq (max start end) (point-max))
 				 (eq (min start end) (point-min))))
 		 :pathname (buffer-file-name)
 		 :compilep (if compilep t nil))
-		(() (results)
-		 (when results
-		   (fi:show-some-text nil results)
-		   (message "Evaluating...done.")))
+		((compilep) (results)
+		 (setq layer results)
+		 (if results
+		     (fi:show-some-text nil results)
+		   (if compilep
+		       (message "Compiling...done.")
+		     (message "Evaluating...done."))))
 		(() (error)
 		 (message "Error occurred during evaluation: %s" error))))
 
