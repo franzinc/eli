@@ -9,6 +9,10 @@ For more detailed instructions on filling in the ChangeLog form, see
 ******************************************************************************
 post-6.2 release changes: 
 
+2003-03-24    <layer@HOBART>
+
+	* fi-site-init.el: <unknown spr#>: handle `cywgin32' system-type
+
 2003-01-28  Kevin Layer  <layer@crikey>
 
 	* fi-indent.el: bug13001: damn, just missed bug 13,000!  Anyway,
