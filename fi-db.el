@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.23 1991/10/29 14:59:22 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.24 1991/12/09 15:52:55 layer Exp $
 
 (defvar fi::ss-help
     "Debugger commands:\\<fi:scan-stack-mode-map>
@@ -51,15 +51,13 @@ mode buffer.")
 (defvar fi::ss-debugger-from-buffer nil)
 (make-variable-buffer-local 'fi::ss-debugger-from-buffer)
 
-(defvar fi::ss-saved-window-configuration nil)
-
 (defun fi:scan-stack (&optional all)
   "Debug a Common Lisp process, which is read, with completion, from the
 minibuffer.   The \"Initial Lisp Listener\" is the default process.  The
 debugging occurs on a stack scan, created by :zoom on the Common Lisp
 process. With argument ALL, do a \":zoom :all t\"."
   (interactive "P")
-  (setq fi::ss-saved-window-configuration (current-window-configuration))
+  (fi:lisp-push-window-configuration)
   (let ((process-name (fi::buffer-process))
 	(from-buffer (when fi:subprocess-mode
 		       (current-buffer))))
@@ -127,6 +125,7 @@ Entry to this mode runs the fi:scan-stack-mode-hook hook."
 	(define-key ccmap "\C-c"	'fi:ss-continue)
 	(define-key ccmap "\C-p"	'fi:ss-pop)
 	(define-key ccmap "\C-r"	'fi:ss-reset)
+	(define-key ccmap " "		'fi:lisp-delete-pop-up-window)
 	(define-key map "\C-c"	ccmap)
 	
 	(define-key map " "	'fi:ss-hide-help-text)
@@ -264,7 +263,7 @@ and the window configuration as it was before this mode was entered is
 restored."
   (interactive)
   (bury-buffer)
-  (set-window-configuration fi::ss-saved-window-configuration)
+  (fi:lisp-delete-pop-up-window)
   (end-of-buffer))
 
 (defun fi:ss-disassemble ()
