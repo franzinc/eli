@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.16 1990/10/13 19:37:14 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.17 1991/01/31 14:47:45 layer Exp $
 
 (defvar fi:rlogin-mode-map nil
   "The rlogin major-mode keymap.")
@@ -53,7 +53,15 @@ is deemed to be prompt, and is not re-executed.")
 is seen.")
 
 (defun fi:rlogin-mode (&optional mode-hook)
-  "Major mode for interacting with an inferior rlogin."
+  "Major mode for interacting with an inferior rlogin.
+The keymap for this mode is bound to fi:rlogin-mode-map:
+\\{fi:rlogin-mode-map}
+Entry to this mode runs the following hooks:
+
+	fi:subprocess-mode-hook
+	fi:rlogin-mode-hook
+
+in the above order."
   (interactive)
   (kill-all-local-variables)
   (if mode-hook (funcall mode-hook))

@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.38 1990/12/04 23:12:16 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.39 1991/01/31 14:47:39 layer Exp $
 
 ;;;; Mode initializations
 
@@ -75,7 +75,16 @@ This variable should be set before this package is loaded.")
 ;;;;
 
 (defun fi:inferior-common-lisp-mode (&optional mode-hook)
-  "Major mode for interacting with an inferior Common Lisp subprocess."
+  "Major mode for interacting with Common Lisp subprocesses.
+The keymap for this mode is bound to fi:inferior-common-lisp-mode-map:
+\\{fi:inferior-common-lisp-mode-map}
+Entry to this mode runs the following hooks:
+
+	fi:lisp-mode-hook
+	fi:subprocess-mode-hook
+	fi:inferior-common-lisp-mode-hook
+
+in the above order."
   (interactive)
   (kill-all-local-variables)
   (if mode-hook (funcall mode-hook))
@@ -100,7 +109,16 @@ This variable should be set before this package is loaded.")
 	     'fi:inferior-common-lisp-mode-hook))
 
 (defun fi:inferior-franz-lisp-mode (&optional mode-hook)
-  "Major mode for interacting with an inferior Franz Lisp subprocess."
+  "Major mode for interacting with Franz Lisp subprocesses.
+The keymap for this mode is bound to fi:inferior-franz-lisp-mode-map:
+\\{fi:inferior-franz-lisp-mode-map}
+Entry to this mode runs the following hooks:
+
+	fi:lisp-mode-hook
+	fi:subprocess-mode-hook
+	fi:inferior-franz-lisp-mode-hook
+
+in the above order."
   (interactive)
   (kill-all-local-variables)
   (if mode-hook (funcall mode-hook))
@@ -125,7 +143,16 @@ This variable should be set before this package is loaded.")
 	     'fi:inferior-franz-lisp-mode-hook))
 
 (defun fi:tcp-common-lisp-mode (&optional mode-hook)
-  "Major mode for interacting with a Common Lisp over a TCP/IP socket."
+  "Major mode for interacting with Common Lisp over a socket.
+The keymap for this mode is bound to fi:tcp-common-lisp-mode-map:
+\\{fi:tcp-common-lisp-mode-map}
+Entry to this mode runs the following hooks:
+
+	fi:lisp-mode-hook
+	fi:subprocess-mode-hook
+	fi:tcp-common-lisp-mode-hook
+
+in the above order."
   (interactive)
   (kill-all-local-variables)
   (if mode-hook (funcall mode-hook))
@@ -150,8 +177,14 @@ This variable should be set before this package is loaded.")
 
 (defun fi:common-lisp-mode (&optional mode-hook)
   "Major mode for editing Lisp code to run in Common Lisp.
-The bindings are taken from the variable `fi:common-lisp-mode-map'.
-Entry to this mode calls the value of `fi:common-lisp-mode-hook'."
+The keymap for this mode is bound to fi:common-lisp-mode-map:
+\\{fi:common-lisp-mode-map}
+Entry to this mode runs the following hooks:
+
+	fi:lisp-mode-hook
+	fi:common-lisp-mode-hook
+
+in the above order."
   (interactive)
   (kill-all-local-variables)
   (if mode-hook (funcall mode-hook))
@@ -172,9 +205,14 @@ Entry to this mode calls the value of `fi:common-lisp-mode-hook'."
 
 (defun fi:franz-lisp-mode (&optional mode-hook)
   "Major mode for editing Lisp code to run in Franz Lisp.
-The bindings are taken from the variable `fi:franz-lisp-mode-map'.
-Entry to this mode calls the value of `fi:lisp-mode-hook' and
-`fi:franz-lisp-mode-hook', in this order, if their value is non-nil."
+The keymap for this mode is bound to fi:franz-lisp-mode-map:
+\\{fi:franz-lisp-mode-map}
+Entry to this mode runs the following hooks:
+
+	fi:lisp-mode-hook
+	fi:franz-lisp-mode-hook
+
+in the above order."
   (interactive)
   (kill-all-local-variables)
   (if mode-hook (funcall mode-hook))
@@ -194,10 +232,10 @@ Entry to this mode calls the value of `fi:lisp-mode-hook' and
   (run-hooks 'fi:lisp-mode-hook 'fi:franz-lisp-mode-hook))
 
 (defun fi:emacs-lisp-mode (&optional mode-hook)
-  "Major mode for editing Lisp code to run in GNU Emacs.
-The bindings are taken from the variable `fi:emacs-lisp-mode-map'.
-Entry to this mode calls the value of `fi:emacs-lisp-mode-hook' if that
-value is non-nil."
+  "Major mode for editing Lisp code to run in Emacs Lisp.
+The keymap for this mode is bound to fi:emacs-lisp-mode-map:
+\\{fi:emacs-lisp-mode-map}
+Entry to this mode runs the fi:emacs-lisp-mode-hook hook."
   (interactive)
   (kill-all-local-variables)
   (if mode-hook (funcall mode-hook))

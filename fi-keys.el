@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.38 1991/01/31 10:00:22 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.39 1991/01/31 14:47:46 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -535,6 +535,8 @@ Also move the point there."
 	       (point)))
 
 (defun fi:lisp-sync-current-working-directory ()
+  "Make the subprocess Lisp have the same current working directory as
+Emacs."
   (interactive)
   (send-string
    (get-buffer-process (current-buffer))

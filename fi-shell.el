@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-shell.el,v 1.11 1990/10/13 19:37:15 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-shell.el,v 1.12 1991/01/31 14:47:43 layer Exp $
 
 (defvar fi:shell-mode-map nil
   "The shell major-mode keymap.")
@@ -49,7 +49,15 @@ Anything from beginning of line up to the end of what this pattern matches
 is deemed to be prompt, and is not re-executed.")
 
 (defun fi:shell-mode (&optional mode-hook)
-  "Major mode for interacting with an inferior shell."
+  "Major mode for interacting with an inferior shell.
+The keymap for this mode is bound to fi:shell-mode-map:
+\\{fi:shell-mode-map}
+Entry to this mode runs the following hooks:
+
+	fi:subprocess-mode-hook
+	fi:shell-mode-hook
+
+in the above order."
   (interactive)
   (kill-all-local-variables)
   (if mode-hook (funcall mode-hook))

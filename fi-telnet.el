@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-telnet.el,v 1.3 1990/10/13 19:37:09 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-telnet.el,v 1.4 1991/01/31 14:47:38 layer Exp $
 
 (defvar fi:telnet-mode-map nil
   "The telnet major-mode keymap.")
@@ -53,7 +53,15 @@ is deemed to be prompt, and is not re-executed.")
 is seen.")
 
 (defun fi:telnet-mode (&optional mode-hook)
-  "Major mode for interacting with an inferior telnet."
+  "Major mode for interacting with an inferior telnet.
+The keymap for this mode is bound to fi:telnet-mode-map:
+\\{fi:telnet-mode-map}
+Entry to this mode runs the following hooks:
+
+	fi:subprocess-mode-hook
+	fi:telnet-mode-hook
+
+in the above order."
   (interactive)
   (kill-all-local-variables)
   (if mode-hook (funcall mode-hook))
