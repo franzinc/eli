@@ -1,0 +1,56 @@
+Lots of entries not added to this file, since they went straight to
+eli.htm in the post-6.2 eli hacking I did... the ones here have not
+been added to eli.htm:
+
+1. bug8475: Properly handle non-ASCII characters in the communication
+between Emacs/MULE and Lisp. 
+
+2. bug8953: Fix some errors which happened when Lisp and Emacs
+communicated filenames.
+
+3. bug8801: symbol completion now works when excl:*print-nickname*
+non-nil.
+
+4. bug7874: symbol completion of keywords, and other obscure
+completion problems have been fixed.
+
+5. rfe5678: change emacs-lisp rendezvous on windows to be more like
+*NIX.  This has two important/significant benefits to Windows users:
+   a. multiple instances of emacs/lisp pairings are now possible
+   b. by specifying a remote host name to fi:common-lisp, you can run
+      a lisp on *NIX with within an Emacs on Windows.  This requires
+      an rsh.exe, but NT/2k/XP has a native version.  Cygwin can be
+      used if rsh.exe is not already available.
+
+6. rfe5674: the correct file position and name now appear in
+the popup buffer for incremental compiler warnings.
+
+7. bug8802: On Windows, SHELL is unset before running Lisp, since the
+version used by Emacs on NT/2k does not work well with
+run-shell-command.
+
+8. rfe4337: new variable fi:user-env-vars.
+
+9. rfe5597: resizing the Emacs frame causes the pretty printer to
+notice the change in width and behave accordingly.
+
+10. rfe4040: for buffers in binary mode, finding character positions
+now works properly.
+
+11. rfe2463: handle multiple in-package's in a file when doing
+evaluations of forms and definitions.
+
+12. rfe4814: indentation of forms when element after opening paren is
+#+/#- pair are now handled like this:
+
+(#-blah no-blah
+ #+blah yes-blah
+ (blah blah blah)
+ t)
+
+instead of like this:
+
+(#-blah no-blah
+        #+blah yes-blah
+        (blah blah blah)
+        t)
