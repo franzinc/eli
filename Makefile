@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.91 1993/09/10 15:49:29 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.92 1993/09/10 17:40:58 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -125,7 +125,7 @@ clman:	clman.o clmanaux.o
 
 release_root = /net/vapor/scm/emacs-lib/Dists
 
-fi_release_directory = $(release_root)/fi-$(version)
+fi_release_directory = fi-$(version)
 fi_release_files = ChangeLog fi-*.el fi-*.elc Makefile *.doc examples/*.el
 fi_release_gztar = $(release_root)/eli-$(version).tar.gz
 
@@ -133,8 +133,8 @@ fi-dist:	all
 	@if test -z "$(version)"; then\
 	  echo Make variable version is null; exit 1;\
 	fi
-	@if test -d "$(fi_release_directory)"; then\
-	  echo $(fi_release_directory) exists; exit 1;\
+	@if test -d "$(release_root)/$(fi_release_directory)"; then\
+	  echo $(release_root)/$(fi_release_directory) exists; exit 1;\
 	fi
 	@if grep "Release $(version)" UserGuide.n > /dev/null; then\
 	  foo=;\
@@ -142,9 +142,11 @@ fi-dist:	all
 	  echo The version in fi-site-init.el and UserGuide.n do not agree;\
 	  exit 1;\
 	fi
-	mkdir $(fi_release_directory)
-	tar cf - $(fi_release_files) | (cd $(fi_release_directory); tar xf -)
-	(cd $(fi_release_directory);tar cf - .|gzip -9 > $(fi_release_gztar))
+	mkdir $(release_root)/$(fi_release_directory)
+	tar cf - $(fi_release_files) | \
+	  (cd $(release_root)/$(fi_release_directory); tar xf -)
+	(cd $(release_root); \
+	 tar cf - $(fi_release_directory)| gzip -9 > $(fi_release_gztar))
 
 clman_version = 4.1-v2
 
