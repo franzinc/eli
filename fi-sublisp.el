@@ -31,7 +31,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.50 1991/01/29 19:44:08 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.51 1991/02/12 14:55:42 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -310,7 +310,7 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 			       (*package* *package*)
 			       (stm (make-echo-stream istm *terminal-io*)))
 			   %s
-			   (princ \" ;; eval from emacs: \") (fresh-line)
+			   (princ \";; eval from emacs: \") (fresh-line)
 			   (load stm :verbose nil :print t)
 			   (values)))"
 			 fi::emacs-to-lisp-transaction-file
@@ -318,9 +318,11 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 	       (format "(let (#-(version >= 4 1) (excl::*record-source-files* nil)
 			      (*package* *package*))
 			   %s
+			   (princ \";; Loading forms from buffer \\\"%s\\\".\") (fresh-line)
 			   (load \"%s\" :verbose nil)
                            (values))"
 		       (if pkg pkg "")
+		       (buffer-name)
 		       fi::emacs-to-lisp-transaction-file)))))
       (fi::send-string-split process load-string nl-to-cr))))
 
