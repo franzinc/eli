@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.53 1991/03/13 15:03:50 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.54 1991/03/15 12:42:16 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -39,6 +39,10 @@ ipc.fasl:
 elcs: ${elcs}
 
 ###############################################################################
+
+spec.n:	ug.n
+	rm -f spec.n
+	egrep '^%%' ug.n > spec.n
 
 spec.out:	spec.n ${elcs}
 	$(emacs) -batch -q -l doc.elc -- spec.n spec.out
