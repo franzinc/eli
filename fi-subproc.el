@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.214 2003/10/13 21:03:10 layer Exp $
+;; $Id: fi-subproc.el,v 1.215 2003/10/14 20:42:39 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -77,13 +77,17 @@ variable will be ignored.")
   "*If non-nil, then the value should be a function taking one argument,
 a buffer, which is used to display a buffer when a subprocess is created.")
 
-(defconst fi:subprocess-env-vars
+(defvar fi:subprocess-env-vars
     '(("EMACS" . "t")
       ("TERM" . "emacs")
       ("DISPLAY" . (or (getenv "DISPLAY") (format "%s:0.0" (system-name))))
       ("TERMCAP" . (format "emacs:co#%d:tc=unknown:" (frame-width))))
   "*An alist containing the environment variables to pass to newly created
 subprocesses.")
+(when (on-ms-windows)
+  (setq fi:subprocess-env-vars
+    (append fi:subprocess-env-vars
+	    '(("SHELL")))))
 
 (defvar fi:pop-to-sublisp-buffer-after-lisp-eval nil
   "*If non-nil, then go to the Lisp subprocess buffer after sending
@@ -880,10 +884,11 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 
 (defun fi::read-file-name (prompt
 			   &optional directory default mustmatch initial)
-  (let ((temp (read-file-name prompt directory
-			      (if (null default) "" default)
-			      mustmatch
-			      initial)))
+  (let* ((def (if (null default) "" default))
+	 (temp (read-file-name prompt directory
+			       def
+			       mustmatch
+			       (if (string= def initial) nil initial))))
     (setq temp
       (cond ((string= temp "")
 	     ;; user deleted `initial' text or just hit RET
@@ -1543,8 +1548,16 @@ to your `.cshrc' after the `set cdpath=(...)' in the same file."
 
 (defun fi::set-environment-use-process-environment (valist)
   (dolist (pair valist)
-    (push (concat (car pair) "=" (eval (cdr pair)))
-	  process-environment)))
+    (cond ((cdr pair)
+	   (push (concat (car pair) "=" (eval (cdr pair)))
+		 process-environment))
+	  (t
+	   ;; This is an implicit request to remove the variable from the
+	   ;; environment passed to the subprocess. <from Luca Pisati>
+	   (let ((match (concat (car pair) "=")))
+	     (setf process-environment
+	       (remove-if (lambda (x) (string-match match x))
+			  process-environment)))))))
 
 (fset 'fi::set-environment
       (if (boundp 'process-environment)
