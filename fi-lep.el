@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.59 1993/11/24 04:03:15 duane Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.60 1993/12/11 00:15:20 georgej Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -351,6 +351,8 @@ information on how to send the mail."
 	(insert "\n------------------------------\n\n")	     
 	(insert lisp-info)
 	(insert "\n------------------------------\n\n")	     
+	(insert (format "Emacs version: %s\n"
+			(emacs-version)))
 	(insert (format "Emacs-Lisp interface version: %s\n\n"
 			fi:emacs-lisp-interface-version))
 	(insert (format "load-path: %s\n\n" load-path))

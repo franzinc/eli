@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.58 1993/09/23 07:23:47 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.59 1993/12/11 00:15:23 georgej Exp $
 
 ;;;; Mode initializations
 
@@ -326,7 +326,8 @@ any other mode setup."
   (setq comment-start ";")
   (make-local-variable 'comment-start-skip)
   (setq comment-start-skip ";+[ \t]*")
-  (unless (boundp 'comment-column) (setq comment-column 40))
+  (make-local-variable 'comment-column)
+  (setq comment-column 40)
   
   (if fi:lisp-do-indentation
       (progn

@@ -2,7 +2,7 @@
 			      User Guide
 			     Release 2.0
 
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.52 1993/09/17 05:57:24 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.53 1993/12/11 00:15:15 georgej Exp $
 
 			     Introduction
 
@@ -128,7 +128,7 @@ Format of this document
    To startup the Emacs-Lisp interface, all that need be done is to
    add the following form to your $HOME/.emacs file:
 
-	(load "fi/site-init")
+	(load "fi-site-init")
 
    which causes the interface to be loaded from the Emacs Lisp
    library.  In the following sections, many variables will be

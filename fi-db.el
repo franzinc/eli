@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.28 1993/07/23 03:48:41 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.29 1993/12/11 00:15:18 georgej Exp $
 
 (defvar fi::ss-help
     "Debugger commands:\\<fi:scan-stack-mode-map>
@@ -118,7 +118,7 @@ Entry to this mode runs the fi:scan-stack-mode-hook hook."
     (setq fi::ss-debugger-from-buffer (or from-buffer
 					saved-from-buffer)))
   (setq fi::ss-process-name process-name)
-  (setq major-mode 'let:scan-stack-mode)
+  (setq major-mode 'fi:scan-stack-mode)
   (setq mode-name "Scan stack mode")
   (if (null fi:scan-stack-mode-map)
       (let ((map (make-keymap))

@@ -1,3 +1,13 @@
+Fri Dec 10 15:15:07 1993  George Jacob  (georgej@lava)
+
+	* fi-db.el: Fixed type 'let:scan-stack-mode
+
+	* UserGuide.n: changed fi/site-init to fi-site-init
+
+	* fi-lep.el (fi): Added emacs-version to fi:bug-report
+
+	* fi-modes.el: changed comment-column to be 40 (really)
+
 *******************************************************************************
 2.0.11 public release
 *******************************************************************************
