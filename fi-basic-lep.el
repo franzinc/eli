@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.6 1991/02/28 23:06:07 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-basic-lep.el,v 1.7 1991/03/12 18:29:47 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -64,8 +64,8 @@
 ;;; Start up a connection as soon as we know where to connect to.
 
 
-(if (boundp 'fi::frammis-hook)
-    (push 'auto-ensure-lep-connection fi::frammis-hook))
+(if (boundp 'fi:start-lisp-interface-hook)
+    (push 'auto-ensure-lep-connection fi:start-lisp-interface-hook))
 
 (defun auto-ensure-lep-connection ()
   (message "Trying to start connection...")
@@ -75,7 +75,7 @@
 (defun try-and-start-lep-connection ()
   (let ((buffer (process-buffer (progn
 				  (fi::sublisp-select)
-				  (get-process fi::sublisp-name)))))
+				  (get-process fi::process-name)))))
     (if buffer
 	(save-excursion
 	  (set-buffer buffer)
@@ -94,11 +94,10 @@
 
 (defun start-connection ()
   (interactive)
-  (make-connection-to-lisp 
-   fi::remote-host
-   fi::remote-port
-   fi::remote-password
-   fi::ipc-version))
+  (make-connection-to-lisp fi::lisp-host
+			   fi::lisp-port
+			   fi::lisp-password
+			   fi::lisp-ipc-version))
 
 (defun make-connection-to-lisp (host port passwd ipc-version)
   (cond ((not (or  (eq ipc-version 'nil) (eq ipc-version 'NIL)))
