@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.81 1991/01/29 19:44:16 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.82 1991/01/31 09:59:54 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -193,10 +193,19 @@ buffer local.")
 
 (make-variable-buffer-local 'fi::lisp-is-remote)
 
+(defconst fi:subprocess-env-vars
+    '(("EMACS" . "t")
+      ("TERM" . "emacs")
+      ("DISPLAY" . (getenv "DISPLAY"))
+      ("TERMCAP" . (format "emacs:co#%d:tc=unknown:" (screen-width))))
+  "*A alist containing the environment variables to pass subprocess created
+with fi::make-subprocess.")
+
 (defconst fi::remote-lisp-sh-prefix
-    "sh -ec 'EMACS=t TERM=emacs TERMCAP=emacs:co#%d:tc=unknown: cd %s; "
-  "A format string, which takes two arguments: the screen width (%d) and
-the directory in which the remote Lisp should execute (%s).")
+    "sh -ec '%s cd %s; "
+  "A format string, which takes two arguments: a string for passing
+environment variables (%s) and the directory in which the remote Lisp
+should execute (%s).")
 
 (defvar fi::remote-host nil 
 "Host that is running the lisp in this buffer.  Buffer local.")
@@ -318,7 +327,7 @@ See fi:explicit-remote-common-lisp."
 		(append
 		 (list host
 		       (format fi::remote-lisp-sh-prefix
-			       (screen-width)
+			       (fi::env-vars)
 			       (or fi:default-remote-common-lisp-directory
 				   remote-dir))
 		       (if (and fi:remote-lisp-track-image-name-directory
@@ -373,7 +382,7 @@ arguments are read from the minibuffer."
 		(append
 		 (list host
 		       (format fi::remote-lisp-sh-prefix
-			       (screen-width)
+			       (fi::env-vars)
 			       (or fi:default-remote-common-lisp-directory
 				   remote-dir))
 		       (if (and fi:remote-lisp-track-image-name-directory
@@ -511,15 +520,10 @@ are read from the minibuffer."
 	(goto-char (point-max))
       (setq default-directory default-dir)
       (if process (delete-process process))
+      (fi::set-environment fi:subprocess-env-vars)
       (setq process
 	(apply 'start-process
-	       (append (list buffer-name buffer
-			     (concat exec-directory "env")
-			     (format "TERMCAP=emacs:co#%d:tc=unknown:"
-				     (screen-width))
-			     "TERM=emacs"
-			     "EMACS=t"
-			     "-" image-file)
+	       (append (list buffer-name buffer image-file)
 		       image-arguments)))
       (set-process-sentinel process 'fi::subprocess-sentinel)
       (set-process-filter process (or filter 'fi::subprocess-filter))
@@ -612,11 +616,11 @@ are read from the minibuffer."
 	   ((< number 0)
 	    ;; search for the first available buffer
 	    (let (buffer-name n)
-	      (if (not (fi::process-running-p
+	      (if (not (fi:process-running-p
 			(setq buffer-name (concat "*" name "*"))))
 		  buffer-name
 		(setq n 2)
-		(while (fi::process-running-p
+		(while (fi:process-running-p
 			(setq buffer-name (concat "*" name "*<" n ">")))
 		  (setq n (+ n 1)))
 		buffer-name)))
@@ -941,3 +945,28 @@ This function implements continuous output to visible buffers."
     (set-buffer buffer)
     fi::ipc-version))
 
+(defun fi::env-vars ()
+  (concat (mapconcat '(lambda (x)
+		       (format "%s=%s" (car x) (eval (eval (cdr x)))))
+		     fi:subprocess-env-vars
+		     " ")
+	  " export "
+	  (mapconcat '(lambda (x) (car x)) fi:subprocess-env-vars " ")
+	  "; "))
+
+(defun fi::set-environment (valist)
+  (let ((v valist))
+    (while v
+      (let ((pe process-environment)
+	    (found nil))
+	(while (and (not found) pe)
+	  (if (string-match (concat "^" (car (car v)) "=") (car pe))
+	      (progn
+		(rplaca pe (format "%s=%s" (car (car v)) (eval (cdr (car v)))))
+		(setq found t))
+	    (setq pe (cdr pe))))
+	(if (not found)
+	    (setq process-environment
+	      (cons (format "%s=%s" (car (car v)) (eval (cdr (car v))))
+		    process-environment))))
+      (setq v (cdr v)))))
