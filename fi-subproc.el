@@ -1,7 +1,7 @@
 ;;; subprocess.el
 ;;;   subprocess modes and functions
 ;;;
-;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.6 1988/02/19 12:16:38 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.7 1988/02/19 17:33:24 layer Exp $
 
 (provide 'subprocess)
 
@@ -156,8 +156,8 @@ matches is deemed to be prompt, and is not re-executed.")
 (defun fi:shell-mode (&optional prompt-pattern)
   "Major mode for interacting with an inferior shell.
 Shell name is same as buffer name, sans the asterisks.
-\\[fi:shell-send-input] at end of buffer sends line as input.
-\\[fi:shell-send-input] not at end copies rest of line to end and sends it.
+\\[subprocess-send-input] at end of buffer sends line as input.
+\\[subprocess-send-input] not at end copies rest of line to end and sends it.
 
 An input ring saves input sent to the shell subprocess.
 \\[pop-input] recalls previous input, travelling backward in the ring.
@@ -196,6 +196,10 @@ using the commands \\[send-region], \\[send-string] and \\[fi:eval-defun]."
       (progn
 	(setq fi:shell-mode-map (make-sparse-keymap))
 	(shell-mode-commands fi:shell-mode-map)))
+  (if (null fi:subprocess-mode-map)
+      (progn
+	(setq fi:subprocess-mode-map (make-sparse-keymap))
+	(subprocess-mode-commands fi:subprocess-mode-map)))
   (use-local-map fi:shell-mode-map)
   (make-local-variable 'shell-directory-stack)
   (setq shell-directory-stack nil)
@@ -266,6 +270,10 @@ You can send text to the Lisp subprocess from other buffers
       (progn
 	(setq fi:inferior-lisp-mode-map (make-sparse-keymap))
 	(inferior-lisp-mode-commands fi:inferior-lisp-mode-map)))
+  (if (null fi:subprocess-mode-map)
+      (progn
+	(setq fi:subprocess-mode-map (make-sparse-keymap))
+	(subprocess-mode-commands fi:subprocess-mode-map)))
   (use-local-map fi:inferior-lisp-mode-map)
   (setq local-abbrev-table lisp-mode-abbrev-table)
   (make-local-variable 'last-input-start)
@@ -297,7 +305,7 @@ in the MAP given as argument."
   (define-key map "\C-d" 'fi:shell-send-eof)
   (define-key map "\C-k" 'fi:kill-output-from-shell)
   (define-key map "\C-l" 'list-input-ring)
-  (define-key map "\C-m" 'fi:shell-send-input)
+  (define-key map "\C-m" 'subprocess-send-input)
   (define-key map "\C-n" 'push-input)
   (define-key map "\C-o" 'shell-send-flush)
   (define-key map "\C-p" 'pop-input)
@@ -319,17 +327,16 @@ in the MAP given as argument."
 (defun inferior-lisp-mode-commands (map)
   (shell-mode-commands map)
   (fi:lisp-mode-commands map t)
-  (define-key map "\r"		'subprocess-send-input)
+  (define-key map "\r"		'inferior-lisp-newline)
   (define-key map "\e\r"	'inferior-lisp-send-sexp-input)
   (define-key map "\C-x\r"	'inferior-lisp-send-list-input)
-  (define-key map "\C-i"	'lisp-indent-line)
+  ;;(define-key map "\C-i"	'lisp-indent-line)
   (define-key map "\e\C-q"	'indent-sexp))
 
 (defun shell-mode-commands (&optional map)
-  (define-key map "\C-m" 'fi:shell-send-input)
+  (define-key map "\C-m" 'subprocess-send-input)
   (define-key map "\C-c" 'fi:interrupt-shell-subjob)
   (define-key map "\C-i" 'shell-file-name-completion)
-  ;;(define-key map "\C-a" 'subprocess-beginning-of-line)
   (if subprocess-enable-superkeys
     (progn
       (define-key map "\C-a" 'subprocess-superkey)
@@ -431,12 +438,7 @@ key map."
   (if (eobp)
       (if special-binding
 	  (call-interactively special-binding)
-	(progn
-	  (if (null fi:subprocess-mode-map)
-	      (progn
-		(setq fi:subprocess-mode-map (make-sparse-keymap))
-		(subprocess-mode-commands fi:subprocess-mode-map)))
-	  (subprocess-reprocess-keys fi:subprocess-mode-map)))
+	(subprocess-reprocess-keys fi:subprocess-mode-map))
     (subprocess-reprocess-keys global-map)))
 
 (defun subprocess-reprocess-keys (&optional map key)
@@ -481,31 +483,7 @@ current subprocess prompt pattern, this function skips over it."
      (point))
     (backward-kill-word words)))
 
-(defun fi:shell-send-input ()
-  "Send input to subshell.
-At end of buffer, sends all text after last output
-  as input to the subshell, including a newline inserted at the end.
-Not at end, copies current line to the end of the buffer and sends it,
-  after first attempting to discard any prompt at the beginning of the line
-  by matching the regexp that is the value of shell-prompt-pattern if
-  possible.  This regexp should start with \"^\"."
-  (interactive)
-  (if shell-completions-window (shell-completion-cleanup))
-  (end-of-line)
-  (if (eobp)
-      (progn
-	(move-marker last-input-start
-		     (process-mark (get-buffer-process (current-buffer))))
-	(insert "\n")
-	(move-marker last-input-end (point)))
-    (beginning-of-line)
-    (re-search-forward shell-prompt-pattern nil t)
-    (let ((copy (buffer-substring (point)
-				  (progn (forward-line 1) (point)))))
-      (goto-char (point-max))
-      (move-marker last-input-start (point))
-      (insert copy)
-      (move-marker last-input-end (point))))
+(defun fi:subprocess-hack-directory ()
   ;; Even if we get an error trying to hack the working directory,
   ;; still send the input to the subshell.
   (condition-case ()
@@ -564,22 +542,18 @@ Not at end, copies current line to the end of the buffer and sends it,
 			  (skip-chars-forward "^\n \t;")
 			  (point)))))))
 		  (cd dir))))))))
-    (error nil))
-  (let ((process (get-buffer-process (current-buffer))))
-    (send-region-split process last-input-start last-input-end
-		       subprocess-map-nl-to-cr)
-    (input-ring-save last-input-start (1- last-input-end))
-    (set-marker (process-mark process) (point))))
+  (error nil)))
 
 (defun subprocess-send-input ()
-  "Send input to subprocess.
+  "Send input to subshell.
 At end of buffer, sends all text after last output
-  as input to the subprocess, including a newline inserted at the end.
+  as input to the subshell, including a newline inserted at the end.
 Not at end, copies current line to the end of the buffer and sends it,
   after first attempting to discard any prompt at the beginning of the line
-  by matching the regexp that is the value of subprocess-prompt-pattern if
+  by matching the regexp that is the value of shell-prompt-pattern if
   possible.  This regexp should start with \"^\"."
   (interactive)
+  (if shell-completions-window (shell-completion-cleanup))
   (end-of-line)
   (if (eobp)
       (progn
@@ -587,14 +561,16 @@ Not at end, copies current line to the end of the buffer and sends it,
 		     (process-mark (get-buffer-process (current-buffer))))
 	(insert "\n")
 	(move-marker last-input-end (point)))
-    (beginning-of-line)
-    (re-search-forward subprocess-prompt-pattern nil t)
+    (let ((max (point)))
+      (beginning-of-line)
+      (re-search-forward shell-prompt-pattern max t))
     (let ((copy (buffer-substring (point)
 				  (progn (forward-line 1) (point)))))
       (goto-char (point-max))
       (move-marker last-input-start (point))
       (insert copy)
       (move-marker last-input-end (point))))
+  (fi:subprocess-hack-directory)
   (let ((process (get-buffer-process (current-buffer))))
     (send-region-split process last-input-start last-input-end
 		       subprocess-map-nl-to-cr)
