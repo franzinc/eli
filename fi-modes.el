@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.23 1988/05/12 10:16:44 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-modes.el,v 1.24 1988/05/12 22:57:30 layer Exp $
 
 ;;;; Mode initializations
 
@@ -140,14 +140,6 @@ modes.")
   (run-hooks 'fi:indent-setup-hook 'fi:lisp-mode-hook
 	     'fi:subprocess-mode-hook 'fi:tcp-common-lisp-mode-hook))
 
-(defun common-lisp-mode ()
-  "Same as fi:common-lisp-mode, for -*- mode definitions."
-  (fi:common-lisp-mode))
-
-(defun lisp-mode ()
-  "Same as fi:common-lisp-mode, for -*- mode definitions."
-  (fi:common-lisp-mode))
-
 (defun fi:common-lisp-mode ()
   "Major mode for editing Lisp code to run in Common Lisp.
 The bindings are taken from the variable `fi:common-lisp-mode-map'.
@@ -204,10 +196,9 @@ Entry to this mode calls the value of `fi:lisp-mode-hook' and
   (setq paragraph-separate paragraph-start))
 
 (defun fi::check-for-package-info ()
-  (interactive)
   (save-excursion
     ;; look for -*- ... package: xxx; .... -*-
-    (let (beg end mode)
+    (let (beg end)
       (goto-char (point-min))
       (skip-chars-forward " \t\n")
       (if (and (search-forward "-*-" (save-excursion (end-of-line) (point)) t)
@@ -234,7 +225,13 @@ Entry to this mode calls the value of `fi:lisp-mode-hook' and
 			       (goto-char end))
 			     (skip-chars-backward " \t")
 			     (setq fi:package
-			       (buffer-substring beg (point)))))))
+			       (car (read-from-string
+				     (buffer-substring beg (point)))))
+			     (setq fi:package
+			       (downcase
+				(format "%s" (if (consp fi:package)
+						 (car fi:package)
+					       fi:package))))))))
 		 fi:package))
 	  fi:package
 	(let* ((case-fold-search t)
@@ -262,7 +259,61 @@ Entry to this mode calls the value of `fi:lisp-mode-hook' and
 			((stringp p) p)))))))))
   (if (or (not (boundp 'fi:package))
 	  (null fi:package))
-      (setq fi:package "user")))
+      (progn
+	(setq fi:package "user")
+	(message "using default package specification of `%s'" fi:package))
+    (message "package specification is `%s'" fi:package)))
+
+(defun set-auto-mode ()
+  "Select major mode appropriate for current buffer.
+May base decision on visited file name (See variable  auto-mode-list)
+or on buffer contents (-*- line or local variables spec), but does not look
+for the \"mode:\" local variable.  For that, use  hack-local-variables."
+  ;; Look for -*-MODENAME-*- or -*- ... mode: MODENAME; ... -*-
+  (let (beg end mode)
+    (save-excursion
+      (goto-char (point-min))
+      (skip-chars-forward " \t\n")
+      (if (and (search-forward "-*-" (save-excursion (end-of-line) (point)) t)
+	       (progn
+		 (skip-chars-forward " \t")
+		 (setq beg (point))
+		 (search-forward "-*-" (save-excursion (end-of-line) (point)) t))
+	       (progn
+		 (forward-char -3)
+		 (skip-chars-backward " \t")
+		 (setq end (point))
+		 (goto-char beg)
+		 (if (search-forward ":" end t)
+		     (progn
+		       (goto-char beg)
+		       (if (let ((case-fold-search t))
+			     (search-forward "mode:" end t))
+			   (progn
+			     (skip-chars-forward " \t")
+			     (setq beg (point))
+			     (if (search-forward ";" end t)
+				 (forward-char -1)
+			       (goto-char end))
+			     (skip-chars-backward " \t")
+			     (setq mode (buffer-substring beg (point))))))
+		   (setq mode (buffer-substring beg end)))))
+	  (progn
+	    (setq mode (downcase mode))
+	    (if (or (equal mode "lisp") (equal mode "common-lisp"))
+		(setq mode "fi:common-lisp"))
+	    (funcall (intern (concat mode "-mode"))))
+	(let ((alist auto-mode-alist)
+	      (name buffer-file-name))
+	  (let ((case-fold-search (eq system-type 'vax-vms)))
+	    ;; Remove backup-suffixes from file name.
+	    (setq name (file-name-sans-versions name))
+	    ;; Find first matching alist entry.
+	    (while (and (not mode) alist)
+	      (if (string-match (car (car alist)) name)
+		  (setq mode (cdr (car alist))))
+	      (setq alist (cdr alist))))
+	  (if mode (funcall mode)))))))
 
 ;;;;
 ;;; Initializations
