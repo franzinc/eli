@@ -9,6 +9,10 @@ For more detailed instructions on filling in the ChangeLog form, see
 ******************************************************************************
 post-6.2 release changes: 
 
+2003-08-07  Kevin Layer  <layer@crikey>
+
+	* fi-keys.el: fix minor bug with keymap init
+
 2003-08-05  Kevin Layer  <layer@crikey>
 2.4.0
 
@@ -27,7 +31,7 @@ post-6.2 release changes:
 	* fi-telnet.el: support for keybinding reorg
 	* fi-site-init.el: new file, fi-emacs21
 	* fi-vers.el: update
-    rfe5529: C-c *
+    for rfe5529: C-c *
 	* fi-lep.el: add fi:pop-definition-mark
 
 2003-07-03  Kevin Layer  <layer@crikey>

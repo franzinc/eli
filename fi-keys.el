@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 1.117.6.4.8.2 2003/08/07 15:27:23 layer Exp $
+;; $Id: fi-keys.el,v 1.117.6.4.8.3 2003/08/07 16:53:59 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -287,9 +287,10 @@ ignored in all but Emacs 21 and later.")
       
       (set mode-map-sym map)
       (when mode-super-map-sym
-	(set mode-super-map-sym smap)
-	(setq fi:subprocess-super-key-map smap))
-      t)))
+	(set mode-super-map-sym smap))
+      
+      t))
+  (setq fi:subprocess-super-key-map (symbol-value mode-super-map-sym)))
 
 ;;;;;;;;;;;;;;;;;;;;; inferior lisp mode related functions
 
