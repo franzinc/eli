@@ -45,7 +45,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.10 1989/05/24 19:57:56 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.11 1989/06/01 22:32:55 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If `t', semicolons that begin comments are indented as they are typed.")
@@ -170,8 +170,7 @@ buffer-local.")
 	  fi:lisp-keyword-indentation
 	  fi:lisp-keyword-argument-indentation
 	  fi:lisp-keyword-indentation-hook
-	  fi:lisp-maximum-indent-struct-depth
-	  fi::lisp-most-recent-parse-result))
+	  fi:lisp-maximum-indent-struct-depth))
 
 (defun fi:lisp-comment-indent (&optional addr)
   (let* ((begin (if addr addr (point)))
@@ -184,9 +183,6 @@ buffer-local.")
       (goto-char begin)
       (skip-chars-forward ";")
       (setq count (- (point) begin)))
-    ;; The following expression is from Cesar Quiroz (quiroz@cs.rochester.edu)
-    ;;   for solving a problem with indenting comments when in auto-fill mode.
-    ;;   Refer to the change log for details.  [Harry Weeks, November 1987.]
     (cond ((and (= count 0) (not (string= comment-start ";")))
            (let ((len (length comment-start)))
              (while (and (< count len)
@@ -289,7 +285,7 @@ status of that parse."
 			(indent-to to-column 0)))
 		(error "sexp parse anomaly: no comment where expected"))))))))
 
-(setq-default fi::lisp-most-recent-parse-result '(0 0 0 0 nil nil nil 0)
+(defvar fi::lisp-most-recent-parse-result nil
   "Most recent parse result: point at parse end and parse state.
 A list that is the `cons' of the point at which the most recent
 parse ended and the parse state from `fi::parse-partial-sexp'.")
@@ -335,7 +331,7 @@ rigidly along with this one."
 	     (> end beg))
 	   (fi:indent-code-rigidly beg end shift-amt)))))
  
-(defvar fi::calculate-lisp-indent-state-temp '(0 0 0 nil nil nil 0)
+(defvar fi::calculate-lisp-indent-state-temp nil
   "Used as the last argument to fi::parse-partial-sexp so we do as little
 consing as is possible.")
 
@@ -378,7 +374,7 @@ of the start of the containing expression."
 	;; Is there a complete sexp since then?
 	(if (and last-sexp (> last-sexp (point)))
 	    ;; Yes, but is there a containing sexp after that?
-	    (let ((peek (parse-partial-sexp last-sexp indent-point 0)))
+	    (let ((peek (fi::parse-partial-sexp last-sexp indent-point 0)))
 	      (if (setq retry (car (cdr peek)))
 		  (setq state peek))))
 	(rplaca fi::lisp-most-recent-parse-result (point))
@@ -467,9 +463,9 @@ of the start of the containing expression."
 	     (setq desired-indent (current-column))))
       desired-indent)))
 
-(defvar fi::lisp-indent-state-temp '(nil nil nil nil nil nil nil)
-  "Used as the last argument to fi::parse-partial-sexp so we can do as little
-consing as possible.")
+(defvar fi::lisp-indent-state-temp nil
+  "Used as the last argument to fi::parse-partial-sexp so we can do as
+little consing as possible.")
 
 (defun fi:lisp-indent-hook (indent-point state)
   (let ((normal-indent (current-column))
@@ -1510,8 +1506,8 @@ if matched at the beginning of a line, means don't indent that line."
   ;; the condition system (v18)
 
   (put 'define-condition tag '((1 (4 t) nil) (1 3 quote) (0 t 3)))
-  (put 'handler-bind tag '(like case))
-  (put 'handler-case tag '(like let))
+  (put 'handler-bind tag '(like let))
+  (put 'handler-case tag '(like restart-case))
 
   (put 'restart-bind tag
        '((2 1 ((0 t (fi:lisp-indent-keyword-list
