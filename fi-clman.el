@@ -24,31 +24,31 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.1 1989/02/14 17:20:06 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.2 1989/02/14 17:43:47 layer Exp $
 
 (defconst clman:doc-directory (fi::find-path "fi/manual/"))
 
 (defconst clman:package-info
   (list 
    (list "xcw-pilot"
-	 (concat clman-doc-directory "winman/pages/x-specific/new-pilot/"))
-   (list "xcw" (concat clman-doc-directory "winman/pages/x-specific/"))
-   (list "cw" (concat clman-doc-directory "winman/pages/"))
-   (list "math" (concat clman-doc-directory "mathpack/pages/"))
-   (list "lisp" (concat clman-doc-directory "refman/pages/"))))
+	 (concat clman:doc-directory "winman/pages/x-specific/new-pilot/"))
+   (list "xcw" (concat clman:doc-directory "winman/pages/x-specific/"))
+   (list "cw" (concat clman:doc-directory "winman/pages/"))
+   (list "math" (concat clman:doc-directory "mathpack/pages/"))
+   (list "lisp" (concat clman:doc-directory "refman/pages/"))))
 
 (load "fi/clman-oblist.el")
 
 ;;; clman-mode
 
-(defvar clman-mode-map nil)
+(defvar clman:mode-map nil)
 
 (defun clman-mode ()
   "Major mode for getting around
-Like Text Mode but with these additional comands:\n\\{clman-mode-map}\n"
+Like Text Mode but with these additional comands:\n\\{clman:mode-map}\n"
   (interactive)
   (set-syntax-table text-mode-syntax-table)
-  (use-local-map clman-mode-map)
+  (use-local-map clman:mode-map)
   (setq local-abbrev-table text-mode-abbrev-table)
   (setq major-mode 'clman-mode)
   (setq mode-name "CLMAN")
@@ -63,17 +63,17 @@ Like Text Mode but with these additional comands:\n\\{clman-mode-map}\n"
   (backward-sexp)(backward-sexp)
   (forward-sexp))
 
-(if clman-mode-map
+(if clman:mode-map
     nil
-  (setq clman-mode-map (make-sparse-keymap))
-  (define-key clman-mode-map "p" 'previous-line)
-  (define-key clman-mode-map "n" 'next-line)
-  (define-key clman-mode-map "a" 'beginning-of-line) 
-  (define-key clman-mode-map "f" 'forward-sexp) 
-  (define-key clman-mode-map "b" 'back-a-sexp)
-  (define-key clman-mode-map "m" 'clman)
-  (define-key clman-mode-map "s" 'search-forward-see-alsos) 
-  (define-key clman-mode-map "\C-C\C-C" 'clman-flush-doc))
+  (setq clman:mode-map (make-sparse-keymap))
+  (define-key clman:mode-map "p" 'previous-line)
+  (define-key clman:mode-map "n" 'next-line)
+  (define-key clman:mode-map "a" 'beginning-of-line) 
+  (define-key clman:mode-map "f" 'forward-sexp) 
+  (define-key clman:mode-map "b" 'back-a-sexp)
+  (define-key clman:mode-map "m" 'clman)
+  (define-key clman:mode-map "s" 'search-forward-see-alsos) 
+  (define-key clman:mode-map "\C-C\C-C" 'clman-flush-doc))
 
 (defun clman-flush-doc ()
   (interactive)
@@ -96,10 +96,10 @@ the system will not try to reuse the same buffer.")
   (let ((buf (generate-new-buffer "Package Info Editor")))
     (switch-to-buffer buf)
     (emacs-lisp-mode)
-    (insert-string "(setq clman-package-info ")
+    (insert-string "(setq clman:package-info ")
     (newline)
     (insert-string "'(")
-    (mapcar 'insert-and-newline clman-package-info)
+    (mapcar 'insert-and-newline clman:package-info)
     (insert "))")        
     (backward-sexp)
     (indent-sexp)))
@@ -108,9 +108,9 @@ the system will not try to reuse the same buffer.")
   (insert-string (prin1-to-string obj))
   (newline))
 
-(defun clman (&optional symbol)
+(defun fi:clman (&optional symbol)
   (interactive)
-  (let* ((temp-info clman-package-info)(package nil)
+  (let* ((temp-info clman:package-info)(package nil)
          (doc-page nil)(syn nil)
          (done nil))
     (setq sym (or symbol (clman-get-sym-to-lookup)))
@@ -294,7 +294,7 @@ Return the full pathname of the file the symbol is in. "
 
 ;;;;
 
-(defun clman-apropos ()
+(defun fi:clman-apropos ()
   (interactive)
   (let ((oblist-buffer
          (generate-new-buffer "*oblist*"))
