@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.76 1993/06/29 23:23:46 layer Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.77 1993/06/29 23:50:42 layer Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -21,7 +21,7 @@ elcs = fi-modes.elc fi-indent.elc fi-subproc.elc fi-sublisp.elc fi-filec.elc\
 
 compile_time_env = -l cl.el -l bytecomp -l `pwd`/fi-utils -l `pwd`/fi-basic-lep
 
-default:	elcs test.out tags
+all:	elcs test.out docs tags
 
 fi-leep.elc:
 	$(emacs) -nw -batch -q $(compile_time_env)\
@@ -35,8 +35,6 @@ fi-leep.elc:
 test.out:	$(elcs) fi-test.el
 	$(emacs) -nw -batch -q -l fi-test.el
 	@date > test.out
-
-all:	clean default docs # fasls
 
 clean:
 	rm -f *.elc
@@ -80,3 +78,5 @@ tags:	TAGS
 
 TAGS:	${elcs}
 	etags *.el
+
+include Makefile.fi
