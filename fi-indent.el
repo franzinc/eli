@@ -45,7 +45,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.13 1989/07/19 14:06:57 layer Rel $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.14 1990/08/31 23:45:49 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If `t', semicolons that begin comments are indented as they are typed.")
@@ -1131,7 +1131,12 @@ NIL otherwise.  The ELEMENT is the number of the element, zero indexed."
 	(count 0))
     ;; find the beginning of the form that has the method which triggered
     ;; us:
-    (up-list (- (- depth) 1))
+    (condition-case ()
+	;; up-list will take us there, whether or not we error!  [I hereby
+	;; dedicate this bug fix to Joe Satriani--the bug was found during
+	;; a particularly loud playing of "Ice 9" on 7/17/90. -dkl]
+	(up-list (- (- depth) 1))
+      (error nil))
     (forward-char 1)			; get inside the sexp
     ;; now look for our sexp and see if it is atomic:
     (while (and
@@ -1421,7 +1426,7 @@ if matched at the beginning of a line, means don't indent that line."
 ;;
 ;;(put 'case 'fi:lisp-indent-hook
 ;;     '((1 (2 t) ((1 0 quote)
-;;		 (0 t nil)))
+;;		   (0 t nil)))
 ;;       (0 t 1)))
 
 (let ((tag 'fi:lisp-indent-hook))
@@ -1493,7 +1498,7 @@ if matched at the beginning of a line, means don't indent that line."
 
   ;; the condition system (v18)
 
-  (put 'define-condition tag '((1 (4 t) nil) (1 3 quote) (0 t 3)))
+  (put 'define-condition tag '(like defclass))
   (put 'handler-bind tag '(like let))
   (put 'handler-case tag '(like restart-case))
 
@@ -1506,7 +1511,8 @@ if matched at the beginning of a line, means don't indent that line."
 		     1			; special-count
 		     t			; ignore-after-count
 		     ;; keywords recognized:
-		     ":interactive-function" ":report-function"))))
+		     ":interactive-function" ":report-function"
+		     ":test-function"))))
 	 (0 t 1)))
   (put 'restart-case tag
        '((1 (2 t) ((1 1 lambda-list)
@@ -1518,14 +1524,14 @@ if matched at the beginning of a line, means don't indent that line."
 			 1		; special-count
 			 t		; ignore-after-count
 			 ;; keywords recognized:
-			 ":report" ":interactive"))))
+			 ":report" ":interactive" ":test"))))
 	 (0 t 1)))
 
   (put 'with-simple-restart tag '(like when))
 
   ;; CLOS
 
-  (put 'defclass tag '((1 2 lambda-list) (0 t 2)))
+  (put 'defclass tag '((1 2 quote) (0 t 3)))
 
   (put 'defmethod tag 
        (quote (if (fi:lisp-atom-p 2)
@@ -1555,6 +1561,7 @@ if matched at the beginning of a line, means don't indent that line."
   (put 'tpl:alias tag 2)
   (put 'if* tag '(funcall fi:lisp-indent-if*))
   (put 'with-timeout tag 1)
+  (put 'with-process-lock tag 1)
   (put 'defsystem tag '((1 2 quote) (0 t 2)))
   )
 
