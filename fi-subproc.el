@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.53 1989/08/07 16:43:55 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.54 1989/08/17 20:46:44 layer Rel $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -372,9 +372,11 @@ are read from the minibuffer."
       (goto-char (point-max))
       (set-marker (process-mark process) (point))
       (condition-case ()
-	  (let ((saved-input-ring fi::input-ring))
+	  (let ((saved-input-ring fi::input-ring)
+		(saved-input-ring-yank-pointer fi::input-ring-yank-pointer))
 	    (funcall mode-function)
-	    (setq fi::input-ring saved-input-ring))
+	    (setq fi::input-ring saved-input-ring)
+	    (setq fi::input-ring-yank-pointer saved-input-ring-yank-pointer))
 	(error nil))
       (make-local-variable 'subprocess-prompt-pattern)
       (setq subprocess-prompt-pattern image-prompt)
@@ -386,6 +388,9 @@ are read from the minibuffer."
 					      given-service)
   (if (null fi:unix-domain-socket)
       (error "Emacs/Lisp interface has not been started yet."))
+  (if (and (consp fi:unix-domain-socket)
+	   (eq 'lambda (car fi:unix-domain-socket)))
+      (setq fi:unix-domain-socket (funcall fi:unix-domain-socket)))
   (let* ((buffer (fi::make-process-buffer buffer-name buffer-number))
 	 (default-dir default-directory)
 	 (buffer-name (buffer-name buffer))
@@ -422,9 +427,11 @@ are read from the minibuffer."
 
       (goto-char (point-max))
       (set-marker (process-mark proc) (point))
-      (let ((saved-input-ring fi::input-ring))
+      (let ((saved-input-ring fi::input-ring)
+	    (saved-input-ring-yank-pointer fi::input-ring-yank-pointer))
 	(funcall mode)
-	(setq fi::input-ring saved-input-ring))      
+	(setq fi::input-ring saved-input-ring)
+	(setq fi::input-ring-yank-pointer saved-input-ring-yank-pointer))      
       (make-local-variable 'subprocess-prompt-pattern)
       (setq subprocess-prompt-pattern image-prompt)
       (fi::make-subprocess-variables))
@@ -455,7 +462,6 @@ are read from the minibuffer."
 
 (defun fi::make-subprocess-variables ()
   (setq fi::input-ring-max fi:default-input-ring-max)
-  (setq fi::input-ring-yank-pointer nil)
   (setq fi::shell-directory-stack nil)
   (setq fi::last-input-search-string "")
   (setq fi::last-input-start (make-marker))
