@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.40 1991/10/03 12:45:34 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.41 1991/10/03 15:33:54 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -538,15 +538,31 @@ beginning of words in target symbols."
 
 (defun lep::completing-read-complete (pattern predicate what)
   (let* ((inhibit-quit nil)
+	 (matchp (string-match ":?:" pattern))
+
+	 (package (and matchp (substring pattern 0 matchp)))
+	 (string (if matchp 
+		     (substring pattern (match-end 0))
+		   pattern))
+	 (package-prefix (and package
+			      (substring pattern matchp (match-end 0))))
 	 (alist
 	  (fi::lisp-complete-2
 	   (car
 	    (lep::make-request-in-session-and-wait
 	     session
 	     ':complete
-	     pattern))
-	   t))
-	 (completion (and alist (try-completion pattern alist))))
+	     (fi::frob-case-to-lisp string)
+	     (and package 
+		  (intern
+		  (fi::frob-case-to-lisp 
+		   (concat ":" 
+			   (if (equal "" package)
+			       "keyword"
+			     package)))))))))
+	 (completion (and alist (try-completion string alist))))
+    (when (and package (stringp completion))
+      (setq completion (concat package package-prefix completion)))
     (ecase what
       ((nil) completion)
       ((t) (mapcar (function cdr) alist))
