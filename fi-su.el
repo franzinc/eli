@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-su.el,v 1.11 1991/09/30 11:38:49 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-su.el,v 1.12 1992/01/12 11:48:13 layer Exp $
 
 (defvar fi:su-mode-map nil
   "The su major-mode keymap.")
@@ -143,6 +143,8 @@ The host name is read from the minibuffer."
 			 (list host "-l" "root")
 			 'fi::su-filter)))
 
+(defvar fi::su-password nil)
+
 (defun fi::su-filter (process output)
   "Filter for `fi:su' subprocess buffers.
 Watch for the first shell prompt from the su, then send the
@@ -151,11 +153,12 @@ string bound to fi:su-initial-input, and turn ourself off."
   (save-excursion
     (set-buffer (process-buffer process))
     (cond ((string-match "assword" output)
-	   (setq password (fi::read-password))
-	   (send-string process (concat password "\n")))
+	   (setq fi::su-password (fi::read-password))
+	   (send-string process (concat fi::su-password "\n")))
 	  (t (if (save-excursion (beginning-of-line)
 				 (looking-at subprocess-prompt-pattern))
 		 (progn
 		   (set-process-filter process 'fi::subprocess-filter)
+		   (setq fi::su-password nil)
 		   (if fi:su-initial-input
 		       (send-string process fi:su-initial-input))))))))
