@@ -45,7 +45,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.12 1989/07/11 18:20:24 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.13 1989/07/19 14:06:57 layer Rel $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If `t', semicolons that begin comments are indented as they are typed.")
@@ -586,18 +586,6 @@ little consing as possible.")
 			    name
 			  (downcase name)))
 	   'fi:lisp-indent-hook)))
-
-(defun fi::lisp-find-char (char string &optional from-end)
-  (let* ((l (length string))
-	 (i (if from-end (1- l) 0))
-	 (e (if from-end -1 l))
-	 (d (if from-end -1 1))
-	 (n nil))
-    (while (and (not n) (not (= i e)))
-      (if (= char (elt string i))
-	  (setq n i)
-	(setq i (+ i d))))
-    n))
 
 (defun fi::lisp-invoke-method (form-start method depth count state
 			       indent-point)
