@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.23 1991/03/15 12:42:01 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.24 1991/03/15 12:54:28 layer Exp $
 
 (require 'cl)
 
@@ -33,6 +33,8 @@
   (switch-to-buffer "*foo*")
   (erase-buffer)
 
+  (fi:scan-stack-mode)
+  (toggle-read-only)
   (fi:definition-mode)
   (fi:common-lisp-mode)
   (fi:inferior-common-lisp-mode)
@@ -76,9 +78,8 @@
 			  "^%% \\([^ \t]+\\)[ \t]*\\([^ \t]+\\)?$"
 			  (save-excursion (end-of-line) (point)))
 			 (replace-match "\\1")))
-	      (func "[command]")
+	      (func " [command]")
 	      val doc)
-	 ;;(message "var: %s, mode: %s, xmode-name: %s" var mode xmode-name)
 	 (cond
 	  ((fboundp var)
 	   (let* ((xx (symbol-function var))
@@ -89,8 +90,7 @@
 		      (concat " " (mapconcat 'symbol-name arglist " "))))
 		 (setq n (- n (length string)))
 		 (insert string)))
-	     (insert-char ?. (- n (length func) (length var-string)))
-	     )
+	     (insert-char ?  (- n (length func) (length var-string))))
 	   (setq current-local-map-var
 	     (cond ((symbol-value mode))
 		   (t nil)))
@@ -111,13 +111,13 @@
 			 (error "no documentation available for %s" var)))))
 	  (t ;; assume a bound variable
 	   (let* ((val (symbol-value var))
-		  (type (cond ((syntax-table-p val) "[syntax-table]")
-			      ((keymapp val) "[keymap]")
-			      (t "[variable]")))
+		  (type (cond ((syntax-table-p val) " [syntax-table]")
+			      ((keymapp val) " [keymap]")
+			      (t " [variable]")))
 		  (doc (or (documentation-property
 			    var 'variable-documentation)
 			   (error "no documentation available for %s" var))))
-	     (insert-char ?. (- 78 (length type)
+	     (insert-char ?  (- 78 (length type)
 				(length (symbol-name var))))
 	     (cond ((syntax-table-p val)
 		    (insert (format "%s\n   %s" type doc)))
@@ -130,27 +130,9 @@
 		    (insert (format "%s\n   Value: %s\n   %s" type
 				    (frob-newlines (prin1-to-string val))
 				    doc)))))))
-	 (insert "\n\n")))
-      ((looking-at "^%eval: ")
-       (let ((start (point))
-	     (string
-	      (buffer-substring
-	       (progn (search-forward "eval: ") (point))
-	       (progn (end-of-line) (point)))))
-	 (delete-region start (progn (forward-char 1) (point)))
-	 (eval (car (read-from-string string)))))
-      ((looking-at "^%mode: ")
-       (let ((start (point))
-	     (mode
-	      (intern
-	       (buffer-substring
-		(progn (search-forward "mode: ") (point))
-		(progn (end-of-line) (point))))))
-	 (funcall mode)
-	 (delete-region start (progn (forward-char 1) (point)))))))
+	 (insert "\n\n")))))
 
-  (write-region (point-min) (point-max) output-file)
-  )
+  (write-region (point-min) (point-max) output-file))
 
 (defun frob-newlines (string)
   (let ((i 0)
