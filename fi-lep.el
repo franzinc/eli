@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.25 1991/04/23 15:47:27 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.26 1991/04/24 10:06:28 layer Exp $
 ;;
 
 (defvar fi:always-in-a-window nil)
@@ -546,7 +546,7 @@ visit time."
     default))
 
 (defun lep::prompt-for-values (what prompt options)
-  (list (ecase what
+  (list (case what
 	  (:symbol
 	   (let* ((string (read-string
 			   prompt (getf-property options ':initial-input)))
@@ -564,7 +564,7 @@ visit time."
 		       (getf-property options ':directory)
 		       (getf-property options ':default)
 		       (getf-property options ':mustmatch)))
-	  (:string (read-string
+	  (t (read-string
 		    prompt (getf-property options ':initial-input))))))
 
 (defun lep::completing-read (prompt require-match initial-input)
