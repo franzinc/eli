@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.22 1991/09/30 11:39:19 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.23 1991/10/29 14:59:22 layer Exp $
 
 (defvar fi::ss-help
     "Debugger commands:\\<fi:scan-stack-mode-map>
@@ -20,7 +20,7 @@
 \\[fi:ss-disassemble]	disassemble the function
 \\[fi:ss-restart]	restart function (give prefix to specify different form)
 \\[fi:ss-toggle-all]	toggle visibility of all frames (by default a subset are visible)
-\\[next-line]	next line
+\\[fi:ss-next-frame]	next frame
 \\[fi:ss-edit]	edit source corresponding to function
 \\[fi:ss-revert-stack]	revert stack from Lisp
 \\[fi:ss-unhide-help-text]	Causes this help text to become visible
@@ -28,7 +28,7 @@
 \\[fi:ss-pprint]	pretty print
 \\[fi:ss-quit]	switch back to \"%s\" buffer
 \\[fi:ss-return]	return a value
-\\[previous-line]	previous line             
+\\[fi:ss-previous-frame]	previous frame
 
 Type \\[fi:ss-hide-help-text] to hide this help summary.
 
@@ -133,7 +133,7 @@ Entry to this mode runs the fi:scan-stack-mode-hook hook."
 	(define-key map "."	'fi:ss-set-current)
 	(define-key map "D"	'fi:ss-disassemble)
 	(define-key map "R"	'fi:ss-restart)
-	(define-key map "d"	'next-line)
+	(define-key map "d"	'fi:ss-next-frame)
 	(define-key map "a"	'fi:ss-toggle-all)
 	(define-key map "e"	'fi:ss-edit)
 	(define-key map "g"	'fi:ss-revert-stack)
@@ -142,12 +142,27 @@ Entry to this mode runs the fi:scan-stack-mode-hook hook."
 	(define-key map "p"	'fi:ss-pprint)
 	(define-key map "q"	'fi:ss-quit)
 	(define-key map "r"	'fi:ss-return)
-	(define-key map "u"	'previous-line)
+	(define-key map "u"	'fi:ss-previous-frame)
 	(setq fi:scan-stack-mode-map map)))
   (use-local-map fi:scan-stack-mode-map)
   (if (not buffer-read-only) (toggle-read-only))
   (setq truncate-lines t)
   (run-hooks 'fi:scan-stack-mode-hook))
+
+(defun fi:ss-next-frame ()
+  "Go to the next frame."
+  (interactive)
+  (beginning-of-line)
+  (forward-char 3)
+  (forward-sexp 1)
+  (forward-line 1))
+
+(defun fi:ss-previous-frame ()
+  "Go to the previous frame."
+  (interactive)
+  (beginning-of-line)
+  (forward-sexp -1)
+  (beginning-of-line))
 
 (defun fi:ss-reset ()
   "Do a :reset on the process being debugged.  This causes the process
@@ -248,6 +263,7 @@ performing their assigned action."
 and the window configuration as it was before this mode was entered is
 restored."
   (interactive)
+  (bury-buffer)
   (set-window-configuration fi::ss-saved-window-configuration)
   (end-of-buffer))
 
@@ -361,17 +377,22 @@ buffer."
       nil
     (if (not (looking-at fi::ss-ok-frame-regexp))
 	(error "Not on a frame."))
-    (let* ((down t)
-	   (start (point))
-	   (end
-	    (save-excursion
-	      (or (and (re-search-forward fi::ss-current-frame-regexp nil t)
-		       (progn (setq down nil) t))
-		  (re-search-backward fi::ss-current-frame-regexp nil t)
-		  (error "Can't find current frame indicator."))
-	      (beginning-of-line)
-	      (point)))
-	   (lines (count-lines start end)))
+    (let* ((down (save-excursion
+		   (if (re-search-forward fi::ss-current-frame-regexp nil t)
+		       nil
+		     (if (re-search-backward fi::ss-current-frame-regexp nil t)
+			 t
+		       (error "Can't find current frame indicator.")))))
+	   (lines 0))
+      (save-excursion
+	(while (progn (beginning-of-line)
+		      (and (not (looking-at fi::ss-current-frame-regexp))
+			   (looking-at fi::ss-ok-frame-regexp)))
+	  (setq lines (+ lines 1))
+	  (if down
+	      (backward-sexp 1)
+	    (forward-sexp 1)
+	    (forward-line 1))))
       (if down
 	  lines
 	(- lines)))))
@@ -382,7 +403,13 @@ buffer."
   (insert " ->")
   (beginning-of-line)
   (save-excursion
-    (forward-line (- offset))
+    (setq offset (- offset))
+    (if (plusp offset)
+	(progn (forward-char 3)
+	       (forward-sexp offset)
+	       (forward-line 1))
+      (forward-sexp offset)
+      (beginning-of-line))
     (unwind-protect
 	(progn
 	  (if (not (looking-at fi::ss-current-frame-regexp))
