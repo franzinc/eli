@@ -1,7 +1,7 @@
 ;;; subprocess.el
 ;;;   subprocess modes and functions
 ;;;
-;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.7 1988/02/19 17:33:24 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.8 1988/02/19 17:53:40 layer Exp $
 
 (provide 'subprocess)
 
@@ -326,12 +326,7 @@ in the MAP given as argument."
 
 (defun inferior-lisp-mode-commands (map)
   (shell-mode-commands map)
-  (fi:lisp-mode-commands map t)
-  (define-key map "\r"		'inferior-lisp-newline)
-  (define-key map "\e\r"	'inferior-lisp-send-sexp-input)
-  (define-key map "\C-x\r"	'inferior-lisp-send-list-input)
-  ;;(define-key map "\C-i"	'lisp-indent-line)
-  (define-key map "\e\C-q"	'indent-sexp))
+  (fi:lisp-mode-commands map))
 
 (defun shell-mode-commands (&optional map)
   (define-key map "\C-m" 'subprocess-send-input)
