@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.15 1988/11/18 19:02:43 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.16 1988/11/21 13:39:02 layer Exp $
 
 ;;;;
 ;;; Key defs
@@ -446,12 +446,12 @@ function defintions are considered.  Otherwise all symbols are considered."
 	 (pattern (buffer-substring beg end))
 	 (functions-only (if (eq (char-after (1- real-beg)) ?\() t nil))
 	 (completions
-	  (fi:eval-in-lisp
-	   "(progn(princ(excl::list-all-completions \"%s\" %s %s))(values))\n"
-	   pattern package functions-only))
-	 
-	 (array (apply 'vector completions))
-	 (completion (try-completion pattern array)))
+	  (fi:eval-in-lisp "(excl::list-all-completions \"%s\" %s %s)"
+			   pattern package functions-only))
+	 (array (if (consp completions)
+		    (apply 'list (mapcar '(lambda (x) (list (symbol-name x)))
+					 completions))))
+	 (completion (if array (try-completion pattern array))))
     (cond ((eq completion t))
 	  ((null completion)
 	   (message "Can't find completion for \"%s\"" pattern)
