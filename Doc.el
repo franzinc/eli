@@ -9,7 +9,6 @@
   (fi:lisp-mode)
   (fi:emacs-lisp-mode)
   (fi:inferior-lisp-mode)
-  (fi:shell-mode)
   (fi:tcp-lisp-mode)
   (fundamental-mode)
 
