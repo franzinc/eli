@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.58 1993/09/17 05:57:33 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.59 1993/11/24 04:03:15 duane Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -337,14 +337,15 @@ information on how to send the mail."
       (mail)
       (mail-to)
       (insert "bugs@franz.com")
-      (mail-subject)
-      (insert "Bug-report")
+      ;;(mail-subject)
+      ;;(insert "Bug-report")
       (goto-char (point-max))
       (save-excursion
 	(insert "\n")
 	(when (and error-message (not (string= "" error-message)))
 	  (insert "------------------------------\n\n")
 	  (insert error-message))
+        (insert "<<Please enter any comments or explanations here>>\n\n")
 	(insert "\n------------------------------\n\n")
 	(insert stack)
 	(insert "\n------------------------------\n\n")	     
@@ -362,7 +363,9 @@ information on how to send the mail."
 		(call-process "ls" nil t nil "-la" dir)
 		(insert "\n"))
 	    (insert (format "Could not find fi-site-init.el\n")))
-	  (insert "\n"))))
+	  (insert "\n")))
+      (message "Please enter a descriptive Subject: line")
+      (mail-subject))
     ;; Error continuation
     (() (error)
       (message "Cannot do a backtrace because: %s" error))))
