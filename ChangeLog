@@ -1,3 +1,7 @@
+*******************************************************************************
+2.0.16 public release
+*******************************************************************************
+
 Fri Jan 13 13:13:19 1995  Steve Haflich  <smh@vapor>
 
 	* fi-keys.el
@@ -110,6 +114,7 @@ Thu Dec  8 14:16:49 1994  Steve Haflich  (smh@vapor)
 	* fi-stream.el:
 	Document the FSF 19 *background-interaction* difficulty.
 
+>>>>>>> /tmp/T4a05180
 Wed Sep 21 15:37:08 1994  Steve Haflich  (smh@vapor)
 
 	* fi-site-init.el: Version 2.0.13. (actually 2.0.14 - smh 19Dec94)

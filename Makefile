@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.107 1995/01/10 00:43:31 smh Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.108 1995/01/18 00:28:05 smh Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -192,7 +192,7 @@ clman-dist:	all_clman
 ###############################################################################
 
 # removed: biggie fax louie girls
-hosts = ox akbar clay hyper sole fridge hefty girls
+hosts = ox akbar clay hyper sole fridge hefty
 elib_root = /usr/fi/emacs-lib
 to = $(elib_root)/fi
 
