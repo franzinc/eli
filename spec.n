@@ -1,7 +1,7 @@
 
 	      Franz Inc. GNU Emacs/Common Lisp Interface
 
-$Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.9 1988/04/26 23:08:36 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.10 1988/04/27 09:45:48 layer Exp $
 
 This document is a specification of the Franz Inc. GNU Emacs interface
 to Common Lisp, which is written entirely in GNU Emacs Lisp (for GNU
@@ -35,23 +35,26 @@ resources from a large number of machines easily available to all
 users on the network.  The X window system, for example, uses TCP/IP
 to communicate between clients and server.
 
-   For the purposes here, there are two types of communication using
-TCP/IP: in the UNIX and internet domains.  The internet domain is a
-global resource maintained by each machine--programs can reserve
-`port' numbers for specific uses.  For example, on Berkeley UNIX
-systems port number 513 (see /etc/services) is reserved for `whod', a
-program which broadcasts information on the number of users logged
-into a machine.  This means on each machine there is a program running
-in the background, called rwhod, which listens on port number 513 for
-broadcasts from other machines telling it who is logged in on what
-machine.  The second type of TCP/IP `channels' are called the UNIX
-domain variety.  It is easy to see that using a global resource might
-be a problem for users writing applications using TCP/IP.  For
-example, `rwhod' cannot be run twice on the same machine, because then
-they would compete for the same port number.  Certainly, restricting
-only one program running at a time is not acceptable for some
-applications.  UNIX domain `sockets', as they are called, communicate
-through special files, called socket files.
+   In order for Emacs and Lisp to communicate, Lisp must accept
+messages sent to a certain address and Emacs must know that address.
+There are two types of addressing available: internet and UNIX domain.
+An internet address is a machine address and a port number.  A UNIX
+domain address is a file name.  The advantage of an internet address
+is that it can be accessed from any machine on the network because the
+address contains the machine number.  The disadvantage is that only
+one process (a Lisp process in our case) on a given machine can listen
+for messages on a given internet address.  Thus, if you wanted to use
+the Emacs to Lisp interface on a machine with many users, only one
+user at a time could use it.  A UNIX domain address can only be used
+from programs running on the same machine.  However the flexibility of
+using file names in UNIX domain addresses allows the Emacs to Lisp
+interface to choose unique addresses for each user running on a
+machine.  The file name convention we use is this: when user `smith'
+starts up Lisp, the UNIX domain address ~smith/.excl_to_emacs is used
+by Lisp.  When `smith' directs Emacs to connect to Lisp, it knows it
+was started by smith and thus talks to address ~smith/.excl_to_emacs.
+Thus multiple users on a given machine can run the Emacs to Lisp
+interface.
 
    The Emacs/Lisp interface in this document can use both of these
 methods of communication, but the preferrable method uses UNIX domain
@@ -63,7 +66,16 @@ Lisp/Emacs interface.
    The purpose of this package is to enhance the Lisp environment.  To
 this end, GNU Emacs and Lisp have been tightly coupled, and in the
 case of Sun Common Lisp 3.0 (or Allegro CL 3.0) the interface uses
-TCP/IP UNIX or internet domain sockets.
+TCP/IP UNIX or internet domain sockets.  This interface can be broken
+down into three modes:
+
+	* Common Lisp,
+	* Inferior Common Lisp, and
+	* TCP Lisp.
+
+The first is for editing Lisp programs, the second for starting up a
+Lisp subprocess under Emacs, and the third for the TCP/IP
+communication between Emacs and Lisp.
 
    While editing Lisp source code, there are commands that make it
 easy to send expressions to, and receive information from, a Lisp
@@ -72,13 +84,14 @@ buffer, a form in a source buffer can be macroexpanded, and
 source for functions defined by loading files into Lisp may be located
 automatically.
 
-   For the bindings set up in the editing modes to be useful, there must
-be a Lisp to which Emacs can communicate.  In this area the interface
-can be broken down into three parts: an enhanced mode for running an
-inferior Lisp process in an Emacs buffer, a new mode that creates an
-Emacs buffer onto an existing Lisp process via a TCP/IP socket, and
-mechanisms to query the Lisp environment for information which can be
-used in the Emacs environment (also using TCP/IP sockets).
+   For many of the bindings set up in the editing modes to be useful,
+there must be a Lisp to which Emacs can communicate.  In this area the
+interface can be broken down into three parts: an enhanced mode for
+running an inferior Lisp process in an Emacs buffer, a new mode that
+creates an Emacs buffer onto an existing Lisp process via a TCP/IP
+socket, and mechanisms to query the Lisp environment for information
+which can be used in the Emacs environment (also using TCP/IP
+sockets).
 
    Running an inferior Lisp in an Emacs buffer is not new--Emacs
 supports this `off the shelf.'  This feature allows users to interact
@@ -213,12 +226,14 @@ require the TCP/IP communication channel to Lisp:
 2.3 Hooks
 
    The hooks run for Common Lisp mode are fi:lisp-mode-hook and
-fi:common-lisp-mode-hook.  The function `run-hooks' is used to execute
-the hooks.  They are done last during mode initialization.  For
-example, the following hook enables auto-fill in Common Lisp mode:
+fi:common-lisp-mode-hook.  The form of the hook function is determined
+by `run-hooks', which is used to process the hooks.  Hooks are run
+last during mode initialization.  For example, the following hook
+enables auto-fill in Common Lisp mode:
 
     (setq fi:lisp-mode-hook
       '(lambda ()
+	(define-key (current-local-map) "\t" 'lisp-indent-line)
 	(setq fill-column 75)
 	(auto-fill-mode 1)))
 
@@ -235,12 +250,12 @@ will start up an inferior Common Lisp in a buffer called
 of `fi:explicit-common-lisp-file-name' and
 `fi:default-common-lisp-file-name', in this order.
 
-   If after an inferior Lisp has been started, as in the above example,
+   After an inferior Lisp has been started, as in the above example,
 the following can be evaluated by the newly created Lisp process to
 initiate a Lisp listener daemon to which Emacs can connect:
 
-	(or (find-package :ipc) (errorset (load "ipc.fasl")))
-	#+ipc (ipc:start-lisp-listener-daemon)
+	(or (find-package :ipc) (load "ipc.fasl"))
+	(ipc:start-lisp-listener-daemon)
 
 Then after the above listener daemon is started, the following command
 to Emacs will open a second buffer onto the same Lisp (giving a prefix
@@ -251,27 +266,27 @@ argument to `fi:another-common-lisp'):
 The resulting process will be talking to Lisp over a TCP/IP socket via
 a UNIX domain socket (using the file ~/.excl_to_emacs).  The following
 command would create a separate Lisp process in a new buffer (called
-`*common-lisp-3*' is the all the above commands where evaluated first):
+`*common-lisp-3*' if all the above commands where evaluated first):
 
 	M-x fi:another-common-lisp
 
-   To connect to a Lisp on another machine, the following in ~/.emacs
+   To connect to a Lisp on another machine, say `akbar', put the
+following in ~/.emacs on the local machine:
 
 	(setq fi:unix-domain nil)
 	(setq fi:local-host-name "akbar")	   ; the remote host name
 
-and the following in ~/.clinit.cl
+and start emacs.  On `akbar', put this in ~/.clinit.cl
 
-	(or (find-package :ipc) (errorset (load "ipc.fasl")))
+	(or (find-package :ipc) (load "ipc.fasl"))
 	(setq ipc::*unix-domain* nil)
 	(ipc:start-lisp-listener-daemon)
 
-would allow
+and start a Common Lisp.  Now on the local machine, this
 
 	C-u 1 M-x fi:another-common-lisp
 
-to open a connection to the Lisp on `akbar', as long as machine
-`akbar' was reachable on the network.
+will open a connection to the Lisp on `akbar'.
 
 3.1 Bindings
 
@@ -424,10 +439,8 @@ version 18.50, and may not work with other versions of GNU Emacs.
 to the file ~/.clinit.cl:
 
 
-      (if (or (find-package :ipc)
-	      (errorset (load "ipc.fasl")))
-	  (funcall (find-symbol "start-lisp-listener-daemon"
-				(find-package :ipc))))
+      (or (find-package :ipc) (load "ipc.fasl"))
+      (ipc:start-lisp-listener-daemon)
 
 This will load and start the Lisp multiprocessing system and then
 start a Lisp process that waits for connections from Emacs.
@@ -447,8 +460,8 @@ document:
 The following in your .clinit.cl file will define an alias which will
 start the Lisp Listener Daemon:
 
-    (or (find-package :ipc) (errorset (load "ipc.fasl") t))
-    #+ipc (ipc:start-lisp-listener-daemon)
+    (or (find-package :ipc) (load "ipc.fasl"))
+    (ipc:start-lisp-listener-daemon)
 
 A.2 Remote Lisps
    To start a remote Common Lisp called `cl' on machine `akbar', put
