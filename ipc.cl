@@ -1,4 +1,4 @@
-;;					-[Sun Sep  2 18:02:34 1990 by layer]-
+;;					-[Sun Sep  2 20:02:05 1990 by layer]-
 ;;
 ;; Allegro CL IPC interface
 ;;
@@ -24,7 +24,7 @@
 #+has-rcsnote
 (si::rcsnote
  "ipc"
- "$Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.28 1990/09/02 18:32:32 layer Exp $")
+ "$Header: /repo/cvs.copy/eli/Attic/ipc.cl,v 1.29 1990/09/02 20:07:06 layer Exp $")
 
 (provide :ipc)
 
@@ -282,20 +282,19 @@ listener ever completes, it makes sure files are closed."
 		       proc-name
 		       'lisp-listener-with-stream-as-terminal-io
 		       stream)
-		 else (let ((hostaddr
-			     (logand (sockaddr-in-addr listen-sockaddr) #xff)))
-			(format t ";;; starting listener-~d (host ~d)~%" fd
-				hostaddr)
-			(if* (not (and (numberp password)
-				       (= password *inet-listener-password*)))
-			   then (format t "~
-;; access denied for addr ~s (password ~a)~%"
-				 hostaddr password)
-				(refuse-connection fd)
-			   else (process-run-function
-				 proc-name
-				 'lisp-listener-with-stream-as-terminal-io
-				 stream))))))
+		 else (if* (not (and (numberp password)
+				     (= password *inet-listener-password*)))
+			 then (format
+			       t
+			       ";; access denied for host ~s, password ~a~%"
+			       (logand (sockaddr-in-addr listen-sockaddr)
+				       #xff)
+			       password)
+			      (refuse-connection fd)
+			 else (process-run-function
+			       proc-name
+			       'lisp-listener-with-stream-as-terminal-io
+			       stream)))))
 	(when listen-socket-fd
 	  (mp::mpunwatchfor listen-socket-fd)
 	  (unix-close listen-socket-fd)
