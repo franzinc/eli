@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.23 1991/09/30 11:39:04 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.24 1991/11/25 10:58:35 layer Exp $
 
 (defun fi::setup-default-clman-package-info ()
   ;;  Returns a list that 
@@ -29,8 +29,9 @@
 	       xxx)))
 	  '(("about" "about/")
 	    ("clos" "clos/")
-	    ("cltr1" "cltr1/")
+	    ("cltl1" "cltl1/")
 	    ("comp" "comp/")
+	    ("composer" "composer/")
 	    ("excl" "excl/")
 	    ("ff" "ff/")
 ;;;;	    ("graph" "graph/")
@@ -321,7 +322,7 @@ clman buffer, from anywhere in the buffer."
 
 (defun fi::clman-strip-leading-package-name (str)
   ;; now this returns a list of the package and the symbol
-  (let ((pos (string-match "[a-zA-Z]:" str)))
+  (let ((pos (string-match "[0-9a-zA-Z]:" str)))
     (if (and pos (not (= pos 0)))
 	;; There is a leading package qualifier
 	(let ((first-string (substring str 0 (+ 1 pos)))
