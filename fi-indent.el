@@ -31,7 +31,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.27 1991/06/27 15:26:38 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.28 1991/06/27 16:09:40 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If non-nil, semicolons that begin comments are indented as they are
@@ -234,8 +234,8 @@ little consing as possible.")
        (cond
 	((eq spec nil) (list (current-column) nil))
 	((eq spec t) (let ((tem (fi::calculate-lisp-indent)))
-		       (list (if (listp tem) (car tem) tem) nil)))
-	((and (integerp spec) (>= spec 0)) (list spec t))
+		       (list (if (listp tem) (car tem) tem) t)))
+	((and (integerp spec) (>= spec 0)) (list spec nil))
 	((integerp spec) (list (- (current-column) spec) nil))
 	(t (error "Bad comment indentation specification for count %d."
 		  count)))))))
@@ -286,19 +286,24 @@ status of that parse."
 		   (nth 4 parse-state)
 		   (nth 5 parse-state)))
 	  (if (and (boundp 'comment-indent-hook) comment-indent-hook)
-	      (let ((to-column (funcall comment-indent-hook (point))))
-		;; Function `indent-to' only inserts characters.
-		(delete-horizontal-space)
-		(if (and (not (or (= (preceding-char) ?\ )
-				  (= (preceding-char) ?\t)
-				  (= (preceding-char) ?\n)
-				  (= (preceding-char) ?\f)))
-			 (or (not (car (cdr fi::comment-indent-hook-values)))
-			     (>= (current-column) to-column)))
-		    ;; Insert space if not rigid comment or if rigid comment
-		    ;;   and we are at or beyond the comment column.
-		    (if (not (bobp)) (just-one-space)))
-		(indent-to to-column 0)))
+	      (let ((to-column (funcall comment-indent-hook (point)))
+		    (old-column (current-column)))
+		(if (and (second fi::comment-indent-hook-values)
+			 (save-excursion
+			   (skip-chars-backward "\t ")
+			   (not (bolp))))
+		    nil
+		  ;; Function `indent-to' only inserts characters.
+		  (delete-horizontal-space)
+		  (if (and (not (or (= (preceding-char) ?\ )
+				    (= (preceding-char) ?\t)
+				    (= (preceding-char) ?\n)
+				    (= (preceding-char) ?\f)))
+			   (>= (current-column) to-column))
+		      ;; Insert space if not rigid comment or if rigid comment
+		      ;;   and we are at or beyond the comment column.
+		      (if (not (bobp)) (just-one-space)))
+		  (indent-to to-column 0))))
 	(if (nth 4 parse-state)
 	    (let (comment-at)
 	      (beginning-of-line)
@@ -306,14 +311,12 @@ status of that parse."
 		  (if (and (boundp 'comment-indent-hook) comment-indent-hook)
 		      (let (to-column)
 			(goto-char comment-at)
-			(setq to-column
-			  (funcall comment-indent-hook (point)))
+			(setq to-column (funcall comment-indent-hook (point)))
 			;; Function `indent-to' only inserts characters.
 			(delete-horizontal-space)
 			(if (and (= (preceding-char) ?\))
 				 (or (not
-				      (car (cdr
-					    fi::comment-indent-hook-values)))
+				      (second fi::comment-indent-hook-values))
 				     (>= (current-column) to-column)))
 			    ;; Insert space if not rigid comment or if rigid
 			    ;;   comment and we are at or beyond the comment
