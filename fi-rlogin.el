@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.4 1988/05/11 14:47:57 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-rlogin.el,v 1.5 1988/05/12 10:41:29 layer Exp $
 
 (defvar fi:rlogin-mode-map nil
   "The rlogin major-mode keymap.")
@@ -80,6 +80,19 @@ is deemed to be prompt, and is not re-executed.")
   (run-hooks 'fi:subprocess-mode-hook 'fi:rlogin-mode-hook))
 
 (defun fi:rlogin (&optional buffer-number host)
+  "Start an rlogin in a buffer whose name is determined from the optional
+prefix argument BUFFER-NUMBER.  Shell buffer names start with `*HOSTNAME'
+and end with `*', with an optional `-N' in between.  If BUFFER-NUMBER is
+not given it defaults to 1.  If BUFFER-NUMBER is >= 0, then the buffer is
+named `*HOSTNAME-<BUFFER-NUMBER>*'.  If BUFFER-NUMBER is < 0, then the first
+available buffer name is chosen.
+
+The host name is read from the minibuffer.
+
+The image file and image arguments are taken from the variables
+`fi:rlogin-image-name' and `fi:rlogin-image-arguments'.
+
+See fi:explicit-shell."
   (interactive "p\nsRemote login to host: ")
   (let ((proc
 	 (fi::make-subprocess
@@ -90,6 +103,8 @@ is deemed to be prompt, and is not re-executed.")
 
 (defun fi:explicit-rlogin (&optional buffer-number host
 				     image-name image-arguments)
+  "The same as fi:rlogin, except that the image and image arguments
+are read from the minibuffer."
   (interactive
    "p\nsRemote login to host: \nsImage name: \nxImage arguments (a list): ")
   (let ((proc

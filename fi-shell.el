@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-shell.el,v 1.5 1988/05/11 14:47:47 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-shell.el,v 1.6 1988/05/12 10:41:27 layer Exp $
 
 (defvar fi:shell-mode-map nil
   "The shell major-mode keymap.")
@@ -73,6 +73,17 @@ is deemed to be prompt, and is not re-executed.")
   (run-hooks 'fi:subprocess-mode-hook 'fi:shell-mode-hook))
 
 (defun fi:shell (&optional buffer-number)
+  "Start a sub-shell in a buffer whose name is determined from the optional
+prefix argument BUFFER-NUMBER.  Shell buffer names start with `*shell'
+and end with `*', with an optional `-N' in between.  If BUFFER-NUMBER is
+not given it defaults to 1.  If BUFFER-NUMBER is >= 0, then the buffer is
+named `*shell-<BUFFER-NUMBER>*'.  If BUFFER-NUMBER is < 0, then the first
+available buffer name is chosen.
+
+The image file and image arguments are taken from the variables
+`fi:shell-image-name' and `fi:shell-image-arguments'.
+
+See fi:explicit-shell."
   (interactive "p")
   (fi::make-subprocess
    buffer-number "shell" 'fi:shell-mode
@@ -80,6 +91,8 @@ is deemed to be prompt, and is not re-executed.")
 
 (defun fi:explicit-shell (&optional buffer-number
 				    image-name image-arguments)
+  "The same as fi:shell, except that the image and image arguments
+are read from the minibuffer."
   (interactive "p\nsImage name: \nxImage arguments (a list): ")
   (fi::make-subprocess
    buffer-number "shell" 'fi:shell-mode fi:shell-prompt-pattern

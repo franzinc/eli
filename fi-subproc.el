@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.28 1988/05/12 10:16:04 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.29 1988/05/12 10:41:21 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -133,12 +133,17 @@ buffer.")
 ;;;;
 
 (defun fi:common-lisp (&optional buffer-number)
-  "Start a Common Lisp subprocess in a buffer, whose name is determined
+  "Start a Common Lisp subprocess in a buffer whose name is determined
 from the optional prefix argument BUFFER-NUMBER.  Common Lisp buffer names
 start with `*common-lisp' and end with `*', with an optional `-N' in
 between.  If BUFFER-NUMBER is not given it defaults to 1.  If BUFFER-NUMBER
-is > 0, then the buffer is named `*common-lisp-<BUFFER-NUMBER>*'.  If
-BUFFER-NUMBER is < 0, then the first available buffer name is choosen."
+is >= 0, then the buffer is named `*common-lisp-<BUFFER-NUMBER>*'.  If
+BUFFER-NUMBER is < 0, then the first available buffer name is chosen.
+
+The image file and image arguments are taken from the variables
+`fi:common-lisp-image-name' and `fi:common-lisp-image-arguments'.
+
+See fi:explicit-common-lisp."
   (interactive "p")
   (let ((proc (fi::make-subprocess
 	       buffer-number "common-lisp" 
@@ -151,6 +156,8 @@ BUFFER-NUMBER is < 0, then the first available buffer name is choosen."
 
 (defun fi:explicit-common-lisp (&optional buffer-number
 					  image-name image-arguments)
+  "The same as fi:common-lisp, except that the image and image arguments
+are read from the minibuffer."
   (interactive "p\nsImage name: \nxImage arguments (a list): ")
   (let ((proc (fi::make-subprocess
 	       buffer-number "common-lisp" 
@@ -161,6 +168,20 @@ BUFFER-NUMBER is < 0, then the first available buffer name is choosen."
     proc))
 
 (defun fi:remote-common-lisp (&optional buffer-number host)
+  "Start a Common Lisp subprocess in a buffer whose name is determined
+from the optional prefix argument BUFFER-NUMBER, where the Common Lisp
+image is run on another machine.  Common Lisp buffer names start with
+`*common-lisp' and end with `*', with an optional `-N' in between.  If
+BUFFER-NUMBER is not given it defaults to 1.  If BUFFER-NUMBER is >= 0,
+then the buffer is named `*common-lisp-<BUFFER-NUMBER>*'.  If BUFFER-NUMBER
+is < 0, then the first available buffer name is chosen.
+
+The host on which the image is run is read from the minibuffer.
+
+The image file and image arguments are taken from the variables
+`fi:common-lisp-image-name' and `fi:common-lisp-image-arguments'.
+
+See fi:explicit-remote-common-lisp."
   (interactive "p\nsRemote host name: ")
   (let ((proc (fi::make-subprocess
 	       buffer-number "common-lisp" 
@@ -174,6 +195,8 @@ BUFFER-NUMBER is < 0, then the first available buffer name is choosen."
 
 (defun fi:explicit-remote-common-lisp (&optional buffer-number host
 						 image-name image-arguments)
+  "The same as fi:remote-common-lisp, except that the image and image
+arguments are read from the minibuffer."
   (interactive
    "p\nsRemote host name: \nsImage name: \nxImage arguments (a list): ")
   (let ((proc (fi::make-subprocess
@@ -187,6 +210,15 @@ BUFFER-NUMBER is < 0, then the first available buffer name is choosen."
     proc))
 
 (defun fi:tcp-common-lisp (&optional buffer-number)
+  "In a buffer whose name is determined from the optional prefix argument
+BUFFER-NAME, connect to a Common Lisp using either a UNIX domain socket
+file or internet port number.  Common Lisp buffer names start with
+`*common-lisp' and end with `*', with an optional `-N' in between.  If
+BUFFER-NUMBER is not given it defaults to 1.  If BUFFER-NUMBER is >= 0,then
+the buffer is named `*common-lisp-<BUFFER-NUMBER>*'.  If BUFFER-NUMBER is <
+0, then the first available buffer name is chosen.
+
+See `fi:unix-domain' and `fi:explicit-tcp-common-lisp'."
   (interactive "p")
   (let ((proc (fi::make-tcp-connection
 	       buffer-number "tcp-common-lisp" 'fi:tcp-common-lisp-mode
@@ -195,6 +227,9 @@ BUFFER-NUMBER is < 0, then the first available buffer name is choosen."
     proc))
 
 (defun fi:explicit-tcp-common-lisp (&optional buffer-number host service)
+  "The same as fi:tcp-common-lisp, except that the host name a port number
+are read from the minibuffer.  Use a port number of 0 for UNIX domain
+sockets."
   (interactive
    "p\nsHost name: \nnService port number (0 for UNIX domain): ")
   (let ((proc (fi::make-tcp-connection
@@ -205,6 +240,17 @@ BUFFER-NUMBER is < 0, then the first available buffer name is choosen."
     proc))
 
 (defun fi:franz-lisp (&optional buffer-number)
+  "Start a Franz Lisp subprocess in a buffer whose name is determined
+from the optional prefix argument BUFFER-NUMBER.  Franz Lisp buffer names
+start with `*franz-lisp' and end with `*', with an optional `-N' in
+between.  If BUFFER-NUMBER is not given it defaults to 1.  If BUFFER-NUMBER
+is >= 0, then the buffer is named `*franz-lisp-<BUFFER-NUMBER>*'.  If
+BUFFER-NUMBER is < 0, then the first available buffer name is chosen.
+
+The image file and image arguments are taken from the variables
+`fi:franz-lisp-image-name' and `fi:franz-lisp-image-arguments'.
+
+See fi:explicit-franz-lisp."
   (interactive "p")
   (let ((proc (fi::make-subprocess
 	       buffer-number "franz-lisp" 
@@ -217,6 +263,8 @@ BUFFER-NUMBER is < 0, then the first available buffer name is choosen."
 
 (defun fi:explicit-franz-lisp (&optional buffer-number
 					 image-name image-arguments)
+  "The same as fi:franz-lisp, except that the image and image arguments
+are read from the minibuffer."
   (interactive "p\nsImage name: \nxImage arguments (a list): ")
   (let ((proc (fi::make-subprocess
 	       buffer-number "franz-lisp" 

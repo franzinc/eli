@@ -31,7 +31,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.3 1988/05/12 10:17:15 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.4 1988/05/12 10:41:31 layer Exp $
 
 ;;;;
 ;;; Key defs
@@ -292,7 +292,7 @@ minibuffer.  The word around the point is used as the default."
    (fi::background-sublisp-process)
    (format "(princ (lisp:documentation '%s 'lisp:function))\n" symbol)))
 
-(defun fi:who-calls (&optional symbol)
+(defun fi:lisp-who-calls (&optional symbol)
   "Asks the sublisp which functions reference a symbol."
   (interactive (fi::get-default-symbol "Find references to symbol"))
   ;; Since this takes a while, tell the user that it has started.
