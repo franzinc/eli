@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-basic-lep.el,v 1.47.6.2 2001/06/05 16:01:41 layer Exp $
+;; $Id: fi-basic-lep.el,v 1.47.6.3 2001/06/20 08:06:13 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -203,7 +203,9 @@ emacs-lisp interface cannot be started.
 	     (save-excursion (set-buffer buffer) (erase-buffer))
 	     (set-process-buffer process buffer))
 	   ;; cac 20dec00
-	   (when (fboundp 'set-process-coding-system)
+	   (when (and (fboundp 'set-process-coding-system)
+		      ;; spr24414
+		      (member 'emacs-mule (coding-system-list)))
 	     (set-process-coding-system process 'emacs-mule 'emacs-mule))
 	   (set-process-filter process 'fi::lep-connection-filter)
 	   ;; new stuff to indicate that we want the lisp editor protocol

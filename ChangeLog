@@ -7,6 +7,14 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.2.3
+
+2001-06-20  Kevin Layer  <layer@crikey>
+
+    from cox:
+	* fi-basic-lep.el: spr24414: fix to fix for bug10686 (see below)
+
+*******************************************************************************
 2.2.2
 
 2001-06-13  Kevin Layer  <layer@crikey>
@@ -33,7 +41,7 @@ For more detailed instructions on filling in the ChangeLog form, see
 
 2001-05-22  Charles A. Cox  <cox@pie>
 
-	* cl/src/eli/fi-basic-lep.el: use emacs-mule encoding.  bug10686
+	* fi-basic-lep.el: use emacs-mule encoding.  bug10686
 
 *******************************************************************************
 2.1.7
