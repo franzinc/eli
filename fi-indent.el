@@ -31,7 +31,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.28 1991/06/27 16:09:40 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-indent.el,v 1.29 1991/07/07 21:15:57 layer Exp $
 
 (defvar fi:lisp-electric-semicolon nil
   "*If non-nil, semicolons that begin comments are indented as they are
@@ -1466,6 +1466,7 @@ if matched at the beginning of a line, means don't indent that line."
   (put 'concatenate tag 1)
   (put 'ctypecase tag '(like case))
   (put 'defconstant tag '(like defvar))
+  (put 'define-compiler-macro tag '(like defmacro))
   (put 'define-modify-macro tag '((1 2 lambda-list) (0 t 2)))
   (put 'define-setf-method tag '((1 2 lambda-list) (0 t 2)))
   (put 'defmacro tag '((1 2 lambda-list) (0 t 2)))
