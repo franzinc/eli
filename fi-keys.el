@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 1.112.20.3 1999/01/19 00:17:00 layer Exp $
+;; $Id: fi-keys.el,v 1.112.20.4 1999/01/28 04:37:57 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -1110,41 +1110,25 @@ window, leaving the point unchanged."
     (recenter 0)
     (goto-char p)))
 
-(defvar fi::toggle-to-lisp-window-config nil)
+(defvar fi::toggle-to-lisp-last-lisp-buffer nil)
+(defvar fi::toggle-to-lisp-common-lisp-buffer nil)
 
 (defun fi:toggle-to-lisp ()
   "On each invocation, switch back and forth between the Lisp subprocess
 buffer and the source buffer from which this function was invoked."
   (interactive)
-  (if (and fi::toggle-to-lisp-window-config
-	   (memq major-mode
-		 '(fi:inferior-common-lisp-mode fi:lisp-listener-mode)))
-      (set-window-configuration fi::toggle-to-lisp-window-config)
-    (progn (setq fi::toggle-to-lisp-window-config
-	     (current-window-configuration))
-	   (call-interactively 'fi:common-lisp))))
-
-;; not ready yet:
-(defun fi:new-toggle-to-lisp ()
-  "On each invocation, switch back and forth between the Lisp subprocess
-buffer and the source buffer from which this function was invoked."
-  (interactive)
-  (cond (fi::toggle-to-lisp-window-config
-	 (let ((new fi::toggle-to-lisp-window-config))
-	   (setq fi::toggle-to-lisp-window-config
-	     (current-window-configuration))
-	   (set-window-configuration new)))
-	((memq major-mode
-	       '(fi:inferior-common-lisp-mode fi:lisp-listener-mode))
-	 ;; first time, already in *common-lisp* buffer, do nothing
-	 )
-	((and fi::common-lisp-backdoor-main-process-name
-	      (fi:process-running-p
-	       (get-process fi::common-lisp-backdoor-main-process-name)))
-	 ;; first time, not in the *common-lisp* buffer
-	 (setq fi::toggle-to-lisp-window-config (current-window-configuration))
-	 (funcall
-	  fi:display-buffer-function
-	  (process-buffer
-	   (get-process fi::common-lisp-backdoor-main-process-name))))
-	(t (error "Must start Common Lisp first."))))
+  (when (null fi::toggle-to-lisp-common-lisp-buffer)
+    (or (and fi::common-lisp-backdoor-main-process-name
+	     (setq fi::toggle-to-lisp-common-lisp-buffer
+	       (process-buffer
+		(get-process fi::common-lisp-backdoor-main-process-name))))
+	(error "Common Lisp process is not running.")))
+  (let (target-buffer)
+    (cond ((memq major-mode '(fi:inferior-common-lisp-mode
+			      fi:lisp-listener-mode))
+	   (or (setq target-buffer fi::toggle-to-lisp-last-lisp-buffer)
+	       (error "There is no previous source buffer.")))
+	  (t ;; a lisp source buffer
+	   (setq fi::toggle-to-lisp-last-lisp-buffer (current-buffer))
+	   (setq target-buffer fi::toggle-to-lisp-common-lisp-buffer)))
+    (funcall fi:display-buffer-function target-buffer)))

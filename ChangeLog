@@ -12,6 +12,7 @@ For more detailed instructions on filling in the ChangeLog form, see
 1999-01-27  Kevin Layer  <layer@ultra>
 
 	* doc/eli.htm: fix links destroyed by MS FrontPage
+	* fi-keys.el: fix fi:toggle-to-lisp per spr18788
 
 *******************************************************************************
 2.0.21.16.6
