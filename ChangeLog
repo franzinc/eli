@@ -1,5 +1,7 @@
 Wed Sep 04 11:42:45 1996    <layer@HOBART>
 
+	* fi-shell.el: make sure we run the correct shell on NT
+
 	* fi-keys.el: make sure newline in shell mode (DOS) does the right
 	  thing (for emacs 19.34)
 	* fi-shell.el: filter (on windows) out ^M's

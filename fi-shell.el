@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-shell.el,v 1.24 1996/09/04 18:45:12 layer Exp $
+;; $Id: fi-shell.el,v 1.25 1996/09/04 22:55:54 layer Exp $
 
 (defvar fi:shell-mode-map nil
   "The shell major-mode keymap.")
@@ -18,7 +18,9 @@
 
 (defvar fi:shell-image-name
     (if (on-ms-windows)
-	"C:\\COMMAND.COM"
+	(if (file-exists-p (format "%s/system32" (getenv "WINDIR")))
+	    (format "%s/system32/cmd.exe" (getenv "WINDIR"))
+	  "C:\\COMMAND.COM")
       "csh")
   "*Default Shell image to invoke from (fi:shell).  If the value
 is a string then it names the image file or image path that
