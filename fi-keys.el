@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.44 1991/02/28 23:06:25 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.45 1991/03/07 14:54:41 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -192,14 +192,17 @@ and send to Lisp."
       (let ((start (marker-position
 		    (process-mark (get-buffer-process (current-buffer)))))
 	    (send-that-sexp t))
-	(save-excursion
-	  (goto-char start)
-	  (while (and (not (eobp))
-		      (condition-case ()
-			  (progn (forward-sexp 1) t)
-			(error (setq send-that-sexp nil))))
-	    (while (looking-at ")")
-	      (delete-char 1))))
+	(goto-char start)
+	(while (and (not (eobp))
+		    (condition-case ()
+			(progn (forward-sexp 1) t)
+		      (error (setq send-that-sexp nil))))
+	  (while (looking-at ")")
+	    ;; Can either signal an error or delete them silently.  Hmm,
+	    ;; for now we'll signal the error:
+	    ;;(delete-char 1)
+	    (error "too many )'s")
+	    ))
 	(end-of-buffer)
 	(if send-that-sexp
 	    (fi:subprocess-send-input)
