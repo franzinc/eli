@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.5 1989/05/19 14:06:19 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.6 1989/06/01 22:33:26 layer Exp $
 
 (defconst fi:clman-doc-directory
     (let ((p load-path)
@@ -95,7 +95,7 @@ math:).  The buffer that is displayed will be in CLMAN mode."
 	      (progn
 		(setq doc-page
 		  (concat (car (cdr package))
-			  (fi::clman-file-nameify (downcase sym)))))
+			  (fi::clman-file-nameify (fi::clman-downcase sym)))))
 	      (if (file-exists-p doc-page)
 		  (progn
 		    (setq done t)
@@ -108,7 +108,7 @@ math:).  The buffer that is displayed will be in CLMAN mode."
       (progn
 	(setq doc-page
 	  (concat  packdir
-		   (fi::clman-file-nameify (downcase sym))))
+		   (fi::clman-file-nameify (fi::clman-downcase sym))))
 	(if (file-exists-p doc-page)
 	    (progn
 	      (setq done t)
@@ -176,6 +176,14 @@ clman buffer, from anywhere in the buffer."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;; Internal stuff
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun fi::clman-downcase (str)
+  (let ((index (string-match "~" str)))
+    (if index 
+	(progn
+	  (setq saved-string (substring str index (length str)))
+	  (concat (substring (downcase str)0 index) saved-string))
+      (downcase str))))
 
 (defun fi::clman-get-sym-to-lookup ()
   (interactive)		   
