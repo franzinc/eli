@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-stream.el,v 1.11 1994/08/01 22:48:29 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-stream.el,v 1.12 1994/08/23 01:46:44 smh Exp $
 ;;
 
 (defmacro fi::with-keywords (variables rest-arg &rest body)
@@ -44,7 +44,7 @@
 	    (splitp (split-window-vertically)))
       (let ((buffer (process-buffer proc)))
 	(switch-to-buffer buffer)
-	(recenter 0)
+	;;(recenter 0)
 	buffer))))
 
 (defun fi::create-new-mapped-screen-for-stream (parent x y width height)

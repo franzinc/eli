@@ -1,3 +1,27 @@
+Mon Aug 22 17:44:48 1994  Steve Haflich  (smh@vapor)
+
+	* Makefile: Add gc-mode-line.{cl,c} to rdist.
+
+	* fi-site-init.el: Version 2.0.13.
+	Define add-hook in versions that don't have it.
+
+	* fi-emacs19.el: General cleanup and reorganization of menubar.
+	Fix menubar requires.
+
+	* fi-lemacs.el: General cleanup and reorganization of menubar.
+
+	* fi-keys.el: Make fi:comment-region args optional with defaults.
+
+	* fi-stream.el: More attempts for fix *background-interaction*
+	scrolling on FSF 19.25.
+
+	* fi-sublisp.el: Improve fi:show-run-status doc string.
+
+	* fi-subproc.el: Allow FSF 19 to use fi::switch-to-buffer-new-screen.
+
+	* fi-utils.el: fi::switch-to-buffer-new-screen split into multiple
+	versions and moved to fi-lemacs.el and fi-emacs19.el.
+
 Tue Aug  2 09:43:26 1994  Steve Haflich  (smh@vapor)
 
 	* fi-indent.cl: Fix indentation glitch in certain special forms.

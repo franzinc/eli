@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.87 1994/08/01 22:48:17 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.88 1994/08/23 01:46:37 smh Exp $
 
 (cond ((eq fi::emacs-type 'lemacs19)
        (require 'tags "etags"))
@@ -857,12 +857,14 @@ argument ARG do it that many times."
     (insert string)
     (backward-sexp 1)))
 
-(defun fi:comment-region (start end &optional uncomment)
+(defun fi:comment-region (&optional start end uncomment)
   "Comment all lines in the current region.  With prefix arg, uncomment the
 region (it should have been commented with this function).
 When calling from a program, arguments are START and END, both buffer
 positions, and UNCOMMENT."
   (interactive "r\nP")
+  (when (null start) (setq start (point)))
+  (when (null end) (setq end (mark)))
   (save-excursion
     (if (< end start)
 	(let ((x end)) (setq end start start x)))

@@ -1,8 +1,8 @@
-;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.61 1994/08/01 22:48:26 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-site-init.el,v 1.62 1994/08/23 01:46:42 smh Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
-(setq fi:emacs-lisp-interface-version "2.0.12")
+(setq fi:emacs-lisp-interface-version "2.0.13")
 (defvar fi::required-ipc-version 1)
 (defvar fi::load-subprocess-files t)
 (defvar fi::build-time nil)
@@ -14,8 +14,7 @@
 
 (when (or (eq fi::emacs-type 'emacs19) (eq fi::emacs-type 'lemacs19))
   ;; needed for setf expanations (on some version 19.xx) when they are
-  ;; compiled when non-version 19 
-  ;; byte-compilers
+  ;; compiled with non-version 19 byte-compilers.
   (condition-case nil
       (require 'cl-compat)
     (error nil)))
@@ -26,6 +25,30 @@
     (dolist (form (nreverse fi::initialization-forms))
       (eval form))
     (setq fi::initialization-forms nil)))
+
+(unless (symbol-function 'add-hook)	;not in 18.59
+  (defun add-hook (hook function &optional append)
+    "Add to the value of HOOK the function FUNCTION.
+FUNCTION is not added if already present.
+FUNCTION is added (if necessary) at the beginning of the hook list
+unless the optional argument APPEND is non-nil, in which case
+FUNCTION is added at the end.
+
+HOOK should be a symbol, and FUNCTION may be any valid function.  If
+HOOK is void, it is first set to nil.  If HOOK's value is a single
+function, it is changed to a list of functions."
+    (or (boundp hook) (set hook nil))
+    ;; If the hook value is a single function, turn it into a list.
+    (let ((old (symbol-value hook)))
+      (if (or (not (listp old)) (eq (car old) 'lambda))
+	  (set hook (list old))))
+    (or (if (consp function)
+	    (member function (symbol-value hook))
+	  (memq function (symbol-value hook)))
+	(set hook 
+	     (if append
+		 (nconc (symbol-value hook) (list function))
+	       (cons function (symbol-value hook)))))))
 
 (load "fi-modes.elc")
 (when fi:lisp-do-indentation

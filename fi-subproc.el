@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.156 1994/08/01 22:48:36 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.157 1994/08/23 01:46:49 smh Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -73,7 +73,8 @@ creating separate screens.  If you redefine fi:display-buffer-function this
 variable will be ignored.")
 
 (defvar fi:display-buffer-function
-    (if (eq fi::emacs-type 'lemacs19)
+    (if (or (eq fi::emacs-type 'lemacs19)
+	    (eq fi::emacs-type 'emacs19))
 	'fi::switch-to-buffer-new-screen
       'fi::switch-to-buffer)
   "*If non-nil, then the value should be a function taking one argument,
@@ -117,7 +118,7 @@ readtable.")
 
 (defvar fi:emacs-to-lisp-transaction-directory "/tmp"
   "*The directory in which files for Emacs/Lisp communication are stored.
-When using Lisp and Emacs on different machines, this directory should be
+When using Lisp and Emacs on different machines, this directory must be
 accessible on both machine with the same pathname (via the wonders of NFS).")
 
 (defvar fi:echo-evals-from-buffer-in-listener-p nil

@@ -32,7 +32,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.60 1994/08/01 22:48:32 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-sublisp.el,v 1.61 1994/08/23 01:46:46 smh Exp $
 
 (defun fi:set-associated-sublisp (buffer-name mode)
   "Use BUFFER-NAME as the name of a buffer which contains a Lisp subprocess
@@ -121,7 +121,8 @@ franz-lisp or common-lisp, depending on the major mode of the buffer."
 (defvar fi:allegro-run-status-string "    ")
 
 (defun fi:show-run-status ()
-  "Cause CL to show Run/Wait/GC status in the mode line.  Experimental."
+  "Cause CL to show Run/Wait/GC status in ACL buffer mode lines.
+This is normally called automatically from fi:start-lisp-listener-hook."
   (interactive "")
   (if (or (null fi::common-lisp-backdoor-main-process-name)
 	  (not (fi:process-running-p

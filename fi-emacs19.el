@@ -10,13 +10,25 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-emacs19.el,v 2.5 1994/08/01 22:48:14 smh Exp $
+;; $Header: /repo/cvs.copy/eli/fi-emacs19.el,v 2.6 1994/08/23 01:46:34 smh Exp $
 
-(require (if (and (boundp 'emacs-minor-version)
-		  (> emacs-minor-version 22))
-	     ;; change happened between 19.22 and 19.23
-	     'lmenu 'menubar)
-	 "lmenu")
+
+(unless (string-match "^18." emacs-version) ;Allows compilation on 18.
+  (require (if (and (boundp 'emacs-minor-version)
+		    (> emacs-minor-version 22))
+	       ;; change happened between 19.22 and 19.23
+	       'lmenu 'menubar)
+	   "lmenu"))
+
+(defun fi::switch-to-buffer-new-screen (buffer)
+  (cond
+   (fi:new-screen-for-common-lisp-buffer
+    ;; There should be some parameters for the make-frame call.
+    (let ((screen (make-frame)))
+      (select-frame screen)
+      ;; make sure the buffer is visible
+      (fi::switch-to-buffer buffer)))
+   (t (fi::switch-to-buffer buffer))))
 
 (defun fi::source-buffer-p ()
   (and (fi::connection-open)
@@ -33,14 +45,18 @@
       ["Run/Restart Common Lisp" fi:menu-common-lisp (fi::connection-not-open)]
       ["Run/Restart Common Lisp, new window" fi:menu-common-lisp-new-screen
        (fi::connection-not-open)]
-      ["Create New Listener" fi:open-lisp-listener (fi::connection-open)]
+      ["Create New Listener" fi:menu-open-lisp-listener (fi::connection-open)]
       ["Create New Listener, new window" fi:menu-open-lisp-listener-new-screen
        (fi::connection-open)]
       "----"
-      ["Compile region or form" fi:lisp-compile-active-region-or-defun (fi::acl-buffer-p)]
+      ;; Unfortunately, the region-or-form versions only work reasonably if the user is
+      ;; known to use zmacs-style regions, and we can't customize the menus for that.
+      ;; But a user who always runs in transient-mark-mode might want to customize this.
+      ;;["Compile region or form" fi:lisp-compile-active-region-or-defun (fi::acl-buffer-p)]
+      ["Compile form" fi:lisp-compile-active-region-or-defun (fi::acl-buffer-p)]
       ("Compile other"
        ["region" fi:lisp-compile-region (fi::acl-buffer-p)]
-       ["last s-exp" fi:lisp-compile-last-sexp (fi::acl-buffer-p)]
+       ["s-exp before point" fi:lisp-compile-last-sexp (fi::acl-buffer-p)]
        ["buffer" fi:lisp-compile-current-buffer (fi::source-buffer-p)])
       "----"
       ["Compile and load file" fi:compile-and-load-file (fi::connection-open)]
@@ -57,7 +73,8 @@
        ["Eval all changed definitions" fi:eval-changed-definitions (fi::connection-open)]
        ["Eval buffer changed definitions" fi:eval-buffer-changed-definitions
 	(fi::source-buffer-p)]
-       ["Copy all changed definitions to kill ring" fi:copy-changed-definitions (fi::connection-open)]
+       ["Copy all changed definitions to kill ring" fi:copy-changed-definitions
+	(fi::connection-open)]
        ["Copy buffer changed definitions to kill ring" fi:copy-buffer-changed-definitions
 	(fi::source-buffer-p)]
        ["Compare source files" fi:compare-source-files (fi::connection-open)]
@@ -73,11 +90,18 @@
       ["Find definition other window" fi:lisp-find-definition-other-window (fi::connection-open)]
       ["Find next definition" fi:lisp-find-next-definition (fi::connection-open)]
       "----"
-      ["Center defun" fi:center-defun t]
+      ["Center defun" fi:center-defun (fi::source-buffer-p)]
       ;; ["Extract list" fi:extract-list t]
       ["Close all parens" fi:super-paren (fi::acl-buffer-p)]
-      ["Comment region or form" fi:comment-region-or-form (fi::source-buffer-p)]
-      ["Uncomment region or form" fi:uncomment-region-or-form (fi::source-buffer-p)]
+      ;; Unfortunately, the region-or-form versions only work reasonably if the user is
+      ;; known to use zmacs-style regions, and we can't customize the menus for that.
+      ;; But a user who always runs in transient-mark-mode might want to customize this.
+      ;;["Comment region or form" fi:comment-region-or-form (fi::source-buffer-p)]
+      ;;["Uncomment region or form" fi:uncomment-region-or-form (fi::source-buffer-p)]
+      ["Comment form" fi:comment-form (fi::source-buffer-p)]
+      ["Uncomment form" fi:uncomment-form (fi::source-buffer-p)]
+      ["Comment region" fi:comment-region (fi::source-buffer-p)]
+      ["Uncomment region" fi:uncomment-region (fi::source-buffer-p)]
       ))
 
 (defconst fi:allegro-help-menu
@@ -240,11 +264,15 @@
 	(fi:new-screen-for-common-lisp-buffer t))
     (call-interactively 'fi:common-lisp)))
 
+(defun fi:menu-open-lisp-listener ()
+  (interactive)
+  (fi:open-lisp-listener -1))
+
 (defun fi:menu-open-lisp-listener-new-screen ()
   (interactive)
   (let ((get-screen-for-buffer-default-screen-name 'lisp-listener)
 	(fi:new-screen-for-common-lisp-buffer t))
-    (call-interactively 'fi:open-lisp-listener)))
+    (fi:open-lisp-listener -1)))
 
 (defun fi::region-active ()
   (and transient-mark-mode mark-active))
@@ -406,19 +434,20 @@
 
 (defconst fi:common-lisp-mode-popup-menu
     '("common lisp mode popup menu"
-      ["Compile region or form"
-       fi:lisp-compile-active-region-or-defun
-       (fi::connection-open)]
-      ["Compile and load file" fi:menu-compile-and-load-file (fi::connection-open)]
+      ;; Unfortunately, the region-or-form versions only work reasonably if the user is
+      ;; known to use zmacs-style regions, and we can't customize the menus for that.
+      ;; But a user who always runs in transient-mark-mode might want to customize this.
+      ;;["Compile region or form" fi:lisp-compile-active-region-or-defun (fi::connection-open)]
+      ["Compile form" fi:lisp-compile-active-region-or-defun (fi::acl-buffer-p)]
+      ["Compile region" fi:lisp-compile-region (fi::acl-buffer-p)]
+      ["Compile and load file" fi:menu-compile-and-load-file (fi::source-buffer-p)]
       "----"
       ["Find definition" fi:menu-lisp-find-definition (fi::connection-open)]
-      ["Find next definition" fi:lisp-find-next-definition
-       (fi::connection-open)]
+      ["Find next definition" fi:lisp-find-next-definition (fi::connection-open)]
       ["Arglist" fi:menu-lisp-arglist (fi::connection-open)]
       ["Toggle trace" fi:menu-toggle-trace-definition (fi::connection-open)]
       ["Macroexpand" fi:lisp-macroexpand (fi::connection-open)]
-      ["Recursive macroexpand" fi:lisp-macroexpand-recursively
-       (fi::connection-open)]
+      ["Macroexpand recursively" fi:lisp-macroexpand-recursively (fi::connection-open)]
       ))
 
 (defun fi:menu-lisp-find-definition ()
@@ -523,14 +552,13 @@
   (popup-menu fi:inferior-common-lisp-mode-popup-menu))
 
 (defun fi::install-mode-menus ()
-  (let ((menu-bar
-	 (cond
-	  ((eq major-mode 'fi:common-lisp-mode)
-	   (define-key fi:common-lisp-mode-map [down-mouse-3]
-	     'fi:common-lisp-mode-popup-menu))
-	  ((eq major-mode 'fi:inferior-common-lisp-mode)
-	   (define-key fi:inferior-common-lisp-mode-map [down-mouse-3]
-	     'fi:inferior-common-lisp-mode-popup-menu)))))))
+  (cond
+   ((eq major-mode 'fi:common-lisp-mode)
+    (define-key fi:common-lisp-mode-map [down-mouse-3]
+      'fi:common-lisp-mode-popup-menu))
+   ((eq major-mode 'fi:inferior-common-lisp-mode)
+    (define-key fi:inferior-common-lisp-mode-map [down-mouse-3]
+      'fi:inferior-common-lisp-mode-popup-menu))))
 
 (add-hook 'fi:inferior-common-lisp-mode-hook 'fi::install-mode-menus)
 (add-hook 'fi:common-lisp-mode-hook 'fi::install-mode-menus)

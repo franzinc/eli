@@ -1,4 +1,4 @@
-# $Header: /repo/cvs.copy/eli/Makefile,v 1.103 1994/06/13 22:48:24 georgej Exp $
+# $Header: /repo/cvs.copy/eli/Makefile,v 1.104 1994/08/23 01:46:32 smh Exp $
 
 # for some system V machines:
 SHELL = /bin/sh
@@ -38,7 +38,7 @@ fi-leep-lemacs.elc:
 .SUFFIXES:
 .SUFFIXES: .el .elc
 
-.el.elc: 
+.el.elc:
 	$(emacs) -nw -batch -q $(compile_time_env) -f batch-byte-compile $*.el
 
 docs: UserGuide.doc RefMan.doc RefCard.doc
@@ -202,6 +202,7 @@ rdist: all
 	rm -fr DIST
 	${rdist} -qc Makefile ChangeLog *.doc fi-*.el fi-*.elc \
 		clman.c clman.h clmanaux.c \
+		gc-mode-line.cl gc-mode-line.c \
 		"`hostname`:`pwd`/DIST"
 	(cd DIST;ln -s /net/vapor/scm/emacs-lib/src/eli/clman.data clman.data)
 	(cd DIST;ln -s /net/vapor/scm/emacs-lib/src/clman manual)
