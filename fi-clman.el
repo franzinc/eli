@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.20 1991/07/24 14:01:58 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.21 1991/08/22 21:28:33 layer Exp $
 
 (defun fi::setup-default-clman-package-info ()
   ;;  Returns a list that 
@@ -415,9 +415,9 @@ Return the full pathname of the file the symbol is in. "
       (concat doc-dir "/" (buffer-substring begin (point))))))
 
 (defun fi::clman-backward-copy-symbol-as-kill ()
-  (skip-chars-backward "[&a-zA-Z\-_~:+*#0-9]")
+  (skip-chars-backward "&a-zA-Z\-_~:+*#0-9")
   (let* ((begin (point)) end sym)
-    (skip-chars-forward "[&a-zA-Z\-_:+~*#0-9]")
+    (skip-chars-forward "&a-zA-Z\-_:+~*#0-9")
     (fi::clman-remove-chars-from-string '(?\ ?\n)
 					(buffer-substring begin (point)))))
 
