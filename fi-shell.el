@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-shell.el,v 1.23 1996/08/01 22:36:15 layer Exp $
+;; $Id: fi-shell.el,v 1.24 1996/09/04 18:45:12 layer Exp $
 
 (defvar fi:shell-mode-map nil
   "The shell major-mode keymap.")
@@ -110,4 +110,9 @@ The shell image file and image arguments are taken from the variables
 		       'fi:shell-mode
 		       fi:shell-prompt-pattern
 		       fi:shell-image-name
-		       fi:shell-image-arguments))
+		       fi:shell-image-arguments
+		       (when (on-ms-windows)
+			 'fi::subprocess-dos-filter)))
+
+(defun fi::subprocess-dos-filter (process output &optional stay cruft)
+  (fi::subprocess-filter process output stay t))

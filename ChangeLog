@@ -1,3 +1,11 @@
+Wed Sep 04 11:42:45 1996    <layer@HOBART>
+
+	* fi-keys.el: make sure newline in shell mode (DOS) does the right
+	  thing (for emacs 19.34)
+	* fi-shell.el: filter (on windows) out ^M's
+	* fi-subproc.el: fi:common-lisp-socket integrated into
+	  fi:common-lisp.
+
 Tue Sep 03 16:54:08 1996    <layer@HOBART>
 
 	* fi-site-init.el: change the way eli is loaded, so that load-path
