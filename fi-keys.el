@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.76 1992/01/16 11:09:44 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-keys.el,v 1.77 1992/07/17 15:28:55 layer Exp $
 
 (defvar fi:subprocess-super-key-map nil
   "Used by fi:subprocess-superkey as the place where super key bindings are
@@ -251,7 +251,7 @@ it to the Lisp subprocess."
 	    ;;(delete-char 1)
 	    (error "too many )'s")
 	    ))
-	(end-of-buffer)
+	(goto-char (point-max))
 	(if send-that-sexp
 	    (fi:subprocess-send-input)
 	  (progn

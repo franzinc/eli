@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.47 1992/01/24 18:50:55 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lep.el,v 1.48 1992/07/17 15:28:50 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -341,7 +341,7 @@ information on how to send the mail."
     (insert "bugs@franz.com")
     (mail-subject)
     (insert "Bug-report")
-    (end-of-buffer)
+    (goto-char (point-max))
     (save-excursion
       (insert "\n")
       (insert error-message)

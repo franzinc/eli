@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.26 1992/01/15 13:28:41 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.27 1992/07/17 15:28:53 layer Exp $
 
 (defvar fi::ss-help
     "Debugger commands:\\<fi:scan-stack-mode-map>
@@ -265,7 +265,7 @@ restored."
   (interactive)
   (bury-buffer)
   (fi:lisp-delete-pop-up-window)
-  (end-of-buffer))
+  (goto-char (point-max)))
 
 (defun fi:ss-disassemble ()
   "Disassemble the function associated with the current frame, putting the
@@ -328,7 +328,7 @@ buffer."
     (widen)
     (beginning-of-buffer)
     (or (re-search-forward "^Evaluation stack:$" nil t)
-	(end-of-buffer))
+	(goto-char (point-max)))
     (beginning-of-line)
     (narrow-to-region (point) (point-max))
     (setq fi:scan-stack-mode-display-help nil)))

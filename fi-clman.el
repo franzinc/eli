@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.28 1992/01/16 14:28:07 layer Exp $
+;; $Header: /repo/cvs.copy/eli/Attic/fi-clman.el,v 1.29 1992/07/17 15:28:41 layer Exp $
 
 (defvar fi::manual-directory nil)
 
@@ -398,7 +398,7 @@ named by the second argument."
   (if (not (string=  buf (buffer-name(current-buffer))))
       (switch-to-buffer-other-window buf))
   (buffer-flush-undo (current-buffer))
-  (end-of-buffer)
+  (goto-char (point-max))
   (if (not (bobp))
       (insert "===============================================================================\n"))
   (narrow-to-region (point) (point))
