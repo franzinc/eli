@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.90 1991/03/07 22:56:28 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.91 1991/03/12 18:30:49 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -24,99 +24,26 @@
 ;; Low-level subprocess mode guts
 
 ;;;;
-;;; Variables and Constants
+;;; General Subprocess Variables and Constants
 ;;;;
 
-(defvar fi:start-lisp-interface-function
-    'fi::start-tcp-lisp-interface
-  "*If non-nil, then this function is funcalled to startup the GNU
-Emacs-Lisp interface.")
-
-(defvar fi:remote-lisp-track-image-name-directory nil
-  "*If non-nil, then fi:remote-common-lisp and
-fi:explicit-remote-common-lisp will cause both Emacs and Lisp to cd into
-the directory where the Common Lisp image resides.  Otherwise, the remote
-Common Lisp will have $HOME as its current working directory and Emacs will
-have whatever directory you were in when you evaluated either function.")
-
-(defvar fi:common-lisp-image-name "cl"
-  "*Default Common Lisp image to invoke from `fi:common-lisp'.  If the
-value is a string then it names the image file or image path that
-`fi:common-lisp' invokes.  Otherwise, the value of this variable is given
-to funcall, the result of which should yield a string which is the image
-name or path.")
-
-(defvar fi:default-explicit-common-lisp-image-name nil
-  "*If non-nil, then the value of this variable is used as the name of the
-image fi:explicit-common-lisp and fi:explicit-remote-common-lisp uses to
-run Lisp, instead of reading the name from the minibuffer.")
-
-(defvar fi:default-explicit-common-lisp-image-arguments nil
-  "*If non-nil, then the value of this variable (a string) contains the
-arguments given to Lisp by fi:explicit-common-lisp and
-fi:explicit-remote-common-lisp when Lisp is invoked, instead of reading the
-name from the minibuffer.")
-
-(defvar fi:default-remote-common-lisp-host nil
-  "*If non-nil, then the value of this variable (a string) is names the
-host on which fi:remote-common-lisp and fi:explicit-remote-common-lisp
-executes Lisp, instead of reading the name from the minibuffer.")
-
-(defvar fi:default-remote-common-lisp-directory nil
-  "*If non-nil, used by fi:remote-common-lisp and
-fi:explicit-remote-common-lisp as the directory in which the Lisp is
-started.  Note that the pathname of the Lisp image must be give relative to
-this directory, or the home directory if this variable is nil.  See
-fi:fi:default-explicit-common-lisp-image-name")
-
-(defvar fi:common-lisp-image-arguments nil
-  "*Default Common Lisp image arguments when invoked from `fi:common-lisp',
-which must be a list of strings.")
-
-(defvar fi:common-lisp-prompt-pattern
-  "^\\(\\[[0-9]+c?\\] \\|\\[step\\] \\)?<[-A-Za-z]* ?[0-9]*?> "
-  "*The regular expression which matches the Common Lisp prompt, used in
-Inferior Common Lisp mode.  Anything from beginning of line up to the end
-of what this pattern matches is deemed to be a prompt.")
-
-(defvar fi:franz-lisp-image-name "lisp"
-  "*Default Franz Lisp image to invoke from `fi:franz-lisp'.  If the value
-is a string then it names the image file or image path that
-`fi:common-lisp' invokes.  Otherwise, the value of this variable is given
-to funcall, the result of which should yield a string which is the image
-name or path.")
-
-(defvar fi:franz-lisp-image-arguments nil
-  "*Default Franz Lisp image arguments when invoked from `fi:franz-lisp'.")
-
-(defvar fi:franz-lisp-prompt-pattern
-  "^[-=]> +\\|^c{[0-9]+} +"
-  "*The regular expression which matches the Franz Lisp prompt, used in
-Inferior Franz Lisp mode.  Anything from beginning of line up to the end
-of what this pattern matches is deemed to be a prompt.")
+(defvar fi:shell-cd-regexp ":?cd"
+  "*The regular expression matching the C shell `cd' command and the
+Common Lisp :cd top-level command.   If nil, no tracking of directory
+changes will be done.")
+(make-variable-buffer-local 'fi:shell-cd-regexp)
 
 (defvar fi:shell-popd-regexp ":?popd"
-  "*The regular expression matching the C shell `popd' command.  If nil, no
-automatic directory changes will be made.")
-
+  "*The regular expression matching the C shell `popd' command and the
+Common Lisp :popd top-level command.   If nil, no tracking of directory
+changes will be done.")
 (make-variable-buffer-local 'fi:shell-popd-regexp)
 
 (defvar fi:shell-pushd-regexp ":?pushd"
-  "*The regular expression matching the C shell `pushd' command.  If nil,
-no automatic directory changes will be made.")
-
+  "*The regular expression matching the C shell `pushd' command and the
+Common Lisp :pushd top-level command.   If nil, no tracking of directory
+changes will be done.")
 (make-variable-buffer-local 'fi:shell-pushd-regexp)
-
-(defvar fi:shell-cd-regexp ":?cd"
-  "*The regular expression matching the C shell `cd' command.  If nil,
-no automatic directory changes will be made.")
-
-(make-variable-buffer-local 'fi:shell-cd-regexp)
-
-(defvar fi:common-lisp-package-regexp
-  "(in-package\\>\\|:\\<pa\\>\\|:\\<pac\\>\\|:\\<pack\\>\\|:\\<packa\\>\\|:\\<packag\\>\\|:\\<package\\>"
-  "*The regular expression matching the Common Lisp expression(s) to change
-packages.  If nil, no automatic package tracking will be done.")
 
 (defvar fi:subprocess-continuously-show-output-in-visible-buffer t
   "*If t, output from a subprocess to a visible buffer is continuously
@@ -125,7 +52,6 @@ the process output marker, output to that buffer from its associated
 process will be continuously visible.  If the window point is before the
 process output marker, the window is not updated.  This is a buffer-local
 symbol.")
-
 (make-variable-buffer-local
  'fi:subprocess-continuously-show-output-in-visible-buffer)
 
@@ -137,364 +63,459 @@ current local keymap when typed at the end of a subprocess buffer.  If
 typed elsewhere, these keys have their normal global binding.  This is a
 buffer-local symbol.  Use setq-default to set the default value for this
 symbol.")
-
 (make-variable-buffer-local 'fi:subprocess-enable-superkeys)
 
 (defvar fi:display-buffer-function 'switch-to-buffer
-  "*A function of one argument, a buffer, which is used to display a
-buffer when a subprocess is created.")
+  "*If non-nil, then the value should be a function taking one argument,
+a buffer, which is used to display a buffer when a subprocess is created.")
 
 (defconst fi:subprocess-env-vars
     '(("EMACS" . "t")
       ("TERM" . "emacs")
       ("DISPLAY" . (getenv "DISPLAY"))
       ("TERMCAP" . (format "emacs:co#%d:tc=unknown:" (screen-width))))
-  "*A alist containing the environment variables to pass subprocess created
-with fi::make-subprocess.")
+  "*An alist containing the environment variables to pass to newly created
+subprocesses.")
 
-;;;;;;;;;;;;;;;;;;;;;; internal vars
+(defvar fi:in-package-regexp nil
+  "*If non-nil, the regular expression that describes the IN-PACKAGE form,
+for purposes of tracking package changes in a subprocess Lisp buffer.  The
+value of this is taken from fi:default-in-package-regexp in Lisp subprocess
+buffers, but is nil elsewhere.")
+(make-variable-buffer-local 'fi:in-package-regexp)
 
-(defvar fi::cl-package-regexp nil
-  "The real Common Lisp package regexp, which is nil in all buffer except
-Inferior Common Lisp buffers.")
+(defvar fi:default-in-package-regexp
+  "(in-package\\>\\|:\\<pa\\>\\|:\\<pac\\>\\|:\\<pack\\>\\|:\\<packa\\>\\|:\\<packag\\>\\|:\\<package\\>"
+  "*The regular expression matching the Lisp expression to change the
+current package.  The two things this must match are the IN-PACKAGE macro
+form and all the possible instances of the :package top-level command.
+If nil, no automatic package tracking will be done.")
 
-(make-variable-buffer-local 'fi::cl-package-regexp)
+;;;;
+;;; Common Lisp Variables and Constants
+;;;;
+
+(defvar fi:start-lisp-interface-function
+    'fi:start-backdoor-interface
+  "*If non-nil, the function which is called to startup the Emacs-Lisp
+interface.  This happens automatically when the Common Lisp process is
+started with fi:common-lisp.")
+
+(defvar fi:start-lisp-interface-hook nil
+  "*A function or a list of functions to call when we get the rendezvous
+info from Lisp in the Lisp subprocess buffer.  This is used to
+automatically startup the Emacs-Lisp hidden communication via a socket.
+fi:start-lisp-interface-function initiates the connection with Lisp from
+the Emacs side, Lisp then starts up the daemon which listens for
+connections and prints a string to the subprocess buffer (which is not
+displayed by the process filter for the Common Lisp subprocess), at which
+time the hooks are run.")
+
+(defvar fi:common-lisp-buffer-name "*common-lisp*"
+  "*Default buffer name used by fi:common-lisp.  This variable is set by
+fi:common-lisp when a new buffer name is used.")
+
+(defvar fi:common-lisp-directory nil
+  "*Default directory in which the process started by fi:common-lisp uses.
+A CD is done into this directory before the process is started.")
+
+(defvar fi:common-lisp-image-name "cl"
+  "*Default Common Lisp image used by fi:common-lisp.  If the value is a
+string then it names the image file or image path that fi:common-lisp
+invokes.  Otherwise, the value of this variable is given to funcall, the
+result of which should yield a string which is the image name.")
+
+(defvar fi:common-lisp-image-arguments nil
+  "*Default Common Lisp image arguments when invoked from `fi:common-lisp',
+which must be a list of strings.  Each element of the list is one command
+line argument.")
+
+(defvar fi:common-lisp-host "localhost"
+  "*The default host on which fi:common-lisp starts the Common Lisp
+subprocess.  \"localhost\" means use the host on which emacs is running.")
+
+(defvar fi:common-lisp-process-name nil
+  "The name of the process last created by fi:common-lisp.")
+
+(defvar fi:common-lisp-prompt-pattern
+  "^\\(\\[[0-9]+c?\\] \\|\\[step\\] \\)?<[-A-Za-z]* ?[0-9]*?> "
+  "*The regular expression which matches the Common Lisp prompt.
+Anything from beginning of line up to the end of what this pattern matches
+is deemed to be a prompt.")
+
+;;;;
+;;; Franz Lisp Variables and Constants
+;;;;
+
+(defvar fi:franz-lisp-buffer-name "*franz-lisp*"
+  "*Default buffer name used by fi:franz-lisp.")
+
+(defvar fi:franz-lisp-image-name "lisp"
+  "*Default Franz Lisp image to invoke from `fi:franz-lisp'.  If the value
+is a string then it names the image file or image path that
+`fi:franz-lisp' invokes.  Otherwise, the value of this variable is given
+to funcall, the result of which should yield a string which is the image
+name or path.")
+
+(defvar fi:franz-lisp-image-arguments nil
+  "*Default Franz Lisp image arguments when invoked from `fi:franz-lisp'.")
+
+(defvar fi:franz-lisp-host "localhost"
+  "*")
+
+(defvar fi:franz-lisp-process-name nil)
+
+(defvar fi:franz-lisp-prompt-pattern
+  "^[-=]> +\\|^c{[0-9]+} +"
+  "*The regular expression which matches the Franz Lisp prompt, used in
+Inferior Franz Lisp mode.  Anything from beginning of line up to the end
+of what this pattern matches is deemed to be a prompt.")
+
+;;;;;;;;;;;;;;;;;;;;;; general subprocess internal variables
 
 (defvar fi::last-input-start nil
   "Marker for start of last input in fi:shell-mode or fi:inferior-lisp-mode
 buffer.")
-
 (make-variable-buffer-local 'fi::last-input-start)
 
 (defvar fi::last-input-end nil
   "Marker for end of last input in fi:shell-mode or fi:inferior-lisp-mode
 buffer.")
-
 (make-variable-buffer-local 'fi::last-input-end)
-
-(defvar fi::sublisp-name nil
-  "Name of inferior lisp process.")
-
-(defvar fi::freshest-franz-sublisp-name nil
-  "Name of franz lisp subprocess most recently invoked.")
-
-(defvar fi::freshest-common-sublisp-name nil
-  "Name of common lisp subprocess most recently invoked.")
 
 (defvar fi::shell-directory-stack nil
   "List of directories saved by pushd in this buffer's shell.")
-
 (make-variable-buffer-local 'fi::shell-directory-stack)
+
+;;;;;;;;;;;;;;;;;;;;;; lisp mode specific internal variables
+
+(defvar fi::process-name nil
+  "Name of inferior lisp process.")
+(make-variable-buffer-local 'fi::process-name)
+
+(defvar fi::common-lisp-first-time t)
+
+(defvar fi::franz-lisp-first-time t)
+
+;;;;;;;;;;;;;;;;;;;;;; common lisp mode specific internal variables
+
+(defvar fi::lisp-case-mode ':unknown
+  "The case in which the Common Lisp we are connected to lives.")
+
+(defvar fi::listener-protocol ':listener)
+
+;;;; the rest are buffer local:
+
+(defvar fi::lisp-host nil 
+"Host that is running the lisp in this buffer.  Buffer local.")
+(make-variable-buffer-local 'fi::lisp-host)
+
+(defvar fi::lisp-port nil 
+"Port to use in getting new listeners from remote lisp.  Buffer local.")
+(make-variable-buffer-local 'fi::lisp-port)
+
+(defvar fi::lisp-password nil 
+"Password to use in getting new listeners from remote lisp.  Buffer local.")
+(make-variable-buffer-local 'fi::lisp-password)
+
+(defvar fi::lisp-ipc-version nil
+  "The version of the IPC to which will connect. Buffer local")
+(make-variable-buffer-local 'fi::lisp-ipc-version)
 
 (defvar fi::lisp-is-remote nil
   "Non-nil if the lisp process tied to the current buffer is on another
 machine, which implies that it was started via an `rsh'.  This variable is
 buffer local.")
-
 (make-variable-buffer-local 'fi::lisp-is-remote)
-
-(defconst fi::remote-lisp-sh-prefix
-    "sh -ec '%s cd %s; "
-  "A format string, which takes two arguments: a string for passing
-environment variables (%s) and the directory in which the remote Lisp
-should execute (%s).")
-
-(defvar fi::remote-host nil 
-"Host that is running the lisp in this buffer.  Buffer local.")
-
-(make-variable-buffer-local 'fi::remote-host)
-
-(defvar fi::remote-port nil 
-"Port to use in getting new listeners from remote lisp.  Buffer local.")
-
-(make-variable-buffer-local 'fi::remote-port)
-
-(defvar fi::remote-password nil 
-"Password to use in getting new listeners from remote lisp.  Buffer local.")
-
-(make-variable-buffer-local 'fi::remote-password)
-
-(defvar fi::lisp-case-mode ':unknown
-  "The case in which the ACL we are connected to lives.")
-
-(defvar fi::ipc-version nil
-  "The version of the IPC to which will connect. Buffer local")
-
-(make-variable-buffer-local 'fi::ipc-version)
-
 
 ;;;;
 ;;; User visible functions
 ;;;;
 
-(defun fi:common-lisp (&optional buffer-number)
-  "Start a Common Lisp subprocess in a buffer whose name is determined
-from the optional prefix argument BUFFER-NUMBER.  Common Lisp buffer names
-start with `*common-lisp' and end with `*', with an optional `-N' in
-between.  If BUFFER-NUMBER is not given it defaults to 1.  If BUFFER-NUMBER
-is >= 0, then the buffer is named `*common-lisp*<BUFFER-NUMBER>'.  If
-BUFFER-NUMBER is < 0, then the first available buffer name is chosen.
+(defun fi:start-backdoor-interface (process)
+  "Send a string to PROCESS, which should be a Lisp, that starts the
+Emacs-Lisp interface.  This only works in Allegro CL, currently."
+  (send-string
+   process
+   "(progn
+      (princ \";; Starting socket daemon\n\")
+      (force-output)
+      (excl::require :ipc
+                     (merge-pathnames excl::*library-code-pathname* \"ipc\"))
+      (excl::require :emacs
+                     (merge-pathnames excl::*library-code-pathname* \"emacs\"))
+      (apply
+       (find-symbol (symbol-name :start-lisp-listener-daemon) :ipc)
+       #+allegro-v4.1 '(:use-lep t :unix-domain nil)
+       #-allegro-v4.1 nil)
+      (values))\n"))
 
-The image file and image arguments are taken from the variables
-`fi:common-lisp-image-name' and `fi:common-lisp-image-arguments'.
+(defun fi:common-lisp (&optional buffer-name process-directory image-name
+				 image-arguments host)
+  "Create a Common Lisp subprocess and put it in buffer named by
+BUFFER-NAME, with default-directory of PROCESS-DIRECTORY, using IMAGE-NAME
+and IMAGE-ARGUMENTS as the binary image pathname and command line
+arguments, doing the appropriate magic to execute the process on HOST.
 
-See fi:explicit-common-lisp."
-  (interactive "p")
-  (let* ((proc (fi::make-subprocess
-		buffer-number
-		"common-lisp" 
-		'fi:inferior-common-lisp-mode
-		fi:common-lisp-prompt-pattern
-		fi:common-lisp-image-name
-		fi:common-lisp-image-arguments
-		nil
-		fi:start-lisp-interface-function
-		(list 'lambda ()
-		      (list 'fi::set-buffer-host '(current-buffer)
-			    (system-name))))))
-    (setq fi::freshest-common-sublisp-name (process-name proc))
-    proc))
+The first time this function is called and when given a prefix argument, all
+the above quantities are read from the minibuffer, with defaults coming
+from the variables:
+	fi:common-lisp-buffer-name
+	fi:common-lisp-directory
+	fi:common-lisp-image-name
+	fi:common-lisp-image-arguments
+	fi:common-lisp-host
+and the values read are saved in these variables for later use as defaults.
+After the first time or when no prefix argument is given, the defaults are
+used and no information is read from the minibuffer.
 
-(defun fi:explicit-common-lisp (&optional buffer-number
-					  image-name image-arguments)
-  "The same as fi:common-lisp, except that the image and image arguments
-are read from the minibuffer."
+For backward compatibility, BUFFER-NAME can be a number, when called
+programmatically, which means look for, and use if found, numbered buffers
+of the form \"*common-lisp*<N>\" for N > 2.  If BUFFER-NAME < 0, then find
+the first \"free\" buffer name and start a subprocess in that buffer."
   (interactive
-   (list 
-    current-prefix-arg
-    (or (and (stringp fi:default-explicit-common-lisp-image-name)
-	     fi:default-explicit-common-lisp-image-name)
-	(and (consp fi:default-explicit-common-lisp-image-name)
-	     (eq 'lambda (car fi:default-explicit-common-lisp-image-name))
-	     (funcall fi:default-explicit-common-lisp-image-name))
-	(expand-file-name (read-file-name "Image name: " nil nil t)))
-    (or fi:default-explicit-common-lisp-image-arguments
-	(fi::listify-string
-	 (read-from-minibuffer "Image arguments (separate by spaces): ")))))
-  (let* ((proc (fi::make-subprocess
-		buffer-number
-		"common-lisp" 
-		'fi:inferior-common-lisp-mode
-		fi:common-lisp-prompt-pattern
-		image-name
-		image-arguments
-		nil
-		fi:start-lisp-interface-function
-		(list 'lambda ()
-		      (list 'fi::set-buffer-host '(current-buffer)
-			    (system-name))))))
-    (setq fi::freshest-common-sublisp-name (process-name proc))
-    proc))
-
-(defun fi:remote-common-lisp (&optional buffer-number host)
-  "Start a Common Lisp subprocess in a buffer whose name is determined
-from the optional prefix argument BUFFER-NUMBER, where the Common Lisp
-image is run on another machine.  Common Lisp buffer names start with
-`*common-lisp' and end with `*', with an optional `-N' in between.  If
-BUFFER-NUMBER is not given it defaults to 1.  If BUFFER-NUMBER is >= 0,
-then the buffer is named `*common-lisp*<BUFFER-NUMBER>'.  If BUFFER-NUMBER
-is < 0, then the first available buffer name is chosen.
-
-The host on which the image is run is read from the minibuffer.
-
-The image file and image arguments are taken from the variables
-`fi:common-lisp-image-name' and `fi:common-lisp-image-arguments'.
-
-See fi:explicit-remote-common-lisp."
-  (interactive
-   (list current-prefix-arg
-	 (or fi:default-remote-common-lisp-host
-	     (read-from-minibuffer "Remote host name: "))))
-  (let* ((remote-dir
-	  (expand-file-name
-	   (if (and fi:remote-lisp-track-image-name-directory
-		    (file-name-directory image-name))
-	       (let ((dir (file-name-directory image-name)))
-		 (if (= ?/ (aref dir 0))
-		     dir
-		   (format "~/%s" dir)))
-	     "~/")))
+   (if (or fi::common-lisp-first-time current-prefix-arg)
+       (let (dir)
+	 (list (setq fi:common-lisp-buffer-name
+		 (read-buffer "Buffer: " fi:common-lisp-buffer-name))
+	       (setq fi:common-lisp-directory
+		 (expand-file-name
+		  (read-file-name "Process directory: "
+				  default-directory
+				  default-directory
+				  t)))
+	       (setq fi:common-lisp-image-name
+		 (expand-file-name
+		  (read-file-name "Image name: " fi:common-lisp-directory
+				  fi:common-lisp-directory t)))
+	       (setq fi:common-lisp-image-arguments
+		 (fi::listify-string
+		  (read-from-minibuffer
+		   "Image arguments (separate by spaces): "
+		   (mapconcat 'concat fi:common-lisp-image-arguments " "))))
+	       (setq fi:common-lisp-host
+		 (read-string "Host: " fi:common-lisp-host))))
+     (list fi:common-lisp-buffer-name
+	   fi:common-lisp-directory
+	   fi:common-lisp-image-name
+	   fi:common-lisp-image-arguments
+	   fi:common-lisp-host)))
+  (let* ((local (or (string= "localhost" host)
+		    (string= host (system-name))))
 	 (proc (fi::make-subprocess
-		buffer-number
 		"common-lisp" 
+		buffer-name
+		process-directory
 		'fi:inferior-common-lisp-mode
 		fi:common-lisp-prompt-pattern
-		"rsh"
-		(append
-		 (list host
-		       (format fi::remote-lisp-sh-prefix
-			       (fi::env-vars)
-			       (or fi:default-remote-common-lisp-directory
-				   remote-dir))
-		       (if (and fi:remote-lisp-track-image-name-directory
-				(equal
-				 fi:default-remote-common-lisp-directory
-				 fi:remote-lisp-track-image-name-directory))
-			   (file-name-nondirectory fi:common-lisp-image-name)
-			 fi:common-lisp-image-name))
-		 fi:common-lisp-image-arguments
-		 '("'"))
-		nil
+		(if local
+		    image-name
+		  "rsh")
+		(if local
+		    image-arguments
+		  (append (list host
+				(format "sh -ec '%s cd %s; "
+					(fi::env-vars) process-directory)
+				image-name)
+			  image-arguments
+			  '("'")))
+		'fi::common-lisp-subprocess-filter
 		fi:start-lisp-interface-function
-		(list 'lambda ()
-		      '(setq fi::lisp-is-remote t)
-		      (list 'cd
-			    (or fi:default-remote-common-lisp-directory
-				remote-dir))
-		      (list 'fi::set-buffer-host '(current-buffer)
-			    host)))))
-    (setq fi::freshest-common-sublisp-name (process-name proc))
+		;;
+		;; rest of the arguments are the
+		;; mode-hook function and its arguments
+		(function
+		 (lambda (local host dir)
+		   (if local
+		       (save-excursion
+			 (set-buffer (current-buffer))
+			 (setq fi::lisp-host "localhost"))
+		     (save-excursion
+		       (set-buffer (current-buffer))
+		       (setq fi::lisp-is-remote t)
+		       (setq fi::lisp-host host)
+		       (cd dir)))))
+		local host process-directory)))
+    (setq fi:common-lisp-process-name (process-name proc))
+    (setq fi::common-lisp-first-time nil)
     proc))
 
-(defun fi:explicit-remote-common-lisp (&optional buffer-number host
-						 image-name image-arguments)
-  "The same as fi:remote-common-lisp, except that the image and image
-arguments are read from the minibuffer."
+(defun fi:open-lisp-listener (&optional buffer-number buffer-name)
+  "Open a connection to an existing Common Lisp process, started with the
+function fi:common-lisp, and create a Lisp Listener (a top-level
+interaction).  The Common Lisp can be either local or remote.  The name of
+the buffer is \"*lisp-listener*\" with an optional suffix of \"<N>\", for
+prefix arguments > 1.  If a negative prefix argument is given, then the
+first \"free\" buffer name is found and used.  When called from a program,
+the buffer name is the second optional argument."
+  (interactive "p")
+  (if (or (null fi:common-lisp-process-name)
+	  (not (fi:process-running-p
+		(get-buffer-process fi:common-lisp-process-name))))
+      (error "Common Lisp must be running to open a lisp listener."))
+  (let ((proc (fi::make-tcp-connection
+	       (or buffer-name "lisp-listener")
+	       buffer-number
+	       'fi:lisp-listener-mode
+	       fi:common-lisp-prompt-pattern
+	       (fi::get-buffer-host fi:common-lisp-process-name)
+	       (fi::get-buffer-port fi:common-lisp-process-name)
+	       (fi::get-buffer-password fi:common-lisp-process-name)
+	       (fi::get-buffer-ipc-version fi:common-lisp-process-name))))
+    proc))
+
+(defun fi:franz-lisp (&optional buffer-name process-directory image-name
+				image-arguments host)
+  "Create a Franz Lisp subprocess and put it in buffer named by
+BUFFER-NAME, with default-directory of PROCESS-DIRECTORY, using IMAGE-NAME
+and IMAGE-ARGUMENTS as the binary image pathname and command line
+arguments, doing the appropriate magic to execute the process on HOST.
+
+The first time this function is called and when given a prefix argument, all
+the above quantities are read from the minibuffer, with defaults coming
+from the variables:
+	fi:franz-lisp-buffer-name
+	fi:franz-lisp-directory
+	fi:franz-lisp-image-name
+	fi:franz-lisp-image-arguments
+	fi:franz-lisp-host
+and the values read are saved in these variables for later use as defaults.
+After the first time or when no prefix argument is given, the defaults are
+used and no information is read from the minibuffer.
+
+For backward compatibility, the buffer-name can be a number, when called
+programmatically, which means look for, and use if found, numbered buffers
+of the form \"*franz-lisp*<N>\" for N > 2.  If BUFFER-NAME < 0, then find
+the first \"free\" buffer name and start a subprocess in that buffer."
   (interactive
-   (list 
-    current-prefix-arg
-    (or fi:default-remote-common-lisp-host
-	(read-from-minibuffer "Remote host name: "))
-    (or (and (stringp fi:default-explicit-common-lisp-image-name)
-	     fi:default-explicit-common-lisp-image-name)
-	(and (consp fi:default-explicit-common-lisp-image-name)
-	     (eq 'lambda (car fi:default-explicit-common-lisp-image-name))
-	     (funcall fi:default-explicit-common-lisp-image-name))
-	(read-from-minibuffer "Image name (relative to home directory): "))
-    (or fi:default-explicit-common-lisp-image-arguments
-	(fi::listify-string
-	 (read-from-minibuffer "Image arguments (separate by spaces): ")))))
-  (let* ((remote-dir
-	  (expand-file-name
-	   (if (and fi:remote-lisp-track-image-name-directory
-		    (file-name-directory image-name))
-	       (let ((dir (file-name-directory image-name)))
-		 (if (= ?/ (aref dir 0))
-		     dir
-		   (format "~/%s" dir)))
-	     "~/")))
+   (if (or fi::franz-lisp-first-time current-prefix-arg)
+       (let (dir)
+	 (list (setq fi:franz-lisp-buffer-name
+		 (read-buffer "Buffer: " fi:franz-lisp-buffer-name))
+	       (setq fi:franz-lisp-directory
+		 (expand-file-name
+		  (read-file-name "Process directory: "
+				  default-directory
+				  default-directory
+				  t)))
+	       (setq fi:franz-lisp-image-name
+		 (expand-file-name
+		  (read-file-name "Image name: " fi:franz-lisp-directory
+				  fi:franz-lisp-directory t)))
+	       (setq fi:franz-lisp-image-arguments
+		 (fi::listify-string
+		  (read-from-minibuffer
+		   "Image arguments (separate by spaces): "
+		   (mapconcat 'concat fi:franz-lisp-image-arguments " "))))
+	       (setq fi:franz-lisp-host
+		 (read-string "Host: " fi:franz-lisp-host))))
+     (list fi:franz-lisp-buffer-name
+	   fi:franz-lisp-directory
+	   fi:franz-lisp-image-name
+	   fi:franz-lisp-image-arguments
+	   fi:franz-lisp-host)))
+  (let* ((local (or (string= "localhost" host)
+		    (string= host (system-name))))
 	 (proc (fi::make-subprocess
-		buffer-number
-		"common-lisp" 
-		'fi:inferior-common-lisp-mode
-		fi:common-lisp-prompt-pattern
-		"rsh"
-		(append
-		 (list host
-		       (format fi::remote-lisp-sh-prefix
-			       (fi::env-vars)
-			       (or fi:default-remote-common-lisp-directory
-				   remote-dir))
-		       (if (and fi:remote-lisp-track-image-name-directory
-				(equal
-				 fi:default-remote-common-lisp-directory
-				 fi:remote-lisp-track-image-name-directory))
-			   (file-name-nondirectory image-name)
-			 image-name))
-		 image-arguments
-		 '("'"))
-		nil
-		fi:start-lisp-interface-function
-		(list 'lambda ()
-		      '(setq fi::lisp-is-remote t)
-		      (list 'cd (or fi:default-remote-common-lisp-directory
-				    remote-dir))
-		      (list 'fi::set-buffer-host '(current-buffer)
-			    host)))))
-    (setq fi::freshest-common-sublisp-name (process-name proc))
-    proc))
-
-(defun fi:tcp-common-lisp (&optional buffer-number buffer-name)
-  "In a buffer whose name is determined from the optional prefix argument
-BUFFER-NUMBER, and the optional argument BUFFER-NAME,  connect to a Common Lisp using either a UNIX domain socket
-file or internet port number.  BUFFER-NAME defaults to tcp-common-lisp. Common Lisp buffer names start with
-`*BUFFER-NAME' and end with `*', with an optional `-N' in between.  If
-BUFFER-NUMBER is not given it defaults to 1.  If BUFFER-NUMBER is >= 0,then
-the buffer is named `*BUFFER-NAME*<BUFFER-NUMBER>'.  If BUFFER-NUMBER is <
-0, then the first available buffer name is chosen.
-
-See `fi:explicit-tcp-common-lisp'."
-  (interactive "p")
-  (if (null fi::freshest-common-sublisp-name)
-      (error "must start a Lisp subprocess first"))
-  (let ((proc (fi::make-tcp-connection
-	       buffer-number 
-	       (or buffer-name "tcp-common-lisp") 'fi:tcp-common-lisp-mode
-	       fi:common-lisp-prompt-pattern
-	       (fi::get-buffer-host fi::freshest-common-sublisp-name)
-	       (fi::get-buffer-port fi::freshest-common-sublisp-name)
-	       (fi::get-buffer-password fi::freshest-common-sublisp-name)
-	       (fi::get-buffer-ipc-version fi::freshest-common-sublisp-name))))
-    proc))
-
-(defun fi:explicit-tcp-common-lisp (&optional buffer-number
-					      host service password ipc-version)
-  "The same as fi:tcp-common-lisp, except the buffer name of the Lisp onto
-which the listener is disired is read from the minibuffer."
-  (interactive
-   (let ((buffer (read-buffer "Buffer with Lisp subprocess: ")))
-     (list current-prefix-arg
-	   (fi::get-buffer-host buffer)
-	   (fi::get-buffer-port buffer)
-	   (fi::get-buffer-password buffer)
-	   (fi::get-buffer-ipc-version buffer))))
-  (let ((proc (fi::make-tcp-connection
-	       buffer-number "tcp-common-lisp" 'fi:tcp-common-lisp-mode
-	       fi:common-lisp-prompt-pattern
-	       host service password)))
-    proc))
-
-(defun fi:franz-lisp (&optional buffer-number)
-  "Start a Franz Lisp subprocess in a buffer whose name is determined
-from the optional prefix argument BUFFER-NUMBER.  Franz Lisp buffer names
-start with `*franz-lisp' and end with `*', with an optional `-N' in
-between.  If BUFFER-NUMBER is not given it defaults to 1.  If BUFFER-NUMBER
-is >= 0, then the buffer is named `*franz-lisp*<BUFFER-NUMBER>'.  If
-BUFFER-NUMBER is < 0, then the first available buffer name is chosen.
-
-The image file and image arguments are taken from the variables
-`fi:franz-lisp-image-name' and `fi:franz-lisp-image-arguments'.
-
-See fi:explicit-franz-lisp."
-  (interactive "p")
-  (let ((proc (fi::make-subprocess
-	       buffer-number "franz-lisp" 
-	       'fi:inferior-franz-lisp-mode
-	       fi:franz-lisp-prompt-pattern
-	       fi:franz-lisp-image-name
-	       fi:franz-lisp-image-arguments)))
-    (setq fi::freshest-franz-sublisp-name (process-name proc))
-    proc))
-
-(defun fi:explicit-franz-lisp (&optional buffer-number
-					 image-name image-arguments)
-  "The same as fi:franz-lisp, except that the image and image arguments
-are read from the minibuffer."
-  (interactive
-   (list 
-    current-prefix-arg
-    (expand-file-name (read-file-name "Image name: " nil nil t))
-    (fi::listify-string
-     (read-from-minibuffer "Image arguments (separate by spaces): "))))
-  (let ((proc (fi::make-subprocess
-	       buffer-number "franz-lisp" 
-	       'fi:inferior-franz-lisp-mode
-	       fi:franz-lisp-prompt-pattern
-	       image-name image-arguments)))
-    (setq fi::freshest-franz-sublisp-name (process-name proc))
+		"franz-lisp" 
+		buffer-name
+		process-directory
+		'fi:inferior-franz-lisp-mode
+		fi:franz-lisp-prompt-pattern
+		(if local
+		    image-name
+		  "rsh")
+		(if local
+		    image-arguments
+		  (append (list host
+				(format "sh -ec '%s cd %s; "
+					(fi::env-vars) process-directory)
+				image-name)
+			  image-arguments
+			  '("'")))
+		nil			; use default filter
+		nil			; no interface to franz-lisp
+		;;
+		;; rest of the arguments are the
+		;; mode-hook function and its arguments
+		(function (lambda (local dir) (unless local (cd dir))))
+		local process-directory)))
+    (setq fi:franz-lisp-process-name (process-name proc))
+    (setq fi::franz-lisp-first-time nil)
     proc))
 
 ;;;;
 ;;; Internal functions
 ;;;;
 
-(defun fi::make-subprocess (buffer-number process-name mode-function
-			    image-prompt image-file image-arguments
+(defun fi::common-lisp-subprocess-filter (process output &optional stay cruft)
+  (save-excursion
+    (set-buffer (process-buffer process))
+    (if (not (or (and fi:use-lep
+		      (lep::lep-open-connection-p))
+		 (and (not fi:use-lep)
+		      (fi:backdoor-is-running-p))))
+	(setq output
+	  (if (and (fi::fast-search-string 1 output)
+		   (string-match
+		    "\\([^\0]*\\)\\(.*\\)\\([^\0]*\\)"
+		    output))
+	      (let* ((res (concat
+			   (substring output (match-beginning 1)
+				      (match-end 1))
+			   (substring output (match-beginning 3)
+				      (match-end 3))))
+		     (command (substring output (match-beginning 2)
+					 (match-end 2)))
+		     (xx nil)
+		     (host nil))
+		(setq fi::lisp-port
+		  (car (setq xx (read-from-string command nil))))
+		(setq fi::lisp-password
+		  (car (setq xx (read-from-string command (cdr xx)))))
+		(setq fi::lisp-case-mode
+		  (car (setq xx
+			 (read-from-string (downcase command) (cdr xx)))))
+		;; the following "argument" is optional in that a previous
+		;; version of the ipc.cl didn't provide it
+		(if (setq host
+		      (condition-case ()
+			  (car (setq xx (read-from-string
+					 (fi::frob-case-from-lisp command)
+					 (cdr xx))))
+			(error nil)))
+		    nil)
+		;; This is optional also
+		(setq fi::lisp-ipc-version
+		  (condition-case ()
+		      (if (not (eq (cdr xx) (length command))) 
+			  (car (setq xx (read-from-string
+					 (fi::frob-case-from-lisp command)
+					 (cdr xx)))))
+		    (error nil)))
+		(cond ((consp fi:start-lisp-interface-hook)
+		       (mapcar 'funcall fi:start-lisp-interface-hook))
+		      (fi:start-lisp-interface-hook
+		       (funcall fi:start-lisp-interface-hook)))
+		res)
+	    output))))
+  (fi::subprocess-filter process output stay cruft))
+
+(defun fi::make-subprocess (process-name buffer-name process-directory
+			    mode-function image-prompt image-file
+			    image-arguments
 			    &optional filter
 				      initial-func
-				      mode-hook)
-  (let* ((buffer (fi::make-process-buffer process-name buffer-number))
-	 (default-dir default-directory)
+				      mode-hook
+			    &rest mode-hook-arguments)
+  (let* ((buffer-name
+	  (cond ((stringp buffer-name) buffer-name)
+		(t (let ((name (concat "*" process-name "*")))
+		     (if (numberp buffer-name)
+			 (fi::buffer-number-to-name name buffer-name)
+		       name)))))
+	 (buffer (or (get-buffer buffer-name)
+		     (get-buffer-create buffer-name)))
 	 (buffer-name (buffer-name buffer))
 	 (process (get-buffer-process buffer))
 	 (runningp (fi:process-running-p process))
@@ -515,7 +536,7 @@ are read from the minibuffer."
     
     (if runningp
 	(goto-char (point-max))
-      (setq default-directory default-dir)
+      (setq default-directory process-directory)
       (if process (delete-process process))
       (fi::set-environment fi:subprocess-env-vars)
       (setq process
@@ -541,7 +562,7 @@ are read from the minibuffer."
       (condition-case ()
 	  (let ((saved-input-ring fi::input-ring)
 		(saved-input-ring-yank-pointer fi::input-ring-yank-pointer))
-	    (funcall mode-function mode-hook)
+	    (apply mode-function mode-hook mode-hook-arguments)
 	    (setq fi::input-ring saved-input-ring)
 	    (setq fi::input-ring-yank-pointer saved-input-ring-yank-pointer))
 	(error nil))
@@ -551,27 +572,27 @@ are read from the minibuffer."
       (if initial-func (funcall initial-func process)))
     process))
 
-;; Modified to send the protocol :listener
-
-(defvar fi::listener-protocol ':listener)
-
-(defun fi::make-tcp-connection (buffer-number buffer-name mode image-prompt
+(defun fi::make-tcp-connection (buffer-name buffer-number mode image-prompt
 				&optional given-host
 					  given-service
 					  given-password
-					  ipc-version)
+					  given-ipc-version)
 
-  (if (not fi::freshest-common-sublisp-name)
+  (if (not fi:common-lisp-process-name)
       (error "A Common Lisp subprocess has not yet been started."))
-  (let* ((buffer (fi::make-process-buffer buffer-name buffer-number))
+  (let* ((buffer-name
+	  (fi::buffer-number-to-name (concat "*" buffer-name "*")
+				     buffer-number))
+	 (buffer (or (get-buffer buffer-name)
+		     (get-buffer-create buffer-name)))
 	 (default-dir default-directory)
 	 (buffer-name (buffer-name buffer))
 	 (host (or given-host
-		   (fi::get-buffer-host fi::freshest-common-sublisp-name)))
+		   (fi::get-buffer-host fi:common-lisp-process-name)))
 	 (service (or given-service
-		      (fi::get-buffer-port fi::freshest-common-sublisp-name)))
+		      (fi::get-buffer-port fi:common-lisp-process-name)))
 	 (password (or given-password
-		       (fi::get-buffer-password fi::freshest-common-sublisp-name)))
+		       (fi::get-buffer-password fi:common-lisp-process-name)))
 	 (proc (get-buffer-process buffer)))
     
     (funcall fi:display-buffer-function buffer)
@@ -585,7 +606,7 @@ are read from the minibuffer."
       ;; of the process.  This is so that the processes are named similarly
       ;; in Emacs and Lisp.
       ;;
-      (when ipc-version
+      (when given-ipc-version
 	(process-send-string
 	 proc
 	 (format "%s\n" (prin1-to-string fi::listener-protocol))))
@@ -604,54 +625,6 @@ are read from the minibuffer."
       (fi::make-subprocess-variables))
     proc))
 
-(defun fi::make-process-buffer (name number)
-  (let ((buffer-name
-	 (cond
-	   ((not (numberp number))
-	    (concat "*" name "*"))
-	   ((> number 1)
-	    ;; just return the buffer name
-	    (concat "*" name "*<" number ">"))
-	   ((< number 0)
-	    ;; search for the first available buffer
-	    (let (buffer-name n)
-	      (if (not (fi:process-running-p
-			(setq buffer-name (concat "*" name "*"))))
-		  buffer-name
-		(setq n 2)
-		(while (fi:process-running-p
-			(setq buffer-name (concat "*" name "*<" n ">")))
-		  (setq n (+ n 1)))
-		buffer-name)))
-	   (t (concat "*" name "*")))))
-    (or (get-buffer buffer-name)
-	(get-buffer-create buffer-name))))
-
-(defun fi::start-tcp-lisp-interface (process)
-  (send-string
-   process
-   "(progn
-      (princ \";; Starting socket daemon\n\")
-      (force-output)
-      (excl::require :ipc
-                     (merge-pathnames excl::*library-code-pathname* \"ipc\"))
-      (excl::require :emacs
-                     (merge-pathnames excl::*library-code-pathname* \"emacs\"))
-      (apply
-       (find-symbol (symbol-name :start-lisp-listener-daemon) :ipc)
-       #+allegro-v4.1 '(:use-lep t :unix-domain nil)
-       #-allegro-v4.1 nil)
-      (values))\n"))
-
-
-(defun fi::make-subprocess-variables ()
-  (setq fi::input-ring-max fi:default-input-ring-max)
-  (setq fi::shell-directory-stack nil)
-  (setq fi::last-input-search-string "")
-  (setq fi::last-input-start (make-marker))
-  (setq fi::last-input-end (make-marker)))
-
-
 ;;; Sentinel and filter for subprocesses.  The sentinel is currently
 ;;;   not used.
 (defun fi::subprocess-sentinel (process status)
@@ -661,15 +634,6 @@ are read from the minibuffer."
   "Filter output from processes tied to buffers.
 This function implements continuous output to visible buffers."
   (let ((inhibit-quit t))
-    (save-excursion
-      (set-buffer (process-buffer process))
-      (if (and (boundp 'fi::remote-host)
-	       fi::remote-host
-	       (not (or (and fi:use-lep
-			     (lep::lep-open-connection-p))
-			(and (not fi:use-lep)
-			     (fi:backdoor-is-running-p)))))
-	  (setq output (fi::subprocess-control-a-frammis output))))
     (if cruft
 	(setq output (fi::substitute-chars-in-string '((?\r)) output)))
     (let* ((old-buffer (current-buffer))
@@ -739,50 +703,28 @@ This function implements continuous output to visible buffers."
        (stay old-buffer)
        (t (set-buffer old-buffer))))))
 
-(defvar fi::frammis-hook nil
-  "A function or a list of functions to call when we get the rendezvous
-info from Lisp in the Lisp subprocess buffer.")
+(defun fi::buffer-number-to-name (name number)
+  (let ((buffer-name
+	 (cond ((> number 1) (concat name "<" number ">"))
+	       ((< number 0)
+		(let (buffer-name n)
+		  (if (not (fi:process-running-p (setq buffer-name name)))
+		      buffer-name
+		    (setq n 2)
+		    (while (fi:process-running-p
+			    (setq buffer-name (concat name "<" n ">")))
+		      (setq n (+ n 1)))
+		    buffer-name)))
+	       (t name))))
+    (or (get-buffer buffer-name)
+	(get-buffer-create buffer-name))))
 
-(defun fi::subprocess-control-a-frammis (string)
-  (if (and (fi::fast-search-string 1 string)
-	   (string-match
-	    "\\([^\0]*\\)\\(.*\\)\\([^\0]*\\)"
-	    string))
-      (let* ((res (concat
-		   (substring string (match-beginning 1) (match-end 1))
-		   (substring string (match-beginning 3) (match-end 3))))
-	     (command (substring string (match-beginning 2) (match-end 2)))
-	     (xx nil)
-	     (host nil))
-	(setq fi::remote-port
-	  (car (setq xx (read-from-string command nil))))
-	(setq fi::remote-password
-	  (car (setq xx (read-from-string command (cdr xx)))))
-	(setq fi::lisp-case-mode
-	  (car (setq xx (read-from-string (downcase command) (cdr xx)))))
-	;; the following "argument" is optional in that a previous version
-	;; of the ipc.cl didn't provide it
-	(if (setq host
-	      (condition-case ()
-		  (car (setq xx (read-from-string
-				 (fi::frob-case-from-lisp command)
-				 (cdr xx))))
-		(error nil)))
-	    nil)
-	;; This is optional also
-	(setq fi::ipc-version
-	  (condition-case ()
-	      (if (not (eq (cdr xx) (length command))) 
-		  (car (setq xx (read-from-string
-				 (fi::frob-case-from-lisp command)
-				 (cdr xx)))))
-	  (error nil)))
-	(cond ((consp fi::frammis-hook)
-	       (mapcar 'funcall fi::frammis-hook))
-	      (fi::frammis-hook
-	       (funcall fi::frammis-hook)))
-	res)
-    string))
+(defun fi::make-subprocess-variables ()
+  (setq fi::input-ring-max fi:default-input-ring-max)
+  (setq fi::shell-directory-stack nil)
+  (setq fi::last-input-search-string "")
+  (setq fi::last-input-start (make-marker))
+  (setq fi::last-input-end (make-marker)))
 
 (defun fi::subprocess-watch-for-special-commands ()
   "Watch for special commands like, for example, `cd' in a shell."
@@ -793,7 +735,7 @@ info from Lisp in the Lisp subprocess buffer.")
       (save-excursion
 	(goto-char fi::last-input-start)
 	(cond
-	  ((and fi::cl-package-regexp (looking-at fi::cl-package-regexp))
+	  ((and fi:in-package-regexp (looking-at fi:in-package-regexp))
 	   (goto-char (match-end 0))
 	   (cond
 	     ((or (looking-at "[ \t]*[':]\\(.*\\)[ \t]*)")
@@ -893,36 +835,30 @@ info from Lisp in the Lisp subprocess buffer.")
 		      (cd dir)))))))))
     (error nil)))
 
-(defun fi::set-buffer-host (buffer host)
-  "Set the variable fi::remote-host in buffer BUFFER to be HOST."
-  (save-excursion
-    (set-buffer buffer)
-    (setq fi::remote-host host)))
-
 (defun fi::get-buffer-host (buffer)
-  "Given BUFFER return the value in this buffer of fi::remote-host."
+  "Given BUFFER return the value in this buffer of fi::lisp-host."
   (save-excursion
     (set-buffer buffer)
-    fi::remote-host))
+    fi::lisp-host))
 
 (defun fi::get-buffer-port (buffer)
-  "Given BUFFER return the value in this buffer of fi::remote-port."
+  "Given BUFFER return the value in this buffer of fi::lisp-port."
   (save-excursion
     (set-buffer buffer)
-    fi::remote-port))
+    fi::lisp-port))
 
 (defun fi::get-buffer-password (buffer)
-  "Given BUFFER returns the values in this buffer of fi::remote-password"
+  "Given BUFFER returns the values in this buffer of fi::lisp-password"
   (save-excursion
     (set-buffer buffer)
-    fi::remote-password))
+    fi::lisp-password))
 
 
 (defun fi::get-buffer-ipc-version (buffer)
-  "Given BUFFER returns the values in this buffer of fi::remote-password"
+  "Given BUFFER returns the values in this buffer of fi::lisp-password"
   (save-excursion
     (set-buffer buffer)
-    fi::ipc-version))
+    fi::lisp-ipc-version))
 
 (defun fi::env-vars ()
   (concat (mapconcat '(lambda (x)
