@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-su.el,v 1.5 1991/02/21 22:01:14 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-su.el,v 1.6 1991/02/27 17:20:42 layer Exp $
 
 (defvar fi:su-mode-map nil
   "The su major-mode keymap.")
@@ -133,16 +133,15 @@ available buffer name is chosen."
   "Filter for `fi:su' subprocess buffers.
 Watch for the first shell prompt from the su, then send the
 string bound to fi:su-initial-input, and turn ourself off."
-  (let ((old-buffer (fi::subprocess-filter process output t)))
-    (cond
-     ((string-match "assword" output)
-      (setq password (fi::read-password))
-      (send-string process (concat password "\n")))
-     (t
-      (if (save-excursion (beginning-of-line)
-			  (looking-at subprocess-prompt-pattern))
-	  (progn
-	    (set-process-filter process 'fi::subprocess-filter)
-	    (if fi:su-initial-input
-		(send-string process fi:su-initial-input))))
-      (if old-buffer (set-buffer old-buffer))))))
+  (save-excursion
+    (fi::subprocess-filter process output t)
+    (switch-to-buffer (process-buffer process))
+    (cond ((string-match "assword" output)
+	   (setq password (fi::read-password))
+	   (send-string process (concat password "\n")))
+	  (t (if (save-excursion (beginning-of-line)
+				 (looking-at subprocess-prompt-pattern))
+		 (progn
+		   (set-process-filter process 'fi::subprocess-filter)
+		   (if fi:su-initial-input
+		       (send-string process fi:su-initial-input))))))))
