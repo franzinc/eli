@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lze.el,v 1.37 2003/09/29 23:28:23 layer Exp $
+;; $Id: fi-lze.el,v 1.38 2003/10/13 23:03:36 layer Exp $
 ;;
 ;; Code the implements evaluation in via the backdoor
 
@@ -168,8 +168,11 @@ with this buffer."
 	 ;; bug3330 smh 22jun94
 	 :text (fi::defontify-string (buffer-substring start end))
 	 :echo fi:echo-evals-from-buffer-in-listener-p
-	 :partialp (not (and (eq (max start end) (point-max))
+	 :partialp (and (not (and (eq (max start end) (point-max))
 			     (eq (min start end) (point-min))))
+			;; This value will communicate the starting
+			;; buffer position to cl.
+			start)
 	 :pathname (buffer-file-name)
 	 :compilep (if compilep t nil)
 	 :return-string (eq 'minibuffer (car fi:pop-up-temp-window-behavior)))

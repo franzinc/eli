@@ -7,12 +7,20 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.4.4
+
+2003-10-13  Kevin Layer  <layer@crikey>
+
+	* fi-lze.el: rfe5674: for print correct file position in eli
+	  incremental compile warnings solution on the lisp side
+
+*******************************************************************************
 2.4.3
 
 2003-10-13    <layer@HOBART>
 
     for rfe5678: change emacs-lisp rendezvous on windows to be more like *NIX
-	* fi-subproc.el: lots of changes to make eli startup on windows
+>>>	* fi-subproc.el: lots of changes to make eli startup on windows
 	  more like *NIX; also made remote startups of *NIX lisps on
 	  windows emacs work--built-in win2k rsh.exe seems to work, as
 	  does Cygwin rsh.exe.  fi:connect-to-windows is gone, since it's
