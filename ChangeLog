@@ -16,7 +16,7 @@ post-6.2 release changes:
 
 2002-10-24  Kevin Layer  <layer@crikey>
 
-	* fu-subproc.el: bug12600: add `.' to lisp prompt regexp
+	* fi-subproc.el: bug12600: add `.' to lisp prompt regexp
 
 2002-09-27    <layer@HOBART>
 
