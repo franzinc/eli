@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.4 1991/02/22 00:44:04 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-composer.el,v 1.5 1991/03/12 18:29:39 layer Exp $
 ;;
 ;;;;;;;;;;;;;;;;;; Composer 2 related stuff
 ;;; Perhaps some of this is generally useful
@@ -32,7 +32,7 @@
 ;;; Perhaps on Epoch this should do something different, such as create a new window
 
 (defun composer::make-listener ()
-  (fi:tcp-common-lisp -1))
+  (fi:open-lisp-listener -1))
 
 (defun composer::edit-file-in-editor ()
   (call-interactively 'find-file))

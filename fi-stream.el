@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-stream.el,v 1.1 1991/01/29 15:24:57 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-stream.el,v 1.2 1991/03/12 18:29:25 layer Exp $
 ;;
 
 (defun lep::display-string-in-buffer (string buffer)
@@ -35,5 +35,5 @@
 
 (defun lep::create-listener-stream ()
   (let ((fi::listener-protocol ':stream))
-    (send-string (fi:tcp-common-lisp -1)
+    (send-string (fi:open-lisp-listener -1)
 		 (format "%d\n" (session-id session)))))
