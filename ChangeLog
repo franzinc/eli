@@ -7,6 +7,14 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.7
+
+Wed Jul  1 17:15:27 1998  Kevin Layer  <layer@ultra>
+
+	* fi-subproc.el: bug2930: handling of multiple
+	*background-interaction* buffers; fix doc string
+
+*******************************************************************************
 2.0.21.6
 
 Wed Jun 24 10:22:28 1998  Kevin Layer  <layer@ultra>

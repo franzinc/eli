@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 1.200.10.7 1998/06/24 23:06:54 layer Exp $
+;; $Id: fi-subproc.el,v 1.200.10.8 1998/07/02 15:22:27 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -344,7 +344,10 @@ from the variables:
 	fi:common-lisp-image-arguments
 	fi:common-lisp-host
 	fi:common-lisp-image-file
-and the values read are saved in these variables for later use as defaults.
+and the values read are saved in these variables for later use as defaults,
+except that the directory argument does not side-effect the variable
+fi:common-lisp-directory.
+
 After the first time or when no prefix argument is given, the defaults are
 used and no information is read from the minibuffer.
 
@@ -1253,10 +1256,11 @@ This function implements continuous output to visible buffers."
 	 (cond ((> number 1) (concat name "<" number ">"))
 	       ((< number 0)
 		(let (n)
-		  (if (not (fi:process-running-p name name))
+		  (if (null (fi:process-running-p name name))
 		      name
 		    (setq n 2)
-		    (while (fi:process-running-p (concat name "<" n ">"))
+		    (while (fi:process-running-p
+			    (setq name (concat name "<" n ">")))
 		      (setq n (+ n 1)))
 		    name)))
 	       (t name))))
