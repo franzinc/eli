@@ -19,7 +19,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.129 1991/10/03 12:45:41 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.130 1991/10/10 19:51:47 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -1060,7 +1060,15 @@ This function implements continuous output to visible buffers."
 	  (mapconcat '(lambda (x) (car x)) fi:subprocess-env-vars " ")
 	  "; "))
 
-(defun fi::set-environment (valist)
+(defun fi::set-environment-use-setenv (valist)
+  (let (item val)
+    (while valist
+      (setq item (car valist))
+      (setq val (or (eval (cdr item)) ""))
+      (setenv (car item) val)
+      (setq valist (cdr valist)))))
+
+(defun fi::set-environment-use-process-environment (valist)
   (let ((v valist))
     (while v
       (let ((pe process-environment)
@@ -1077,3 +1085,7 @@ This function implements continuous output to visible buffers."
 		    process-environment))))
       (setq v (cdr v)))))
 
+(fset 'fi::set-environment
+      (if (boundp 'process-environment)
+	  (symbol-function 'fi::set-environment-use-process-environment)
+	(symbol-function 'fi::set-environment-use-setenv)))

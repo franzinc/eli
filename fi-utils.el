@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.25 1991/10/03 12:45:54 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-utils.el,v 1.26 1991/10/10 19:51:43 layer Exp $
 
 ;;; Misc utilities
 
@@ -264,14 +264,6 @@ to process.c to run the Franz Inc. emacs-lisp interface.  Please
 refer to the installation guide for further information."))
     (wrong-type-argument
      nil))
-  (if (not (boundp 'process-environment))
-      (fi:error
-       "
-process-environment is does not have a value.  This means that the C
-pre-processor variable MAINTAIN_ENVIRONMENT was defined in some header file
-when emacs was built (maybe config.h).  Certain features of the emacs-lisp
-interface rely on process-environment being maintained by emacs.  Please
-rebuild emacs with MAINTAIN_ENVIRONMENT undefined."))
   (if (interactive-p)
       (message "everything looks fine!")))
 
