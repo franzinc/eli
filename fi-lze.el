@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.17 1991/10/10 18:53:15 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-lze.el,v 1.18 1991/11/11 14:43:33 layer Exp $
 ;;
 ;; Code the implements evaluation in via the backdoor
 
@@ -54,24 +54,27 @@
   (fi::note-background-request compilep)
   (let ((buffer (current-buffer)))
     (fi::make-request
-     (lep::evaluation-request
-      :text (buffer-substring start end)
-      :echo fi:echo-evals-from-buffer-in-listener-p
-      :partialp (not (and (eq (max start end) (point-max))
-			  (eq (min start end) (point-min))))
-      :pathname (buffer-file-name)
-      :compilep (if compilep t nil))
-     ((buffer compilep) (results)
-      (let ((save-buffer (current-buffer)))
-	(set-buffer buffer)
-	(if results
-	    (fi:show-some-text nil results)
-	  (fi::note-background-reply (list compilep)))
-	(if (not (eq save-buffer buffer))
-	    (set-buffer save-buffer))))
-     (() (error)
-      (message "Error occurred during evaluation: %s" error))
-     ignore-package)))
+	(lep::evaluation-request
+	 :text (buffer-substring start end)
+	 :echo fi:echo-evals-from-buffer-in-listener-p
+	 :partialp (not (and (eq (max start end) (point-max))
+			     (eq (min start end) (point-min))))
+	 :pathname (buffer-file-name)
+	 :compilep (if compilep t nil))
+      ((buffer compilep) (results)
+	(save-excursion
+	  (set-buffer buffer)
+	  (if results
+	      (fi:show-some-text nil results)
+	    (fi::note-background-reply (list compilep)))))
+      ((buffer compilep) (error)
+	(save-excursion
+	  (set-buffer buffer)
+	  (fi::note-background-reply (list compilep))
+	  (message "Error during %s: %s"
+		   (if compilep "compile" "eval")
+		   error)))
+      ignore-package)))
 
 (defun fi:lisp-eval-defun (compilep)
   "Send the current top-level (or nearest previous) form to the Lisp
