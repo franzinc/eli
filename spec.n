@@ -1,7 +1,7 @@
 	      Franz Inc. GNU Emacs/Common Lisp Interface
 			     Release 1.4beta
 
-;; $Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.43 1989/08/28 20:12:33 layer Rel $
+;; $Header: /repo/cvs.copy/eli/Attic/spec.n,v 1.44 1990/08/31 23:59:30 layer Exp $
 
 This document is a specification of the Franz Inc. GNU Emacs interface
 to Common Lisp, which is written entirely in GNU Emacs Lisp (for GNU
@@ -465,7 +465,7 @@ following group of forms in your .clinit.cl (in your home directory):
     ;; this will load the ipc package and require you to start it manually
     ;; with the top-level command `:listen'.
     ;;
-    (tpl:alias "listen" ()
+    (tpl:alias "ipc" ()
       (require :ipc)
       (require :emacs)
       (funcall (find-symbol (symbol-name :start-lisp-listener-daemon)
