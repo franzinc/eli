@@ -1,4 +1,26 @@
-$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.2 1991/03/12 18:31:03 layer Exp $
+$Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.3 1991/03/15 12:42:07 layer Exp $
+===============================================================================
+????fi:list-callers or fi:lisp-who-calls????
+from composer.el:
+	lep::describe-class
+	lep::describe-function
+from lep.el:
+	fi:bug-report
+	fi:kill-definition
+	fi:edit-generic-function-methods
+	fi:edit-callers
+	fi:edit-callees
+	fi:list-callers
+from changes.el:
+	fi:list-buffer-changed-definitions
+	fi:list-changed-definitions
+	fi:eval-buffer-changed-definitions
+	fi:eval-changed-definitions
+	fi:compile-buffer-changed-definitions
+	fi:compile-changed-definitions
+	fi:copy-buffer-changed-definitions
+	fi:copy-changed-definitions
+	fi:compare-source-files
 ===============================================================================
 			     Introduction
 
@@ -8,6 +30,15 @@ $Header: /repo/cvs.copy/eli/Attic/UserGuide.n,v 1.2 1991/03/12 18:31:03 layer Ex
    running of Common Lisp programs, and contains enhancements to GNU
    Emacs which allow a tight coupling between Emacs and Lisp, very
    similar to those which used to be available only on Lisp machines.
+
+***
+more general intro stuff
+	philosphy of our approach
+	comparison with lisp machine/zmacs (in-lisp vs. multiple
+		process model)
+	
+***
+
 
    This chapter discusses the setup and use of the Emacs-Lisp
    interface.
@@ -191,7 +222,7 @@ Key bindings in Common Lisp subprocess mode (fi:inferior-common-lisp-mode)
 		ESC T		fi:toggle-trace-definition
 		ESC M		fi:lisp-macroexpand
 		ESC F		fi:lisp-function-documentation
-		ESC D		fi:lisp-describe
+		ESC D		fi:describe-symbol
 		ESC C		fi:lisp-who-calls
 		ESC A		fi:lisp-arglist
 		ESC TAB		fi:lisp-complete-symbol
@@ -364,7 +395,6 @@ Functions and Variables for Interacting with a Common Lisp subprocess
 %% fi:common-lisp-image-name
 %% fi:common-lisp-image-arguments
 %% fi:common-lisp-host
-%% fi:common-lisp-process-name
 %% fi:common-lisp-prompt-pattern
 %% fi:start-lisp-interface-function
 %% fi:start-lisp-interface-hook
@@ -395,6 +425,23 @@ Functions and Variables for Interacting with a Common Lisp subprocess
 %% fi:subprocess-send-flush		fi:inferior-common-lisp-mode-map
 %% fi:subprocess-show-output		fi:inferior-common-lisp-mode-map
 %% fi:subprocess-suspend		fi:inferior-common-lisp-mode-map
+
+%% fi:scan-stack
+%% fi:scan-stack-mode
+%% lep:ss-continue			lep:scan-stack-mode-map
+%% lep:ss-disassemble			lep:scan-stack-mode-map
+%% lep:ss-edit				lep:scan-stack-mode-map
+%% lep:ss-hide-help-text		lep:scan-stack-mode-map
+%% lep:ss-locals			lep:scan-stack-mode-map
+%% lep:ss-pop				lep:scan-stack-mode-map
+%% lep:ss-pprint			lep:scan-stack-mode-map
+%% lep:ss-quit				lep:scan-stack-mode-map
+%% lep:ss-reset				lep:scan-stack-mode-map
+%% lep:ss-restart			lep:scan-stack-mode-map
+%% lep:ss-return			lep:scan-stack-mode-map
+%% lep:ss-revert-stack			lep:scan-stack-mode-map
+%% lep:ss-toggle-all			lep:scan-stack-mode-map
+%% lep:ss-unhide-help-text		lep:scan-stack-mode-map
 
 %% fi:lisp-listener-mode
 %% fi:tcp-lisp-listener-interrupt-process	fi:lisp-listener-mode-map
@@ -600,7 +647,7 @@ Information sharing between Common Lisp and Emacs
 
       C-c ?		fi:lisp-apropos
       ESC F		fi:lisp-function-documentation
-      ESC D		fi:lisp-describe
+      ESC D		fi:describe-symbol
       ESC C		fi:lisp-who-calls
       ESC A		fi:lisp-arglist
 		  The above group of functions read a function name
@@ -644,7 +691,7 @@ Functions and Variables for Editing with Common Lisp programs
 %% fi:lisp-apropos			fi:common-lisp-mode-map
 %% fi:lisp-arglist			fi:common-lisp-mode-map
 %% fi:lisp-complete-symbol 		fi:common-lisp-mode-map
-%% fi:lisp-describe			fi:common-lisp-mode-map
+%% fi:describe-symbol			fi:common-lisp-mode-map
 %% fi:lisp-eval-current-buffer		fi:common-lisp-mode-map
 %% fi:lisp-eval-defun			fi:common-lisp-mode-map
 %% fi:lisp-eval-last-sexp		fi:common-lisp-mode-map
@@ -661,6 +708,13 @@ Functions and Variables for Editing with Common Lisp programs
 %% fi:super-paren			fi:common-lisp-mode-map
 %% fi:toggle-trace-definition		fi:common-lisp-mode-map
 
+%% fi:definition-mode
+%% fi:list-buffer-definitions
+%% fi:definition-mode-goto-definition	fi:definition-mode-map
+%% fi:definition-mode-goto-next		fi:definition-mode-map
+%% fi:definition-mode-goto-previous	fi:definition-mode-map
+%% fi:definition-mode-quit		fi:definition-mode-map
+
 %% fi:common-lisp-file-types
 %% fi:echo-evals-from-buffer-in-listener-p
 %% fi:fill-paragraph
@@ -674,23 +728,42 @@ Functions and Variables for Editing with Common Lisp programs
 %% fi:source-info-not-found-hook
 
 ===============================================================================
+		    Debugging Common Lisp Programs
+
+   The Emacs-Lisp interface is a rich programming environment for the
+construction and debugging of Common Lisp programs.  The debugging
+aids are classified into several categories:
+
+	* querying the Common Lisp environment for information
+	* a mode for debugging Common Lisp processes from within Emacs
+	* additional lisp listeners for debugging multiprocessing applications
+	* incremental redefinition from Common Lisp source buffers
+	* misc
+		- toggle-trace
+		- input-ring to minimize typing
+	* definition-mode & fi:list-buffer-definitions
+	* changed definitions
+	* who-calls, edit-callers, etc, etc
+	* ed
+
+===============================================================================
 				CLMan
 
 
-%% fi:clman
-%% fi:clman-mode
-%% fi:clman-search-forward-see-alsos		fi:clman-mode-map
-%% fi:clman-flush-doc				fi:clman-mode-map
+  %% fi:clman
+  %% fi:clman-mode
+  %% fi:clman-search-forward-see-alsos		fi:clman-mode-map
+  %% fi:clman-flush-doc				fi:clman-mode-map
 
-%% fi:clman-apropos
-%% fi:clman-displaying-buffer
-%% fi:clman-displaying-function
-%% fi:clman-find-file
-%% fi:clman-next-entry
-%% fi:clman-package-help
-%% fi:clman-package-info
-%% fi:clman-package-nicknames
-%% fi:clman-view-file
+  %% fi:clman-apropos
+  %% fi:clman-displaying-buffer
+  %% fi:clman-displaying-function
+  %% fi:clman-find-file
+  %% fi:clman-next-entry
+  %% fi:clman-package-help
+  %% fi:clman-package-info
+  %% fi:clman-package-nicknames
+  %% fi:clman-view-file
 
 ===============================================================================
 			     Shell modes
@@ -724,6 +797,7 @@ Functions and Variables for Editing with Common Lisp programs
 %% fi:telnet-image-name
 %% fi:telnet-initial-input
 %% fi:telnet-prompt-pattern
+%% fi:telnet-start-garbage-filter
 
 %% fi:rlogin
 %% fi:rlogin-mode
