@@ -1,4 +1,4 @@
-;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.13 1988/03/19 18:48:59 layer Exp $
+;;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.14 1988/03/20 01:06:15 layer Exp $
 ;;;
 ;;; Low-level subprocess mode guts
 
@@ -27,26 +27,26 @@ buffer.")
   "List of directories saved by pushd in this buffer's shell.")
 
 (defvar fi:shell-popd-regexp ":?popd"
-  "*Regexp to match subshell commands equivalent to popd.
+  "Regexp to match subshell commands equivalent to popd.
 This variable is buffer-local.  If nil, no automatic directory changes
 will be made.")
 
 (defvar fi:shell-pushd-regexp ":?pushd"
-  "*Regexp to match subshell commands equivalent to pushd.
+  "Regexp to match subshell commands equivalent to pushd.
 This variable is buffer-local.  If nil, no automatic directory changes
 will be made.")
 
 (defvar fi:shell-cd-regexp ":?cd"
-  "*Regexp to match subshell commands equivalent to cd.
+  "Regexp to match subshell commands equivalent to cd.
 This variable is buffer-local.  If nil, no automatic directory changes
 will be made.")
 
 (defvar fi:subprocess-map-nl-to-cr nil
-  "*If t, map NL (newline) to CR (carriage-return) in input to fi::subprocess.
+  "If t, map NL (newline) to CR (carriage-return) in input to fi::subprocess.
 This is a buffer-local symbol.")
 
 (defvar fi:subprocess-continuously-show-output-in-visible-buffer t
-  "*If t, output from a subprocess to a visible buffer is continuously
+  "If t, output from a subprocess to a visible buffer is continuously
 shown.  If a subprocess buffer is visible and the window point is beyond
 the process output marker, output to that buffer from its associated
 process will be continuously visible.  If the window point is before the
@@ -54,77 +54,77 @@ process output marker, the window is not updated.  This is a buffer-local
 symbol.")
 
 (defvar fi:subprocess-enable-superkeys nil
-  "*If t, certain keys become `superkeys' in subprocess buffers.
+  "If t, certain keys become `superkeys' in subprocess buffers.
 The superkeys are C-a, C-d, C-o, C-u, C-w, C-z, and C-\\, which will behave
 as they would in the current local keymap when typed at the end
 of a subprocess buffer.  If typed elsewhere, these keys have their
 normal global binding.  This is a buffer-local symbol.")
 
 (defvar fi:explicit-shell-file-name nil
-  "*Explicit Shell image to invoke from (shell).")
+  "Explicit Shell image to invoke from (fi:shell).")
 (defvar fi:explicit-rlogin-file-name nil
-  "*Explicit remote-login image to invoke from (fi:rlogin).")
+  "Explicit remote-login image to invoke from (fi:rlogin).")
 (defvar fi:explicit-lisp-file-name nil
-  "*Explicit Lisp image to invoke from (lisp).")
+  "Explicit Lisp image to invoke from (fi:lisp).")
 (defvar fi:explicit-franz-lisp-file-name nil
-  "*Explicit Franz Lisp image to invoke from (franz-lisp).")
+  "Explicit Franz Lisp image to invoke from (fi:franz-lisp).")
 (defvar fi:explicit-common-lisp-file-name nil
-  "*Explicit Common Lisp image to invoke from (common-lisp).")
+  "Explicit Common Lisp image to invoke from (fi:common-lisp).")
 (defvar fi:explicit-shell-image-arguments nil
-  "*Explicit Shell image arguments when invoked from (shell).")
+  "Explicit Shell image arguments when invoked from (fi:shell).")
 (defvar fi:explicit-rlogin-image-arguments nil
-  "*Explicit remote-login image arguments when invoked from (fi:rlogin).")
+  "Explicit remote-login image arguments when invoked from (fi:rlogin).")
 (defvar fi:explicit-lisp-image-arguments nil
-  "*Explicit Lisp image arguments when invoked from (lisp).")
+  "Explicit Lisp image arguments when invoked from (fi:lisp).")
 (defvar fi:explicit-franz-lisp-image-arguments nil
-  "*Explicit Franz Lisp image arguments when invoked from (franz-lisp).")
+  "Explicit Franz Lisp image arguments when invoked from (fi:franz-lisp).")
 (defvar fi:explicit-common-lisp-image-arguments nil
-  "*Explicit Common Lisp image arguments when invoked from (common-lisp).")
+  "Explicit Common Lisp image arguments when invoked from (fi:common-lisp).")
 
 (defvar fi:default-shell-file-name "sh"
-  "*Default Shell image to invoke from (shell).")
+  "Default Shell image to invoke from (fi:shell).")
 (defvar fi:default-rlogin-file-name "rlogin"
-  "*Default remote-login image to invoke from (fi:rlogin).")
+  "Default remote-login image to invoke from (fi:rlogin).")
 (defvar fi:default-lisp-file-name "lisp"
-  "*Default Lisp image to invoke from (lisp).")
+  "Default Lisp image to invoke from (fi:lisp).")
 (defvar fi:default-franz-lisp-file-name "lisp"
-  "*Default Franz Lisp image to invoke from (franz-lisp).")
+  "Default Franz Lisp image to invoke from (fi:franz-lisp).")
 (defvar fi:default-common-lisp-file-name "cl"
-  "*Default Common Lisp image to invoke from (common-lisp).")
+  "Default Common Lisp image to invoke from (fi:common-lisp).")
 (defvar fi:default-shell-image-arguments '("-i")
-  "*Default Shell image arguments when invoked from (shell).")
+  "Default Shell image arguments when invoked from (fi:shell).")
 (defvar fi:default-rlogin-image-arguments nil
-  "*Default remote-login image arguments when invoked from (fi:rlogin).")
+  "Default remote-login image arguments when invoked from (fi:rlogin).")
 (defvar fi:default-lisp-image-arguments nil
-  "*Default Lisp image arguments when invoked from (lisp).")
+  "Default Lisp image arguments when invoked from (fi:lisp).")
 (defvar fi:default-franz-lisp-image-arguments nil
-  "*Default Franz Lisp image arguments when invoked from (franz-lisp).")
+  "Default Franz Lisp image arguments when invoked from (fi:franz-lisp).")
 (defvar fi:default-common-lisp-image-arguments nil
-  "*Default Common Lisp image arguments when invoked from (common-lisp).")
+  "Default Common Lisp image arguments when invoked from (fi:common-lisp).")
 
 (defvar fi:subprocess-write-quantum 120
   "Maximum size in bytes of a single write request to a subprocess.")
 
 (defvar fi:shell-prompt-pattern
   "^[-_.a-zA-Z0-9]*[#$%>] *"
-  "*Regexp used by Newline command in shell mode to match subshell prompts.
+  "Regexp used by Newline command in shell mode to match subshell prompts.
 Anything from beginning of line up to the end of what this pattern matches
 is deemed to be prompt, and is not re-executed.")
 
 (defvar fi:common-lisp-prompt-pattern
   "^\\(\\[[0-9]+c?\\] \\|\\[step\\] \\)?<[-A-Za-z]* ?[0-9]*> "
-  "*Regexp for Newline command in inferior-lisp mode to match Common Lisp
+  "Regexp for Newline command in inferior-lisp mode to match Common Lisp
 prompts. Anything from beginning of line up to the end of what this pattern
 matches is deemed to be prompt, and is not re-executed.")
 
 (defvar fi:franz-lisp-prompt-pattern
   "^[-=]> +\\|^c{[0-9]+} +"
-  "*Regexp used by Newline command in inferior-lisp mode to match Franz
+  "Regexp used by Newline command in inferior-lisp mode to match Franz
 Lisp prompts. Anything from beginning of line up to the end of what this
 pattern matches is deemed to be prompt, and is not re-executed.")
 
 (defvar fi:lisp-prompt-pattern fi:common-lisp-prompt-pattern
-  "*Regexp used by Newline command in inferior-lisp mode to match Lisp
+  "Regexp used by Newline command in inferior-lisp mode to match Lisp
 prompts. Anything from beginning of line up to the end of what this pattern
 matches is deemed to be prompt, and is not re-executed.")
 
@@ -173,6 +173,19 @@ the newly-created buffer if defined."
   (set-process-filter (get-buffer-process (current-buffer))
 		      'fi::rlogin-filter)
   (run-hooks 'fi:rlogin-subprocess-hook))
+
+(defun fi:lisp ()
+  "Run an inferior lisp, with input/output through buffer *lisp*.
+See `fi::subprocess'."
+  (interactive)
+  (fi::subprocess "lisp" "lisp"))
+
+(defun fi:another-lisp ()
+  "Run a new inferior lisp, with input/output through buffer *lisp-N*.
+This function always creates a new subprocess and buffer.  See
+`fi::subprocess'."
+  (interactive)
+  (fi::subprocess "lisp" "lisp" nil t))
 
 (defun fi:common-lisp (&optional tcp-lisp)
   "With no prefix arg run a Common Lisp :subprocess with input/output
