@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 ;;
-;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.8 1991/02/28 23:05:43 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-db.el,v 1.9 1991/03/07 14:57:48 layer Exp $
 ;;
 
 (defconst lep:current-frame-regexp "^ ->")
@@ -37,17 +37,17 @@
   C-cC-p :pop
   C-cC-r :reset
   .      make frame under the point the current frame
-  D      disassemble the function associated with the current frame
-  R      restart the current frame (give prefix to specify different form)
-  a      toggle all frames visible (by default a subset are visible)
+  D      disassemble the function
+  R      restart function (give prefix to specify different form)
+  a      toggle visibility of all frames (by default a subset are visible)
   d      next line
-  e      edit source corresponding to function in the current frame
+  e      edit source corresponding to function
   g      revert stack from Lisp
   h      Causes this help text to become visible
-  l      display the lexical variables for the current frame
-  p      pretty print the current frame
+  l      display the lexical variables
+  p      pretty print
   q      switch back to \"%s\" buffer
-  r      return a value from the current frame
+  r      return a value
   u      previous line             
 
 Type SPACE to hide this help summary.
@@ -139,19 +139,20 @@ Type SPACE to hide this help summary.
 
 (defun lep:ss-reset ()
   (interactive)
-  (lep::do-tpl-command-on-process t "reset"))
+  (lep::do-tpl-command-on-process t nil "reset"))
 
 (defun lep:ss-continue ()
   (interactive)
-  (lep::do-tpl-command-on-process t "continue"))
+  (lep::do-tpl-command-on-process t nil "continue"))
 
 (defun lep:ss-pop ()
   (interactive)
-  (lep::do-tpl-command-on-process t "pop"))
+  (lep::do-tpl-command-on-process t nil "pop"))
 
 (defun lep:ss-return ()
   (interactive)
   (lep::do-tpl-command-on-process
+   t
    t
    "return"
    (list 'read-from-string
@@ -161,6 +162,7 @@ Type SPACE to hide this help summary.
   (interactive "P")
   (lep::do-tpl-command-on-process
    t
+   t
    "restart"
    (when new-form
      (list 'read-from-string
@@ -168,7 +170,7 @@ Type SPACE to hide this help summary.
 
 (defun lep:ss-edit ()
   (interactive)
-  (lep::do-tpl-command-on-process 'make-current "edit"))
+  (lep::do-tpl-command-on-process nil t "edit"))
 
 (defun lep:ss-get-new-stack ()
   (interactive)
@@ -183,9 +185,13 @@ Type SPACE to hide this help summary.
   (interactive)
   (let ((offset (lep::offset-from-current-frame)))
     (if offset
-	(if (> offset 0)
-	    (lep::do-tpl-command-on-process nil "dn" offset ':zoom nil)
-	  (lep::do-tpl-command-on-process nil "up" (- offset) ':zoom nil)))))
+	(progn
+	  (if (> offset 0)
+	      (lep::do-tpl-command-on-process
+	       nil nil "dn" offset ':zoom nil)
+	    (lep::do-tpl-command-on-process
+	     nil nil "up" (- offset) ':zoom nil))
+	  (lep::make-current offset)))))
 
 (defun lep:ss-quit ()
   (interactive)
@@ -259,18 +265,20 @@ Type SPACE to hide this help summary.
 ;;; internals
 ;;;
 
-(defun lep::do-tpl-command-on-process (done command &rest args)
+(defun lep::do-tpl-command-on-process (done set-current-frame
+				       command &rest args)
   (let ((process-name (lep::buffer-process))
-	(offset (lep::offset-from-current-frame)))
+	(offset (when set-current-frame
+		  (lep::offset-from-current-frame))))
     (make-request (lep::tpl-command-session
 		   :process-name process-name
 		   :command command
 		   :args args
-		   :done (eq t done)
-		   :offset (when done offset))
+		   :done done
+		   :offset offset)
 		  ;; Normal continuation
 		  ((offset) (done)
-		   (if (eq t done)
+		   (if done
 		       (lep:ss-quit)
 		     (when offset (lep::make-current offset))))
 		  ;; Error continuation
