@@ -24,7 +24,7 @@
 ;;	emacs-info%franz.uucp@Berkeley.EDU
 ;;	ucbvax!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-shell.el,v 1.9 1988/07/15 18:32:39 layer Rel $
+;; $Header: /repo/cvs.copy/eli/fi-shell.el,v 1.10 1990/08/31 23:48:29 layer Exp $
 
 (defvar fi:shell-mode-map nil
   "The shell major-mode keymap.")
@@ -35,7 +35,7 @@
 (defvar fi:shell-image-name "csh"
   "*Default Shell image to invoke from (fi:shell).  If the value
 is a string then it names the image file or image path that
-`fi:common-lisp' invokes.  Otherwise, the value of this variable is given
+`fi:shell' invokes.  Otherwise, the value of this variable is given
 to funcall, the result of which should yield a string which is the image
 name or path.")
 
