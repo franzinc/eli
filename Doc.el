@@ -1,3 +1,5 @@
+;; $Header: /repo/cvs.copy/eli/Doc.el,v 1.16 1989/08/28 20:13:59 layer Rel $
+
 (setq load-path
   (cons (file-name-directory (directory-file-name default-directory))
 	load-path))
