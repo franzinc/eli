@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 1.112.20.4 1999/01/28 04:37:57 layer Exp $
+;; $Id: fi-keys.el,v 1.112.20.5 1999/02/05 03:52:08 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -1111,17 +1111,21 @@ window, leaving the point unchanged."
     (goto-char p)))
 
 (defvar fi::toggle-to-lisp-last-lisp-buffer nil)
-(defvar fi::toggle-to-lisp-common-lisp-buffer nil)
+(defvar fi::toggle-to-lisp-common-lisp-buffer-name nil)
 
 (defun fi:toggle-to-lisp ()
   "On each invocation, switch back and forth between the Lisp subprocess
 buffer and the source buffer from which this function was invoked."
   (interactive)
-  (when (null fi::toggle-to-lisp-common-lisp-buffer)
+  (when (and fi::toggle-to-lisp-common-lisp-buffer-name
+	     (null (get-buffer fi::toggle-to-lisp-common-lisp-buffer-name)))
+    (setq fi::toggle-to-lisp-common-lisp-buffer-name))
+  (when (null fi::toggle-to-lisp-common-lisp-buffer-name)
     (or (and fi::common-lisp-backdoor-main-process-name
-	     (setq fi::toggle-to-lisp-common-lisp-buffer
-	       (process-buffer
-		(get-process fi::common-lisp-backdoor-main-process-name))))
+	     (setq fi::toggle-to-lisp-common-lisp-buffer-name
+	       (buffer-name
+		(process-buffer
+		 (get-process fi::common-lisp-backdoor-main-process-name)))))
 	(error "Common Lisp process is not running.")))
   (let (target-buffer)
     (cond ((memq major-mode '(fi:inferior-common-lisp-mode
@@ -1130,5 +1134,5 @@ buffer and the source buffer from which this function was invoked."
 	       (error "There is no previous source buffer.")))
 	  (t ;; a lisp source buffer
 	   (setq fi::toggle-to-lisp-last-lisp-buffer (current-buffer))
-	   (setq target-buffer fi::toggle-to-lisp-common-lisp-buffer)))
+	   (setq target-buffer fi::toggle-to-lisp-common-lisp-buffer-name)))
     (funcall fi:display-buffer-function target-buffer)))

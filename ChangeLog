@@ -7,6 +7,13 @@ For more detailed instructions on filling in the ChangeLog form, see
 	* <changes go here...>
 
 *******************************************************************************
+2.0.21.16.10
+
+1999-02-04  Kevin Layer  <layer@ultra>
+
+	* fi-keys.el: fix fi:toggle-to-lisp further (deleted buffer case)
+
+*******************************************************************************
 2.0.21.16.9
 
 1999-02-02  Kevin Layer  <layer@ultra>
