@@ -24,7 +24,7 @@
 ;;	emacs-info@franz.com
 ;;	uunet!franz!emacs-info
 
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.73 1990/10/17 16:44:23 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.74 1990/11/29 14:12:31 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -318,7 +318,8 @@ See fi:explicit-remote-common-lisp."
 	     (read-from-minibuffer "Remote host name: "))))
   (let* ((remote-dir
 	  (expand-file-name
-	   (if fi:remote-lisp-track-image-name-directory
+	   (if (and fi:remote-lisp-track-image-name-directory
+		    (file-name-directory image-name))
 	       (let ((dir (file-name-directory image-name)))
 		 (if (= ?/ (aref dir 0))
 		     dir
@@ -372,7 +373,8 @@ arguments are read from the minibuffer."
 	 (read-from-minibuffer "Image arguments (separate by spaces): ")))))
   (let* ((remote-dir
 	  (expand-file-name
-	   (if fi:remote-lisp-track-image-name-directory
+	   (if (and fi:remote-lisp-track-image-name-directory
+		    (file-name-directory image-name))
 	       (let ((dir (file-name-directory image-name)))
 		 (if (= ?/ (aref dir 0))
 		     dir
