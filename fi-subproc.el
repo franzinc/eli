@@ -1,4 +1,4 @@
-;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.100 1991/03/28 12:55:50 layer Exp $
+;; $Header: /repo/cvs.copy/eli/fi-subproc.el,v 1.101 1991/04/03 08:54:19 layer Exp $
 
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
@@ -271,8 +271,8 @@ Emacs-Lisp interface.  This only works in Allegro CL, currently."
       (force-output)
       (excl::require :ipc)
       (excl::require :emacs)
-      (excl::require :lep)
-      (excl::require :scm)
+      #+allegro-v4.1 (excl::require :lep)
+      #+allegro-v4.1 (excl::require :scm)
       (apply
        (find-symbol (symbol-name :start-lisp-listener-daemon) :ipc)
        #+allegro-v4.1 '(:use-lep t :unix-domain nil)
