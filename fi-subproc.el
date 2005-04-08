@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 3.7.2.8.2.2 2005/03/22 18:58:52 layer Exp $
+;; $Id: fi-subproc.el,v 3.7.2.8.2.3 2005/04/08 16:48:21 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -1350,6 +1350,11 @@ works--if it does not, then fi:common-lisp will fail.%s"
 		(system-name)
 		fi::lisp-host
 		extra)))
+  
+  (when (and fi::started-via-file
+	     (string-match "finished" status))
+    ;; It's annoying to have to restart emacs to clear this.
+    (setq fi::started-via-file nil))
   t)
 
 (defun fi::tcp-sentinel (process status)

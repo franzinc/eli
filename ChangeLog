@@ -1,25 +1,34 @@
+2005-04-08  Kevin Layer  <layer@gemini>
+
+	* fi-subproc.el (fi::subprocess-sentinel): when eli started
+	  via file is finished, set fi::started-via-file to nil.
+
 2005-03-22    <layer@HOBART>
 
 	* fi-subproc.el: handle all current 7.0 windows + args
 
 2005-03-14  Kevin Layer  <layer@gemini>
 
+    for bug15164:
 	* fi-keys.el (fi:inferior-lisp-newline): only call
 	  fi::maybe-update-default-right-margin if fboundp
 
 2005-02-17  Kevin Layer  <layer@gemini>
 
+    for bug15164:
 	* fi-emacs21.el (fi::maybe-update-default-right-margin): minor
 	  cleanup -- set fi::*current-frame-width* inside the inner `when'
 	* fi-keys.el: call fi::maybe-update-default-right-margin
 
 2005-02-09  Kevin Layer  <layer@gemini>
 
+    for bug15193:
 	* fi-ring.el: make sure fi::input-append checks that
 	  fi::input-ring is non-nil before before setting the `car'.
 
 2005-01-28  Kevin Layer  <layer@gemini>
 
+    for bug15165:
 	* fi-subproc.el (fi::get-lisp-interactive-arguments): bug15165:
 	  seems like the right fix (from Kai-Florian Richter,
 	  richter@informatik.uni-bremen.de)
@@ -301,7 +310,7 @@ post-6.2 release changes:
 	* fi-utils.el:
 	- bug13275: new variable fi::started-via-file which
 	  is set to `t' in fi:start-interface-via-file.  This was
-	  separated from fi:connect-to-windows since it's reaelly a
+	  separated from fi:connect-to-windows since it's really a
 	  different thing.
 	- bug13546: fi::subprocess-watch-for-special-commands: handle
 	  (in-package #:foo)
@@ -5046,4 +5055,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.9.2.10.2.6 $
+$Revision: 3.9.2.10.2.7 $
