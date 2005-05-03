@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 3.7.2.8.2.3 2005/04/08 16:48:21 layer Exp $
+;; $Id: fi-subproc.el,v 3.7.2.8.2.4 2005/05/03 23:10:41 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -337,27 +337,37 @@ keyboard-quit function will interrupt the waiting, however.")
 
 (defvar minibuffer-confirm-incomplete)
 
-(defvar fi::set-emacs-mule-terminal-io
-    "(let ((*load-verbose* nil))
+(defun fi::set-terminal-io-external-format-string (ef)
+  (unless (stringp ef)
+    (setq ef (symbol-name ef)))
+  (concat
+   "(let ((*load-verbose* nil))
        (when (and (fboundp 'excl::load-emacs-mule-ef)
                   (excl::load-emacs-mule-ef t))
-        (princ \";; Setting (stream-external-format *terminal-io*) to :emacs-mule.\")
-        (setf (stream-external-format *terminal-io*) :emacs-mule))
-       (values))"
-    "*The initial input sent to a Lisp listener in order to set its 
-*terminal-io* stream-external-format to :emacs-mule.")
+        (princ \";; Setting (stream-external-format *terminal-io*) to :"
+   ef
+   ".\")
+        (setf (stream-external-format *terminal-io*) :"
+   ef
+   "))
+       (values))"))
 
-(defun fi::set-emacs-mule-process-coding (process)
+(defun fi::set-process-coding (process coding)
   (let* ((cs (process-coding-system process))
-	 (ncs (mapcar
+	 (ncs nil))
+    (when (fboundp 'coding-system-name)
+      (setq cs (cons (coding-system-name (car cs))
+		     (coding-system-name (cdr cs)))))
+    (setq ncs (mapcar
 	       (function
 		(lambda (x)
 		  (let ((eol (string-match "-dos$\\|-unix$\\|-mac$" x)))
 		    (if eol
 			(intern
-			 (concat "emacs-mule" (substring x eol (match-end 0))))
-		      'emacs-mule))))
-	       (list (symbol-name (car cs)) (symbol-name (cdr cs))))))
+			 (concat (symbol-name coding)
+				 (substring x eol (match-end 0))))
+		      coding))))
+	       (list (symbol-name (car cs)) (symbol-name (cdr cs)))))
     (set-process-coding-system process (car ncs) (cadr ncs))))
 
 (defvar fi:eli-compatibility-mode t
@@ -542,7 +552,7 @@ be a string. Use the 6th argument for image file."))
 		     host buffer-name directory executable-image-name
 		     image-file image-args)
 		  ;; The resulting *common-lisp* buffer is not Lisp's initial
-		  ;; *terminal-io*, so the emacs-mule *terminal-io*
+		  ;; *terminal-io*, so the *terminal-io*
 		  ;; *external-format setting is done in the same way as
 		  ;; *fi:open-lisp-listener.
 		  (fi::common-lisp-1-windows proc host buffer-name directory
@@ -554,13 +564,17 @@ be a string. Use the 6th argument for image file."))
 					     executable-image-name image-file
 					     image-args real-args)))
 	      ;; The resulting *common-lisp* buffer is to Lisp's initial
-	      ;; *terminal-io*, so we set the emacs-mule *terminal-io*
+	      ;; *terminal-io*, so we set the *terminal-io*
 	      ;; external-format here.
-	      (when (and (fi::emacs-mule-p) fi::setup-for-mule)
-		(process-send-string p fi::set-emacs-mule-terminal-io)
-		(process-send-string p "\n")
-		(fi::set-emacs-mule-process-coding p)
-		(setq fi::setup-for-mule nil))
+	      (when (and (fboundp 'process-coding-system)
+			 fi::setup-for-mule)
+		(let ((cs (fi::lisp-connection-coding-system)))
+		  (process-send-string
+		   p
+		   (fi::set-terminal-io-external-format-string cs))
+		  (process-send-string p "\n")
+		  (fi::set-process-coding p cs)
+		  (setq fi::setup-for-mule nil)))
 	      p)))))
     (setq fi::common-lisp-first-time nil
 	  fi:common-lisp-buffer-name buffer-name
@@ -857,19 +871,21 @@ the buffer name is the second optional argument."
 				   'fi::setup-tcp-connection)))))
 
 (defun fi::setup-tcp-connection (proc)
-  (when (fi::emacs-mule-p)
-    (fi::set-emacs-mule-process-coding proc))
-  (format
-   (concat
-    "(progn
+  (let ((cs nil))
+    (when (fboundp 'process-coding-system)
+      (setq cs (fi::lisp-connection-coding-system))
+      (fi::set-process-coding proc cs))
+    (format
+     (concat
+      "(progn
       (setf (getf (mp:process-property-list mp:*current-process*)
                   ':emacs-listener-number) %d)
       (setf (excl::interactive-stream-p *terminal-io*) t)"
-    ;; still inside progn
-    (when (fi::emacs-mule-p)
-      fi::set-emacs-mule-terminal-io)
-    " (values))\n")
-   (fi::tcp-listener-generation proc)))
+      ;; still inside progn
+      (when cs
+	(fi::set-terminal-io-external-format-string cs))
+      " (values))\n")
+     (fi::tcp-listener-generation proc))))
 
 (defun fi:franz-lisp (&optional buffer-name directory executable-image-name
 				image-args host)

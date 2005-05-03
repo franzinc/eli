@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-basic-lep.el,v 3.2 2004/03/26 18:42:59 layer Exp $
+;; $Id: fi-basic-lep.el,v 3.2.62.1 2005/05/03 23:10:41 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -221,6 +221,17 @@ release.")
   (and fi:use-emacs-mule-lisp-listeners
        (fi::old-emacs-mule-p)))
 
+(defun fi::coding-system-name (cs)
+  (when (listp cs)
+    (setq cs (car cs)))
+  (when (fboundp 'coding-system-name)	; xemacs only
+    (setq cs (coding-system-name cs)))
+  cs)
+
+(defun fi::lisp-connection-coding-system ()
+  (or (car (member 'emacs-mule (coding-system-list)))
+	    'utf-8))
+
 (defun fi::make-connection-to-lisp (host port passwd)
   (let* ((proc-name (format " *LEP %s %d %d*" host port passwd))
 	 ;; buffer-name used to be non-nil only when fi::lep-debug
@@ -235,9 +246,9 @@ release.")
       (bury-buffer buffer)
       (save-excursion (set-buffer buffer) (erase-buffer))
       (set-process-buffer process buffer))
-    ;; cac 20dec00
-    (when (fi::old-emacs-mule-p)
-      (set-process-coding-system process 'emacs-mule 'emacs-mule))
+    (when (fboundp 'set-process-coding-system)
+      (let ((cs (fi::lisp-connection-coding-system)))
+	(set-process-coding-system process cs cs)))
     (set-process-filter process 'fi::lep-connection-filter)
     ;; new stuff to indicate that we want the lisp editor protocol
     (process-send-string process ":lep\n")
@@ -246,15 +257,18 @@ release.")
     ;; Send the class of the editor to the lisp.
     ;; This might affect something!
     ;; For example, gnu 19 has some good features.
-    (process-send-string
-     process
-     (format "\"%s\"\n"
 ;;;; The following works in xemacs 20.x when this file is compiled
 ;;;; with emacs 19.x, but we don't want to install this hack since
 ;;;; there are hundreds of other places a similar hack would have to
 ;;;; be installed.
-	     ;;(remove (aref "\"" 0) (emacs-version))
-	     (remove ?\" (emacs-version))))
+    (let ((version-string (remove ?\" (emacs-version))))
+      (process-send-string
+       process
+       (if (fboundp 'process-coding-system)
+	   (format "\"%s :external-format %s\"\n" version-string
+		   (fi::coding-system-name
+		    (process-coding-system process)))
+	 (format "\"%s\"\n" version-string))))
     (prog1
 	(setq fi::*connection*
 	  (fi::make-connection (current-buffer) host process))
