@@ -1,3 +1,7 @@
+2005-05-11    <layer@HOBART>
+
+	* makefile: use cygwin xemacs installed in /usr/bin/xemacs 
+
 2005-05-03  Kevin Layer  <layer@gemini>
 
     from cox for bug15317: i18 xemacs fixes
@@ -5061,4 +5065,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.9.2.10.2.8 $
+$Revision: 3.9.2.10.2.9 $
