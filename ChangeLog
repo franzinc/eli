@@ -1,3 +1,13 @@
+2005-05-31  Charles A. Cox  <cox@gemini>
+
+	* fi-basic-lep.el: Look for and use mule-ucs.  Set emacs
+	coding-system and Lisp external-format only if emacs has mule-ucs'
+	utf-8 or emacs-mule encodings.
+	* fi-site-init.el: Graceful exit if make-ring not available (true
+	in minimal xemacs).
+	* fi-subproc.el: Only set lisp external-format if emacs has
+	adequate encoding (emacs-mule or utf-8).
+
 2005-05-11    <layer@HOBART>
 
 	* makefile: use cygwin xemacs installed in /usr/bin/xemacs 
@@ -5065,4 +5075,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.9.2.10.2.9 $
+$Revision: 3.9.2.10.2.10 $

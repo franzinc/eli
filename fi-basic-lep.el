@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-basic-lep.el,v 3.2.62.1 2005/05/03 23:10:41 layer Exp $
+;; $Id: fi-basic-lep.el,v 3.2.62.2 2005/06/03 04:43:44 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -205,6 +205,7 @@ emacs-lisp interface cannot be started.
 ;; system to emacs-mule before we had the fi:use-emacs-mule-lisp-listeners
 ;; flag.
 ;;
+;; UNUSED
 (defun fi::old-emacs-mule-p ()
   (and (fboundp 'set-process-coding-system)
        ;; spr24414
@@ -228,9 +229,25 @@ release.")
     (setq cs (coding-system-name cs)))
   cs)
 
+;; spr30075
+;; Notes: eli on xemacs requires the emacs-base package.  The mule-sumo should
+;; also be installed for xemacs with mule to provide mule-ucs.
+;;
+;; Load mule-ucs if available.  This defines a good utf-8.
+;; 
+(condition-case nil (require 'un-define) (error nil))
+
 (defun fi::lisp-connection-coding-system ()
-  (or (car (member 'emacs-mule (coding-system-list)))
-	    'utf-8))
+  (if (and (string-match "xemacs" emacs-version)
+	   (string< "21.5" emacs-version))
+      ;; xemacs 21.5 has a good utf-8
+      'utf-8
+    ;; else check if we can load mule-ucs utf-8
+    (if (member 'un-define features)
+	;; then we have mule-ucs utf-8
+	'utf-8
+      ;; else return nil if no emacs-mule
+      (car (member 'emacs-mule (coding-system-list))))))
 
 (defun fi::make-connection-to-lisp (host port passwd)
   (let* ((proc-name (format " *LEP %s %d %d*" host port passwd))
@@ -241,14 +258,15 @@ release.")
 	 (buffer-name proc-name)
 	 (buffer (when buffer-name
 		   (get-buffer-create buffer-name)))
-	 (process (fi::open-network-stream proc-name nil host port)))
+	 (process (fi::open-network-stream proc-name nil host port))
+	 (coding-system (when (fboundp 'set-process-coding-system)
+			  (fi::lisp-connection-coding-system))))
     (when buffer
       (bury-buffer buffer)
       (save-excursion (set-buffer buffer) (erase-buffer))
       (set-process-buffer process buffer))
-    (when (fboundp 'set-process-coding-system)
-      (let ((cs (fi::lisp-connection-coding-system)))
-	(set-process-coding-system process cs cs)))
+    (when coding-system 
+      (set-process-coding-system process coding-system coding-system))
     (set-process-filter process 'fi::lep-connection-filter)
     ;; new stuff to indicate that we want the lisp editor protocol
     (process-send-string process ":lep\n")
@@ -264,10 +282,8 @@ release.")
     (let ((version-string (remove ?\" (emacs-version))))
       (process-send-string
        process
-       (if (fboundp 'process-coding-system)
-	   (format "\"%s :external-format %s\"\n" version-string
-		   (fi::coding-system-name
-		    (process-coding-system process)))
+       (if coding-system
+	   (format "\"%s :external-format %s\"\n" version-string coding-system)
 	 (format "\"%s\"\n" version-string))))
     (prog1
 	(setq fi::*connection*

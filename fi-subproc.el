@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 3.7.2.8.2.4 2005/05/03 23:10:41 layer Exp $
+;; $Id: fi-subproc.el,v 3.7.2.8.2.5 2005/06/03 04:43:44 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -569,11 +569,12 @@ be a string. Use the 6th argument for image file."))
 	      (when (and (fboundp 'process-coding-system)
 			 fi::setup-for-mule)
 		(let ((cs (fi::lisp-connection-coding-system)))
-		  (process-send-string
-		   p
-		   (fi::set-terminal-io-external-format-string cs))
-		  (process-send-string p "\n")
-		  (fi::set-process-coding p cs)
+		  (when cs
+		    (process-send-string
+		     p
+		     (fi::set-terminal-io-external-format-string cs))
+		    (process-send-string p "\n")
+		    (fi::set-process-coding p cs))
 		  (setq fi::setup-for-mule nil)))
 	      p)))))
     (setq fi::common-lisp-first-time nil
@@ -874,7 +875,8 @@ the buffer name is the second optional argument."
   (let ((cs nil))
     (when (fboundp 'process-coding-system)
       (setq cs (fi::lisp-connection-coding-system))
-      (fi::set-process-coding proc cs))
+      (when cs
+	(fi::set-process-coding proc cs)))
     (format
      (concat
       "(progn

@@ -1,4 +1,4 @@
-;; $Id: fi-site-init.el,v 3.0.94.1 2005/01/28 18:53:52 layer Exp $
+;; $Id: fi-site-init.el,v 3.0.94.2 2005/06/03 04:43:44 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -28,6 +28,14 @@
 	   (error
 	    "%s is not supported by this version of the emacs-lisp interface."
 	    emacs-version)))))
+
+;; spr30075
+;; Remove if we ever stop using make-ring.
+(when (eq 'xemacs20 fi::emacs-type)
+  (condition-case () (make-ring 1)
+    (error
+     (error "make-ring, needed for ELI, not available.  Most likely, xemacs-base package is missing."))))
+
 
 (defvar fi::load-subprocess-files t)
 (defvar fi::install-acl-menubar t)
