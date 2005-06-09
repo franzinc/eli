@@ -1,3 +1,11 @@
+2005-06-09  Kevin Layer  <layer@gemini>
+
+	* fi-site-init.el: for emacs22
+    from cox for bug15406:
+	* fi-subproc.el, fi-basic-lep.el: dead code removal.  Have
+	message be printed when neither emacs-mule nor utf-8 are
+	available. 
+
 2005-05-31  Charles A. Cox  <cox@gemini>
 
 	* fi-basic-lep.el: Look for and use mule-ucs.  Set emacs
@@ -5075,4 +5083,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.9.2.10.2.10 $
+$Revision: 3.9.2.10.2.11 $

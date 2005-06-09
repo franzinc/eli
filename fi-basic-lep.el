@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-basic-lep.el,v 3.2.62.2 2005/06/03 04:43:44 layer Exp $
+;; $Id: fi-basic-lep.el,v 3.2.62.3 2005/06/09 16:51:54 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -200,16 +200,7 @@ emacs-lisp interface cannot be started.
 			       fi::lisp-port
 			       fi::lisp-password))
 
-;; cac 22mar04: fi::old-emacs-mule-p is equivalent to the old test, and is used
-;; for compatibility in the places where we've always set the process coding
-;; system to emacs-mule before we had the fi:use-emacs-mule-lisp-listeners
-;; flag.
-;;
-;; UNUSED
-(defun fi::old-emacs-mule-p ()
-  (and (fboundp 'set-process-coding-system)
-       ;; spr24414
-       (member 'emacs-mule (coding-system-list))))
+;; Removed defunct fi::old-emacs-mule-p.  cac 7jun05
 
 (defvar fi:use-emacs-mule-lisp-listeners t
   "*Flag which determines whether to set a buffer's Lisp listener's
@@ -218,9 +209,7 @@ normally be set to true.  Setting this flag to nil restores the
 buffer-coding-systems setting behavior to be as it was in the Allegro CL 6.2
 release.")
 
-(defun fi::emacs-mule-p ()
-  (and fi:use-emacs-mule-lisp-listeners
-       (fi::old-emacs-mule-p)))
+;; Removed defunct fi::emacs-mule-p.  cac 7jun05
 
 (defun fi::coding-system-name (cs)
   (when (listp cs)
@@ -247,7 +236,8 @@ release.")
 	;; then we have mule-ucs utf-8
 	'utf-8
       ;; else return nil if no emacs-mule
-      (car (member 'emacs-mule (coding-system-list))))))
+      (when (fboundp 'coding-system-list)
+	(car (member 'emacs-mule (coding-system-list)))))))
 
 (defun fi::make-connection-to-lisp (host port passwd)
   (let* ((proc-name (format " *LEP %s %d %d*" host port passwd))
@@ -259,8 +249,7 @@ release.")
 	 (buffer (when buffer-name
 		   (get-buffer-create buffer-name)))
 	 (process (fi::open-network-stream proc-name nil host port))
-	 (coding-system (when (fboundp 'set-process-coding-system)
-			  (fi::lisp-connection-coding-system))))
+	 (coding-system (fi::lisp-connection-coding-system)))
     (when buffer
       (bury-buffer buffer)
       (save-excursion (set-buffer buffer) (erase-buffer))

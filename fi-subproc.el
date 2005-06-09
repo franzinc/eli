@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 3.7.2.8.2.5 2005/06/03 04:43:44 layer Exp $
+;; $Id: fi-subproc.el,v 3.7.2.8.2.6 2005/06/09 16:51:54 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -338,19 +338,29 @@ keyboard-quit function will interrupt the waiting, however.")
 (defvar minibuffer-confirm-incomplete)
 
 (defun fi::set-terminal-io-external-format-string (ef)
-  (unless (stringp ef)
-    (setq ef (symbol-name ef)))
-  (concat
-   "(let ((*load-verbose* nil))
-       (when (and (fboundp 'excl::load-emacs-mule-ef)
-                  (excl::load-emacs-mule-ef t))
-        (princ \";; Setting (stream-external-format *terminal-io*) to :"
-   ef
-   ".\")
-        (setf (stream-external-format *terminal-io*) :"
-   ef
-   "))
-       (values))"))
+  (if ef
+      ;; then
+      (progn
+	(unless (stringp ef)
+	  (setq ef (symbol-name ef)))
+	(concat
+	 "(let ((*load-verbose* nil))
+            (when (and (fboundp 'excl::load-emacs-mule-ef)
+                       (excl::load-emacs-mule-ef t))
+               (princ \";; Setting (stream-external-format *terminal-io*) to :"
+	 ef
+	 ".\")
+               (setf (stream-external-format *terminal-io*) :"
+	 ef
+	 "))
+               (values))"))
+    ;; else
+    (concat
+     "#+ics (progn (terpri t)"
+     "(excl::note t \"The hosting emacs appears to have neither "
+     "the emacs-mule nor mule-ucs utf-8 encodings.  Thus, Allegro CL "
+     "international character support is limited in this emacs session.\")"
+     "(values))")))
 
 (defun fi::set-process-coding (process coding)
   (let* ((cs (process-coding-system process))
@@ -566,14 +576,13 @@ be a string. Use the 6th argument for image file."))
 	      ;; The resulting *common-lisp* buffer is to Lisp's initial
 	      ;; *terminal-io*, so we set the *terminal-io*
 	      ;; external-format here.
-	      (when (and (fboundp 'process-coding-system)
-			 fi::setup-for-mule)
+	      (when fi::setup-for-mule
 		(let ((cs (fi::lisp-connection-coding-system)))
+		  (process-send-string
+		   p
+		   (fi::set-terminal-io-external-format-string cs))
+		  (process-send-string p "\n")
 		  (when cs
-		    (process-send-string
-		     p
-		     (fi::set-terminal-io-external-format-string cs))
-		    (process-send-string p "\n")
 		    (fi::set-process-coding p cs))
 		  (setq fi::setup-for-mule nil)))
 	      p)))))
@@ -873,10 +882,9 @@ the buffer name is the second optional argument."
 
 (defun fi::setup-tcp-connection (proc)
   (let ((cs nil))
-    (when (fboundp 'process-coding-system)
-      (setq cs (fi::lisp-connection-coding-system))
-      (when cs
-	(fi::set-process-coding proc cs)))
+    (setq cs (fi::lisp-connection-coding-system))
+    (when cs
+      (fi::set-process-coding proc cs))
     (format
      (concat
       "(progn
@@ -884,8 +892,7 @@ the buffer name is the second optional argument."
                   ':emacs-listener-number) %d)
       (setf (excl::interactive-stream-p *terminal-io*) t)"
       ;; still inside progn
-      (when cs
-	(fi::set-terminal-io-external-format-string cs))
+      (fi::set-terminal-io-external-format-string cs)
       " (values))\n")
      (fi::tcp-listener-generation proc))))
 

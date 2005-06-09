@@ -1,4 +1,4 @@
-;; $Id: fi-site-init.el,v 3.0.94.2 2005/06/03 04:43:44 layer Exp $
+;; $Id: fi-site-init.el,v 3.0.94.3 2005/06/09 16:51:54 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -19,15 +19,11 @@
 	       (string-match "lucid" emacs-version))
 	   (cond ((string-match "^2[01]\\." emacs-version) 'xemacs20)
 		 (t 'xemacs19)))
-	  ((string-match "^20\\." emacs-version) 'emacs20)
-	  ((string-match "^21\\." emacs-version) 'emacs20)
-	  ((string-match "^19\\." emacs-version) 'emacs19)
+	  ((boundp 'epoch::version) 'epoch) ;; remove?
 	  ((string-match "^18\\." emacs-version) 'emacs18)
-	  ((boundp 'epoch::version) 'epoch)
-	  (t
-	   (error
-	    "%s is not supported by this version of the emacs-lisp interface."
-	    emacs-version)))))
+	  ((string-match "^19\\." emacs-version) 'emacs19)
+	  (t ;; assume emacs20 compatibility
+	   'emacs20))))
 
 ;; spr30075
 ;; Remove if we ever stop using make-ring.
