@@ -1,3 +1,8 @@
+2005-06-28    <layer@HOBART>
+
+	* Makefile: use cygwin perl instead of activestate to get emacs
+	  dir from registry
+
 2005-06-09  Kevin Layer  <layer@gemini>
 
 	* fi-site-init.el: for emacs22
@@ -5083,4 +5088,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.9.2.10.2.11 $
+$Revision: 3.9.2.10.2.12 $
