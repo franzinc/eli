@@ -1,5 +1,5 @@
 ;; automatically generate file--do not edit.
 (defvar fi:emacs-lisp-interface-version)
-(setq fi:emacs-lisp-interface-version "3.9.2.10.2.11")
+(setq fi:emacs-lisp-interface-version "3.9.2.10.2.12")
 (defvar fi::compiled-with-version)
 (setq fi::compiled-with-version (eval-when-compile (cons emacs-major-version emacs-minor-version)))
