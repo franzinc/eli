@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 3.3.2.2 2004/08/14 07:02:36 layer Exp $
+;; $Id: fi-keys.el,v 3.3.2.3 2005/07/20 19:34:09 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -353,6 +353,8 @@ If not at the end of the buffer, this function does its best to find a
 complete form around the point, copy it to the end of the buffer, and send
 it to the Lisp subprocess."
   (interactive)
+  (when (fboundp 'fi::maybe-update-default-right-margin)
+    (fi::maybe-update-default-right-margin))
   (if (eobp)
       (let ((start (marker-position
 		    (process-mark (get-buffer-process (current-buffer)))))

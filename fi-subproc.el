@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 3.7.2.8 2004/10/07 21:39:12 layer Exp $
+;; $Id: fi-subproc.el,v 3.7.2.9 2005/07/20 19:34:09 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -337,27 +337,47 @@ keyboard-quit function will interrupt the waiting, however.")
 
 (defvar minibuffer-confirm-incomplete)
 
-(defvar fi::set-emacs-mule-terminal-io
-    "(let ((*load-verbose* nil))
-       (when (and (fboundp 'excl::load-emacs-mule-ef)
-                  (excl::load-emacs-mule-ef t))
-        (princ \";; Setting (stream-external-format *terminal-io*) to :emacs-mule.\")
-        (setf (stream-external-format *terminal-io*) :emacs-mule))
-       (values))"
-    "*The initial input sent to a Lisp listener in order to set its 
-*terminal-io* stream-external-format to :emacs-mule.")
+(defun fi::set-terminal-io-external-format-string (ef)
+  (if ef
+      ;; then
+      (progn
+	(unless (stringp ef)
+	  (setq ef (symbol-name ef)))
+	(concat
+	 "(let ((*load-verbose* nil))
+            (when (and (fboundp 'excl::load-emacs-mule-ef)
+                       (excl::load-emacs-mule-ef t))
+               (princ \";; Setting (stream-external-format *terminal-io*) to :"
+	 ef
+	 ".\")
+               (setf (stream-external-format *terminal-io*) :"
+	 ef
+	 "))
+               (values))"))
+    ;; else
+    (concat
+     "#+ics (progn (terpri t)"
+     "(excl::note t \"The hosting emacs appears to have neither "
+     "the emacs-mule nor mule-ucs utf-8 encodings.  Thus, Allegro CL "
+     "international character support is limited in this emacs session.\")"
+     "(values))")))
 
-(defun fi::set-emacs-mule-process-coding (process)
+(defun fi::set-process-coding (process coding)
   (let* ((cs (process-coding-system process))
-	 (ncs (mapcar
+	 (ncs nil))
+    (when (fboundp 'coding-system-name)
+      (setq cs (cons (coding-system-name (car cs))
+		     (coding-system-name (cdr cs)))))
+    (setq ncs (mapcar
 	       (function
 		(lambda (x)
 		  (let ((eol (string-match "-dos$\\|-unix$\\|-mac$" x)))
 		    (if eol
 			(intern
-			 (concat "emacs-mule" (substring x eol (match-end 0))))
-		      'emacs-mule))))
-	       (list (symbol-name (car cs)) (symbol-name (cdr cs))))))
+			 (concat (symbol-name coding)
+				 (substring x eol (match-end 0))))
+		      coding))))
+	       (list (symbol-name (car cs)) (symbol-name (cdr cs)))))
     (set-process-coding-system process (car ncs) (cadr ncs))))
 
 (defvar fi:eli-compatibility-mode t
@@ -542,7 +562,7 @@ be a string. Use the 6th argument for image file."))
 		     host buffer-name directory executable-image-name
 		     image-file image-args)
 		  ;; The resulting *common-lisp* buffer is not Lisp's initial
-		  ;; *terminal-io*, so the emacs-mule *terminal-io*
+		  ;; *terminal-io*, so the *terminal-io*
 		  ;; *external-format setting is done in the same way as
 		  ;; *fi:open-lisp-listener.
 		  (fi::common-lisp-1-windows proc host buffer-name directory
@@ -554,13 +574,17 @@ be a string. Use the 6th argument for image file."))
 					     executable-image-name image-file
 					     image-args real-args)))
 	      ;; The resulting *common-lisp* buffer is to Lisp's initial
-	      ;; *terminal-io*, so we set the emacs-mule *terminal-io*
+	      ;; *terminal-io*, so we set the *terminal-io*
 	      ;; external-format here.
-	      (when (and (fi::emacs-mule-p) fi::setup-for-mule)
-		(process-send-string p fi::set-emacs-mule-terminal-io)
-		(process-send-string p "\n")
-		(fi::set-emacs-mule-process-coding p)
-		(setq fi::setup-for-mule nil))
+	      (when fi::setup-for-mule
+		(let ((cs (fi::lisp-connection-coding-system)))
+		  (process-send-string
+		   p
+		   (fi::set-terminal-io-external-format-string cs))
+		  (process-send-string p "\n")
+		  (when cs
+		    (fi::set-process-coding p cs))
+		  (setq fi::setup-for-mule nil)))
 	      p)))))
     (setq fi::common-lisp-first-time nil
 	  fi:common-lisp-buffer-name buffer-name
@@ -735,55 +759,64 @@ be a string. Use the 6th argument for image file."))
 	      (error nil))))))
      fi::process-is-local host directory)))
 
+(defvar fi::windows-plus-args
+    ;; List of (arg-name . number-of-companion-args)
+    '(("+B" . 0)
+      ("+Bp" . 0)
+      ("+Bt" . 0)
+      ("+Cx" . 0)
+      ("+M" . 0)
+      ("+N" . 1)
+      ("+R" . 0)
+      ("+R" . 0)
+      ("+RR" . 0)
+      ("+Ti" . 0)
+      ("+Tx" . 0)
+      ("+b" . 1)
+      ("+c" . 0)
+      ("+cc" . 0)
+      ("+cm" . 0)
+      ("+cn" . 0)
+      ("+cx" . 0)
+      ("+d" . 1)
+      ("+m" . 0)
+      ("+n" . 0)
+      ("+p" . 0)
+      ("+s" . 1)
+      ("+t" . 1)
+      ("+x" . 0)
+      ))
+
 (defun fi::remove-windows-arguments (arguments)
   ;; remove windows only + arguments
   (let ((args nil)
-	(arg nil))
+	(arg nil)
+	temp)
     (while arguments
       (setq arg (car arguments))
-      (cond ((or (string= "+c" arg)
-		 (string= "+cm" arg)
-		 (string= "+cn" arg)
-		 (string= "+cx" arg)
-		 (string= "+p" arg)
-		 (string= "+R" arg)
-		 (string= "+M" arg)
-		 (string= "+B" arg)
-		 (string= "+Bt" arg)))
-	    ((or (string= "+s" arg)
-		 (string= "+d" arg)
-		 (string= "+t" arg)
-		 (string= "+b" arg))
-	     (setq arguments (cdr arguments)))
-	    (t (push arg args)))
-      (setq arguments (cdr arguments)))
+      (if (setq temp (cdr (assoc arg fi::windows-plus-args)))
+	  (when (and temp (numberp temp)
+		     (> temp 0))
+	    (setq arguments (cdr arguments)))
+	(push arg args)))
     (nreverse args)))
 
 (defun fi::reorder-arguments (arguments)
   ;; make sure the + arguments are first
   (let ((dlisp-args nil)
 	(other-args nil)
-	(arg nil))
+	(arg nil)
+	temp)
     (while arguments
       (setq arg (car arguments))
-      (cond ((or (string= "+c" arg)
-		 (string= "+cm" arg)
-		 (string= "+cn" arg)
-		 (string= "+cx" arg)
-		 (string= "+p" arg)
-		 (string= "+R" arg)
-		 (string= "+M" arg)
-		 (string= "+B" arg)
-		 (string= "+Bt" arg))
-	     (push arg dlisp-args))
-	    ((or (string= "+s" arg)
-		 (string= "+d" arg)
-		 (string= "+t" arg)
-		 (string= "+b" arg))
-	     (push arg dlisp-args)
-	     (setq arguments (cdr arguments))
-	     (push (car arguments) dlisp-args))
-	    (t (push arg other-args)))
+      (if (setq temp (cdr (assoc arg fi::windows-plus-args)))
+	  (if (and temp (numberp temp) (> temp 0))
+	      (progn
+		(push arg dlisp-args)
+		(setq arguments (cdr arguments))
+		(push (car arguments) dlisp-args))
+	    (push arg dlisp-args))
+	(push arg other-args))
       (setq arguments (cdr arguments)))
     (append (nreverse dlisp-args) (nreverse other-args))))
 
@@ -848,19 +881,20 @@ the buffer name is the second optional argument."
 				   'fi::setup-tcp-connection)))))
 
 (defun fi::setup-tcp-connection (proc)
-  (when (fi::emacs-mule-p)
-    (fi::set-emacs-mule-process-coding proc))
-  (format
-   (concat
-    "(progn
+  (let ((cs nil))
+    (setq cs (fi::lisp-connection-coding-system))
+    (when cs
+      (fi::set-process-coding proc cs))
+    (format
+     (concat
+      "(progn
       (setf (getf (mp:process-property-list mp:*current-process*)
                   ':emacs-listener-number) %d)
       (setf (excl::interactive-stream-p *terminal-io*) t)"
-    ;; still inside progn
-    (when (fi::emacs-mule-p)
-      fi::set-emacs-mule-terminal-io)
-    " (values))\n")
-   (fi::tcp-listener-generation proc)))
+      ;; still inside progn
+      (fi::set-terminal-io-external-format-string cs)
+      " (values))\n")
+     (fi::tcp-listener-generation proc))))
 
 (defun fi:franz-lisp (&optional buffer-name directory executable-image-name
 				image-args host)
@@ -1011,8 +1045,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	  (concat temp "/"))))
 
     (setq exe (fi::read-file-name "Lisp executable program: " exe exe))
-    (setq dxl
-      (fi::read-file-name "Lisp image (dxl) file: " directory dxl nil dxl))
+    (setq dxl (fi::read-file-name "Lisp image (dxl) file: " dxl dxl))
 
     (setq image-args
       (fi::listify-string
@@ -1342,6 +1375,11 @@ works--if it does not, then fi:common-lisp will fail.%s"
 		(system-name)
 		fi::lisp-host
 		extra)))
+  
+  (when (and fi::started-via-file
+	     (string-match "finished" status))
+    ;; It's annoying to have to restart emacs to clear this.
+    (setq fi::started-via-file nil))
   t)
 
 (defun fi::tcp-sentinel (process status)
