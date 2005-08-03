@@ -1,4 +1,4 @@
-;; $Id: fi-site-init.el,v 3.0 2003/12/15 22:52:57 layer Exp $
+;; $Id: fi-site-init.el,v 3.1 2005/08/03 05:08:34 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -19,20 +19,30 @@
 	       (string-match "lucid" emacs-version))
 	   (cond ((string-match "^2[01]\\." emacs-version) 'xemacs20)
 		 (t 'xemacs19)))
-	  ((string-match "^20\\." emacs-version) 'emacs20)
-	  ((string-match "^21\\." emacs-version) 'emacs20)
-	  ((string-match "^19\\." emacs-version) 'emacs19)
+	  ((boundp 'epoch::version) 'epoch) ;; remove?
 	  ((string-match "^18\\." emacs-version) 'emacs18)
-	  ((boundp 'epoch::version) 'epoch)
-	  (t
-	   (error
-	    "%s is not supported by this version of the emacs-lisp interface."
-	    emacs-version)))))
+	  ((string-match "^19\\." emacs-version) 'emacs19)
+	  (t ;; assume emacs20 compatibility
+	   'emacs20))))
+
+;; spr30075
+;; Remove if we ever stop using make-ring.
+(when (eq 'xemacs20 fi::emacs-type)
+  (condition-case () (make-ring 1)
+    (error
+     (error "make-ring, needed for ELI, not available.  Most likely, xemacs-base package is missing."))))
+
 
 (defvar fi::load-subprocess-files t)
 (defvar fi::install-acl-menubar t)
 (defvar fi::build-time nil)
 (defvar fi::emacs-type nil)
+
+(defvar fi::*current-frame-width* nil)
+(defvar fi::*new-frame-width* nil)
+(when (fboundp 'frame-width)
+  (ignore-errors
+   (setq fi::*current-frame-width* (1- (frame-width)))))
 
 (defun fi::find-path (path file)
   (let ((done nil) res temp)

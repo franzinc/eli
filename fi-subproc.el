@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 3.7 2004/05/07 22:01:01 layer Exp $
+;; $Id: fi-subproc.el,v 3.8 2005/08/03 05:08:34 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -301,6 +301,11 @@ connection.")
 machine, which implies that it was started via an `rsh'.  This variable is
 buffer local.")
 (make-variable-buffer-local 'fi::lisp-is-remote)
+
+(defvar fi::setup-for-mule nil)
+(make-variable-buffer-local 'fi::setup-for-mule)
+
+
 
 ;;;;
 ;;; User visible functions
@@ -323,6 +328,8 @@ process-connection-type (q.v.).")
 in seconds, that Emacs will wait for Lisp to startup, when no connection
 can be made in fi:common-lisp.")
 
+(defvar fi::common-lisp-compatibility-mode-timeout 1)
+
 (defvar fi:common-lisp-subprocess-wait-forever nil
   "*This variable only has an effect on Windows.  If the value is non-nil,
 then wait forever for the Lisp to startup.  Use with caution.  The
@@ -330,25 +337,47 @@ keyboard-quit function will interrupt the waiting, however.")
 
 (defvar minibuffer-confirm-incomplete)
 
-(defvar fi::set-emacs-mule-terminal-io
-    "(let ((*load-verbose* nil))
-        (princ \";; Setting (stream-external-format *terminal-io*) to :emacs-mule.\")
-        (setf (stream-external-format *terminal-io*) :emacs-mule)
-        (values))"
-    "*The initial input sent to a Lisp listener in order to set its 
-*terminal-io* stream-external-format to :emacs-mule.")
+(defun fi::set-terminal-io-external-format-string (ef)
+  (if ef
+      ;; then
+      (progn
+	(unless (stringp ef)
+	  (setq ef (symbol-name ef)))
+	(concat
+	 "(let ((*load-verbose* nil))
+            (when (and (fboundp 'excl::load-emacs-mule-ef)
+                       (excl::load-emacs-mule-ef t))
+               (princ \";; Setting (stream-external-format *terminal-io*) to :"
+	 ef
+	 ".\")
+               (setf (stream-external-format *terminal-io*) :"
+	 ef
+	 "))
+               (values))"))
+    ;; else
+    (concat
+     "#+ics (progn (terpri t)"
+     "(excl::note t \"The hosting emacs appears to have neither "
+     "the emacs-mule nor mule-ucs utf-8 encodings.  Thus, Allegro CL "
+     "international character support is limited in this emacs session.\")"
+     "(values))")))
 
-(defun fi::set-emacs-mule-process-coding (process)
+(defun fi::set-process-coding (process coding)
   (let* ((cs (process-coding-system process))
-	 (ncs (mapcar
+	 (ncs nil))
+    (when (fboundp 'coding-system-name)
+      (setq cs (cons (coding-system-name (car cs))
+		     (coding-system-name (cdr cs)))))
+    (setq ncs (mapcar
 	       (function
 		(lambda (x)
 		  (let ((eol (string-match "-dos$\\|-unix$\\|-mac$" x)))
 		    (if eol
 			(intern
-			 (concat "emacs-mule" (substring x eol (match-end 0))))
-		      'emacs-mule))))
-	       (list (symbol-name (car cs)) (symbol-name (cdr cs))))))
+			 (concat (symbol-name coding)
+				 (substring x eol (match-end 0))))
+		      coding))))
+	       (list (symbol-name (car cs)) (symbol-name (cdr cs)))))
     (set-process-coding-system process (car ncs) (cadr ncs))))
 
 (defvar fi:eli-compatibility-mode t
@@ -426,12 +455,6 @@ risk.")
 	(error "fi:common-lisp aborted by user."))))
   (when fi::started-via-file
     (error "Emacs-Lisp interface already started via a file."))
-  (when (not fi::rsh-command)
-    (setq fi::rsh-command
-      (cond ((fi::command-exists-p "remsh") "remsh")
-	    ((fi::command-exists-p "rsh") "rsh")
-	    ((and (on-ms-windows) (fi::command-exists-p "rsh.exe") "rsh.exe"))
-	    (t (error "can't find the rsh command in your path")))))
   (when (and fi::shell-buffer-for-common-lisp-interaction-host-name
 	     (or (y-or-n-p "A make-dist might be in progress.  Continue? ")
 		 (error "fi:common-lisp aborted.")))
@@ -450,6 +473,15 @@ risk.")
 					   (string= "localhost" host)
 					   ;; so it is case insensitive:
 					   (string-match host (system-name))))
+	    (when (not fi::process-is-local)
+	      (when (not fi::rsh-command)
+		(setq fi::rsh-command
+		  (cond ((fi::command-exists-p "remsh") "remsh")
+			((fi::command-exists-p "rsh") "rsh")
+			((and (on-ms-windows) (fi::command-exists-p "rsh.exe")
+			      "rsh.exe"))
+			(t (error
+			    "can't find the rsh command in your path"))))))
 	    (if (interactive-p)
 		(if fi::process-is-local
 		    (and directory (expand-file-name directory))
@@ -502,12 +534,26 @@ be a string. Use the 6th argument for image file."))
 			  (fi::remove-windows-arguments real-args))
 		      real-args))
 	 (process-connection-type fi::common-lisp-connection-type) ;bug3033
+	 (buffer nil)
 	 (proc
-	  (if (and (on-ms-windows) fi::process-is-local)
-	      (let ((proc (fi::socket-start-lisp nil fi::cl-process-name
-						 executable-image-name
-						 real-args)))
-		(sleep-for 1) ;; wait for process to start
+	  (cond
+	   ((and (on-ms-windows) fi::process-is-local)
+	    (setq buffer (get-buffer-create buffer-name))
+	    (cond
+	     ((or (null fi::common-lisp-backdoor-main-process-name)
+		  (not (fi:process-running-p
+			(get-process
+			 fi::common-lisp-backdoor-main-process-name)
+			buffer-name)))
+	      (let ((proc
+		     (save-excursion
+		       (set-buffer buffer)
+		       (setq default-directory directory)
+		       (fi::socket-start-lisp fi::cl-process-name
+					      executable-image-name
+					      real-args))))
+		;; wait for process to start
+		(sleep-for fi::common-lisp-compatibility-mode-timeout)
 		(if (and fi:eli-compatibility-mode
 			 (fi::eli-compat-mode-p 9666))
 		    ;; A Lisp running an older version of eli was detected,
@@ -516,23 +562,30 @@ be a string. Use the 6th argument for image file."))
 		     host buffer-name directory executable-image-name
 		     image-file image-args)
 		  ;; The resulting *common-lisp* buffer is not Lisp's initial
-		  ;; *terminal-io*, so the emacs-mule *terminal-io*
+		  ;; *terminal-io*, so the *terminal-io*
 		  ;; *external-format setting is done in the same way as
 		  ;; *fi:open-lisp-listener.
 		  (fi::common-lisp-1-windows proc host buffer-name directory
 					     executable-image-name image-file
-					     image-args)))
+					     image-args))))
+	     (t (fi::goto-lisp-buffer buffer))))
+	   (t ;; NOT windows...
 	    (let ((p (fi::common-lisp-1-unix host buffer-name directory
 					     executable-image-name image-file
 					     image-args real-args)))
 	      ;; The resulting *common-lisp* buffer is to Lisp's initial
-	      ;; *terminal-io*, so we set the emacs-mule *terminal-io*
+	      ;; *terminal-io*, so we set the *terminal-io*
 	      ;; external-format here.
-	      (when (fi::emacs-mule-p)
-		(process-send-string p fi::set-emacs-mule-terminal-io)
-		(process-send-string p "\n")
-		(fi::set-emacs-mule-process-coding p))
-	      p))))
+	      (when fi::setup-for-mule
+		(let ((cs (fi::lisp-connection-coding-system)))
+		  (process-send-string
+		   p
+		   (fi::set-terminal-io-external-format-string cs))
+		  (process-send-string p "\n")
+		  (when cs
+		    (fi::set-process-coding p cs))
+		  (setq fi::setup-for-mule nil)))
+	      p)))))
     (setq fi::common-lisp-first-time nil
 	  fi:common-lisp-buffer-name buffer-name
 	  fi:common-lisp-image-name executable-image-name
@@ -587,8 +640,7 @@ be a string. Use the 6th argument for image file."))
        (fi:common-lisp-subprocess-wait-forever)
        ((and (> i 0) (zerop (mod i 10)))
 	;; Every 10 iterations, ask if they still want to wait:
-	(when (not (y-or-n-p
-		    "Continue waiting for ACL to startup? "))
+	(when (not (y-or-n-p "Continue waiting for ACL to startup? "))
 	  (error "Connection aborted.")))
        (t
 	(when (> i fi:common-lisp-subprocess-timeout)
@@ -625,9 +677,18 @@ be a string. Use the 6th argument for image file."))
   (let ((connection-file
 	 (format "%s\\elistartup%d" (fi::temporary-directory)
 		 (process-id proc)))
+	;;In w32proc.c where is this Win9x lossage workaround
+	;; /* Hack for Windows 95, which assigns large (ie negative) pids */
+	;; if (cp->pid < 0)
+	;;   cp->pid = -cp->pid;
+	(connection-file-win9x
+	 (format "%s\\elistartup%d" (fi::temporary-directory)
+		 (- (process-id proc))))
 	(i 0))
 
-    (while (not (file-exists-p connection-file))
+    (while (and (not (when (file-exists-p connection-file-win9x)
+		       (setf connection-file connection-file-win9x)))
+		(not (file-exists-p connection-file)))
       (cond
        (fi:common-lisp-subprocess-wait-forever)
        ((and (> i 0) (zerop (mod i 10)))
@@ -698,55 +759,64 @@ be a string. Use the 6th argument for image file."))
 	      (error nil))))))
      fi::process-is-local host directory)))
 
+(defvar fi::windows-plus-args
+    ;; List of (arg-name . number-of-companion-args)
+    '(("+B" . 0)
+      ("+Bp" . 0)
+      ("+Bt" . 0)
+      ("+Cx" . 0)
+      ("+M" . 0)
+      ("+N" . 1)
+      ("+R" . 0)
+      ("+R" . 0)
+      ("+RR" . 0)
+      ("+Ti" . 0)
+      ("+Tx" . 0)
+      ("+b" . 1)
+      ("+c" . 0)
+      ("+cc" . 0)
+      ("+cm" . 0)
+      ("+cn" . 0)
+      ("+cx" . 0)
+      ("+d" . 1)
+      ("+m" . 0)
+      ("+n" . 0)
+      ("+p" . 0)
+      ("+s" . 1)
+      ("+t" . 1)
+      ("+x" . 0)
+      ))
+
 (defun fi::remove-windows-arguments (arguments)
   ;; remove windows only + arguments
   (let ((args nil)
-	(arg nil))
+	(arg nil)
+	temp)
     (while arguments
       (setq arg (car arguments))
-      (cond ((or (string= "+c" arg)
-		 (string= "+cm" arg)
-		 (string= "+cn" arg)
-		 (string= "+cx" arg)
-		 (string= "+p" arg)
-		 (string= "+R" arg)
-		 (string= "+M" arg)
-		 (string= "+B" arg)
-		 (string= "+Bt" arg)))
-	    ((or (string= "+s" arg)
-		 (string= "+d" arg)
-		 (string= "+t" arg)
-		 (string= "+b" arg))
-	     (setq arguments (cdr arguments)))
-	    (t (push arg args)))
-      (setq arguments (cdr arguments)))
+      (if (setq temp (cdr (assoc arg fi::windows-plus-args)))
+	  (when (and temp (numberp temp)
+		     (> temp 0))
+	    (setq arguments (cdr arguments)))
+	(push arg args)))
     (nreverse args)))
 
 (defun fi::reorder-arguments (arguments)
   ;; make sure the + arguments are first
   (let ((dlisp-args nil)
 	(other-args nil)
-	(arg nil))
+	(arg nil)
+	temp)
     (while arguments
       (setq arg (car arguments))
-      (cond ((or (string= "+c" arg)
-		 (string= "+cm" arg)
-		 (string= "+cn" arg)
-		 (string= "+cx" arg)
-		 (string= "+p" arg)
-		 (string= "+R" arg)
-		 (string= "+M" arg)
-		 (string= "+B" arg)
-		 (string= "+Bt" arg))
-	     (push arg dlisp-args))
-	    ((or (string= "+s" arg)
-		 (string= "+d" arg)
-		 (string= "+t" arg)
-		 (string= "+b" arg))
-	     (push arg dlisp-args)
-	     (setq arguments (cdr arguments))
-	     (push (car arguments) dlisp-args))
-	    (t (push arg other-args)))
+      (if (setq temp (cdr (assoc arg fi::windows-plus-args)))
+	  (if (and temp (numberp temp) (> temp 0))
+	      (progn
+		(push arg dlisp-args)
+		(setq arguments (cdr arguments))
+		(push (car arguments) dlisp-args))
+	    (push arg dlisp-args))
+	(push arg other-args))
       (setq arguments (cdr arguments)))
     (append (nreverse dlisp-args) (nreverse other-args))))
 
@@ -756,26 +826,21 @@ be a string. Use the 6th argument for image file."))
 (defvar w32-quote-process-args)
 (defvar w32-start-process-show-window)
 
-(defun fi::socket-start-lisp (buffer-name process-name image arguments)
+(defun fi::socket-start-lisp (process-name image arguments)
   (let (
 ;;;; rms didn't like the win32- prefix, so we have to support the old and
 ;;;; new style:
 	(win32-start-process-show-window t)
 	(w32-start-process-show-window t)
-	(win32-quote-process-args nil)
-	;; must be nil now, because emacs does weird things with double
-	;; quotes.  See bug14313 for more info.
-	(w32-quote-process-args nil)
+	(win32-quote-process-args t)
+	(w32-quote-process-args t)
 	;; from Greg Klanderman:
 	;; XEmacs 21 NT does this differently...
 	(nt-quote-args-functions-alist '(("." . nt-quote-args-double-quote))))
     (apply (function start-process)
 	   process-name
-	   nil ;; buffer-name
-	   image
-	   (if (on-ms-windows)
-	       (mapcar 'shell-quote-argument arguments)
-	     arguments))))
+	   nil ;; no buffer name
+	   image arguments)))
 
 (defun fi:open-lisp-listener (&optional buffer-number buffer-name
 					setup-function)
@@ -816,19 +881,20 @@ the buffer name is the second optional argument."
 				   'fi::setup-tcp-connection)))))
 
 (defun fi::setup-tcp-connection (proc)
-  (when (fi::emacs-mule-p)
-    (fi::set-emacs-mule-process-coding proc))
-  (format
-   (concat
-    "(progn
+  (let ((cs nil))
+    (setq cs (fi::lisp-connection-coding-system))
+    (when cs
+      (fi::set-process-coding proc cs))
+    (format
+     (concat
+      "(progn
       (setf (getf (mp:process-property-list mp:*current-process*)
                   ':emacs-listener-number) %d)
       (setf (excl::interactive-stream-p *terminal-io*) t)"
-    ;; still inside progn
-    (when (fi::emacs-mule-p)
-      fi::set-emacs-mule-terminal-io)
-    " (values))\n")
-   (fi::tcp-listener-generation proc)))
+      ;; still inside progn
+      (fi::set-terminal-io-external-format-string cs)
+      " (values))\n")
+     (fi::tcp-listener-generation proc))))
 
 (defun fi:franz-lisp (&optional buffer-name directory executable-image-name
 				image-args host)
@@ -979,8 +1045,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	  (concat temp "/"))))
 
     (setq exe (fi::read-file-name "Lisp executable program: " exe exe))
-    (setq dxl
-      (fi::read-file-name "Lisp image (dxl) file: " directory dxl nil dxl))
+    (setq dxl (fi::read-file-name "Lisp image (dxl) file: " dxl dxl))
 
     (setq image-args
       (fi::listify-string
@@ -1119,7 +1184,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		     (append (list buffer-name buffer image-file)
 			     image-args))))
 	  (set-process-sentinel process 'fi::subprocess-sentinel)
-
+	  
 	  ;; do the following after the sentinel is established so we don't get
 	  ;; an ugly message in the subprocess buffer
 	  ;;
@@ -1151,21 +1216,32 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	    (error nil))
 	  (setq fi::prompt-pattern image-prompt)
 	  (fi::make-subprocess-variables)
-	  (when initial-func (funcall initial-func process)))))
+	  (when initial-func (funcall initial-func process))
+	  
+	  (setq fi::setup-for-mule t) ;; new process, must do this
+	  )))
 
-    ;; display last so we can do proper screen creation on xemacs
-    (condition-case nil
-	(funcall fi:display-buffer-function buffer)
-      (error (fi::switch-to-buffer buffer)))
-
-    (goto-char (point-max))
-    (set-marker (if (numberp fi::last-input-end)
-		    (make-marker)
-		  fi::last-input-end)
-		(point)
-		buffer)
+    (fi::goto-lisp-buffer buffer)
 
     process))
+
+(defun fi::goto-lisp-buffer (buffer)
+  ;; display last so we can do proper screen creation on xemacs
+  (condition-case nil
+      (funcall fi:display-buffer-function buffer)
+    (error (fi::switch-to-buffer buffer)))
+
+  (goto-char (point-max))
+
+  ;; The recenter fixes the behavior of initial display with FSF 19.23, but
+  ;; needs to be checked across other Emacs.
+  (recenter (- (window-height) 2))
+  
+  (set-marker (if (numberp fi::last-input-end)
+		  (make-marker)
+		fi::last-input-end)
+	      (point)
+	      buffer))
 
 (defun fi::calc-buffer-name (buffer-name process-name)
   (cond ((stringp buffer-name) buffer-name)
@@ -1257,16 +1333,8 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	  (setq fi::prompt-pattern image-prompt)
 	  (fi::make-subprocess-variables))))
 
-    ;; display last so we can do proper screen creation on xemacs
-    (condition-case nil
-	(funcall fi:display-buffer-function buffer)
-      (error (fi::switch-to-buffer buffer)))
-
-    ;; The recenter fixes the behavior of initial display with FSF 19.23, but
-    ;; needs to be checked across other Emacs.
-    (goto-char (point-max))
-    (recenter (- (window-height) 2))
-
+    (fi::goto-lisp-buffer buffer)
+    
     proc))
 
 (defun fi::subprocess-sentinel (process status)
@@ -1307,6 +1375,11 @@ works--if it does not, then fi:common-lisp will fail.%s"
 		(system-name)
 		fi::lisp-host
 		extra)))
+  
+  (when (and fi::started-via-file
+	     (string-match "finished" status))
+    ;; It's annoying to have to restart emacs to clear this.
+    (setq fi::started-via-file nil))
   t)
 
 (defun fi::tcp-sentinel (process status)

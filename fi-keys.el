@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 3.3 2004/04/29 22:35:54 layer Exp $
+;; $Id: fi-keys.el,v 3.4 2005/08/03 05:08:34 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -353,6 +353,8 @@ If not at the end of the buffer, this function does its best to find a
 complete form around the point, copy it to the end of the buffer, and send
 it to the Lisp subprocess."
   (interactive)
+  (when (fboundp 'fi::maybe-update-default-right-margin)
+    (fi::maybe-update-default-right-margin))
   (if (eobp)
       (let ((start (marker-position
 		    (process-mark (get-buffer-process (current-buffer)))))
@@ -873,7 +875,8 @@ target."
 form.  If there are too many parens delete them.  The form is also indented."
   (interactive)
   (save-restriction
-    (narrow-to-region (point) (save-excursion (fi:beginning-of-defun) (point)))
+    (narrow-to-region (point)
+		      (save-excursion (fi:beginning-of-defun) (point)))
     (let ((res (parse-partial-sexp (point-min) (point))))
       (when (nth 3 res) (error "Inside a string!"))
       (when (nth 4 res) (error "Inside a comment!"))
@@ -885,7 +888,11 @@ form.  If there are too many parens delete them.  The form is also indented."
 		      (error t)))
 	(goto-char p)
 	(insert ")"))
-      (unless (eq p (point)) (delete-region p (point)))))
+      (unless (eq p (point))
+	(error "Extra text after completed form.")
+;;;bug14287: don't delete the extra stuff... that's very unfriendly.
+;;;	(delete-region p (point))
+	)))
   (fi:beginning-of-defun)
   (if fi:lisp-do-indentation
       (fi:indent-sexp)
@@ -1250,7 +1257,8 @@ information stays around long enough to be used.")
   "Display the value of the argument list of a symbol followed by
 SPC.  This function is intended to be bound to the SPC key so
 that, after being enabled it will display the arglist or value of a
-specific symbol after the symbol has been typed in followed by SPC."
+specific symbol after the symbol has been typed in followed by SPC.
+See the variable `fi:auto-arglist-pop-up-style'."
   (interactive)
   (if (fi::lep-open-connection-p)
       (fi::arglist-lisp-space-1)

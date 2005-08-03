@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-basic-lep.el,v 3.2 2004/03/26 18:42:59 layer Exp $
+;; $Id: fi-basic-lep.el,v 3.3 2005/08/03 05:08:34 layer Exp $
 ;;
 ;; The basic lep code that implements connections and sessions
 
@@ -200,15 +200,7 @@ emacs-lisp interface cannot be started.
 			       fi::lisp-port
 			       fi::lisp-password))
 
-;; cac 22mar04: fi::old-emacs-mule-p is equivalent to the old test, and is used
-;; for compatibility in the places where we've always set the process coding
-;; system to emacs-mule before we had the fi:use-emacs-mule-lisp-listeners
-;; flag.
-;;
-(defun fi::old-emacs-mule-p ()
-  (and (fboundp 'set-process-coding-system)
-       ;; spr24414
-       (member 'emacs-mule (coding-system-list))))
+;; Removed defunct fi::old-emacs-mule-p.  cac 7jun05
 
 (defvar fi:use-emacs-mule-lisp-listeners t
   "*Flag which determines whether to set a buffer's Lisp listener's
@@ -217,9 +209,35 @@ normally be set to true.  Setting this flag to nil restores the
 buffer-coding-systems setting behavior to be as it was in the Allegro CL 6.2
 release.")
 
-(defun fi::emacs-mule-p ()
-  (and fi:use-emacs-mule-lisp-listeners
-       (fi::old-emacs-mule-p)))
+;; Removed defunct fi::emacs-mule-p.  cac 7jun05
+
+(defun fi::coding-system-name (cs)
+  (when (listp cs)
+    (setq cs (car cs)))
+  (when (fboundp 'coding-system-name)	; xemacs only
+    (setq cs (coding-system-name cs)))
+  cs)
+
+;; spr30075
+;; Notes: eli on xemacs requires the emacs-base package.  The mule-sumo should
+;; also be installed for xemacs with mule to provide mule-ucs.
+;;
+;; Load mule-ucs if available.  This defines a good utf-8.
+;; 
+(condition-case nil (require 'un-define) (error nil))
+
+(defun fi::lisp-connection-coding-system ()
+  (if (and (string-match "xemacs" emacs-version)
+	   (string< "21.5" emacs-version))
+      ;; xemacs 21.5 has a good utf-8
+      'utf-8
+    ;; else check if we can load mule-ucs utf-8
+    (if (member 'un-define features)
+	;; then we have mule-ucs utf-8
+	'utf-8
+      ;; else return nil if no emacs-mule
+      (when (fboundp 'coding-system-list)
+	(car (member 'emacs-mule (coding-system-list)))))))
 
 (defun fi::make-connection-to-lisp (host port passwd)
   (let* ((proc-name (format " *LEP %s %d %d*" host port passwd))
@@ -230,14 +248,14 @@ release.")
 	 (buffer-name proc-name)
 	 (buffer (when buffer-name
 		   (get-buffer-create buffer-name)))
-	 (process (fi::open-network-stream proc-name nil host port)))
+	 (process (fi::open-network-stream proc-name nil host port))
+	 (coding-system (fi::lisp-connection-coding-system)))
     (when buffer
       (bury-buffer buffer)
       (save-excursion (set-buffer buffer) (erase-buffer))
       (set-process-buffer process buffer))
-    ;; cac 20dec00
-    (when (fi::old-emacs-mule-p)
-      (set-process-coding-system process 'emacs-mule 'emacs-mule))
+    (when coding-system 
+      (set-process-coding-system process coding-system coding-system))
     (set-process-filter process 'fi::lep-connection-filter)
     ;; new stuff to indicate that we want the lisp editor protocol
     (process-send-string process ":lep\n")
@@ -246,15 +264,16 @@ release.")
     ;; Send the class of the editor to the lisp.
     ;; This might affect something!
     ;; For example, gnu 19 has some good features.
-    (process-send-string
-     process
-     (format "\"%s\"\n"
 ;;;; The following works in xemacs 20.x when this file is compiled
 ;;;; with emacs 19.x, but we don't want to install this hack since
 ;;;; there are hundreds of other places a similar hack would have to
 ;;;; be installed.
-	     ;;(remove (aref "\"" 0) (emacs-version))
-	     (remove ?\" (emacs-version))))
+    (let ((version-string (remove ?\" (emacs-version))))
+      (process-send-string
+       process
+       (if coding-system
+	   (format "\"%s :external-format %s\"\n" version-string coding-system)
+	 (format "\"%s\"\n" version-string))))
     (prog1
 	(setq fi::*connection*
 	  (fi::make-connection (current-buffer) host process))

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 3.2 2004/03/21 16:01:00 layer Exp $
+;; $Id: fi-lep.el,v 3.3 2005/08/03 05:08:34 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -354,7 +354,15 @@ time."
 	    (progn
 	      (goto-char
 	       (if (and (on-ms-windows)
-			(not (eq buffer-file-coding-system 'no-conversion)))
+			(not
+			 (or (eq buffer-file-coding-system 'no-conversion)
+			     ;; spr29385
+			     (member (coding-system-eol-type
+				      buffer-file-coding-system)
+				     '(0 ; emacs
+				       lf ; xemacs
+				       nil ; xemacs (no-conversion)
+				       )))))
 		   (fi::cl-file-position-to-point point)
 		 (1+ point)))
 	      (if (not xb) (set-mark (point)))))
@@ -385,7 +393,14 @@ versions of Emacs that support such things."
   (interactive "NGoto CL file-position: ")
   (goto-char
    (if (and (on-ms-windows)
-	    (not (eq buffer-file-coding-system 'no-conversion)))
+	    (not
+	     (or (eq buffer-file-coding-system 'no-conversion)
+		 ;; spr29385
+		 (member (coding-system-eol-type buffer-file-coding-system)
+			 '(0		; emacs
+			   lf 		; xemacs
+			   nil		; xemacs (no-conversion)
+			   )))))
        (fi::cl-file-position-to-point file-position)
      file-position)))
 

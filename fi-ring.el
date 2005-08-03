@@ -18,7 +18,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-ring.el,v 3.0 2003/12/15 22:52:57 layer Exp $
+;; $Id: fi-ring.el,v 3.1 2005/08/03 05:08:34 layer Exp $
 
 ;; This code is very similar to the kill-ring implementation
 ;; and implements the fi::subprocess input ring.  Each fi::subprocess buffer
@@ -54,10 +54,11 @@
 
 (defun fi::input-append (string before-p)
   (setq fi::last-command-was-successful-search nil)
-  (setcar fi::input-ring
-	  (if before-p
-	      (concat string (car fi::input-ring))
-	      (concat (car fi::input-ring) string))))
+  (when fi::input-ring
+    (setcar fi::input-ring
+	    (if before-p
+		(concat string (car fi::input-ring))
+	      (concat (car fi::input-ring) string)))))
 
 (defun fi::input-region (beg end)
   "Delete the region and save the text in input ring.

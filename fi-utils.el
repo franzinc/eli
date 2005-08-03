@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 3.3 2004/05/05 18:24:34 layer Exp $
+;; $Id: fi-utils.el,v 3.4 2005/08/03 05:08:34 layer Exp $
 
 ;;; Misc utilities
 
@@ -1112,10 +1112,10 @@ created by fi:common-lisp."
 
 (defun fi:start-interface-via-file (host buffer connection-file)
   (interactive "sHost: \nBBuffer name: \nfConnection data file: ")
-  (fi::start-interface-via-file-1 host buffer connection-file)
   ;; Can't bind this, or background errors will not be handled
   ;; correctly.
-  (setq fi::started-via-file t))
+  (setq fi::started-via-file t)
+  (fi::start-interface-via-file-1 host buffer connection-file))
 
 (defun fi::start-interface-via-file-1 (host buffer connection-file)
   ;; On the lisp side, you would do something like this:
@@ -1188,13 +1188,17 @@ created by fi:common-lisp."
   ;; On Windows there is a very small limit on the size of a command line.
   ;; So, we have to jump through hoops to get the below form evaluated by
   ;; lisp. 
-  (let* ((temp-file
+  (let* ((xtemp-file
 	  (format "%s\\elidaemon%s" (fi::temporary-directory)
 		  (emacs-pid)))
+	 (temp-file
+	  (if (on-ms-windows)
+	      (substitute ?/ ?\\ xtemp-file)
+	    xtemp-file))
 	 (args (list "-L" temp-file
-		     "-e"
-		     (format "(delete-file \"%s\")"
-			     (substitute ?/ ?\\ temp-file)))))
+;;;; has to be after the load, so we can delete it without a sharing
+;;;; violation on Windows.
+		     "-f" "excl::new-start-emacs-lisp-interface-cleanup")))
 
     (when lisp-image-name
       (when (string-match "^~" lisp-image-name)
@@ -1206,21 +1210,27 @@ created by fi:common-lisp."
        (if (on-ms-windows)
 	   (format
 	    "\
- (if (fboundp (quote excl::new-start-emacs-lisp-interface))\
-     (excl::new-start-emacs-lisp-interface :background-streams %s)\
+ (in-package :excl)\n\
+ (if (fboundp (quote new-start-emacs-lisp-interface))\
+     (new-start-emacs-lisp-interface :background-streams %s)\
    (progn\
      (format t\
       \"An error (~s) starting older Lisps from Emacs can be ignored.\"\
       \"eof encountered on stream\")\
      (terpri)\
-     (excl:start-emacs-lisp-interface %s)))\n"
-	    use-background-streams use-background-streams)
+     (start-emacs-lisp-interface %s)))\n\
+ (defun new-start-emacs-lisp-interface-cleanup ()\
+   (ignore-errors (delete-file \"%s\")))\n"
+	    use-background-streams use-background-streams temp-file)
 	 (format
 	  "\
- (if (fboundp (quote excl::new-start-emacs-lisp-interface))\
-     (excl::new-start-emacs-lisp-interface :background-streams %s)\
-   (excl:start-emacs-lisp-interface %s))\n"
-	  use-background-streams use-background-streams))))
+ (in-package :excl)\n\
+ (if (fboundp (quote new-start-emacs-lisp-interface))\
+     (new-start-emacs-lisp-interface :background-streams %s)\
+   (start-emacs-lisp-interface %s))\n\
+ (defun new-start-emacs-lisp-interface-cleanup ()\
+   (ignore-errors (delete-file \"%s\")))"
+	  use-background-streams use-background-streams temp-file))))
     
     args))
 

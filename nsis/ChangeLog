@@ -1,0 +1,10 @@
+2004-10-08    <mikel@franz.com>
+
+	* install.nsi: check for ACL installation.
+	               prompt to create/modify .emacs file
+		       with sample ELI starting code.
+
+2004-10-07  Kevin Layer  <layer@gemini>
+
+	* install.nsi: new from Mikel
+
