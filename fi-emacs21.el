@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-emacs21.el,v 3.3 2005/08/03 05:08:34 layer Exp $
+;; $Id: fi-emacs21.el,v 3.4 2005/09/12 22:39:55 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; emacs specific stuff
@@ -1076,7 +1076,7 @@
 ;; subsequently closed...
 
 (defun fi::window-config-changed ()
-  (setq fi::*new-frame-width* (cons (1- (frame-width)) (selected-frame))))
+  (setq fi::*new-frame-width* (cons (1- (window-width)) (selected-frame))))
 
 (add-hook 'window-configuration-change-hook 'fi::window-config-changed)
 

@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 3.8 2005/08/03 05:08:34 layer Exp $
+;; $Id: fi-subproc.el,v 3.9 2005/09/12 22:39:55 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -600,7 +600,11 @@ be a string. Use the 6th argument for image file."))
 (defun fi::eli-compat-mode-p (port)
   (let (proc)
     (condition-case ()
-	(setq proc (open-network-stream "*eli-compat*" nil "localhost" port))
+	(setq proc
+	  (let ((display-warning-minimum-level
+		 ;; For XEmacs -- see bug14703
+		 'error))
+	    (open-network-stream "*eli-compat*" nil "localhost" port)))
       (error))
     (cond (proc
 	   ;; something detected on port, kill proc and return `t'

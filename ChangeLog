@@ -1,3 +1,12 @@
+2005-09-07  Kevin Layer  <layer@gemini>
+
+	* fi-subproc.el (fi::eli-compat-mode-p): bug14703: get rid of
+	  warnings in XEmacs
+
+	* fi-site-init.el,
+	* fi-emacs21.el (fi::window-config-changed): rfe6203: emacs
+	  doesn't track window swidth for split screen
+
 2005-06-28    <layer@HOBART>
 
 	* Makefile: use cygwin perl instead of activestate to get emacs
@@ -5088,4 +5097,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.10 $
+$Revision: 3.11 $
