@@ -1,3 +1,10 @@
+2005-09-20    <layer@HOBART>
+
+	* fi-subproc.el: abstract common code into
+	  fi::run-start-lisp-interface-hooks
+	* fi-utils.el: bug14993: don't run fi:show-run-status unless it's
+	  still on fi:start-lisp-interface-hook.
+
 2005-09-07  Kevin Layer  <layer@gemini>
 
 	* fi-subproc.el (fi::eli-compat-mode-p): bug14703: get rid of
@@ -5097,4 +5104,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.11 $
+$Revision: 3.12 $

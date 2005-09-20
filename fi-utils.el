@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 3.4 2005/08/03 05:08:34 layer Exp $
+;; $Id: fi-utils.el,v 3.5 2005/09/20 21:10:03 layer Exp $
 
 ;;; Misc utilities
 
@@ -1150,7 +1150,8 @@ created by fi:common-lisp."
       ;; Make the backdoor connection, too:
       (fi::make-connection-to-lisp fi::lisp-host fi::lisp-port
 				   fi::lisp-password)
-      (fi:show-run-status)
+      (when (memq 'fi:show-run-status fi:start-lisp-interface-hook)
+	(fi:show-run-status))
       proc)))
 
 (defun fi::probe-file (file)

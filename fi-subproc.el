@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 3.9 2005/09/12 22:39:55 layer Exp $
+;; $Id: fi-subproc.el,v 3.10 2005/09/20 21:10:03 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -665,15 +665,18 @@ be a string. Use the 6th argument for image file."))
 	      ((case-insensitive-lower case-sensitive-lower) ':lower)
 	      ((CASE-INSENSITIVE-UPPER CASE-SENSITIVE-UPPER) ':upper)))
 	(error nil))
-      (cond ((consp fi:start-lisp-interface-hook)
-	     (mapcar 'funcall fi:start-lisp-interface-hook))
-	    (fi:start-lisp-interface-hook
-	     (funcall fi:start-lisp-interface-hook))))
+      (fi::run-start-lisp-interface-hooks))
     
     (when (null process)
       (error "Couldn't make connection to existing Lisp [no process]."))
     (setq default-directory directory)
     process))
+
+(defun fi::run-start-lisp-interface-hooks ()
+  (cond ((consp fi:start-lisp-interface-hook)
+	 (mapcar 'funcall fi:start-lisp-interface-hook))
+	(fi:start-lisp-interface-hook
+	 (funcall fi:start-lisp-interface-hook))))
 
 (defun fi::common-lisp-1-windows (proc host buffer-name directory
 				  executable-image-name image-file
@@ -1112,10 +1115,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	
 	(condition-case condition
 	    (progn
-	      (cond ((consp fi:start-lisp-interface-hook)
-		     (mapcar 'funcall fi:start-lisp-interface-hook))
-		    (fi:start-lisp-interface-hook
-		     (funcall fi:start-lisp-interface-hook)))
+	      (fi::run-start-lisp-interface-hooks)
 	      (throw 'cl-subproc-filter-foo
 		(cons 'normal res)))
 	  (error (throw 'cl-subproc-filter-foo
