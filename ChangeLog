@@ -1,3 +1,8 @@
+2005-11-02  Kevin Layer  <layer@gemini>
+
+	* fi-lze.el (fi::eval-region-internal): bug15748: fix shadowing
+	  cl:nil breakage
+
 2005-09-20    <layer@HOBART>
 
 	* fi-subproc.el: abstract common code into
@@ -5104,4 +5109,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.12 $
+$Revision: 3.13 $
