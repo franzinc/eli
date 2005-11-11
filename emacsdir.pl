@@ -1,7 +1,6 @@
-# $Id: emacsdir.pl,v 3.0 2003/12/15 22:52:57 layer Exp $
+# $Id: emacsdir.pl,v 3.1 2005/11/11 19:54:57 layer Exp $
 #
-# This script requires Active Perl version 502
-#  (\\beast\import\pc\perl-win32\APi502e.exe)
+# This script requires Cygwin Perl
 
 use Win32::Registry;
 
