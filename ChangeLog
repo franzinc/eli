@@ -1,3 +1,7 @@
+2005-12-01  Kevin Layer  <layer@gemini>
+
+	* fi-indent.el: rfe6400: add doclass and doclass* indent specs
+
 2005-11-02  Kevin Layer  <layer@gemini>
 
 	* fi-lze.el (fi::eval-region-internal): bug15748: fix shadowing
@@ -5109,4 +5113,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.13 $
+$Revision: 3.14 $
