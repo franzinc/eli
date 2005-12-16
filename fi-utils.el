@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 3.5 2005/09/20 21:10:03 layer Exp $
+;; $Id: fi-utils.el,v 3.6 2005/12/16 18:40:20 layer Exp $
 
 ;;; Misc utilities
 
@@ -331,10 +331,28 @@ readable.  The error from open-network-stream was:
   %s"
 		   host (car (cdr condition))))
 	(t
-	 (fi:error "
+	 (cond
+	  ((and (string-match "xemacs" emacs-version)
+		(string= "21.4.17" emacs-program-version))
+	   (fi:error "
+Can't connect to host %s.  The error from open-network-stream was:
+  %s
+
+You are running XEmacs 21.4.17, which has been known to contain a bug
+that prevents open-network-stream to signal an error when a numerical
+port is passed.  Try this workaround to the bug, by putting the following
+form into your .emacs:
+
+   (defadvice open-network-stream (around make-ports-be-strings)
+     (when (numberp service)
+       (setq service (format \"%%d\" service)))
+      ad-do-it)"
+		     host (car (cdr condition))))
+	  (t
+	   (fi:error "
 Can't connect to host %s.  The error from open-network-stream was:
   %s"
-		   host (car (cdr condition))))))
+		     host (car (cdr condition))))))))
      nil)))
 
 (defun fi:note (format-string &rest args)

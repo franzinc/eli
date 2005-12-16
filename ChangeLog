@@ -1,3 +1,8 @@
+2005-12-16    <layer@HOBART>
+
+	* fi-utils.el: fi::open-network-stream: put in workaround for
+	  an xemacs bug (see rfe6422 for more info)
+
 2005-12-01  Kevin Layer  <layer@gemini>
 
 	* fi-indent.el: rfe6400: add doclass and doclass* indent specs
@@ -5113,4 +5118,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.14 $
+$Revision: 3.15 $
