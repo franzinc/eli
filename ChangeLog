@@ -1,3 +1,7 @@
+*******************************************************************************
+post-8.0 release changes:
+
+*******************************************************************************
 2005-12-16    <layer@HOBART>
 
 	* fi-utils.el: fi::open-network-stream: put in workaround for
@@ -5118,4 +5122,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.15 $
+$Revision: 3.15.2.1 $
