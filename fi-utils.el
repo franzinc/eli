@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 3.6 2005/12/16 18:40:20 layer Exp $
+;; $Id: fi-utils.el,v 3.6.2.1 2006/03/08 23:13:37 layer Exp $
 
 ;;; Misc utilities
 
@@ -1214,7 +1214,11 @@ created by fi:common-lisp."
 	  (if (on-ms-windows)
 	      (substitute ?/ ?\\ xtemp-file)
 	    xtemp-file))
-	 (args (list "-L" temp-file
+	 (args (list "-L"
+		     (if (cygwinp)
+			 ;; ACL doesn't grok cygwin syntax
+			 (cygwin-to-windows-pathname temp-file)
+		       temp-file)
 ;;;; has to be after the load, so we can delete it without a sharing
 ;;;; violation on Windows.
 		     "-f" "excl::new-start-emacs-lisp-interface-cleanup")))
@@ -1222,7 +1226,12 @@ created by fi:common-lisp."
     (when lisp-image-name
       (when (string-match "^~" lisp-image-name)
 	(setq lisp-image-name (expand-file-name lisp-image-name)))
-      (setq args (append (list "-I" lisp-image-name) args)))
+      (setq args
+	(append (list "-I"
+		      (if (cygwinp)
+			  (cygwin-to-windows-pathname lisp-image-name)
+			lisp-image-name))
+		args)))
     
     (with-temp-file temp-file
       (insert
@@ -1240,7 +1249,8 @@ created by fi:common-lisp."
      (start-emacs-lisp-interface %s)))\n\
  (defun new-start-emacs-lisp-interface-cleanup ()\
    (ignore-errors (delete-file \"%s\")))\n"
-	    use-background-streams use-background-streams temp-file)
+	    use-background-streams use-background-streams
+	    (if (cygwinp) (cygwin-to-windows-pathname temp-file) temp-file))
 	 (format
 	  "\
  (in-package :excl)\n\
@@ -1271,3 +1281,35 @@ created by fi:common-lisp."
       (setq args (append (list "-I" lisp-image-name) args)))
     
     args))
+
+(defun cygwin-to-windows-pathname (string)
+  ;; /c/foo => c:/foo
+  ;; /cygdrive/c/foo => c:/foo
+  (cond
+   ((or (string-match "/cygdrive/\\([A-Za-z]\\)\\(/.*\\)" string)
+	(string-match "/\\([A-Za-z]\\)\\(/.*\\)" string))
+    (concat (match-string 1 string) ":" (match-string 2 string)))
+   (t string)))
+
+(defun cygwin-to-windows-process-id (proc)
+  (cygwin-to-windows-process-id-via-ps (process-id proc)))
+
+(defun cygwin-to-windows-process-id-via-ps (cygwin-pid)
+  (let ((pid (int-to-string cygwin-pid))
+	(output
+	 (cdr (split-string (shell-command-to-string "ps -al")
+			    "[\n\r]")))
+	(s "[ \t]+")
+	(d "[0-9]+")
+	pid)
+    (while output
+      (when (string-match
+	     (concat s pid		; CYGWIN PID
+		     s d		; PPID
+		     s d		; PGID
+		     s "\\(" d "\\)"	; WINPIN
+		     s)
+	     (car output))
+	(setq pid (match-string 1 (car output))))
+      (setq output (cdr output)))
+    (when pid (string-to-int pid 10))))

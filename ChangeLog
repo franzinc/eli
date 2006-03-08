@@ -1,6 +1,12 @@
 *******************************************************************************
 post-8.0 release changes:
 
+2006-03-08    <layer@HOBART>
+
+	* fi-site-init.el: handle system-type for cygwin
+	* fi-subproc.el: starting up w/cygwin emacs
+	* fi-utils.el: starting up w/cygwin emacs
+
 *******************************************************************************
 2005-12-16    <layer@HOBART>
 
@@ -5122,4 +5128,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.15.2.1 $
+$Revision: 3.15.2.2 $
