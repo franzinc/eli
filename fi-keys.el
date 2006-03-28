@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 3.4.18.1 2006/03/28 22:37:05 layer Exp $
+;; $Id: fi-keys.el,v 3.4.18.2 2006/03/28 23:14:55 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -1319,20 +1319,26 @@ current form."
       ;; Transformations:
       ;;   (foo &rest args) into (foo "args...")
       ;;   (foo &key a b c) into (foo :a a :b b :c c)
-      (let ((result '())
-	    keyword-mode)
+      (let ((result '()) keyword-mode optional-mode)
 	(while arglist
-	  (cond ((eq '&rest (car arglist))
+	  (cond ((eq '&optional (car arglist))
+		 (setq optional-mode t))
+		((eq '&rest (car arglist))
 		 (when (not (eq '&key (caddr arglist)))
 		   ;; No &key after the &rest
 		   (push (format "%s..." (cadr arglist)) result))
 		 (setq arglist (cdr arglist)))
-		((eq '&key (car arglist)) (setq keyword-mode t))
-		(t 
-		 (cond (keyword-mode
-			(push (format ":%s" (car arglist)) result)
-			(push (car arglist) result))
-		       (t (push (car arglist) result)))))
+		((eq '&key (car arglist))
+		 (setq keyword-mode t)
+		 (setq optional-mode nil))
+		(t
+		 (let ((s (if (consp (car arglist))
+			      (caar arglist)
+			    (car arglist))))
+		   (cond (optional-mode (push (format "[%s]" s) result))
+			 (keyword-mode (push (format ":%s" s) result)
+				       (push s result))
+			 (t (push s result))))))
 	  (setq arglist (cdr arglist)))
 	(nreverse result)))))
 
