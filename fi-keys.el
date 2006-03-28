@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 3.4.18.3 2006/03/28 23:16:00 layer Exp $
+;; $Id: fi-keys.el,v 3.4.18.4 2006/03/28 23:31:54 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -290,6 +290,7 @@ fi:auto-arglist-pop-up-style.")
       (fi::defkey cmap "c" 'fi:list-who-calls (and clisp ext))
       (fi::defkey cmap "d" 'fi:describe-symbol (and clisp ext))
       (fi::defkey cmap "f" 'fi:lisp-function-documentation (and clisp ext))
+      (fi::defkey cmap "i" 'fi:insert-arglist (and clisp ext))
       (fi::defkey cmap "k" 'fi:kill-definition (and clisp ext))
       (fi::defkey cmap "l" 'fi:toggle-to-lisp (and clisp ext))
       (fi::defkey cmap "m" 'fi:lisp-macroexpand (and clisp ext))
