@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 3.4 2005/08/03 05:08:34 layer Exp $
+;; $Id: fi-keys.el,v 3.4.18.1 2006/03/28 22:37:05 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -172,6 +172,7 @@ fi:auto-arglist-pop-up-style.")
 	(fi::defkey map [menu-bar] (lookup-key comint-mode-map [menu-bar]) t))
 
 ;;;; ESC map
+      (fi::defkey emap "\C-a" 'fi:insert-arglist clisp)
       (fi::defkey emap "\C-i" 'fi:lisp-complete-symbol clisp)
       (fi::defkey emap "\C-m" 'fi:inferior-lisp-input-sexp (and ext listener))
       (fi::defkey emap "\C-q" (if indent 'fi:indent-sexp 'indent-sexp)
@@ -1266,3 +1267,86 @@ See the variable `fi:auto-arglist-pop-up-style'."
 
 ;; fi::arglist-lisp-space-1 moved to fi-lep.el due to macros needed at
 ;; compile time.
+
+
+(defun fi:insert-arglist ()
+  "Insert the arglist for the symbol in the function position in the
+current form."
+  (interactive)
+  (let* ((start (if (get-buffer-process (current-buffer))
+		    (marker-position
+		     (process-mark (get-buffer-process (current-buffer))))
+		  (save-excursion
+		    (fi:beginning-of-defun 1)
+		    (point))))
+	 (end (point))
+	 (symbol (fi::symbol-in-function-position start end))
+	 arglist
+	 pos)
+    
+    (when (and symbol
+	       (setq arglist
+		 (fi:eval-in-lisp
+		  (format "(let ((common-lisp:*print-length* nil)) (princ-to-string (arglist '%s)))" symbol)))
+	       (setq arglist (fi::prep-arglist-for-insertion arglist))
+	       (setq position-of-next (fi::next-argument-number start end)))
+      (setq arglist (nthcdr (1- position-of-next) arglist))
+      (save-excursion
+	(while arglist
+	  (let ((item (car arglist)))
+	    (insert (if (symbolp item) (symbol-name item) item)))
+	  (when (cdr arglist) (insert " "))
+	  (setq arglist (cdr arglist)))
+	(insert ")")))))
+
+
+(defun fi::symbol-in-function-position (start end)
+  (save-excursion
+    (condition-case nil
+	(progn
+	  (up-list -1)
+	  (forward-char 1)
+	  (fi::defontify-string (buffer-substring
+				 (point)
+				 (progn (forward-sexp 1) (point)))))
+      (error nil))))
+
+(defun fi::prep-arglist-for-insertion (string)
+  (let ((arglist (condition-case nil
+		     (car (read-from-string string))
+		   (error nil))))
+    (when arglist
+      ;; Transformations:
+      ;;   (foo &rest args) into (foo "args...")
+      ;;   (foo &key a b c) into (foo :a a :b b :c c)
+      (let ((result '())
+	    keyword-mode)
+	(while arglist
+	  (cond ((eq '&rest (car arglist))
+		 (when (not (eq '&key (caddr arglist)))
+		   ;; No &key after the &rest
+		   (push (format "%s..." (cadr arglist)) result))
+		 (setq arglist (cdr arglist)))
+		((eq '&key (car arglist)) (setq keyword-mode t))
+		(t 
+		 (cond (keyword-mode
+			(push (format ":%s" (car arglist)) result)
+			(push (car arglist) result))
+		       (t (push (car arglist) result)))))
+	  (setq arglist (cdr arglist)))
+	(nreverse result)))))
+
+(defun fi::next-argument-number (limit point)
+  ;; If the limit and point are here:
+  ;;    (foo 1 2 3 4
+  ;;    |limit       |point
+  ;; then the return value would `5'.
+  (save-excursion
+    (let ((n 0) (no-error t))
+      (while (and no-error (> (point) limit))
+	(condition-case nil
+	    (progn
+	      (forward-sexp -1)
+	      (setq n (+ n 1)))
+	  (error (setq no-error nil)))) 
+      n)))
