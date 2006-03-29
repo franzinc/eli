@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 3.4.18.6 2006/03/29 18:02:05 layer Exp $
+;; $Id: fi-keys.el,v 3.4.18.7 2006/03/29 21:38:10 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -1321,7 +1321,10 @@ current form."
       ;;   (foo &key a b c) into (foo :a a :b b :c c)
       (let ((result '()) keyword-mode optional-mode)
 	(while arglist
-	  (cond ((eq '&optional (car arglist))
+	  (cond ((eq '&aux (car arglist))
+		 ;; We're done.
+		 (setq arglist nil))
+		((eq '&optional (car arglist))
 		 (setq optional-mode t))
 		((eq '&rest (car arglist))
 		 (when (not (eq '&key (caddr arglist)))
@@ -1332,15 +1335,19 @@ current form."
 		 (setq keyword-mode t)
 		 (setq optional-mode nil))
 		(t
-		 (let ((s (if (consp (car arglist))
-			      (if (consp (caar arglist))
-				  ;; ie ((case *print-case*) :upcase)
-				  (caaar arglist)
-				;; ie (case :upcase)
-				(caar arglist))
-			    (car arglist))))
+		 (let* ((keyword-prefix ":")
+			(s (if (consp (car arglist))
+			       (if (consp (caar arglist))
+				   ;; ((keyword-name var) init-form)
+				   (progn
+				     (setq keyword-prefix "'")
+				     (caaar arglist))
+				 ;; (var init-form)
+				 (caar arglist))
+			     (car arglist))))
 		   (cond (optional-mode (push (format "[%s]" s) result))
-			 (keyword-mode (push (format ":%s" s) result)
+			 (keyword-mode (push (format "%s%s" keyword-prefix s)
+					     result)
 				       (push s result))
 			 (t (push s result))))))
 	  (setq arglist (cdr arglist)))
