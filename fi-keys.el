@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 3.4.18.5 2006/03/29 05:33:29 layer Exp $
+;; $Id: fi-keys.el,v 3.4.18.6 2006/03/29 18:02:05 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -1333,7 +1333,11 @@ current form."
 		 (setq optional-mode nil))
 		(t
 		 (let ((s (if (consp (car arglist))
-			      (caar arglist)
+			      (if (consp (caar arglist))
+				  ;; ie ((case *print-case*) :upcase)
+				  (caaar arglist)
+				;; ie (case :upcase)
+				(caar arglist))
 			    (car arglist))))
 		   (cond (optional-mode (push (format "[%s]" s) result))
 			 (keyword-mode (push (format ":%s" s) result)
