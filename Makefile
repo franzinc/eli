@@ -1,4 +1,4 @@
-# $Id: Makefile,v 3.2 2005/08/03 05:08:34 layer Exp $
+# $Id: Makefile,v 3.2.18.1 2006/03/30 02:52:32 layer Exp $
 # This makefile requires GNU make.
 
 include version.mak
@@ -41,7 +41,7 @@ pwd = $(shell ../bin/pwd)
 endif
 endif
 
-all default:	fi-vers.el compile
+all default:	fi-vers.el compile test.out
 
 compile:	fi-vers.el
 	$(emacs) -nw -batch -q -l $(pwd)/fi-compile.el -kill

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 3.4.18.7 2006/03/29 21:38:10 layer Exp $
+;; $Id: fi-keys.el,v 3.4.18.8 2006/03/30 02:52:32 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -1288,17 +1288,24 @@ current form."
 	       (setq arglist
 		 (fi:eval-in-lisp
 		  (format "(let ((common-lisp:*print-length* nil)) (princ-to-string (arglist '%s)))" symbol)))
-	       (setq arglist (fi::prep-arglist-for-insertion arglist))
+	       (setq arglist
+		 (fi::prep-arglist-for-insertion
+		  arglist
+		  ;; Is this a macro arglist?
+		  (fi:eval-in-lisp
+		   (format "(not (null (macro-function '%s)))" symbol))))
 	       (setq position-of-next (fi::next-argument-number start end)))
       (setq arglist (nthcdr (1- position-of-next) arglist))
       (save-excursion
 	(while arglist
 	  (let ((item (car arglist)))
-	    (insert (if (symbolp item) (symbol-name item) item)))
+	    (cond
+	     ((symbolp item) (insert (symbol-name item)))
+	     ((consp item) (fi::insert-list item))
+	     (t (insert item))))
 	  (when (cdr arglist) (insert " "))
 	  (setq arglist (cdr arglist)))
 	(insert ")")))))
-
 
 (defun fi::symbol-in-function-position (start end)
   (save-excursion
@@ -1311,47 +1318,65 @@ current form."
 				 (progn (forward-sexp 1) (point)))))
       (error nil))))
 
-(defun fi::prep-arglist-for-insertion (string)
+(defun fi::prep-arglist-for-insertion (string is-macro)
   (let ((arglist (condition-case nil
 		     (car (read-from-string string))
 		   (error nil))))
     (when arglist
-      ;; Transformations:
-      ;;   (foo &rest args) into (foo "args...")
-      ;;   (foo &key a b c) into (foo :a a :b b :c c)
-      (let ((result '()) keyword-mode optional-mode)
-	(while arglist
-	  (cond ((eq '&aux (car arglist))
-		 ;; We're done.
-		 (setq arglist nil))
-		((eq '&optional (car arglist))
-		 (setq optional-mode t))
-		((eq '&rest (car arglist))
-		 (when (not (eq '&key (caddr arglist)))
-		   ;; No &key after the &rest
-		   (push (format "%s..." (cadr arglist)) result))
-		 (setq arglist (cdr arglist)))
-		((eq '&key (car arglist))
-		 (setq keyword-mode t)
-		 (setq optional-mode nil))
-		(t
-		 (let* ((keyword-prefix ":")
-			(s (if (consp (car arglist))
-			       (if (consp (caar arglist))
-				   ;; ((keyword-name var) init-form)
-				   (progn
-				     (setq keyword-prefix "'")
-				     (caaar arglist))
-				 ;; (var init-form)
-				 (caar arglist))
-			     (car arglist))))
-		   (cond (optional-mode (push (format "[%s]" s) result))
-			 (keyword-mode (push (format "%s%s" keyword-prefix s)
-					     result)
-				       (push s result))
-			 (t (push s result))))))
-	  (setq arglist (cdr arglist)))
-	(nreverse result)))))
+      (fi::prep-arglist-for-insertion-1 arglist is-macro))))
+
+(defun fi::prep-arglist-for-insertion-1 (arglist is-macro)
+  ;; Transformations:
+  ;;   (foo &rest args) into (foo "args...")
+  ;;   (foo &key a b c) into (foo :a a :b b :c c)
+  (let ((result '()) keyword-mode optional-mode)
+    (while arglist
+      (cond ((eq '&aux (car arglist))
+	     ;; We're done.
+	     (setq arglist nil))
+	    ((eq '&allow-other-keys (car arglist)) ;; ignore
+	     )
+	    ((eq '&optional (car arglist))
+	     (setq optional-mode t))
+	    ((eq '&body (car arglist))
+	     (push (format "%s..." (cadr arglist)) result)
+	     (setq arglist (cdr arglist)))
+	    ((eq '&rest (car arglist))
+	     (when (not (eq '&key (caddr arglist)))
+	       ;; No &key after the &rest
+	       (push (format "%s..." (cadr arglist)) result))
+	     (setq arglist (cdr arglist)))
+	    ((eq '&key (car arglist))
+	     (setq keyword-mode t)
+	     (setq optional-mode nil))
+	    (t
+	     (let* ((keyword-prefix ":")
+		    (s
+		     (cond
+		      ((and keyword-mode (consp (car arglist)))
+		       (cond
+			((consp (caar arglist))
+			 ;; ((keyword-name var) init-form)
+			 (setq keyword-prefix "'")
+			 (caaar arglist))
+			(t
+			 ;; (var init-form)
+			 (caar arglist))))
+		      ((and is-macro (consp (car arglist)))
+		       (push (fi::prep-arglist-for-insertion-1
+			      (car arglist)
+			      ;; Process as non-macro:
+			      nil)
+			     result))
+		      (t (car arglist)))))
+	       (cond (is-macro)
+		     (optional-mode (push (format "[%s]" s) result))
+		     (keyword-mode (push (format "%s%s" keyword-prefix s)
+					 result)
+				   (push s result))
+		     (t (push s result))))))
+      (setq arglist (cdr arglist)))
+    (reverse result)))
 
 (defun fi::next-argument-number (limit point)
   ;; If the limit and point are here:
@@ -1367,3 +1392,16 @@ current form."
 	      (setq n (+ n 1)))
 	  (error (setq no-error nil)))) 
       n)))
+
+(defun fi::insert-list (list)
+  (insert "(")
+  (let (item)
+    (while list
+      (setq item (car list))
+      (cond ((symbolp item) (insert (symbol-name item)))
+	    ((or (stringp item) (numberp item)) (insert item))
+	    ((consp item) (fi::insert-list item))
+	    (t (error "fi::insert-list: can't handle %s" item)))
+      (when (cdr list) (insert " "))
+      (setq list (cdr list))))
+  (insert ")"))
