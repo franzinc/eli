@@ -1,19 +1,18 @@
-;; $Id: fi-test.el,v 3.0 2003/12/15 22:52:58 layer Exp $
+;; $Id: fi-test.el,v 3.1 2006/04/17 21:17:59 layer Exp $
 
 (setq load-path (cons default-directory load-path))
 
 (load "fi-site-init")
 
-(defmacro test-equal (compare test)
-  (list 'let (list (list 'result test))
-	(list 'unless
-	      (list 'equal compare 'result)
-	      (list 'error
-		    "test-equal test failed: wanted %s, got %s"
-		    compare
-		    'result))))
+(defmacro test-equal (expected-value test-form)
+  (let ((expect (gensym))
+	(val (gensym)))
+    `(let* ((,expect ,expected-value)
+	    (,val ,test-form))
+       (when (not (equal ,expect ,val))
+	 (error "expected %s, got %s for %s" ,expect ,val ',test-form)))))
 
-(defun fi:test ()
+(defun fi-test::tests ()
   (interactive)
   (test-equal '("12345612345" "6")
 	      (fi::explode "123456123456" 1))
@@ -31,5 +30,54 @@
 	      (fi::explode "aabbccddee" 1))
   )
 
-(fi:test)
+(defun fi-test::prep-arglist-for-insertion ()
+  (interactive)
+  (test-equal '(a b c d)
+	      (fi::prep-arglist-for-insertion-1
+	       '(a b c d)
+	       nil))
+  
+  (test-equal '(a "[b]" "[c]" "[d]" "args...")
+	      (fi::prep-arglist-for-insertion-1
+	       '(a &optional b c d &rest args)
+	       nil))
+  
+  (test-equal '(a ":b" b ":c" c ":d" d)
+	      (fi::prep-arglist-for-insertion-1
+	       '(a &key b c d)
+	       nil))
+  
+  (test-equal '(a ":b" b ":c" c ":d" d)
+	      (fi::prep-arglist-for-insertion-1
+	       '(a &key b c d &allow-other-keys)
+	       nil))
+  
+  (test-equal '(a ":b" b "'c" c)
+	      (fi::prep-arglist-for-insertion-1
+	       '(a &key (b 'bee) ((c c1) 'cee))
+	       nil))
+  
+  (test-equal '(a "[b]" "[c]" "[d]")
+	      (fi::prep-arglist-for-insertion-1
+	       '(a &optional b c d)
+	       nil))
+  
+  (test-equal '(object ":stream" stream "':array" :array "':base" :base) 
+	      (fi::prep-arglist-for-insertion-1
+	       '(object &key stream ((:array *print-array*))
+		 ((:base *print-base*)))
+	       nil))
+  
+  (test-equal '((var "open-args...") "body...")
+	      (fi::prep-arglist-for-insertion-1
+	       '((var &rest open-args) &body body)
+	       t))
+  
+  (test-equal '((var ":foo" foo ":bar" bar ":baz" baz) "body...")
+	      (fi::prep-arglist-for-insertion-1
+	       '((var &key foo bar baz) &body body)
+	       t))
+  )
+
+(fi-test::tests)
 (kill-emacs)

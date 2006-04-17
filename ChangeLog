@@ -1,6 +1,22 @@
 *******************************************************************************
 post-8.0 release changes:
 
+2006-03-29  Kevin Layer  <layer@gemini>
+
+	* fi-keys.el: rfe6365: tweaks to fi:insert-arglist to handle
+	  defmacro arglists
+	* fi-test.el: add tests for above
+
+2006-03-28  Kevin Layer  <layer@gemini>
+
+	* fi-keys.el: rfe6365: fi:insert-arglist
+
+2006-03-08    <layer@HOBART>
+
+	* fi-site-init.el: handle system-type for cygwin
+	* fi-subproc.el: starting up w/cygwin emacs
+	* fi-utils.el: starting up w/cygwin emacs
+
 *******************************************************************************
 2005-12-16    <layer@HOBART>
 
@@ -5122,4 +5138,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.16 $
+$Revision: 3.17 $

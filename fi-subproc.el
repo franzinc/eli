@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 3.10 2005/09/20 21:10:03 layer Exp $
+;; $Id: fi-subproc.el,v 3.11 2006/04/17 21:17:59 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -681,17 +681,23 @@ be a string. Use the 6th argument for image file."))
 (defun fi::common-lisp-1-windows (proc host buffer-name directory
 				  executable-image-name image-file
 				  image-args)
-  (let ((connection-file
-	 (format "%s\\elistartup%d" (fi::temporary-directory)
-		 (process-id proc)))
-	;;In w32proc.c where is this Win9x lossage workaround
-	;; /* Hack for Windows 95, which assigns large (ie negative) pids */
-	;; if (cp->pid < 0)
-	;;   cp->pid = -cp->pid;
-	(connection-file-win9x
-	 (format "%s\\elistartup%d" (fi::temporary-directory)
-		 (- (process-id proc))))
-	(i 0))
+  (let* ((pid (if (cygwinp)
+		  (cygwin-to-windows-process-id proc)
+		(process-id proc)))
+	 (connection-file
+	  (format "%s%selistartup%d"
+		  (fi::temporary-directory)
+		  (if (cygwinp) "/" "\\") pid))
+	 ;;In w32proc.c where is this Win9x lossage workaround
+	 ;; /* Hack for Windows 95, which assigns large (ie negative) pids */
+	 ;; if (cp->pid < 0)
+	 ;;   cp->pid = -cp->pid;
+	 (connection-file-win9x
+	  (format "%s%selistartup%d"
+		  (fi::temporary-directory)
+		  (if (cygwinp) "/" "\\")
+		  (- pid)))
+	 (i 0))
 
     (while (and (not (when (file-exists-p connection-file-win9x)
 		       (setf connection-file connection-file-win9x)))

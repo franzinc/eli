@@ -1,4 +1,4 @@
-;; $Id: fi-site-init.el,v 3.2 2005/09/12 22:39:55 layer Exp $
+;; $Id: fi-site-init.el,v 3.3 2006/04/17 21:17:59 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -7,7 +7,11 @@
 (require 'cl)
 
 (defun on-ms-windows ()
-  (memq system-type '(cygwin32 windows-nt ms-windows ms-dos win386)))
+  (or (cygwinp)
+      (memq system-type '(windows-nt ms-windows ms-dos win386))))
+
+(defun cygwinp ()
+  (memq system-type '(cygwin cygwin32 )))
 
 (defvar *on-windows-nt*
     (and (on-ms-windows)
