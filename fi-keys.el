@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 3.4.18.8 2006/03/30 02:52:32 layer Exp $
+;; $Id: fi-keys.el,v 3.4.18.9 2006/08/17 16:36:26 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -1326,6 +1326,7 @@ current form."
       (fi::prep-arglist-for-insertion-1 arglist is-macro))))
 
 (defun fi::prep-arglist-for-insertion-1 (arglist is-macro)
+  (setq layer arglist)
   ;; Transformations:
   ;;   (foo &rest args) into (foo "args...")
   ;;   (foo &key a b c) into (foo :a a :b b :c c)
@@ -1351,6 +1352,7 @@ current form."
 	     (setq optional-mode nil))
 	    (t
 	     (let* ((keyword-prefix ":")
+		    (ignore-this nil)
 		    (s
 		     (cond
 		      ((and keyword-mode (consp (car arglist)))
@@ -1363,13 +1365,14 @@ current form."
 			 ;; (var init-form)
 			 (caar arglist))))
 		      ((and is-macro (consp (car arglist)))
+		       (setq ignore-this t)
 		       (push (fi::prep-arglist-for-insertion-1
 			      (car arglist)
 			      ;; Process as non-macro:
 			      nil)
 			     result))
 		      (t (car arglist)))))
-	       (cond (is-macro)
+	       (cond (ignore-this)
 		     (optional-mode (push (format "[%s]" s) result))
 		     (keyword-mode (push (format "%s%s" keyword-prefix s)
 					 result)
