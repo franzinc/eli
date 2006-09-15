@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 3.4.18.9 2006/08/17 16:36:26 layer Exp $
+;; $Id: fi-keys.el,v 3.4.18.10 2006/09/15 17:04:01 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -1287,13 +1287,13 @@ current form."
     (when (and symbol
 	       (setq arglist
 		 (fi:eval-in-lisp
-		  (format "(let ((common-lisp:*print-length* nil)) (princ-to-string (arglist '%s)))" symbol)))
+		  (format "(common-lisp:let ((common-lisp:*print-length* common-lisp:nil)) (common-lisp:princ-to-string (excl:arglist '%s)))" symbol)))
 	       (setq arglist
 		 (fi::prep-arglist-for-insertion
 		  arglist
 		  ;; Is this a macro arglist?
 		  (fi:eval-in-lisp
-		   (format "(not (null (macro-function '%s)))" symbol))))
+		   (format "(common-lisp:not (common-lisp:null (common-lisp:macro-function '%s)))" symbol))))
 	       (setq position-of-next (fi::next-argument-number start end)))
       (setq arglist (nthcdr (1- position-of-next) arglist))
       (save-excursion
