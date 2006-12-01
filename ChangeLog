@@ -1,6 +1,10 @@
 *******************************************************************************
 post-8.0 release changes:
 
+2006-12-01  Kevin Layer  <layer@gemini.franz.com>
+
+	* fi-ident.el: add doset (acache)
+
 2006-09-15  Kevin Layer  <layer@gemini>
 
 	* fi-keys.el: bug16442: fi:insert-arglist fix from Jason Cornez
@@ -5147,4 +5151,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.15.2.6 $
+$Revision: 3.15.2.7 $
