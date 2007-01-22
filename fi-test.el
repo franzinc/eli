@@ -1,4 +1,4 @@
-;; $Id: fi-test.el,v 3.1 2006/04/17 21:17:59 layer Exp $
+;; $Id: fi-test.el,v 3.2 2007/01/22 19:47:19 layer Exp $
 
 (setq load-path (cons default-directory load-path))
 
@@ -77,6 +77,10 @@
 	      (fi::prep-arglist-for-insertion-1
 	       '((var &key foo bar baz) &body body)
 	       t))
+  
+  (test-equal '(name varlist "body...")
+	      (fi::prep-arglist-for-insertion-1 '(name varlist &rest body)
+						t))
   )
 
 (fi-test::tests)

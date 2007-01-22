@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 3.5 2006/04/17 21:17:58 layer Exp $
+;; $Id: fi-keys.el,v 3.6 2007/01/22 19:47:19 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -1287,13 +1287,13 @@ current form."
     (when (and symbol
 	       (setq arglist
 		 (fi:eval-in-lisp
-		  (format "(let ((common-lisp:*print-length* nil)) (princ-to-string (arglist '%s)))" symbol)))
+		  (format "(common-lisp:let ((common-lisp:*print-length* common-lisp:nil)) (common-lisp:princ-to-string (excl:arglist '%s)))" symbol)))
 	       (setq arglist
 		 (fi::prep-arglist-for-insertion
 		  arglist
 		  ;; Is this a macro arglist?
 		  (fi:eval-in-lisp
-		   (format "(not (null (macro-function '%s)))" symbol))))
+		   (format "(common-lisp:not (common-lisp:null (common-lisp:macro-function '%s)))" symbol))))
 	       (setq position-of-next (fi::next-argument-number start end)))
       (setq arglist (nthcdr (1- position-of-next) arglist))
       (save-excursion
@@ -1326,6 +1326,7 @@ current form."
       (fi::prep-arglist-for-insertion-1 arglist is-macro))))
 
 (defun fi::prep-arglist-for-insertion-1 (arglist is-macro)
+  (setq layer arglist)
   ;; Transformations:
   ;;   (foo &rest args) into (foo "args...")
   ;;   (foo &key a b c) into (foo :a a :b b :c c)
@@ -1351,6 +1352,7 @@ current form."
 	     (setq optional-mode nil))
 	    (t
 	     (let* ((keyword-prefix ":")
+		    (ignore-this nil)
 		    (s
 		     (cond
 		      ((and keyword-mode (consp (car arglist)))
@@ -1363,13 +1365,14 @@ current form."
 			 ;; (var init-form)
 			 (caar arglist))))
 		      ((and is-macro (consp (car arglist)))
+		       (setq ignore-this t)
 		       (push (fi::prep-arglist-for-insertion-1
 			      (car arglist)
 			      ;; Process as non-macro:
 			      nil)
 			     result))
 		      (t (car arglist)))))
-	       (cond (is-macro)
+	       (cond (ignore-this)
 		     (optional-mode (push (format "[%s]" s) result))
 		     (keyword-mode (push (format "%s%s" keyword-prefix s)
 					 result)
