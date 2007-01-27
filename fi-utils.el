@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 3.6.2.1 2006/03/08 23:13:37 layer Exp $
+;; $Id: fi-utils.el,v 3.6.2.2 2007/01/27 00:39:06 layer Exp $
 
 ;;; Misc utilities
 
@@ -1313,3 +1313,30 @@ created by fi:common-lisp."
 	(setq pid (match-string 1 (car output))))
       (setq output (cdr output)))
     (when pid (string-to-int pid 10))))
+
+(defun fi::double-char-in-string (char string)
+  (let ((oldindex 0)
+	(max+1 (length string))
+	(nfound 0)
+	newindex
+	new
+	c)
+    (while (< oldindex max+1)
+      (when (= char (aref string oldindex))
+	(incf nfound))
+      (incf oldindex))
+    
+    (setq new (make-string (+ nfound (length string)) 0)
+	  oldindex 0
+	  newindex 0)
+    (while (< oldindex max+1)
+      (cond ((= char (setq c (aref string oldindex)))
+	     (aset new newindex char)
+	     (incf newindex)
+	     (aset new newindex char))
+	    (t (aset new newindex c)))
+      (incf oldindex)
+      (incf newindex))
+    new))
+
+      

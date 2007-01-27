@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 3.10.12.1 2006/03/08 23:13:37 layer Exp $
+;; $Id: fi-subproc.el,v 3.10.12.2 2007/01/27 00:39:06 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -1548,8 +1548,8 @@ to your `.cshrc' after the `set cdpath=(...)' in the same file."
 	   ((and fi:in-package-regexp (looking-at fi:in-package-regexp))
 	    (goto-char (match-end 0))
 	    (cond
-	     ((or (looking-at "[ \t]*[']?[#]?[:]?\\(.*\\)[ \t]*)")
-		  (looking-at "[ \t]*\"\\(.*\\)\"[ \t]*)")
+	     ((or (looking-at "[ \t]*\"\\(.*\\)\"[ \t]*)")
+		  (looking-at "[ \t]*[']?[#]?[:]?\\(.*\\)[ \t]*)")
 		  (looking-at "[ \t]*\\(.*\\)[ \t]*)"))
 	      ;; (in-package foo)
 	      (setq fi:package
