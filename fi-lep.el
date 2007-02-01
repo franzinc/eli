@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 3.3 2005/08/03 05:08:34 layer Exp $
+;; $Id: fi-lep.el,v 3.4 2007/02/01 22:21:42 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -348,8 +348,10 @@ time."
 	  (if (null point)
 	      (progn
 		(setq mess
-		  (format "The definition of %s is somewhere in this file! "
-			  thing))
+		  (fi::double-char-in-string
+		   ?%
+		   (format "The definition of %s is somewhere in this file! "
+			   thing)))
 		(beginning-of-buffer))
 	    (progn
 	      (goto-char
