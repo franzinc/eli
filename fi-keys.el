@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 3.4.18.10 2006/09/15 17:04:01 layer Exp $
+;; $Id: fi-keys.el,v 3.4.18.11 2007/02/06 14:29:23 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -1086,7 +1086,8 @@ as it was before it was made visible."
 (defun fi:lisp-push-window-configuration ()
   (fi::emacs-lisp-push-window-configuration))
 
-(defvar fi::wc-stack nil)
+(defvar fi::wc-stack)
+(setq fi::wc-stack nil)
 
 (defconst fi::wc-stack-max 15)
 

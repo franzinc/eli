@@ -1,6 +1,11 @@
 *******************************************************************************
 post-8.0 release changes:
 
+2007-02-06  Kevin Layer  <layer@gemini.franz.com>
+
+	* fi-db.el: fix a bunch of bugs in scan stack mode
+	* fi-keys.el: set fi::wc-stack to nil at load time
+
 2007-01-26  Kevin Layer  <layer@gemini.franz.com>
 
 	* fi-subproc.el (fi::subprocess-watch-for-special-commands): fix
@@ -5159,4 +5164,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.15.2.8 $
+$Revision: 3.15.2.9 $
