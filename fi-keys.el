@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 3.4.18.11 2007/02/06 14:29:23 layer Exp $
+;; $Id: fi-keys.el,v 3.4.18.12 2007/03/01 19:27:55 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -223,8 +223,16 @@ fi:auto-arglist-pop-up-style.")
       (fi::defkey cmap "\C-j" 'fi:toggle-to-lisp clisp)
       (fi::defkey cmap "\C-k" 'fi:subprocess-kill-output subproc)
       (fi::defkey cmap "\C-l" 'fi:list-input-ring subproc)
-      (fi::defkey cmap "\C-m" 'fi:subprocess-input-region
-		  (and subproc (not clisp)))
+;;;;This binding is too dangerous.  All it takes is this sequence to really
+;;;;screw someone (happened to me many times):
+;;;;1. Hold C-c so the keyboard repeats it, sending repeated ^C's to a the
+;;;;   subprocess
+;;;;2. Let go of C-c... which might have a pending C-c, since C-cC-c sends
+;;;;   a single ^C.
+;;;;3. Type ENTER to see if the process is responding... now everything
+;;;;   in the region will be sent to the subshell... ouch.
+;;;      (fi::defkey cmap "\C-m" 'fi:subprocess-input-region
+;;;		  (and subproc (not clisp)))
       (fi::defkey cmap "\C-m" 'fi:lisp-macroexpand clisp)
       (fi::defkey cmap "\C-n" 'fi:push-input subproc)
       ;; NOTE: C-o is defined above
