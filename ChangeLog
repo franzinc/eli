@@ -1,3 +1,7 @@
+2007-03-29  Kevin Layer  <layer@gemini.franz.com>
+
+	* fi-indent.el: rfe6806: add AG indent props
+
 *******************************************************************************
 join from acl8 to trunk, changes from
 	2007-01-26  Kevin Layer  <layer@gemini.franz.com>
@@ -5169,4 +5173,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.19 $
+$Revision: 3.20 $
