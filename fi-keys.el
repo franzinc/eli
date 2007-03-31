@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 3.6 2007/01/22 19:47:19 layer Exp $
+;; $Id: fi-keys.el,v 3.7 2007/03/31 21:44:56 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -223,8 +223,16 @@ fi:auto-arglist-pop-up-style.")
       (fi::defkey cmap "\C-j" 'fi:toggle-to-lisp clisp)
       (fi::defkey cmap "\C-k" 'fi:subprocess-kill-output subproc)
       (fi::defkey cmap "\C-l" 'fi:list-input-ring subproc)
-      (fi::defkey cmap "\C-m" 'fi:subprocess-input-region
-		  (and subproc (not clisp)))
+;;;;This binding is too dangerous.  All it takes is this sequence to really
+;;;;screw someone (happened to me many times):
+;;;;1. Hold C-c so the keyboard repeats it, sending repeated ^C's to a the
+;;;;   subprocess
+;;;;2. Let go of C-c... which might have a pending C-c, since C-cC-c sends
+;;;;   a single ^C.
+;;;;3. Type ENTER to see if the process is responding... now everything
+;;;;   in the region will be sent to the subshell... ouch.
+;;;      (fi::defkey cmap "\C-m" 'fi:subprocess-input-region
+;;;		  (and subproc (not clisp)))
       (fi::defkey cmap "\C-m" 'fi:lisp-macroexpand clisp)
       (fi::defkey cmap "\C-n" 'fi:push-input subproc)
       ;; NOTE: C-o is defined above
@@ -1086,7 +1094,8 @@ as it was before it was made visible."
 (defun fi:lisp-push-window-configuration ()
   (fi::emacs-lisp-push-window-configuration))
 
-(defvar fi::wc-stack nil)
+(defvar fi::wc-stack)
+(setq fi::wc-stack nil)
 
 (defconst fi::wc-stack-max 15)
 

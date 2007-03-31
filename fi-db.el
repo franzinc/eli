@@ -8,9 +8,10 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-db.el,v 3.0 2003/12/15 22:52:57 layer Exp $
+;; $Id: fi-db.el,v 3.1 2007/03/31 21:44:56 layer Exp $
 
-(defvar fi::ss-help
+(defvar fi::ss-help)
+(setq fi::ss-help
     "Debugger commands:\\<fi:scan-stack-mode-map>
 
 \\[fi:ss-continue]	:continue
@@ -24,14 +25,14 @@
 \\[fi:ss-next-frame]	next frame
 \\[fi:ss-edit]	edit source corresponding to function
 \\[fi:ss-revert-stack]	revert stack from Lisp
-\\[fi:ss-unhide-help-text]	Causes this help text to become visible
+\\[fi:ss-toggle-help-text]	Toggle help text
 \\[fi:ss-locals]	display the lexical variables
 \\[fi:ss-pprint]	pretty print
 \\[fi:ss-quit]	switch back to \"%s\" buffer
 \\[fi:ss-return]	return a value
 \\[fi:ss-previous-frame]	previous frame
 
-Type \\[fi:ss-hide-help-text] to hide this help summary.
+Type \\[fi:ss-toggle-help-text] to hide this help summary.
 
 ")
 
@@ -44,6 +45,7 @@ mode buffer.")
 
 (defconst fi::ss-current-frame-regexp "^ ->")
 (defconst fi::ss-ok-frame-regexp "^   (")
+(defconst fi::ss-ghost-frame-regexp "^   \\[\\.\\.\\. ")
 (defconst fi::ss-show-all-frames nil)
 
 (defvar fi::ss-process-name nil)
@@ -52,13 +54,13 @@ mode buffer.")
 (defvar fi::ss-debugger-from-buffer nil)
 (make-variable-buffer-local 'fi::ss-debugger-from-buffer)
 
-(defun fi:scan-stack (&optional all)
+(defun fi:scan-stack (&optional all internal)
   "Debug a Common Lisp process, which is read, with completion, from the
 minibuffer.   The \"Initial Lisp Listener\" is the default process.  The
 debugging occurs on a stack scan, created by :zoom on the Common Lisp
 process. With argument ALL, do a \":zoom :all t\"."
   (interactive "P")
-  (fi:lisp-push-window-configuration)
+  (when (not internal) (fi:lisp-push-window-configuration))
   (let ((process-name (fi::buffer-process))
 	(from-buffer (when fi:subprocess-mode
 		       (current-buffer))))
@@ -81,8 +83,10 @@ process. With argument ALL, do a \":zoom :all t\"."
 			  (buffer-name
 			   (or from-buffer
 			       fi::ss-debugger-from-buffer))))
-	  (when (null fi:scan-stack-mode-display-help)
-	    (fi:ss-hide-help-text)))
+;;;;TODO:
+;;;	  (when (null fi:scan-stack-mode-display-help)
+;;;	    (fi:ss-hide-help-text))
+	  )
 	(beginning-of-buffer)
 	(re-search-forward fi::ss-current-frame-regexp)
 	(beginning-of-line)))
@@ -130,7 +134,8 @@ Entry to this mode runs the fi:scan-stack-mode-hook hook."
 	(define-key ccmap " "		'fi:lisp-delete-pop-up-window)
 	(define-key map "\C-c"	ccmap)
 	
-	(define-key map " "	'fi:ss-hide-help-text)
+;;;;TODO: SPC is a bad binding for this:
+	(define-key map " "	'fi:ss-toggle-help-text)
 	(define-key map "."	'fi:ss-set-current)
 	(define-key map "D"	'fi:ss-disassemble)
 	(define-key map "R"	'fi:ss-restart)
@@ -138,7 +143,7 @@ Entry to this mode runs the fi:scan-stack-mode-hook hook."
 	(define-key map "a"	'fi:ss-toggle-all)
 	(define-key map "e"	'fi:ss-edit)
 	(define-key map "g"	'fi:ss-revert-stack)
-	(define-key map "h"	'fi:ss-unhide-help-text)
+	(define-key map "h"	'fi:ss-toggle-help-text)
 	(define-key map "l"	'fi:ss-locals)
 	(define-key map "p"	'fi:ss-pprint)
 	(define-key map "q"	'fi:ss-quit)
@@ -171,14 +176,16 @@ being debugged to throw out to the outer most read-eval-print loop, and
 causes the debugger buffer to be buried and the window configuration as it
 was before this mode was entered to be restored."
   (interactive)
-  (fi::do-tpl-command-on-process t nil "reset"))
+  (fi::do-tpl-command-on-process t nil "reset")
+  (fi:ss-quit))
 
 (defun fi:ss-continue ()
   "Do a :continue on the process being debugged.  This causes the process
 being debugged to continue from a continuable error, taking the default
 restart (restart number 0)."
   (interactive)
-  (fi::do-tpl-command-on-process t nil "continue"))
+  (fi::do-tpl-command-on-process t nil "continue")
+  (fi:ss-quit))
 
 (defun fi:ss-pop ()
   "Do a :pop on the process being debugged.  This causes the process being
@@ -186,7 +193,10 @@ debugged to pop out to the next outer most read-eval-print loop, and
 causes the debugger buffer to be buried and the window configuration as it
 was before this mode was entered to be restored."
   (interactive)
-  (fi::do-tpl-command-on-process t nil "pop"))
+  (fi::do-tpl-command-on-process t nil "pop")
+  (if (> (fi::ss-current-break-level) 0)
+      (fi:scan-stack fi::ss-show-all-frames t)
+    (fi:ss-quit)))
 
 (defun fi:ss-return ()
   "Do a :return on the process being debugged.  This causes the process
@@ -197,11 +207,12 @@ environment.  The debugger buffer is buried and the window configuration as
 it was before this mode was entered is restored."
   (interactive)
   (fi::do-tpl-command-on-process
-   t
-   t
-   "return"
-   (list 'read-from-string
-	   (read-string "Form (evaluated in the Lisp environment): " "nil"))))
+      t
+    t
+    "return"
+    (list 'read-from-string
+	  (read-string "Form (evaluated in the Lisp environment): " "nil")))
+  (fi:ss-quit))
 
 (defun fi:ss-restart (new-form)
   "Do a :restart on the process being debugged.  This causes the process
@@ -214,12 +225,13 @@ buried and the window configuration as it was before this mode was entered
 is restored."
   (interactive "P")
   (fi::do-tpl-command-on-process
-   t
-   t
-   "restart"
-   (when new-form
-     (list 'read-from-string
-	   (read-string "Form (evaluated in the Lisp environment): ")))))
+      t
+    t
+    "restart"
+    (when new-form
+      (list 'read-from-string
+	    (read-string "Form (evaluated in the Lisp environment): "))))
+  (fi:ss-quit))
 
 (defun fi:ss-edit ()
   "Find the source file associated with the function in the current frame
@@ -233,7 +245,7 @@ actual stack in the Common Lisp environment.  This is useful when commands
 are typed in the *common-lisp* buffer which change the state of the process
 being debugged."
   (interactive)
-  (fi:scan-stack))
+  (fi:scan-stack fi::ss-show-all-frames t))
 
 (defun fi:ss-toggle-all ()
   "Toggle showing all frames in the currently debugged process stack.  By
@@ -241,7 +253,7 @@ default, there are certain types of frames hidden because they offer no
 additional information."
   (interactive)
   (setq fi::ss-show-all-frames (not fi::ss-show-all-frames))
-  (fi:scan-stack))
+  (fi:scan-stack fi::ss-show-all-frames t))
 
 (defun fi:ss-set-current ()
   "Make the frame to which the point lies the current frame for future
@@ -322,29 +334,34 @@ buffer."
      (() (error)
       (message "Cannot pprint: %s" error)))))
 
-(defun fi:ss-hide-help-text ()
-  "Hide the help text at the beginning of the debugger buffer."
+(defun fi:ss-toggle-help-text ()
+  "Toggle the help text at the beginning of the debugger buffer."
   (interactive)
-  (save-excursion
-    (widen)
-    (beginning-of-buffer)
-    (or (re-search-forward "^Evaluation stack:$" nil t)
-	(goto-char (point-max)))
-    (beginning-of-line)
-    (narrow-to-region (point) (point-max))
-    (setq fi:scan-stack-mode-display-help nil)))
-
-(defun fi:ss-unhide-help-text ()
-  "Unhide the help text at the beginning of the debugger buffer."
-  (interactive)
-  (save-excursion
-    (widen))
-  (recenter)
-  (setq fi:scan-stack-mode-display-help t))
+  (cond (fi:scan-stack-mode-display-help
+	 ;; hide help
+	 (save-excursion
+	   (widen)
+	   (beginning-of-buffer)
+	   (or (re-search-forward "^Evaluation stack:$" nil t)
+	       (goto-char (point-max)))
+	   (beginning-of-line)
+	   (narrow-to-region (point) (point-max))
+	   (setq fi:scan-stack-mode-display-help nil)))
+	(t ;; show help
+	 (save-excursion (widen))
+	 (recenter)
+	 (setq fi:scan-stack-mode-display-help t))))
 
 ;;;
 ;;; internals
 ;;;
+
+(defun fi::ss-current-break-level ()
+  (fi:eval-in-lisp
+   (format
+    "(mp:process-progn (mp:process-name-to-process \"%s\")
+      tpl::*break-level*)"
+    (fi::buffer-process))))
 
 (defun fi::do-tpl-command-on-process (done set-current-frame command
 				      &rest args)
@@ -370,52 +387,56 @@ buffer."
       (if (y-or-n-p
 	   (format "Revert stack from process \"%s\"? "
 		   process-name))
-	  (fi:scan-stack))))))
+	  (fi:scan-stack fi::ss-show-all-frames t))))))
 
 (defun fi::offset-from-current-frame ()
   (beginning-of-line)
-  (if (looking-at fi::ss-current-frame-regexp)
-      nil
-    (if (not (looking-at fi::ss-ok-frame-regexp))
-	(error "Not on a frame."))
+  (cond
+   ((looking-at fi::ss-current-frame-regexp) nil)
+   (t
+    (when (looking-at fi::ss-ghost-frame-regexp)
+      (error "Can't set the current frame to a ghost frame."))
+    (when (not (looking-at fi::ss-ok-frame-regexp))
+      (error "Not on a frame."))
     (let* ((down (save-excursion
 		   (if (re-search-forward fi::ss-current-frame-regexp nil t)
 		       nil
 		     (if (re-search-backward fi::ss-current-frame-regexp nil t)
 			 t
 		       (error "Can't find current frame indicator.")))))
-	   (lines 0))
+	   (lines 0)
+	   ghost-frame)
       (save-excursion
 	(while (progn (beginning-of-line)
+		      (setq ghost-frame nil)
 		      (and (not (looking-at fi::ss-current-frame-regexp))
-			   (looking-at fi::ss-ok-frame-regexp)))
-	  (setq lines (+ lines 1))
+			   (or (looking-at fi::ss-ok-frame-regexp)
+			       (setq ghost-frame 
+				 (looking-at fi::ss-ghost-frame-regexp)))))
+	  (when (not ghost-frame) (setq lines (+ lines 1)))
 	  (if down
 	      (backward-sexp 1)
 	    (forward-sexp 1)
 	    (forward-line 1))))
-      (if down
-	  lines
-	(- lines)))))
+      (if down lines (- lines))))))
 
 (defun fi::make-stack-frame-current (offset)
   (toggle-read-only)
   (delete-char 3)
   (insert " ->")
+  (toggle-read-only)
   (beginning-of-line)
   (save-excursion
-    (setq offset (- offset))
-    (if (plusp offset)
-	(progn (forward-char 3)
-	       (forward-sexp offset)
-	       (forward-line 1))
-      (forward-sexp offset)
-      (beginning-of-line))
-    (unwind-protect
-	(progn
-	  (if (not (looking-at fi::ss-current-frame-regexp))
-	      (error "Not on current frame."))
-	  (replace-match "   "))
+    (let ((found
+	   (if (< offset 0)
+	       (progn
+		 (end-of-line)
+		 (re-search-forward fi::ss-current-frame-regexp nil t))
+	     (re-search-backward fi::ss-current-frame-regexp nil t))))
+      (when (not found)
+	(error "Could not find old current frame."))
+      (toggle-read-only)
+      (replace-match "   ")
       (toggle-read-only))))
 
 (defun fi::buffer-process ()
