@@ -1,5 +1,7 @@
 2007-04-30  Kevin Layer  <layer@gemini.franz.com>
 
+	* fi-indent.el: rfe7053: add indent props for agraph
+
 	* fi-site-init.el: support emacs 22
 
 *******************************************************************************
@@ -5192,4 +5194,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.22 $
+$Revision: 3.23 $
