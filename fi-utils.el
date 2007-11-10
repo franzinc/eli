@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 3.8 2007/02/01 22:21:42 layer Exp $
+;; $Id: fi-utils.el,v 3.8.22.1 2007/11/10 17:05:38 layer Exp $
 
 ;;; Misc utilities
 
@@ -108,13 +108,15 @@ nil if non-exists.  Yes, a value of nil and no local value are the same."
 	  (t (error "not on the beginning or end of a list")))))
 
 (defun fi::read-password ()
-  (let ((echo-keystrokes 0)
-	(result "")
-	(xxx nil))
-    (while (not (or (= (setq xxx (read-char)) ?\^m)
-		    (= xxx ?\n)))
-      (setq result (concat result (char-to-string xxx))))
-    result))
+  (cond
+   ((fboundp 'read-passwd) (read-passwd "Password: " nil ""))
+   (t (let ((echo-keystrokes 0)
+	    (result "")
+	    (xxx nil))
+	(while (not (or (= (setq xxx (read-char)) ?\^m)
+			(= xxx ?\n)))
+	  (setq result (concat result (char-to-string xxx))))
+	result))))
 
 (defun fi::find-path (path file)
   "Using PATH, find FILE, return the full pathname."

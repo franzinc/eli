@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-su.el,v 3.0 2003/12/15 22:52:57 layer Exp $
+;; $Id: fi-su.el,v 3.0.176.1 2007/11/10 17:05:38 layer Exp $
 
 (defvar fi:su-mode-map nil
   "The su major-mode keymap.")
@@ -72,7 +72,7 @@ When calling from a program, argument is MODE-HOOK,
 which is funcall'd just after killing all local variables but before doing
 any other mode setup."
   (interactive)
-  (kill-all-local-variables)
+  (fi::kill-all-local-variables)
   (if mode-hook (funcall mode-hook))
   (setq major-mode 'fi:remote-su-mode)
   (setq mode-name "Remote Su")
@@ -81,25 +81,31 @@ any other mode setup."
   (use-local-map fi:remote-su-mode-map)
   (run-hooks 'fi:subprocess-mode-hook 'fi:rlogin-mode-hook))
 
-(defun fi:su (&optional buffer-number)
+(defvar fi::su-password nil)
+
+(defun fi:su (&optional buffer-number password)
   "Start an su in a buffer whose name is determined from the optional
 prefix argument BUFFER-NUMBER.  Su buffer names start with `*su*'
 and end with an optional \"<N>\".  If BUFFER-NUMBER is not given it defaults
 to 1.  If BUFFER-NUMBER is 1, then the trailing \"<1>\" is omited.  If
 BUFFER-NUMBER is < 0, then the first available buffer name is chosen (a
 buffer with no process attached to it."
-  (interactive "p")
-  (fi::make-subprocess nil
-		       "root"
-		       buffer-number
-		       default-directory
-		       'fi:su-mode
-		       fi:su-prompt-pattern
-		       "su"
-		       nil
-		       'fi::su-filter))
+  (interactive (list
+		current-prefix-arg
+		(read-passwd "su (root) Password: " nil "")))
+  (when (or (null password) (not (string= "" password)))
+    (setq fi::su-password password)
+    (fi::make-subprocess nil
+			 "root"
+			 buffer-number
+			 default-directory
+			 'fi:su-mode
+			 fi:su-prompt-pattern
+			 "su"
+			 nil
+			 'fi::su-filter)))
 
-(defun fi:remote-root-login (&optional buffer-number host)
+(defun fi:remote-root-login (&optional buffer-number host password)
   "Start a remote root rlogin in a buffer whose name is determined from the
 optional prefix argument BUFFER-NUMBER and the HOST.  Remote root Rlogin
 buffer names start with `*root-HOST*' and end with an optional \"<N>\".  If
@@ -108,37 +114,39 @@ the trailing \"<1>\" is omited.  If BUFFER-NUMBER is < 0, then the first
 available buffer name is chosen (a buffer with no process attached to it.
 
 The host name is read from the minibuffer."
-  (interactive "p\nsRemote host: ")
-  (let ((fi:subprocess-env-vars
-	 '(("EMACS" . "t")
-	   ("TERM" . "dumb")
-	   ("DISPLAY" . (getenv "DISPLAY")))))
-    (fi::make-subprocess nil
-			 (format "root-%s" host)
-			 buffer-number
-			 default-directory
-			 'fi:remote-su-mode
-			 fi:su-prompt-pattern
-			 "rlogin"
-			 (list host "-l" "root")
-			 'fi::su-filter)))
-
-(defvar fi::su-password nil)
+  (interactive (list
+		current-prefix-arg
+		(read-string "Remote host: ")
+		(read-passwd "rlogin (root) Password: " nil "")))
+  (when (or (null password) (not (string= "" password)))
+    (setq fi::su-password password)
+    (let ((fi:subprocess-env-vars
+	   '(("TERM" . "dumb")
+	     ;; these two aren't passed, actually (bummer!)
+	     ("EMACS" . "t")
+	     ("DISPLAY" . (getenv "DISPLAY")))))
+      (fi::make-subprocess nil
+			   (format "root-%s" host)
+			   buffer-number
+			   default-directory
+			   'fi:remote-su-mode
+			   fi:su-prompt-pattern
+			   fi:rlogin-image-name
+			   (list host "-l" "root")
+			   'fi::su-filter))))
 
 (defun fi::su-filter (process output)
-  "Filter for `fi:su' subprocess buffers.
+  "Filter for `fi:su' and `fi:remote-root-login' subprocess buffers.
 Watch for the first shell prompt from the su, then send the
 string bound to fi:su-initial-input, and turn ourself off."
-  (fi::subprocess-filter process output)
-  (save-excursion
-    (set-buffer (process-buffer process))
-    (cond ((string-match "assword" output)
-	   (setq fi::su-password (fi::read-password))
-	   (process-send-string process (concat fi::su-password "\n")))
-	  (t (if (save-excursion (beginning-of-line)
-				 (looking-at fi::prompt-pattern))
-		 (progn
-		   (set-process-filter process 'fi::subprocess-filter)
-		   (setq fi::su-password nil)
-		   (if fi:su-initial-input
-		       (process-send-string process fi:su-initial-input))))))))
+  (let ((old-buffer (fi::subprocess-filter process output t)))
+    (when (string-match "assword" output)
+      (process-send-string
+       process
+       (concat (or fi::su-password (fi::read-password)) "\n"))
+      (setq fi::su-password nil)
+      (set-process-filter process 'fi::subprocess-filter)
+      (when fi:su-initial-input
+	(process-send-string process fi:su-initial-input)))
+    (when old-buffer
+      (set-buffer old-buffer))))

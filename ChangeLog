@@ -1,3 +1,10 @@
+2007-11-10  Kevin Layer  <layer@gemini.franz.com>
+
+	* fi-su.el: use emacs read-passwd, if available -- I noticed
+	  that fi:remote-root-login is broken and I can't figure out
+	  why
+	* fi-utils.el (fi::read-password): use read-passwd if available
+
 2007-04-30  Kevin Layer  <layer@gemini.franz.com>
 
 	* fi-indent.el: rfe7053: add indent props for agraph
@@ -5194,4 +5201,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.23 $
+$Revision: 3.23.2.1 $
