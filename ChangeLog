@@ -1,3 +1,14 @@
+2007-11-14    <layer@HOBART>
+
+	* fi-changes.el: fi::find-most-recent-backup-file-name now
+	  returns a list
+	* fi-gnu.el (fi::find-most-recent-backup-file-name): why
+	  didn't we just use find-backup-file-name?  That's what I now
+	  do, if it exists and returns a cons.
+	* fi-lep.el (fi::show-found-definition): remove horrible
+	  fi:goto-char/fi::cl-file-position-to-point hack, in favor of
+	  a much more elegant hack, now on the lisp side.
+
 2007-11-10  Kevin Layer  <layer@gemini.franz.com>
 
 	* fi-su.el: use emacs read-passwd, if available -- I noticed
@@ -5201,4 +5212,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.23.2.1 $
+$Revision: 3.23.2.2 $

@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 3.4 2007/02/01 22:21:42 layer Exp $
+;; $Id: fi-lep.el,v 3.4.22.1 2007/11/15 04:11:47 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -354,19 +354,7 @@ time."
 			   thing)))
 		(beginning-of-buffer))
 	    (progn
-	      (goto-char
-	       (if (and (on-ms-windows)
-			(not
-			 (or (eq buffer-file-coding-system 'no-conversion)
-			     ;; spr29385
-			     (member (coding-system-eol-type
-				      buffer-file-coding-system)
-				     '(0 ; emacs
-				       lf ; xemacs
-				       nil ; xemacs (no-conversion)
-				       )))))
-		   (fi::cl-file-position-to-point point)
-		 (1+ point)))
+	      (goto-char (1+ point))
 	      (if (not xb) (set-mark (point)))))
 	  (cond ((eq n-more 0)
 		 (if (lep::meta-dot-from-fspec)
@@ -381,64 +369,6 @@ time."
 			  (or (lep::meta-dot-from-fspec) thing))))
 	  (when pop-stack (fi::pop-metadot-session))))
     (message "cannot find file for %s" thing)))
-
-(defun fi:goto-char (file-position)
-  "Given a Common Lisp file-position, which counts octets, go to the
-desired buffer position. This function is designed to work around the
-problem that on Windows, Emacs and Common Lisp have different views of
-the end of line convention. In Emacs, the end of line is a single
-character in the buffer. In Common Lisp on Windows, however, it is
-often two characters.  (Common Lisp compiler warnings that report file
-positions differently from what is expected illustrates the
-difference.)  Note that fi:goto-char may not work multi-byte characters in
-versions of Emacs that support such things."
-  (interactive "NGoto CL file-position: ")
-  (goto-char
-   (if (and (on-ms-windows)
-	    (not
-	     (or (eq buffer-file-coding-system 'no-conversion)
-		 ;; spr29385
-		 (member (coding-system-eol-type buffer-file-coding-system)
-			 '(0		; emacs
-			   lf 		; xemacs
-			   nil		; xemacs (no-conversion)
-			   )))))
-       (fi::cl-file-position-to-point file-position)
-     file-position)))
-
-(defun fi::cl-file-position-to-point (real-file-position)
-  ;; This function is only called on Windows.
-
-  ;; REAL-FILE-POSITION is the cl:file-position with the file in binary
-  ;; mode (CR and LF terminates each line).  The job of this function is to
-  ;; find the point associated with this file position.
-  ;;
-  ;; We start from the beginning of the file and go forward line by line,
-  ;; counting by adding an extra character for the LF that isn't in the
-  ;; buffer.
-  
-  (save-excursion
-    (let ((file-position (+ real-file-position
-			    ;; add two because the file-position is just
-			    ;; before the form:
-			    2))
-	  chars-on-line)
-      (goto-char (point-min))
-      (block done
-	(while (progn
-		 (setq chars-on-line
-		   (- (save-excursion (end-of-line) (point))
-		      (point)))
-		 (setq file-position (- file-position chars-on-line
-					;; one for CR and LF:
-					2))
-		 t)
-	  (cond
-	   ((> file-position 0)
-	    ;; keep going
-	    (goto-char (+ (point) chars-on-line 1)))
-	   (t (return-from done)))))
-      (point))))
 
 (defun scm::return-buffer-status (pathname write-if-modified)
   "This returns information about the status of the buffer: whether it

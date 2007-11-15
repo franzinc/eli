@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-changes.el,v 3.0 2003/12/15 22:52:57 layer Exp $
+;; $Id: fi-changes.el,v 3.0.176.1 2007/11/15 04:11:47 layer Exp $
 ;;
 ;; Support for changed definitions
 
@@ -173,7 +173,8 @@ OLD-FILE."
 	   (comma-zero (concat (buffer-file-name) fi::unlock-file-suffix))
 	   (t (if (and (not (eq since 'buffer-save))
 		       buffer-backed-up)
-		  (fi::find-most-recent-backup-file-name (buffer-file-name))
+		  (car (fi::find-most-recent-backup-file-name
+			(buffer-file-name)))
 		(buffer-file-name))))))
     (list actual-file old-file actual-file)))
 
