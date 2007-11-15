@@ -1,5 +1,6 @@
 2007-11-14    <layer@HOBART>
 
+    all for bug17539:
 	* fi-changes.el: fi::find-most-recent-backup-file-name now
 	  returns a list
 	* fi-gnu.el (fi::find-most-recent-backup-file-name): why
@@ -5212,4 +5213,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.23.2.2 $
+$Revision: 3.23.2.3 $
