@@ -1,3 +1,9 @@
+2007-11-27    <layer@HOBART>
+
+	* fi-gnu.el: bug17563: new version of
+	  fi::find-most-recent-backup-file-name, which works for
+	  numbered versions.
+
 2007-11-14    <layer@HOBART>
 
     all for bug17539:
@@ -5213,4 +5219,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.23.2.3 $
+$Revision: 3.23.2.4 $
