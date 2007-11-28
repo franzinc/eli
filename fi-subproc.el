@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 3.12 2007/02/01 22:21:42 layer Exp $
+;; $Id: fi-subproc.el,v 3.12.22.1 2007/11/28 00:52:34 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -1219,6 +1219,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	      (let ((saved-input-ring fi::input-ring)
 		    (saved-input-ring-yank-pointer
 		     fi::input-ring-yank-pointer))
+		;; This usually kills all local variables:
 		(apply mode-function mode-hook mode-hook-arguments)
 		(setq fi::input-ring saved-input-ring)
 		(setq fi::input-ring-yank-pointer

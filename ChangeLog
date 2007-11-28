@@ -1,3 +1,7 @@
+2007-11-27  Kevin Layer  <layer@gemini.franz.com>
+
+	* fi-rlogin.el: finish changes from 11/14
+
 2007-11-27    <layer@HOBART>
 
 	* fi-gnu.el: bug17563: new version of
@@ -5219,4 +5223,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.23.2.4 $
+$Revision: 3.23.2.5 $

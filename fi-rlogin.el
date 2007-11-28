@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-rlogin.el,v 3.1 2004/01/16 19:27:49 layer Exp $
+;; $Id: fi-rlogin.el,v 3.1.166.1 2007/11/28 00:52:34 layer Exp $
 
 (defvar fi:rlogin-mode-map nil
   "The rlogin major-mode keymap.")
@@ -100,6 +100,8 @@ The rlogin image file and image arguments are taken from the variables
   (interactive "p\nsRemote login to host: \nsUser name: ")
   (fi:rlogin buffer-number host user))
 
+(defvar fi::rlogin-first-prompt-func nil)
+
 (defun fi::rlogin-filter (process output)
   "Filter for `fi:rlogin' subprocess buffers.
 Watch for the first shell prompt from the remote login, then send the
@@ -109,6 +111,7 @@ string bound to fi:rlogin-initial-input, and turn ourself off."
 			(looking-at fi::prompt-pattern))
 	(progn
 	  (set-process-filter process 'fi::subprocess-filter)
-	  (process-send-string process fi:rlogin-initial-input)))
-    (if old-buffer
-	(set-buffer old-buffer))))
+	  (process-send-string process fi:rlogin-initial-input)
+	  (when fi::rlogin-first-prompt-func
+	    (funcall fi::rlogin-first-prompt-func process))))
+    (when old-buffer (set-buffer old-buffer))))
