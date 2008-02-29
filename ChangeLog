@@ -1,3 +1,8 @@
+2008-02-29  Kevin Layer  <layer@gemini.franz.com>
+
+	* Makefile: xemacs 21 doesn't like -nw and -batch in an emacs
+	  shell buffer.  -batch is good enough for emacs/xemacs.
+
 2007-11-27  Kevin Layer  <layer@gemini.franz.com>
 
 	* fi-rlogin.el: finish changes from 11/14
@@ -5223,4 +5228,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.23.2.5 $
+$Revision: 3.23.2.6 $
