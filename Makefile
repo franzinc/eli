@@ -1,4 +1,4 @@
-# $Id: Makefile,v 3.3.24.1 2008/02/29 18:59:59 layer Exp $
+# $Id: Makefile,v 3.3.24.2 2008/03/04 20:56:29 layer Exp $
 # This makefile requires GNU make.
 
 include version.mak
@@ -44,7 +44,7 @@ endif
 all default:	fi-vers.el compile test.out
 
 compile:	fi-vers.el
-	$(emacs) -batch -q -l $(pwd)/fi-compile.el -kill
+	"$(emacs)" -batch -q -l $(pwd)/fi-compile.el -kill
 
 fi-vers.el: Makefile version.mak ChangeLog
 #	rm -f fi-vers.el
@@ -58,7 +58,7 @@ fi-vers.el: Makefile version.mak ChangeLog
 #	sed -e 's/__VERSION__/$(VERSION)/g' < readme0.htm > readme.htm
 
 test.out:	$(elcs) fi-test.el
-	$(emacs) -nw -batch -q -l fi-test.el
+	"$(emacs)" -nw -batch -q -l fi-test.el
 	@date > test.out
 
 clean:	FORCE

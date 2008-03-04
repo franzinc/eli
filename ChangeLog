@@ -1,3 +1,8 @@
+2008-03-04    <layer@HOBART64>
+
+	* Makefile: $(emacs) => "$(emacs)" for windows.64 because of
+	  "Program Files (x86)" installation directory.
+
 2008-02-29  Kevin Layer  <layer@gemini.franz.com>
 
 	* Makefile: xemacs 21 doesn't like -nw and -batch in an emacs
@@ -5228,4 +5233,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.23.2.6 $
+$Revision: 3.23.2.7 $
