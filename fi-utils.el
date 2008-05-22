@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 3.8.22.1 2007/11/10 17:05:38 layer Exp $
+;; $Id: fi-utils.el,v 3.8.22.2 2008/05/22 08:03:43 layer Exp $
 
 ;;; Misc utilities
 
@@ -374,10 +374,13 @@ Can't connect to host %s.  The error from open-network-stream was:
 (defun fi:map-lines (function &rest args)
   "Apply FUNCTION to ARGS once for every line in buffer, with point always
 at the beginning of the line."
-  (beginning-of-buffer)
-  (while (and (= 0 (progn (beginning-of-line) (forward-line 1)))
-	      (not (eobp)))
-    (apply function args)))
+  (goto-char (point-min))
+  (let (save)
+    (while (not (eobp))
+      (setq save (point))
+      (apply function args)
+      (goto-char save)
+      (forward-line 1))))
 
 ;; This is a pretty bad hack but it appears that within completing-read
 ;; fi:package has the wrong value so we bind this variable to get around

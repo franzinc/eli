@@ -1,3 +1,8 @@
+2008-05-22  Kevin Layer  <layer@gemini.franz.com>
+
+	* fi-utils.el: fi:map-lines: didn't include first line of
+	  buffer
+
 2008-03-04    <layer@HOBART64>
 
 	* Makefile: $(emacs) => "$(emacs)" for windows.64 because of
@@ -5233,4 +5238,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.23.2.7 $
+$Revision: 3.23.2.8 $
