@@ -1,5 +1,8 @@
 2009-02-26  Kevin Layer  <layer@gemini.franz.com>
 
+	* fi-keys.el (fi::prep-arglist-for-insertion-1): remove
+	  setting of `layer'
+
     rfe8586: add support for hierarchical packages, from Willem Broekema
 	* fi-lep.el: augment fi::arglist-lisp-space-1
 	* fi-subproc.el: augment fi::subprocess-watch-for-special-commands
@@ -5258,4 +5261,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.23.2.12 $
+$Revision: 3.23.2.13 $
