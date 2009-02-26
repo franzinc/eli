@@ -39,7 +39,6 @@
 (require 'cl)
 (require 'browse-url)                   ;you need the Emacs 20 version
 (require 'thingatpt)
-(require 'dired-aux)			; needed for dired-split
 (fi::load "fi-manual-data")
 
 (defvar fi::manual-base-url
@@ -58,7 +57,10 @@ something like \"file:/usr/local/acl/acl81/doc/\".")
 
 (defun fi::symbol-sans-package (symbol-name)
   "Remove the package prefix from a symbol name, if present."
-  (first (last (dired-split ":+" symbol-name))))
+  (cond
+   ((string-match ":+" symbol-name)
+    (substring symbol-name (match-end 0)))
+   (t symbol-name)))
 
 (defun fi:manual (symbol-name)
   "View the documentation on SYMBOL-NAME from the Allegro Common Lisp manual.
