@@ -1,8 +1,14 @@
 2009-02-26  Kevin Layer  <layer@gemini.franz.com>
 
-	* fi-emacs21.el (fi:inferior-common-lisp-mode-hook): turn on
-	  font-lock-mode for CL subprocess buffers, too.
+    rfe8586: add support for hierarchical packages, from Willem Broekema
+	* fi-lep.el: augment fi::arglist-lisp-space-1
+	* fi-subproc.el: augment fi::subprocess-watch-for-special-commands
+	* fi-utils.el: augment fi::get-symbol-at-point
 
+    spr35578: turn on font-lock-mode for CL subprocess buffers, too
+	* fi-emacs21.el: add-hook for fi:inferior-common-lisp-mode
+
+    rfe8580: documentation lookup from emacs
 	* fi-keys.el: use new fi:manual 
 	* (NEW) fi-manual-data.el: doc data
 	* (NEW) fi-manual.el: code to pull up docs
@@ -5252,4 +5258,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.23.2.11 $
+$Revision: 3.23.2.12 $

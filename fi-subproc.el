@@ -20,7 +20,7 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 3.12.22.1 2007/11/28 00:52:34 layer Exp $
+;; $Id: fi-subproc.el,v 3.12.22.2 2009/02/26 23:57:14 layer Exp $
 
 ;; Low-level subprocess mode guts
 
@@ -1553,12 +1553,12 @@ to your `.cshrc' after the `set cdpath=(...)' in the same file."
 		  (looking-at "[ \t]*[']?[#]?[:]?\\(.*\\)[ \t]*)")
 		  (looking-at "[ \t]*\\(.*\\)[ \t]*)"))
 	      ;; (in-package foo)
-	      (setq fi:package
-		(buffer-substring (match-beginning 1) (match-end 1))))
+	      (setq fi:package (fi::normalize-package
+				(buffer-substring (match-beginning 1) (match-end 1)))))
 	     ((looking-at "[ \t]+\\(.*\\)[ \t]*$")
 	      ;; :pa foo
-	      (setq fi:package
-		(buffer-substring (match-beginning 1) (match-end 1)))))
+	      (setq fi:package (fi::normalize-package
+				(buffer-substring (match-beginning 1) (match-end 1))))))
 	    ;; need to do something here to force the minibuffer to
 	    ;; redisplay:
 	    (set-buffer-modified-p (buffer-modified-p)))

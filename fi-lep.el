@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 3.4.22.1 2007/11/15 04:11:47 layer Exp $
+;; $Id: fi-lep.el,v 3.4.22.2 2009/02/26 23:57:14 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -79,6 +79,7 @@ time."
       (unless (no-arglist-output-p)
 	;; only output for functions within brackets; too much lisp-traffic!
 	(when (equal prefix-char "(")
+	  (setq string (fi::normalize-symbol-package string))
 	  (fi::make-request (lep::arglist-session :fspec string)
 	    ;; Normal continuation
 	    (() (what arglist)
