@@ -1,5 +1,8 @@
 2009-02-26  Kevin Layer  <layer@gemini.franz.com>
 
+	* fi-emacs21.el (fi:inferior-common-lisp-mode-hook): turn on
+	  font-lock-mode for CL subprocess buffers, too.
+
 	* fi-keys.el: use new fi:manual 
 	* (NEW) fi-manual-data.el: doc data
 	* (NEW) fi-manual.el: code to pull up docs
@@ -5249,4 +5252,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.23.2.10 $
+$Revision: 3.23.2.11 $
