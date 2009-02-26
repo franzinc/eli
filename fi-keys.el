@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 3.7 2007/03/31 21:44:56 layer Exp $
+;; $Id: fi-keys.el,v 3.7.2.1 2009/02/26 20:59:47 layer Exp $
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
@@ -59,6 +59,11 @@ ignored in all but XEmacs and Emacs 21 and later.")
   "*If non-nil, then bind SPC to a function that retrieves arglist
 information and displays it according to the value of the variable
 fi:auto-arglist-pop-up-style.")
+
+(defvar fi:use-web-documentation t
+  "*If non-nil, then fi:lisp-function-documentation is replaced with
+fi:manual for looking up documentation in the Allegro CL documentation
+set.")
 
 
 ;;;;
@@ -181,7 +186,10 @@ fi:auto-arglist-pop-up-style.")
       (fi::defkey emap "A" 'fi:lisp-arglist (and ext clisp))
       (fi::defkey emap "C" 'fi:list-who-calls (and ext clisp))
       (fi::defkey emap "D" 'fi:describe-symbol (and ext clisp))
-      (fi::defkey emap "F" 'fi:lisp-function-documentation (and ext clisp))
+      (fi::defkey emap "F" (if fi:use-web-documentation
+			       'fi:manual
+			     'fi:lisp-function-documentation)
+		  (and ext clisp))
       (fi::defkey emap "M" 'fi:lisp-macroexpand (and ext clisp))
       (fi::defkey emap "T" 'fi:toggle-trace-definition (and ext clisp))
       (fi::defkey emap "W" 'fi:lisp-macroexpand-recursively (and ext clisp))
@@ -215,7 +223,10 @@ fi:auto-arglist-pop-up-style.")
       (fi::defkey cmap "\C-c" 'fi:subprocess-interrupt (or flistener shell))
       ;; NOTE: C-d is defined above
       (fi::defkey cmap "\C-e" 'fi:end-of-defun (or lisp src))
-      (fi::defkey cmap "\C-f" 'fi:lisp-function-documentation clisp)
+      (fi::defkey cmap "\C-f" (if fi:use-web-documentation
+				  'fi:manual
+				'fi:lisp-function-documentation)
+		  clisp)
       (fi::defkey cmap "\C-f" 'fi:telnet-start-garbage-filter non-lisp-subproc)
       ;; NOTE: don't use C-g (it's for quit)
       ;; NOTE: don't use C-h (it's for help)
@@ -285,7 +296,10 @@ fi:auto-arglist-pop-up-style.")
       (fi::defkey cmap "A" 'fi:lisp-arglist (and clisp ext))
       (fi::defkey cmap "C" 'fi:list-who-calls (and clisp ext))
       (fi::defkey cmap "D" 'fi:describe-symbol (and clisp ext))
-      (fi::defkey cmap "F" 'fi:lisp-function-documentation (and clisp ext))
+      (fi::defkey cmap "F" (if fi:use-web-documentation
+			       'fi:manual
+			     'fi:lisp-function-documentation)
+		  (and clisp ext))
       (fi::defkey cmap "K" 'fi:kill-definition (and clisp ext))
       (fi::defkey cmap "L" 'fi:toggle-to-lisp (and clisp ext))
       (fi::defkey cmap "M" 'fi:lisp-macroexpand (and clisp ext))
@@ -296,7 +310,10 @@ fi:auto-arglist-pop-up-style.")
       (fi::defkey cmap "a" 'fi:lisp-arglist (and clisp ext))
       (fi::defkey cmap "c" 'fi:list-who-calls (and clisp ext))
       (fi::defkey cmap "d" 'fi:describe-symbol (and clisp ext))
-      (fi::defkey cmap "f" 'fi:lisp-function-documentation (and clisp ext))
+      (fi::defkey cmap "f" (if fi:use-web-documentation
+			       'fi:manual
+			     'fi:lisp-function-documentation)
+		  (and clisp ext))
       (fi::defkey cmap "i" 'fi:insert-arglist (and clisp ext))
       (fi::defkey cmap "k" 'fi:kill-definition (and clisp ext))
       (fi::defkey cmap "l" 'fi:toggle-to-lisp (and clisp ext))

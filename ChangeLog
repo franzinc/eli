@@ -1,3 +1,10 @@
+2009-02-26  Kevin Layer  <layer@gemini.franz.com>
+
+	* fi-keys.el: use new fi:manual 
+	* (NEW) fi-manual-data.el: doc data
+	* (NEW) fi-manual.el: code to pull up docs
+	* fi-site-init.el: load fi-manual
+
 2009-02-24    <layer@HOBART>
 
 	* emacsdir.pl: assume the FI installer location in the registry
@@ -5242,4 +5249,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.23.2.9 $
+$Revision: 3.23.2.10 $
