@@ -1,9 +1,18 @@
 2009-02-26  Kevin Layer  <layer@gemini.franz.com>
 
 	* fi-keys.el (fi::prep-arglist-for-insertion-1): remove
-	  setting of `layer'
+	  setting of `layer' (leftover from debugging)
 
-    rfe8586: add support for hierarchical packages, from Willem Broekema
+    spr34506: from Robert P. Goldman:
+	* fi-gnu.el (fi::make-backup-file-name-1): define
+	  make-backup-file-name-1 on XEmacs versions that don't have
+	  it
+
+    spr34451: don't mess with case of symbols being completed in modern mode
+	* fi-lep.el (fi:lisp-complete-symbol): use fi::lisp-case-mode
+	  to decide whether or not to downcase completions
+
+    rfe8586: from Willem Broekema: add support for hierarchical packages
 	* fi-lep.el: augment fi::arglist-lisp-space-1
 	* fi-subproc.el: augment fi::subprocess-watch-for-special-commands
 	* fi-utils.el: augment fi::get-symbol-at-point
@@ -11,10 +20,10 @@
     spr35578: turn on font-lock-mode for CL subprocess buffers, too
 	* fi-emacs21.el: add-hook for fi:inferior-common-lisp-mode
 
-    rfe8580: documentation lookup from emacs
+    rfe8580: initial code from Robert P. Goldman, reworked by me
 	* fi-keys.el: use new fi:manual 
 	* (NEW) fi-manual-data.el: doc data
-	* (NEW) fi-manual.el: code to pull up docs
+	* (NEW) fi-manual.el: web documentation lookup from emacs
 	* fi-site-init.el: load fi-manual
 
 2009-02-24    <layer@HOBART>
@@ -5261,4 +5270,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.23.2.13 $
+$Revision: 3.23.2.14 $
