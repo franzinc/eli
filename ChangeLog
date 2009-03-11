@@ -1,3 +1,8 @@
+2009-03-11    <layer@HOBART128>
+
+	* emacsdir.pl: fix for 64-bit Windows w/64-bit Perl (32-bit
+	  Perl will work fine)
+
 2009-02-26  Kevin Layer  <layer@gemini.franz.com>
 
 	* fi-keys.el (fi::prep-arglist-for-insertion-1): remove
@@ -5270,4 +5275,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.23.2.14 $
+$Revision: 3.23.2.15 $
