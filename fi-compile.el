@@ -1,4 +1,4 @@
-;; $Id: fi-compile.el,v 3.0 2003/12/15 22:52:57 layer Exp $
+;; $Id: fi-compile.el,v 3.0.176.1 2009/03/11 23:23:42 layer Exp $
 
 (require 'cl)
 
@@ -24,9 +24,13 @@
 (setq fi-files
   '("fi-vers" "fi-basic-lep" "fi-changes" "fi-composer" "fi-db"
     "fi-dmode" "fi-filec" "fi-gnu"
-    "fi-indent" "fi-keys" "fi-leep0"
+    "fi-indent" "fi-keys"
+;;;;no fi-leep????  or fi-leep-xemacs below???
+    "fi-leep0"
     "fi-lep" "fi-lze" "fi-modes" "fi-ring" "fi-rlogin" "fi-shell"
-    "fi-stream" "fi-su" "fi-sublisp" "fi-subproc" "fi-telnet" "fi-utils"))
+    "fi-stream" "fi-su" "fi-sublisp" "fi-subproc" "fi-telnet" "fi-utils"
+    "fi-manual"
+    "fi-manual-data"))
 
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))

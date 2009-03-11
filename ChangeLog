@@ -1,3 +1,7 @@
+2009-03-11  Kevin Layer  <layer@gemini.franz.com>
+
+	* fi-compile.el: compile fi-manual.el and fi-manual-data.el
+
 2009-03-11    <layer@HOBART128>
 
 	* emacsdir.pl: fix for 64-bit Windows w/64-bit Perl (32-bit
@@ -5275,4 +5279,4 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 	fi:common-lisp-mode (this is for -*- mode defs)
 
 *******************************************************************************
-$Revision: 3.23.2.15 $
+$Revision: 3.23.2.16 $
