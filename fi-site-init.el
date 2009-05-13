@@ -1,4 +1,4 @@
-;; $Id: fi-site-init.el,v 3.4 2007/05/01 01:11:34 layer Exp $
+;; $Id: fi-site-init.el,v 3.4.2.1 2009/02/26 20:59:48 layer Exp $
 ;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
@@ -297,6 +297,8 @@ On Windows, just remove all .elc files and restart xemacs.")
   (fi::load "fi-rlogin")
   (fi::load "fi-telnet")
   (fi::load "fi-su"))
+
+(fi::load "fi-manual")
 
 (condition-case nil
     (fi::load "localfidev")

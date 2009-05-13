@@ -10,7 +10,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 ;;
-;; $Id: fi-emacs21.el,v 3.4 2005/09/12 22:39:55 layer Exp $
+;; $Id: fi-emacs21.el,v 3.4.52.1 2009/02/26 22:49:09 layer Exp $
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; emacs specific stuff
@@ -1060,6 +1060,7 @@
       (font-lock-mark-block-function . mark-defun)))
   (turn-on-font-lock))
 
+(add-hook 'fi:inferior-common-lisp-mode-hook 'fi::turn-on-font-lock)
 (add-hook 'fi:common-lisp-mode-hook 'fi::turn-on-font-lock)
 (add-hook 'fi:emacs-lisp-mode-hook 'fi::turn-on-font-lock)
 

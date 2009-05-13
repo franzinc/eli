@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 3.4.22.1 2007/11/15 04:11:47 layer Exp $
+;; $Id: fi-lep.el,v 3.4.22.3 2009/02/27 00:53:57 layer Exp $
 
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
@@ -79,6 +79,7 @@ time."
       (unless (no-arglist-output-p)
 	;; only output for functions within brackets; too much lisp-traffic!
 	(when (equal prefix-char "(")
+	  (setq string (fi::normalize-symbol-package string))
 	  (fi::make-request (lep::arglist-session :fspec string)
 	    ;; Normal continuation
 	    (() (what arglist)
@@ -561,7 +562,8 @@ beginning of words in target symbols."
 		(point)))
 	 (pattern (fi::defontify-string (buffer-substring beg end)))
 	 (functions-only (if (eq (char-after (1- real-beg)) ?\() t nil))
-	 (downcase (not (fi::all-upper-case-p pattern)))
+	 (downcase (and (eq ':upper fi::lisp-case-mode)
+			(not (fi::all-upper-case-p pattern))))
 	 (xxalist (fi::lisp-complete-1 pattern xpackage functions-only))
 	 temp
 	 (package-override nil)
@@ -570,7 +572,7 @@ beginning of words in target symbols."
 	      (fi::package-frob-completion-alist xxalist)
 	    (if (and (not xpackage)
 		     ;; current package of buffer is not the same as the
-		     ;; single completion match 
+		     ;; single completion match
 		     (null (cdr xxalist)) ;; only one
 		     (setq temp (fi::extract-package-from-symbol
 				 (cdr (car xxalist))))
@@ -601,7 +603,7 @@ beginning of words in target symbols."
 		(setq pattern
 		  (format "%s::%s" full-package-name pattern)))
 	      (try-completion pattern alist)))))
-    
+
     (cond ((eq completion t)
 	   (message "Completion is unique."))
 	  ((and (null completion) (null alist))

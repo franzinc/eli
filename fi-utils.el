@@ -8,7 +8,7 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 3.8.22.2 2008/05/22 08:03:43 layer Exp $
+;; $Id: fi-utils.el,v 3.8.22.3 2009/02/26 23:57:14 layer Exp $
 
 ;;; Misc utilities
 
@@ -588,9 +588,29 @@ at the beginning of the line."
 					(point)))))
 		   nil))
 	     (error nil))))))
+    (when symbol (setq symbol (fi::normalize-symbol-package symbol)))
     (or symbol
 	(if (and up-p (null symbol))
 	    (fi::get-symbol-at-point)))))
+
+(defvar fi:hierarchical-packages t
+  "*If non-nil, then packages whose name starts with a dot are assumed
+hierarchical, i.e. relative to the current package, when doing, for
+example, arglist lookup.")
+
+(defun fi::normalize-symbol-package (name)
+  "Normalize hierarchical package name"
+  (if (string-match fi::*package-prefix* name)
+      (fi::normalize-package name)
+    name))
+
+(defun fi::normalize-package (name)
+  (if (and fi:hierarchical-packages
+	   (> (length name) 0)
+	   (= (aref name 0) ?.)
+	   fi:package)
+      (concat fi:package name)
+    name))
 
 (defun fi::abbrev-to-symbol (pattern alist)
   (let* ((suffix (and (string-match ".*-\\(.*\\)" pattern)
@@ -1343,5 +1363,3 @@ created by fi:common-lisp."
       (incf oldindex)
       (incf newindex))
     new))
-
-      
