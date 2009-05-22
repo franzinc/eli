@@ -1,1 +1,3 @@
 .git-branch-name
+*.elc
+test.out
