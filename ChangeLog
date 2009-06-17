@@ -1,3 +1,9 @@
+2009-06-17  Mikel Bancroft  <mikel@franz.com>
+
+        * fi-basic-lep.el: bug12456. use fi:set-process-coding instead of
+	  set-process-coding-system since it automatically chooses the
+	  encoding with correct EOL semantics.
+
 2009-03-11  Kevin Layer  <layer@gemini.franz.com>
 
 	* fi-compile.el: compile fi-manual.el and fi-manual-data.el
