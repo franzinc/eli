@@ -256,7 +256,7 @@ release.")
       (set-process-buffer process buffer))
     (when coding-system 
       ;; bug12456 -mikel
-      (fi:set-process-coding process coding-system)))
+      (fi:set-process-coding process coding-system))
     (set-process-filter process 'fi::lep-connection-filter)
     ;; new stuff to indicate that we want the lisp editor protocol
     (process-send-string process ":lep\n")
