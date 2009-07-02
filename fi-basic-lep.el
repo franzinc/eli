@@ -279,7 +279,7 @@ release.")
 	(setq fi::*connection*
 	  (fi::make-connection (current-buffer) host process))
       (when (fboundp 'set-menubar-dirty-flag)
-	(set-menubar-dirty-flag)))))
+	(set-menubar-dirty-flag))))
 
 (defvar fi::debug-subprocess-filter nil)
 (defvar fi::debug-subprocess-filter-output nil)
