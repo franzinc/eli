@@ -1,4 +1,4 @@
-2009-06-17  Mikel Bancroft  <mikel@franz.com>
+2009-07-02  Mikel Bancroft  <mikel@franz.com>
 
         * fi-basic-lep.el: bug12456. use fi:set-process-coding instead of
 	  set-process-coding-system since it automatically chooses the
