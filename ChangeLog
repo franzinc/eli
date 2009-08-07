@@ -1,3 +1,8 @@
+2009-08-06  Kevin Layer  <layer@gemini.franz.com>
+
+	* Makefile: don't test on xemacs... it's been broken for some
+	  time and I didn't notice
+
 2009-08-06  Kevin Layer  <layer@franz.com>
 
     make eli compile in emacs 23 with fewer warnings

@@ -3,6 +3,10 @@
 
 include version.mak
 
+ifeq ($(emacs),xemacs)
+xemacs = yes
+endif
+
 SHELL = sh
 
 ###############################################################################
@@ -41,7 +45,11 @@ pwd = $(shell ../bin/pwd)
 endif
 endif
 
-all default:	fi-vers.el compile test.out
+ifndef xemacs
+test_rule = test.out
+endif
+
+all default:	fi-vers.el compile $(test_rule)
 
 compile:	fi-vers.el
 	"$(emacs)" -batch -q -l $(pwd)/fi-compile.el -kill
