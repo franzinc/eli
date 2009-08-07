@@ -53,6 +53,9 @@ fi-vers.el: Makefile version.mak ChangeLog
 	echo '(setq fi:emacs-lisp-interface-version "$(VERSION)")' >> fi-vers.el
 	echo '(defvar fi::compiled-with-version)' >> fi-vers.el
 	echo '(setq fi::compiled-with-version (eval-when-compile (cons emacs-major-version emacs-minor-version)))' >> fi-vers.el
+ifeq ($(OS),Windows_NT)
+	unix2dos fi-vers.el
+endif
 
 #readme.htm: readme0.htm
 #	sed -e 's/__VERSION__/$(VERSION)/g' < readme0.htm > readme.htm

@@ -1,3 +1,7 @@
+2009-08-06    <layer@HOBART128>
+
+	* Makefile: make sure fi-vers.el is in native format
+
 2009-03-11  Kevin Layer  <layer@gemini.franz.com>
 
 	* fi-compile.el: compile fi-manual.el and fi-manual-data.el
