@@ -1,3 +1,23 @@
+2009-08-06  Kevin Layer  <layer@franz.com>
+
+    make eli compile in emacs 23 with fewer warnings
+	* Doc0.el: insert-file & beginning-of-buffer
+	* fi-basic-lep.el: beginning-of-buffer
+	* fi-compile.el: don't warn on cl-functions or obsolete functions
+	* fi-db.el: defconst's -> defvar's; beginning-of-buffer
+	* fi-dmode.el: next-line, previous-line, mapcar, beginning-of-buffer
+	* fi-emacs19.el: defconst -> defvar
+	* fi-gnu.el: move code to fi-xemacs.el
+	* fi-indent.el: add if* for emacs mode (about time!)
+	* fi-lep.el: beginning-of-buffer
+	* fi-manual.el: mapcar
+	* fi-site-init.el: beginning-of-buffer
+	* fi-sublisp.el: remove epoch code
+	* fi-utils.el: insert-file; squash xemacs code warning;
+	beginning-of-buffer; bad error calls (with ~ instead of %) in if*
+	* fi-xemacs.el: move code here
+	* localfidev.el: beginning-of-buffer
+
 2009-08-06    <layer@HOBART128>
 
 	* Makefile: make sure fi-vers.el is in native format

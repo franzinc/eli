@@ -1,6 +1,6 @@
-;; $Id: fi-compile.el,v 3.0.176.1 2009/03/11 23:23:42 layer Exp $
-
 (require 'cl)
+
+(setq byte-compile-warnings '(not cl-functions obsolete))
 
 ;;We're going with emacs 20.x now, and the following doesn't variable
 ;;having a non-nil value doesn't work compiling eli... 

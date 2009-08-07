@@ -8,8 +8,6 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lze.el,v 3.1 2005/11/05 23:04:39 layer Exp $
-;;
 ;; Code the implements evaluation in via the backdoor
 
 (make-variable-buffer-local 'fi::show-compilation-status)

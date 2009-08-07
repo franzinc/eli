@@ -8,8 +8,6 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-changes.el,v 3.0.176.1 2007/11/15 04:11:47 layer Exp $
-;;
 ;; Support for changed definitions
 
 (defvar fi:change-definitions-since-default

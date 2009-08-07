@@ -1,4 +1,3 @@
-;; $Id: fi-test.el,v 3.2 2007/01/22 19:47:19 layer Exp $
 
 (setq load-path (cons default-directory load-path))
 

@@ -20,8 +20,6 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-indent.el,v 3.5 2007/05/01 01:20:03 layer Exp $
-
 (defvar fi:lisp-electric-semicolon nil
   "*If non-nil, semicolons that begin comments are indented as they are
 inserted into the buffer.")
@@ -1833,4 +1831,5 @@ if matched at the beginning of a line, means don't indent that line."
   (put 'while tag 1)
   (put 'with-keywords tag 2)
   (put 'with-output-to-temp-buffer tag 1)
+  (put 'if* tag '(funcall fi:lisp-indent-if*))
   )

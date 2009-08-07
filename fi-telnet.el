@@ -8,8 +8,6 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-telnet.el,v 3.0 2003/12/15 22:52:58 layer Exp $
-
 (defvar fi:telnet-mode-map nil
   "The telnet major-mode keymap.")
 

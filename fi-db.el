@@ -8,8 +8,6 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-db.el,v 3.1 2007/03/31 21:44:56 layer Exp $
-
 (defvar fi::ss-help)
 (setq fi::ss-help
     "Debugger commands:\\<fi:scan-stack-mode-map>
@@ -36,8 +34,8 @@ Type \\[fi:ss-toggle-help-text] to hide this help summary.
 
 ")
 
-(defconst fi:scan-stack-mode-map nil)
-(defconst fi:scan-stack-mode-display-help t
+(defvar fi:scan-stack-mode-map nil)
+(defvar fi:scan-stack-mode-display-help t
   "*If non-nil, then display help text at the beginning of the scan stack
 mode buffer.")
 
@@ -46,7 +44,7 @@ mode buffer.")
 (defconst fi::ss-current-frame-regexp "^ ->")
 (defconst fi::ss-ok-frame-regexp "^   (")
 (defconst fi::ss-ghost-frame-regexp "^   \\[\\.\\.\\. ")
-(defconst fi::ss-show-all-frames nil)
+(defvar fi::ss-show-all-frames nil)
 
 (defvar fi::ss-process-name nil)
 (make-variable-buffer-local 'fi::ss-process-name)
@@ -76,7 +74,7 @@ process. With argument ALL, do a \":zoom :all t\"."
 	(if buffer-read-only (toggle-read-only))
 	(erase-buffer)
 	(insert stack)
-	(beginning-of-buffer)
+	(goto-char (point-min))
 	(fi:scan-stack-mode from-buffer process-name)
 	(let ((buffer-read-only nil))
 	  (insert (format (substitute-command-keys fi::ss-help)
@@ -87,7 +85,7 @@ process. With argument ALL, do a \":zoom :all t\"."
 ;;;	  (when (null fi:scan-stack-mode-display-help)
 ;;;	    (fi:ss-hide-help-text))
 	  )
-	(beginning-of-buffer)
+	(goto-char (point-min))
 	(re-search-forward fi::ss-current-frame-regexp)
 	(beginning-of-line)))
      ;; Error continuation
@@ -341,7 +339,7 @@ buffer."
 	 ;; hide help
 	 (save-excursion
 	   (widen)
-	   (beginning-of-buffer)
+	   (goto-char (point-min))
 	   (or (re-search-forward "^Evaluation stack:$" nil t)
 	       (goto-char (point-max)))
 	   (beginning-of-line)

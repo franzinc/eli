@@ -1,5 +1,3 @@
-;; $Id: Doc0.el,v 3.0 2003/12/15 22:52:57 layer Exp $
-
 (defvar current-local-map-var)
 
 (defun foo (x) x)
@@ -23,9 +21,9 @@
   (fi:rlogin-mode)
   (fundamental-mode)
 
-  (insert-file input-file)
+  (insert-file-contents input-file)
 
-  (beginning-of-buffer)
+  (goto-char (point-min))
 
   (while (re-search-forward "^%%" nil t)
     (beginning-of-line)

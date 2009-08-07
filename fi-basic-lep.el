@@ -8,8 +8,6 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-basic-lep.el,v 3.3 2005/08/03 05:08:34 layer Exp $
-;;
 ;; The basic lep code that implements connections and sessions
 
 (defvar fi::trace-lep-filter nil)	; for debugging
@@ -106,7 +104,7 @@
       (fi:common-lisp-mode)
       (setq fi:package apackage)
       (insert text)
-      (beginning-of-buffer))
+      (goto-char (point-min)))
     (fi::display-pop-up-window buffer hook args))
   (fi::note-background-reply)
   (when fi::show-some-text-1-first-time

@@ -8,8 +8,6 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-modes.el,v 3.0 2003/12/15 22:52:57 layer Exp $
-
 ;;;; Mode initializations
 
 ;;;

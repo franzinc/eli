@@ -96,13 +96,13 @@ open in different tabs."
 
 (progn
   (setq fi::manual-symbols (make-vector (length +table-from-franz+) 0))
-  (mapcar (lambda (entry)
-	    (let ((symbol (intern (car entry) fi::manual-symbols)))
-	      (cond
-	       ((boundp symbol)
-		(push (cadr entry) (symbol-value symbol)))
-	       (t (set symbol (cdr entry))))))
-	  +table-from-franz+)
+  (mapc (lambda (entry)
+	  (let ((symbol (intern (car entry) fi::manual-symbols)))
+	    (cond
+	     ((boundp symbol)
+	      (push (cadr entry) (symbol-value symbol)))
+	     (t (set symbol (cdr entry))))))
+	+table-from-franz+)
   fi::manual-symbols)
 		
 (provide 'fi-manual)
