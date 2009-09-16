@@ -1,4 +1,3 @@
-# $Id: Makefile,v 3.3.24.2 2008/03/04 20:56:29 layer Exp $
 # This makefile requires GNU make.
 
 include version.mak

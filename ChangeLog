@@ -1,3 +1,11 @@
+*******************************************************************************
+** Update the version # in version.mak
+*******************************************************************************
+
+2009-09-16    <layer@HOBART128>
+3.50
+	* version.mak: hand edited now, not using CVS anymore
+
 2009-08-06  Kevin Layer  <layer@gemini.franz.com>
 
 	* Makefile: don't test on xemacs... it's been broken for some
@@ -5312,6 +5320,3 @@ Mon Apr 25 15:14:59 1988  Kevin Layer  (layer at akbar)
 
 	* lisp-mode and common-lisp-mode are the same as
 	fi:common-lisp-mode (this is for -*- mode defs)
-
-*******************************************************************************
-$Revision: 3.23.2.16 $
