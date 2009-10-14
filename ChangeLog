@@ -2,6 +2,10 @@
 ** Update the version # in version.mak
 *******************************************************************************
 
+2009-10-14  Kevin Layer  <layer@gemini.franz.com>
+3.51
+	* fi-indent.el: indent properties for smp macros
+
 2009-09-16    <layer@HOBART128>
 3.50
 	* version.mak: hand edited now, not using CVS anymore

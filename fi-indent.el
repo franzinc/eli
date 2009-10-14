@@ -1735,6 +1735,17 @@ if matched at the beginning of a line, means don't indent that line."
   (put 'without-interrupts tag 0)
   (put 'without-scheduling tag 0)
 
+  ;; no SMP macros
+  (put 'critical-section tag 1)
+  (put 'defvar-nonbindable tag 2)
+  (put 'fast-and-clean tag 0)
+  (put 'with-delayed-interrupts tag 0)
+  (put 'with-locked-object tag 1)
+  (put 'with-locked-object-released tag 1)
+  (put 'with-locked-stream tag 1)
+  (put 'with-locked-structure tag 1)
+  (put 'with-pinned-objects tag 1)
+
   ;; for clim 2.x
   (put 'dolist-noting-progress tag '(like dolist))
   (put 'dotimes-noting-progress tag '(like dolist))
