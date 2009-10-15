@@ -1725,6 +1725,7 @@ if matched at the beginning of a line, means don't indent that line."
   (put 'defresource tag 1)
   (put 'defsystem tag '((1 2 quote) (0 t 2)))
   (put 'defun-c-callable tag '(like defun))
+  (put 'ensuring-compiled-body tag '(like progn))
   (put 'if* tag '(funcall fi:lisp-indent-if*))
   (put 'process-run-function tag 1)
   (put 'setq-default tag 1)
