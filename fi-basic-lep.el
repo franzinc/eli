@@ -659,7 +659,8 @@ be increased.")
   "Apply (Emacs Lisp) format to STRING and ARGS and sychronously evaluate
 the result in the Common Lisp to which we are connected."
   (fi::eval-in-lisp-wait-for-connection)
-  (let ((string (if args (apply 'format string args) string)))
+  (let ((string (fi::defontify-string
+		    (if args (apply 'format string args) string))))
     ;;fi::frob-case-to-lisp removed - 18jan94 smh
     (car (lep::eval-session-in-lisp 'lep::eval-from-emacs-session
 				    ':string string))))

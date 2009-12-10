@@ -2,6 +2,11 @@
 ** Update the version # in version.mak
 *******************************************************************************
 
+2009-12-10  Kevin Layer  <layer@gemini.franz.com>
+3.52
+	* fi-basic-lep.el: bug18838: make sure we defontify
+	  strings in fi:eval-in-lisp before sending them to ACL
+
 2009-10-14  Kevin Layer  <layer@gemini.franz.com>
 3.51
 	* fi-indent.el: indent properties for smp macros and other stuff
