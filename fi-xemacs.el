@@ -10,6 +10,8 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
+(condition-case nil (require 'easy-mmode) (error nil)) ;; bug19125
+
 (defun fi-find-buffer-visiting (filename)
   (get-file-buffer filename))
 
