@@ -53,7 +53,7 @@ all default:	fi-vers.el compile $(test_rule)
 compile:	fi-vers.el
 	"$(emacs)" -batch -q -l $(pwd)/fi-compile.el -kill
 
-fi-vers.el: Makefile version.mak ChangeLog
+fi-vers.el: Makefile version.mak
 #	rm -f fi-vers.el
 	echo ';; automatically generate file--do not edit.' > fi-vers.el
 	echo '(defvar fi:emacs-lisp-interface-version)' >> fi-vers.el
