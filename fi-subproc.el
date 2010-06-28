@@ -20,8 +20,6 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-subproc.el,v 3.12.22.2 2009/02/26 23:57:14 layer Exp $
-
 ;; Low-level subprocess mode guts
 
 ;;;;

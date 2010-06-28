@@ -1,7 +1,10 @@
-# $Id: Makefile,v 3.3.24.2 2008/03/04 20:56:29 layer Exp $
 # This makefile requires GNU make.
 
 include version.mak
+
+ifeq ($(emacs),xemacs)
+xemacs = yes
+endif
 
 SHELL = sh
 
@@ -41,18 +44,25 @@ pwd = $(shell ../bin/pwd)
 endif
 endif
 
-all default:	fi-vers.el compile test.out
+ifndef xemacs
+test_rule = test.out
+endif
+
+all default:	fi-vers.el compile $(test_rule)
 
 compile:	fi-vers.el
 	"$(emacs)" -batch -q -l $(pwd)/fi-compile.el -kill
 
-fi-vers.el: Makefile version.mak ChangeLog
+fi-vers.el: Makefile version.mak
 #	rm -f fi-vers.el
 	echo ';; automatically generate file--do not edit.' > fi-vers.el
 	echo '(defvar fi:emacs-lisp-interface-version)' >> fi-vers.el
 	echo '(setq fi:emacs-lisp-interface-version "$(VERSION)")' >> fi-vers.el
 	echo '(defvar fi::compiled-with-version)' >> fi-vers.el
 	echo '(setq fi::compiled-with-version (eval-when-compile (cons emacs-major-version emacs-minor-version)))' >> fi-vers.el
+ifeq ($(OS),Windows_NT)
+	unix2dos fi-vers.el
+endif
 
 #readme.htm: readme0.htm
 #	sed -e 's/__VERSION__/$(VERSION)/g' < readme0.htm > readme.htm

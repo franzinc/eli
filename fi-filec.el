@@ -8,8 +8,6 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-filec.el,v 3.0 2003/12/15 22:52:57 layer Exp $
-
 ;; Command and file name completion
 
 (defvar fi:shell-token-pattern "[ \t\n()<>&|;=]"

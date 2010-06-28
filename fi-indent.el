@@ -20,8 +20,6 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-indent.el,v 3.5 2007/05/01 01:20:03 layer Exp $
-
 (defvar fi:lisp-electric-semicolon nil
   "*If non-nil, semicolons that begin comments are indented as they are
 inserted into the buffer.")
@@ -1727,6 +1725,7 @@ if matched at the beginning of a line, means don't indent that line."
   (put 'defresource tag 1)
   (put 'defsystem tag '((1 2 quote) (0 t 2)))
   (put 'defun-c-callable tag '(like defun))
+  (put 'ensuring-compiled-body tag '(like progn))
   (put 'if* tag '(funcall fi:lisp-indent-if*))
   (put 'process-run-function tag 1)
   (put 'setq-default tag 1)
@@ -1736,6 +1735,17 @@ if matched at the beginning of a line, means don't indent that line."
   (put 'with-timeout tag 1)
   (put 'without-interrupts tag 0)
   (put 'without-scheduling tag 0)
+
+  ;; no SMP macros
+  (put 'critical-section tag 1)
+  (put 'defvar-nonbindable tag 2)
+  (put 'fast-and-clean tag 0)
+  (put 'with-delayed-interrupts tag 0)
+  (put 'with-locked-object tag 1)
+  (put 'with-locked-object-released tag 1)
+  (put 'with-locked-stream tag 1)
+  (put 'with-locked-structure tag 1)
+  (put 'with-pinned-objects tag 1)
 
   ;; for clim 2.x
   (put 'dolist-noting-progress tag '(like dolist))
@@ -1833,4 +1843,5 @@ if matched at the beginning of a line, means don't indent that line."
   (put 'while tag 1)
   (put 'with-keywords tag 2)
   (put 'with-output-to-temp-buffer tag 1)
+  (put 'if* tag '(funcall fi:lisp-indent-if*))
   )

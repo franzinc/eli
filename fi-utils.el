@@ -8,8 +8,6 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-utils.el,v 3.8.22.3 2009/02/26 23:57:14 layer Exp $
-
 ;;; Misc utilities
 
 (defun fi::lisp-find-char (char string &optional from-end)
@@ -281,7 +279,7 @@ that starts with ~."
   (let ((buffer (generate-new-buffer "*temp*")))
     (save-excursion
       (set-buffer buffer)
-      (insert-file copy-file-name)
+      (insert-file-contents copy-file-name)
       (copy-region-as-kill (point-min) (point-max)))
     (kill-buffer buffer)))
 
@@ -335,7 +333,7 @@ readable.  The error from open-network-stream was:
 	(t
 	 (cond
 	  ((and (string-match "xemacs" emacs-version)
-		(string= "21.4.17" emacs-program-version))
+		(string= "21.4.17" (symbol-value 'emacs-program-version)))
 	   (fi:error "
 Can't connect to host %s.  The error from open-network-stream was:
   %s
@@ -364,7 +362,7 @@ Can't connect to host %s.  The error from open-network-stream was:
     (when buffer-read-only (toggle-read-only))
     (erase-buffer)
     (insert string)
-    (beginning-of-buffer)))
+    (goto-char (point-min))))
 
 (defun fi:error (format-string &rest args)
   (apply 'fi:note format-string args)
@@ -1097,7 +1095,7 @@ created by fi:common-lisp."
        ((null xx)
 	(cond ((eq state ':compl)
 	       `(cond ,@totalcol))
-	      (t (error "if*: illegal form ~s" args))))
+	      (t (error "if*: illegal form %s" args))))
        (cond ((and (symbolp (car xx))
 		   (member (symbol-name (car xx)) fi::if*-keyword-list))
 	      (setq lookat (symbol-name (car xx)))))
@@ -1107,7 +1105,7 @@ created by fi:common-lisp."
 				   (setq col nil
 					 state ':then))
 				  (t (error
-				      "if*: bad keyword ~a" lookat))))
+				      "if*: bad keyword %a" lookat))))
 		    (t (setq state ':col
 			     col nil)
 		       (push (car xx) col))))
@@ -1115,20 +1113,18 @@ created by fi:common-lisp."
 	      (cond (lookat
 		     (cond ((equal lookat "else")
 			    (cond (elseseen
-				   (error
-				    "if*: multiples elses")))
+				   (error "if*: multiples elses")))
 			    (setq elseseen t)
 			    (setq state ':init)
 			    (push `(t ,@col) totalcol))
 			   ((string-equal lookat "then")
 			    (setq state ':then))
-			   (t (error "if*: bad keyword ~s"
-					      lookat))))
+			   (t (error "if*: bad keyword %s" lookat))))
 		    (t (push (car xx) col))))
 	     ((eq state ':then)
 	      (cond (lookat
 		     (error
-		      "if*: keyword ~s at the wrong place " (car xx)))
+		      "if*: keyword %s at the wrong place" (car xx)))
 		    (t (setq state ':compl)
 		       (push `(,(car xx) ,@col) totalcol))))
 	     ((eq state ':compl)

@@ -8,8 +8,6 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-lep.el,v 3.4.22.3 2009/02/27 00:53:57 layer Exp $
-
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
 STRING.  fi:package is used to determine from which Common Lisp package the
@@ -353,7 +351,7 @@ time."
 		   ?%
 		   (format "The definition of %s is somewhere in this file! "
 			   thing)))
-		(beginning-of-buffer))
+		(goto-char (point-min)))
 	    (progn
 	      (goto-char (1+ point))
 	      (if (not xb) (set-mark (point)))))

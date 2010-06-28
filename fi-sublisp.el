@@ -1,3 +1,4 @@
+
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
 ;; Copyright (C) 1985, 1986, 1987 Free Software Foundation, Inc.
@@ -20,8 +21,6 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; $Id: fi-sublisp.el,v 3.0 2003/12/15 22:52:57 layer Exp $
-
 (defun fi:set-associated-sublisp (buffer-name mode)
   "Use BUFFER-NAME as the name of a buffer which contains a Lisp subprocess
 to be used for Emacs-Lisp interactions (evaluating expressions, etc) in all
@@ -33,14 +32,11 @@ buffers in MODE.  New buffers created in MODE will also use BUFFER-NAME."
 	  (mode (or (and (memq major-mode '(fi:common-lisp-mode
 					    fi:franz-lisp-mode))
 			 major-mode)
-		    (let* ((alist '(("common-lisp" . fi:common-lisp-mode)
+					(let* ((alist '(("common-lisp" . fi:common-lisp-mode)
 				    ("franz-lisp" . fi:franz-lisp-mode)))
 			   (type
-			    (progn
-			      (if (fboundp 'epoch::mapraised-screen)
-				  (epoch::mapraised-screen (minibuf-screen)))
-			      (completing-read "Lisp type: "
-					       alist nil t "common-lisp"))))
+			    (completing-read "Lisp type: "
+					     alist nil t "common-lisp")))
 		      (cdr (assoc type alist))))))
      (list buffer-name mode)))
   (let* ((buffers (buffer-list))

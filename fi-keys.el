@@ -8,8 +8,6 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-keys.el,v 3.7.2.2 2009/02/26 23:58:44 layer Exp $
-
 (cond ((or (eq fi::emacs-type 'xemacs19)
 	   (eq fi::emacs-type 'xemacs20))
        (require 'tags "etags"))

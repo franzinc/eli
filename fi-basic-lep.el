@@ -8,8 +8,6 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-basic-lep.el,v 3.3 2005/08/03 05:08:34 layer Exp $
-;;
 ;; The basic lep code that implements connections and sessions
 
 (defvar fi::trace-lep-filter nil)	; for debugging
@@ -106,7 +104,7 @@
       (fi:common-lisp-mode)
       (setq fi:package apackage)
       (insert text)
-      (beginning-of-buffer))
+      (goto-char (point-min)))
     (fi::display-pop-up-window buffer hook args))
   (fi::note-background-reply)
   (when fi::show-some-text-1-first-time
@@ -255,7 +253,8 @@ release.")
       (save-excursion (set-buffer buffer) (erase-buffer))
       (set-process-buffer process buffer))
     (when coding-system 
-      (set-process-coding-system process coding-system coding-system))
+      ;; bug12456 -mikel
+      (fi::set-process-coding process coding-system))
     (set-process-filter process 'fi::lep-connection-filter)
     ;; new stuff to indicate that we want the lisp editor protocol
     (process-send-string process ":lep\n")
@@ -660,7 +659,8 @@ be increased.")
   "Apply (Emacs Lisp) format to STRING and ARGS and sychronously evaluate
 the result in the Common Lisp to which we are connected."
   (fi::eval-in-lisp-wait-for-connection)
-  (let ((string (if args (apply 'format string args) string)))
+  (let ((string (fi::defontify-string
+		    (if args (apply 'format string args) string))))
     ;;fi::frob-case-to-lisp removed - 18jan94 smh
     (car (lep::eval-session-in-lisp 'lep::eval-from-emacs-session
 				    ':string string))))

@@ -9,8 +9,8 @@
 ;;
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
-;;
-;; $Id: fi-xemacs.el,v 3.0 2003/12/15 22:52:58 layer Exp $
+
+(condition-case nil (require 'easy-mmode) (error nil)) ;; bug19125
 
 (defun fi-find-buffer-visiting (filename)
   (get-file-buffer filename))
@@ -617,3 +617,55 @@
 (add-hook 'fi:inferior-common-lisp-mode-hook 'fi::install-mode-menus)
 (add-hook 'fi:common-lisp-mode-hook 'fi::install-mode-menus)
 (put 'fi:common-lisp-mode 'font-lock-keywords 'lisp-font-lock-keywords-2)
+
+;; from Robert P. Goldman, rpgoldman@sift.info
+(defun fi::make-backup-file-name-1 (file)
+  "Replacement for FSF emacs function in xemacs."
+  (let* ((backup-directory (temp-directory))
+	;; If backup-directory is relative, it should be relative to the
+	;; file's directory.  By expanding explicitly here, we avoid
+	;; depending on default-directory.
+	 (abs-backup-directory
+	  (expand-file-name backup-directory
+				(file-name-directory file))))
+    (when (and abs-backup-directory (not (file-exists-p
+abs-backup-directory)))
+	(condition-case nil
+	    (make-directory abs-backup-directory 'parents)
+	  (file-error (setq backup-directory nil
+			    abs-backup-directory nil))))
+    (if (null backup-directory)
+	file
+      (if (file-name-absolute-p backup-directory)
+	  (progn
+	    (when (memq system-type '(windows-nt ms-dos cygwin))
+	      ;; Normalize DOSish file names: downcase the drive
+	      ;; letter, if any, and replace the leading "x:" with
+	      ;; "/drive_x".
+	      (or (file-name-absolute-p file)
+		  (setq file (expand-file-name file))) ; make defaults explicit
+	      ;; Replace any invalid file-name characters (for the
+	      ;; case of backing up remote files).
+	      (setq file (expand-file-name (convert-standard-filename file)))
+	      (if (eq (aref file 1) ?:)
+		  (setq file (concat "/"
+				     "drive_"
+				     (char-to-string (downcase (aref file 0)))
+				     (if (eq (aref file 2) ?/)
+					 ""
+				       "/")
+				     (substring file 2)))))
+	    ;; Make the name unique by substituting directory
+	    ;; separators.  It may not really be worth bothering about
+	    ;; doubling `!'s in the original name...
+	    (expand-file-name
+	     (replace-regexp-in-string "/" "!"
+	      (replace-regexp-in-string "!" "!!" file))
+	     backup-directory))
+	(expand-file-name (file-name-nondirectory file)
+			  (file-name-as-directory abs-backup-directory))))))
+
+(when (and (eq fi::emacs-type 'xemacs20)
+	   (not (fboundp 'make-backup-file-name-1)))
+  (fset 'make-backup-file-name-1
+	(symbol-function 'fi::make-backup-file-name-1)))

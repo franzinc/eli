@@ -1,5 +1,3 @@
-;; $Id: fi-site-init.el,v 3.4.2.1 2009/02/26 20:59:48 layer Exp $
-;;
 ;; The Franz Inc. Lisp/Emacs interface.
 
 (setq fi::*debug* nil)
@@ -227,7 +225,7 @@ On UNIX, you can do this by running the following commands in the
   make
 
 On Windows, just remove all .elc files and restart emacs.")
-  (beginning-of-buffer)
+  (goto-char (point-min))
   (beep)
   (error "You must byte-recompile the .el files for GNU Emacs 19.x."))
 
@@ -251,7 +249,7 @@ On UNIX, you can do this by running the following commands in the
 where <xemacs20> is the name of your XEmacs 20.x binary.
 
 On Windows, just remove all .elc files and restart xemacs.")
-  (beginning-of-buffer)
+  (goto-char (point-min))
   (beep)
   (error "You must byte-recompile the .el files for XEmacs 20.x."))
 

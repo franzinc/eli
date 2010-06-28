@@ -8,8 +8,6 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-leep0.el,v 3.0 2003/12/15 22:52:57 layer Exp $
-
 ;; The epoch side of presentations in a lisp-listener window.
 
 ;; This defstruct has to be in a separate file compiled and loaded

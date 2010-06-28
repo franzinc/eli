@@ -8,8 +8,6 @@
 ;; Franz Incorporated provides this software "as is" without
 ;; express or implied warranty.
 
-;; $Id: fi-dmode.el,v 3.0 2003/12/15 22:52:57 layer Exp $
-
 ;; Create a mode in which each line is a definition and . on that
 ;; definition brings up the definition in another window
 
@@ -268,7 +266,7 @@ followed by \
 ``\\<fi:definition-mode-map>\\[fi:definition-mode-goto-definition]'' \
 in definition mode."
   (interactive)
-  (next-line 1)
+  (forward-line 1)
   (fi:definition-mode-goto-definition))
 
 (defun fi:definition-mode-goto-previous ()
@@ -277,7 +275,7 @@ followed by \
 ``\\<fi:definition-mode-map>\\[fi:definition-mode-goto-definition]'' \
 in definition mode."
   (interactive)
-  (previous-line 1)
+  (forward-line -1)
   (fi:definition-mode-goto-definition))
 
 (defun lep::find-buffer-definition (string type list-buffer buffer)
@@ -310,17 +308,17 @@ in definition mode."
       (set-buffer buffer)
       (setq buffer-read-only nil)
       (erase-buffer)
-     (setq truncate-lines t)		;smh 22jul94
-      (mapcar (function (lambda (x) 
-			  (princ (car x) (current-buffer))
-			  (unless (equal '(nil) (second x))
-			    (insert ", ")
-			    (princ (second x) (current-buffer)))
-			  (when (third x) ;smh 22jul94
-			    (insert ", ")
-			    (princ (third x) (current-buffer)))
-			  (insert "\n")))
-	      buffer-definitions)
+      (setq truncate-lines t)		;smh 22jul94
+      (mapc (function (lambda (x) 
+			(princ (car x) (current-buffer))
+			(unless (equal '(nil) (second x))
+			  (insert ", ")
+			  (princ (second x) (current-buffer)))
+			(when (third x)	;smh 22jul94
+			  (insert ", ")
+			  (princ (third x) (current-buffer)))
+			(insert "\n")))
+	    buffer-definitions)
       (fi:definition-mode)
       (set-buffer-modified-p nil)
       (setq buffer-read-only t)
@@ -329,7 +327,7 @@ in definition mode."
       (setq lep::definition-other-args (mapcar 'third buffer-definitions))
       (setq lep::definition-finding-function fn-and-arguments)
       (setq fi:package xpackage)
-      (beginning-of-buffer))))
+      (goto-char (point-min)))))
 
 (defun lep:display-some-inverse-definitions (xpackage buffer-definitions
 					     fn-and-arguments
@@ -342,13 +340,13 @@ in definition mode."
       (set-buffer buffer)
       (setq buffer-read-only nil)
       (erase-buffer)
-      (mapcar '(lambda (x) 
-		(princ (car x) (current-buffer))
-		(unless (equal '(nil) (second x))
-		  (insert ", ")
-		  (princ (second x) (current-buffer)))
-		(insert "\n"))
-	      buffer-definitions)
+      (mapc '(lambda (x) 
+	      (princ (car x) (current-buffer))
+	      (unless (equal '(nil) (second x))
+		(insert ", ")
+		(princ (second x) (current-buffer)))
+	      (insert "\n"))
+	    buffer-definitions)
       (fi:inverse-definition-mode)
       (set-buffer-modified-p nil)
       (setq buffer-read-only t)
@@ -357,7 +355,7 @@ in definition mode."
       (setq lep::definition-other-args (mapcar 'third buffer-definitions))
       (setq lep::definition-finding-function fn-and-arguments)
       (setq fi:package xpackage)
-      (beginning-of-buffer))))
+      (goto-char (point-min)))))
 
 (defun fi::goto-definitions-buffer (buffer config-var)
   (unless (eq buffer (current-buffer))
