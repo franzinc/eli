@@ -235,12 +235,12 @@ any other mode setup."
   (setq fi:lisp-indent-hook-property 'fi:common-lisp-indent-hook)
   (run-hooks 'fi:lisp-mode-hook 'fi:common-lisp-mode-hook))
 
-(defun lisp-mode (&optional mode-hook)
-  "See fi:common-lisp-mode.  This function is here so that set-auto-mode
-will go into the FI Common Lisp mode when ``mode: lisp'' appears in
-the file modeline."
-  (interactive)
+(defadvice lisp-mode (around ad-lisp-mode-use-fi:common-lisp-mode first
+			     (&optional mode-hook)
+			     activate) 
   (fi:common-lisp-mode mode-hook))
+
+(ad-activate 'lisp-mode)
 
 (defun common-lisp-mode (&optional mode-hook)
   "See fi:common-lisp-mode.  This function is here so that set-auto-mode
