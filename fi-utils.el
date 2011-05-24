@@ -882,7 +882,7 @@ created by fi:common-lisp."
 		(not found))
       (if (eq buffer (window-buffer current))
 	  (setq found current))
-      (setq current (next-window current 'no-minibuffer 'visible)))
+      (setq current (next-window current nil 'visible)))
     (if (null found)
 	(switch-to-buffer buffer)
       (select-window found))))
