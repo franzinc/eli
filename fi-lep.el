@@ -343,7 +343,8 @@ time."
 	  (if other-window-p
 	      (find-file-other-window pathname)
 	    (find-file pathname))
-	  (if xb (set-mark (point)))
+	  ;; rfe10778. why is the set-mark necessary?
+	  ;; (if xb (set-mark (point)))
 	  (if (null point)
 	      (progn
 		(setq mess
@@ -354,7 +355,9 @@ time."
 		(goto-char (point-min)))
 	    (progn
 	      (goto-char (1+ point))
-	      (if (not xb) (set-mark (point)))))
+	      ;; rfe10778. why is the set-mark necessary?
+	      ;; (if (not xb) (set-mark (point)))
+	      ))
 	  (cond ((eq n-more 0)
 		 (if (lep::meta-dot-from-fspec)
 		     (message (concat mess "%ss of %s")
