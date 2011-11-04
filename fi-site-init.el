@@ -207,27 +207,18 @@ exists.")
 
 (fi::load "fi-vers")
 
-(when (and (= 20 (car fi::compiled-with-version))
-	   (= 19 emacs-major-version)
-	   (eq 'emacs19 fi::emacs-type))
+(when (and (< 22 emacs-major-version)
+	   (or (eq 'emacs20 fi::emacs-type)
+	       (eq 'emacs19 fi::emacs-type)))
   (delete-other-windows)
   (switch-to-buffer "*Help*")
   (when buffer-read-only (toggle-read-only))
   (erase-buffer)
   (insert "
-You must byte-recompile the .el files for GNU Emacs 19.x since there are
-incompatibilities between FSF GNU Emacs going from version 20 to 19.
-
-On UNIX, you can do this by running the following commands in the
-<acldir>/eli/ directory:
-
-  make clean
-  make
-
-On Windows, just remove all .elc files and restart emacs.")
+The Allegro Emacs-Lisp interface requires at least GNU Emacs 22 or later.")
   (goto-char (point-min))
   (beep)
-  (error "You must byte-recompile the .el files for GNU Emacs 19.x."))
+  (error "Please use GNU Emacs 22 or later."))
 
 (when (and (= 19 (car fi::compiled-with-version))
 	   (eq 'xemacs20 fi::emacs-type)
