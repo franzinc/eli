@@ -207,7 +207,7 @@ exists.")
 
 (fi::load "fi-vers")
 
-(when (and (< 22 emacs-major-version)
+(when (and (< emacs-major-version 22)
 	   (or (eq 'emacs20 fi::emacs-type)
 	       (eq 'emacs19 fi::emacs-type)))
   (delete-other-windows)
