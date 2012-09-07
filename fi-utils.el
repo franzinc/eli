@@ -467,6 +467,13 @@ at the beginning of the line."
 		      (try-completion (concat real-package pattern)
 				      alist))
 		  (try-completion pattern alist)))))
+	;; This is a workaround for a strange error that some customers are
+	;; getting with newer emacsen.  I've never seen it, so I'm guessing
+	;; it's related to some customization they have, but it seems to
+	;; solve the problem.
+	(when (or (eq 'metadata what)
+		  (and (consp what) (eq 'boundaries (car what))))
+	  (setq what nil))
 	(ecase what
 	  ((nil) (cond ((eq completion t) t)
 		       ((and (null completion) (null alist))
