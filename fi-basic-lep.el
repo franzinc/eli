@@ -224,18 +224,10 @@ release.")
 ;; 
 (condition-case nil (require 'un-define) (error nil))
 
+(defvar fi::default-lisp-connection-coding-system 'utf-8)
+
 (defun fi::lisp-connection-coding-system ()
-  (if (and (string-match "xemacs" emacs-version)
-	   (string< "21.5" emacs-version))
-      ;; xemacs 21.5 has a good utf-8
-      'utf-8
-    ;; else check if we can load mule-ucs utf-8
-    (if (member 'un-define features)
-	;; then we have mule-ucs utf-8
-	'utf-8
-      ;; else return nil if no emacs-mule
-      (when (fboundp 'coding-system-list)
-	(car (member 'emacs-mule (coding-system-list)))))))
+  fi::default-lisp-connection-coding-system)
 
 (defun fi::make-connection-to-lisp (host port passwd)
   (let* ((proc-name (format " *LEP %s %d %d*" host port passwd))
