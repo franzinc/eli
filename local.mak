@@ -36,7 +36,7 @@ hosts = corba,heavy,news,beast,romeo,beta,tiger,freezer,sole,sparky,louie,hefty,
 
 elib_root = /usr/fi/emacs-lib
 to = $(elib_root)/fi
-rdist = rdist
+rdist = rdist -P ssh
 
 FILES_TO_RDIST = $(release_files) local*.el local*.elc 
 
