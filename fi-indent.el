@@ -1804,6 +1804,10 @@ if matched at the beginning of a line, means don't indent that line."
   (put 'select0/callback tag '(like defun))
   (put 'select-distinct/callback tag '(like defun))
   (put 'select0-distinct/callback tag '(like defun))
+  
+  ;; AllegroServe
+  (put 'with-http-response tag '((1 1 quote) (0 t 1)))
+  (put 'with-http-body tag '(like with-http-response))
   )
 
 (let ((tag 'fi:franz-lisp-indent-hook))
