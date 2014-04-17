@@ -473,13 +473,7 @@ risk.")
 					   (string-match host (system-name))))
 	    (when (not fi::process-is-local)
 	      (when (not fi::rsh-command)
-		(setq fi::rsh-command
-		  (cond ((fi::command-exists-p "remsh") "remsh")
-			((fi::command-exists-p "rsh") "rsh")
-			((and (on-ms-windows) (fi::command-exists-p "rsh.exe")
-			      "rsh.exe"))
-			(t (error
-			    "can't find the rsh command in your path"))))))
+		(setq fi::rsh-command fi::default-rsh-command)))
 	    (if (interactive-p)
 		(if fi::process-is-local
 		    (and directory (expand-file-name directory))
@@ -594,6 +588,20 @@ be a string. Use the 6th argument for image file."))
       ;; Only setq'd if it already had a value...
       (setq fi:common-lisp-directory directory))
     proc))
+
+(defun fi::default-rsh-command ()
+  (cond ((fi::command-exists-p "ssh") "ssh")
+	((and (on-ms-windows) (fi::command-exists-p "ssh.exe"))
+	 "ssh.exe")
+	((fi::command-exists-p "remsh") "remsh")
+	((fi::command-exists-p "rsh") "rsh")
+	((and (on-ms-windows) (fi::command-exists-p "rsh.exe"))
+	 "rsh.exe")
+	(t (error "can't find ssh/rsh in your path"))))
+
+(defun fi::rsh-command-remote-p ()
+  (fi:member-equal (file-name-nondirectory fi::rsh-command)
+		   '("ssh" "ssh.exe" "remsh" "rsh" "rsh.exe")))
 
 (defun fi::eli-compat-mode-p (port)
   (let (proc)
@@ -943,12 +951,8 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 				       fi:franz-lisp-image-name
 				       fi:franz-lisp-image-arguments
 				       (or fi:franz-lisp-host (system-name))))
-  (unless fi::rsh-command
-    (setq fi::rsh-command
-      (cond ((fi::command-exists-p "remsh") "remsh")
-	    ((fi::command-exists-p "rsh") "rsh")
-	    (t
-	     (error "can't find the rsh command in your path")))))
+  (when (not fi::rsh-command)
+    (setq fi::rsh-command fi::default-rsh-command))
   (setq fi::process-is-local (or (string= "localhost" host)
 				 ;; so it is case insensitive:
 				 (string-match host (system-name))))
@@ -1006,8 +1010,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 ;;;;
 
 (defun fi::remote-lisp-args (host executable-image-name image-args directory)
-  (let ((remote (fi:member-equal (file-name-nondirectory fi::rsh-command)
-				 '("remsh" "rsh" "rsh.exe"))))
+  (let ((remote (fi::rsh-command-remote-p)))
     (append
      fi::rsh-args
      (list
