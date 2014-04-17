@@ -473,7 +473,7 @@ risk.")
 					   (string-match host (system-name))))
 	    (when (not fi::process-is-local)
 	      (when (not fi::rsh-command)
-		(setq fi::rsh-command fi::default-rsh-command)))
+		(setq fi::rsh-command (fi::default-rsh-command))))
 	    (if (interactive-p)
 		(if fi::process-is-local
 		    (and directory (expand-file-name directory))
@@ -952,7 +952,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 				       fi:franz-lisp-image-arguments
 				       (or fi:franz-lisp-host (system-name))))
   (when (not fi::rsh-command)
-    (setq fi::rsh-command fi::default-rsh-command))
+    (setq fi::rsh-command (fi::default-rsh-command)))
   (setq fi::process-is-local (or (string= "localhost" host)
 				 ;; so it is case insensitive:
 				 (string-match host (system-name))))
