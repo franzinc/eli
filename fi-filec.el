@@ -92,6 +92,18 @@ completed file name."
 	      (message ""))
 	  ;; put in the expansion
 	  (search-backward shell-expand-file)
+	  
+	  ;; backslash spaces
+	  (save-match-data
+	   (let ((words (split-string shell-expand-completion " " nil)))
+	     (if (cdr words)
+		 (do ((ww (cdr words) (cdr ww)))
+		     ((null ww)
+		      (setq shell-expand-completion
+			(apply 'concat words)))
+			
+		   (setf (car ww) (concat "\\ " (car ww)))))))
+	  
 	  (replace-match shell-expand-completion t t))))))
 
 (defun fi::expand-file-name-abbrevs (filename)
