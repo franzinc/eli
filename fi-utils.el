@@ -316,25 +316,37 @@ for the emacs-lisp interface to function properly."
 
 (defvar fi::muffle-open-network-stream-errors nil)
 
+(defvar fi::open-network-stream-retries 5
+  "The number of times fi::open-network-stream retries on error.")
+
 (defun fi::open-network-stream (name buffer host service)
-  (condition-case condition
-      (open-network-stream name buffer host service)
-    (error
-     (setq fi::last-network-condition condition)
-     (when (not fi::muffle-open-network-stream-errors)
-       (cond
-	((and (not (on-ms-windows))
-	      (not (file-readable-p "/etc/hosts")))
-	 (fi:error "
+  (let ((tries fi::open-network-stream-retries))
+    (block fi::open-network-stream
+      (dotimes (i tries)
+	(condition-case condition
+	    (return-from fi::open-network-stream
+	      (open-network-stream name buffer host service))
+	  (error
+	   (cond
+	    ((< i (1- tries))
+	     (message "open-network-stream failed, retrying...")
+	     (sleep-for 1))
+	    (t
+	     (setq fi::last-network-condition condition)
+	     (when (not fi::muffle-open-network-stream-errors)
+	       (cond
+		((and (not (on-ms-windows))
+		      (not (file-readable-p "/etc/hosts")))
+		 (fi:error "
 Can't connect to host %s.  This is probably due to /etc/hosts not being
 readable.  The error from open-network-stream was:
   %s"
-		   host (car (cdr condition))))
-	(t
-	 (cond
-	  ((and (string-match "xemacs" emacs-version)
-		(string= "21.4.17" (symbol-value 'emacs-program-version)))
-	   (fi:error "
+			   host (car (cdr condition))))
+		(t
+		 (cond
+		  ((and (string-match "xemacs" emacs-version)
+			(string= "21.4.17" (symbol-value 'emacs-program-version)))
+		   (fi:error "
 Can't connect to host %s.  The error from open-network-stream was:
   %s
 
@@ -347,13 +359,13 @@ form into your .emacs:
      (when (numberp service)
        (setq service (format \"%%d\" service)))
       ad-do-it)"
-		     host (car (cdr condition))))
-	  (t
-	   (fi:error "
+			     host (car (cdr condition))))
+		  (t
+		   (fi:error "
 Can't connect to host %s.  The error from open-network-stream was:
   %s"
-		     host (car (cdr condition))))))))
-     nil)))
+			     host (car (cdr condition))))))))
+	     nil))))))))
 
 (defun fi:note (format-string &rest args)
   (let ((string (apply 'format format-string args)))
