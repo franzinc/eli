@@ -175,6 +175,7 @@ set.")
 	(fi::defkey map [menu-bar] (lookup-key comint-mode-map [menu-bar]) t))
 
 ;;;; ESC map
+      (fi::defkey emap "\C-d" 'fi:lisp-disassemble clisp)
       (fi::defkey emap "\C-i" 'fi:lisp-complete-symbol clisp)
       (fi::defkey emap "\C-m" 'fi:inferior-lisp-input-sexp (and ext listener))
       (fi::defkey emap "\C-q" (if indent 'fi:indent-sexp 'indent-sexp)

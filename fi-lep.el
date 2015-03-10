@@ -939,6 +939,17 @@ parsed at file visit time."
 
 ;;;; list and edit somethings
 
+(defun fi:lisp-disassemble (&optional fspec)
+  "Disassemble FSPEC and show the results."
+  (interactive (fi::get-default-symbol "Disassemble for" t t))
+  (fi::make-request (lep::disassemble-fspec-session :fspec fspec)
+    ;; Normal continuation
+    (() (what disassembly)
+     (fi:show-some-text nil "%s" disassembly))
+    ;; Error continuation
+    ((fspec) (error)
+     (fi::show-error-text "Cannot disassemble %s: %s" fspec error))))
+
 (defun fi:list-who-calls (&optional fspec)
   "List all the callers of FSPEC.  `List' means to show them in a buffer in
 definition mode.  The source for each definition can be easily found via
