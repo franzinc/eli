@@ -83,6 +83,8 @@ time."
 	    (() (what arglist)
 	     (let ((fi:pop-up-temp-window-behavior
 		    fi:auto-arglist-pop-up-style))
+	       (when (= (aref arglist 0) ?\()
+		 (setq arglist (subseq arglist 1 (1- (length arglist)))))
 	       (fi:show-some-text nil "%s's arglist: %s" what arglist)))
 	    ;; Error continuation
 	    ((string) (error)
