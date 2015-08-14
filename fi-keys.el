@@ -1015,13 +1015,25 @@ the paragraph as well."
   (interactive "P")
   (save-excursion
     (beginning-of-line 0)
-    (if (re-search-forward "\\(^[ \t]*[;]+[ ]+\\)" nil t)
-	(let ((fill-prefix (buffer-substring (match-beginning 1)
-					     (match-end 1))))
-	  (fill-paragraph arg))
-      (fill-paragraph arg)))
+    (cond ((fi::in-lisp-long-comment) (fill-paragraph arg))
+          ((re-search-forward "\\(^[ \t]*[;]+[ ]+\\)" nil t)
+           (let ((fill-prefix (buffer-substring (match-beginning 1)
+                                                (match-end 1))))
+             (fill-paragraph arg)))
+          (t (fill-paragraph arg))))
   ;; We return `t' because we did all the work:
   t)
+
+;; [spr33655] from Jason S. Cornez
+(defun fi::in-lisp-long-comment ()
+  "True if we are within a #|...|# comment block"
+  (interactive)
+  (save-excursion
+    (let ((point (point))
+          (start (search-backward "#|" nil t))
+          (end   (search-forward  "|#" nil t)))
+      (and start end
+           (< start point) (< point end)))))
 
 (defun fi:extract-list (arg)
   "Take the list after the point and remove the surrounding list.  With

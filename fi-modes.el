@@ -574,7 +574,11 @@ the readtable used for evaluations given to Lisp from emacs."
       ;;  #.foo
       ;; but it works better with variables with .'s in them
       (modify-syntax-entry ?. "w   " fi:lisp-mode-syntax-table)
-      (modify-syntax-entry ?\| "\"   " fi:lisp-mode-syntax-table)
+
+      ;; [spr33655] from Jason S. Cornez
+      (modify-syntax-entry ?\# ". 14" fi:lisp-mode-syntax-table)
+      (modify-syntax-entry ?\| ". 23b" fi:lisp-mode-syntax-table)
+
       (modify-syntax-entry ?\[ "_   " fi:lisp-mode-syntax-table)
       (modify-syntax-entry ?\] "_   " fi:lisp-mode-syntax-table)))
 

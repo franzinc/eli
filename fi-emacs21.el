@@ -1056,6 +1056,11 @@
       (("+-*/.<>=!?$%_&~^:" . "w"))	; SYNTAX-ALIST
       beginning-of-defun		; SYNTAX-BEGIN
       (font-lock-mark-block-function . mark-defun)))
+
+  ;; [spr33655] from Jason S. Cornez
+  (make-local-variable 'font-lock-multiline)
+  (setq font-lock-multiline t)
+
   (turn-on-font-lock))
 
 (add-hook 'fi:inferior-common-lisp-mode-hook 'fi::turn-on-font-lock)
