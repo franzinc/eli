@@ -583,11 +583,3 @@ the readtable used for evaluations given to Lisp from emacs."
 
       (modify-syntax-entry ?\[ "_   " fi:lisp-mode-syntax-table)
       (modify-syntax-entry ?\] "_   " fi:lisp-mode-syntax-table)))
-
-(condition-case ()
-    (progn
-      (require 'add-log)
-      (pushnew 'fi:common-lisp-mode add-log-lisp-like-modes)
-      (pushnew 'fi:franz-lisp-mode add-log-lisp-like-modes)
-      (pushnew 'fi:emacs-lisp-mode add-log-lisp-like-modes))
-  (error () nil))
