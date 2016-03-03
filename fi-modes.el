@@ -576,8 +576,10 @@ the readtable used for evaluations given to Lisp from emacs."
       (modify-syntax-entry ?. "w   " fi:lisp-mode-syntax-table)
 
       ;; [spr33655] from Jason S. Cornez
-      (modify-syntax-entry ?\# ". 14" fi:lisp-mode-syntax-table)
-      (modify-syntax-entry ?\| ". 23b" fi:lisp-mode-syntax-table)
+      ;;; can't do this because it causes indentation of #+/#- forms to be
+      ;;; off
+      ;;(modify-syntax-entry ?\# ". 14" fi:lisp-mode-syntax-table)
+      ;;(modify-syntax-entry ?\| ". 23b" fi:lisp-mode-syntax-table)
 
       (modify-syntax-entry ?\[ "_   " fi:lisp-mode-syntax-table)
       (modify-syntax-entry ?\] "_   " fi:lisp-mode-syntax-table)))
