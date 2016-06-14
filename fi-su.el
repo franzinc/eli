@@ -52,7 +52,7 @@ any other mode setup."
   (setq mode-name "Su")
   (fi::initialize-mode-map 'fi:su-mode-map 'fi:su-super-key-map 'shell)
   (use-local-map fi:su-mode-map)
-  (run-hooks 'fi:subprocess-mode-hook 'fi:su-mode-hook))
+  (run-mode-hooks 'fi:subprocess-mode-hook 'fi:su-mode-hook))
 
 (defun fi:remote-su-mode (&optional mode-hook)
   "Major mode for interacting with an remote inferior su.
@@ -77,7 +77,7 @@ any other mode setup."
   (fi::initialize-mode-map 'fi:remote-su-mode-map 'fi:remote-su-super-key-map
 			   'rlogin)
   (use-local-map fi:remote-su-mode-map)
-  (run-hooks 'fi:subprocess-mode-hook 'fi:rlogin-mode-hook))
+  (run-mode-hooks 'fi:subprocess-mode-hook 'fi:rlogin-mode-hook))
 
 (defvar fi::su-password nil)
 

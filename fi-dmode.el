@@ -93,7 +93,7 @@ Entry to this mode runs the fi:definition-mode-hook."
 ;;;  (when fi:definition-mode-mouse-map
 ;;;    (use-local-mouse-map fi:definition-mode-mouse-map))
 
-  (run-hooks 'fi:definition-mode-hook))
+  (run-mode-hooks 'fi:definition-mode-hook))
 
 (defun fi:inverse-definition-mode ()
   "A major mode for viewing inverse definitions of objects defined in the
@@ -160,7 +160,7 @@ Entry to this mode runs the fi:inverse-definition-mode-hook."
 ;;;  (when fi:inverse-definition-mode-mouse-map
 ;;;    (use-local-mouse-map fi:inverse-definition-mode-mouse-map))
 
-  (run-hooks 'fi:inverse-definition-mode-hook))
+  (run-mode-hooks 'fi:inverse-definition-mode-hook))
 
 (defun fi::definition-mode-fix-buffer ()
   (let ((buffer-read-only nil))

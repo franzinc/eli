@@ -151,7 +151,7 @@ Entry to this mode runs the fi:scan-stack-mode-hook hook."
   (use-local-map fi:scan-stack-mode-map)
   (if (not buffer-read-only) (toggle-read-only))
   (setq truncate-lines t)
-  (run-hooks 'fi:scan-stack-mode-hook))
+  (run-mode-hooks 'fi:scan-stack-mode-hook))
 
 (defun fi:ss-next-frame ()
   "Go to the next frame."

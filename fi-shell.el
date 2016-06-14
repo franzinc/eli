@@ -67,7 +67,7 @@ any other mode setup."
   (setq mode-name "Shell")
   (fi::initialize-mode-map 'fi:shell-mode-map 'fi:shell-super-key-map 'shell)
   (use-local-map fi:shell-mode-map)
-  (run-hooks 'fi:subprocess-mode-hook 'fi:shell-mode-hook))
+  (run-mode-hooks 'fi:subprocess-mode-hook 'fi:shell-mode-hook))
 
 (defun fi:shell-mode-bang (&optional arg)
   "Expand !$ in shell mode."

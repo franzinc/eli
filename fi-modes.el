@@ -141,7 +141,7 @@ but before doing any other mode setup."
 			   'sub-lisp)
   (use-local-map fi:inferior-common-lisp-mode-map)
   (setq fi:lisp-indent-hook-property 'fi:common-lisp-indent-hook)
-  (run-hooks 'fi:lisp-mode-hook 'fi:subprocess-mode-hook
+  (run-mode-hooks 'fi:lisp-mode-hook 'fi:subprocess-mode-hook
 	     'fi:inferior-common-lisp-mode-hook))
 
 (defun fi:inferior-franz-lisp-mode (&optional mode-hook &rest mode-hook-args)
@@ -172,7 +172,7 @@ but before doing any other mode setup."
 			   'sub-lisp)
   (use-local-map fi:inferior-franz-lisp-mode-map)
   (setq fi:lisp-indent-hook-property 'fi:franz-lisp-indent-hook)
-  (run-hooks 'fi:lisp-mode-hook 'fi:subprocess-mode-hook
+  (run-mode-hooks 'fi:lisp-mode-hook 'fi:subprocess-mode-hook
 	     'fi:inferior-franz-lisp-mode-hook))
 
 (defun fi:lisp-listener-mode (&optional mode-hook)
@@ -203,7 +203,7 @@ any other mode setup."
 			   'tcp-lisp)
   (use-local-map fi:lisp-listener-mode-map)
   (setq fi:lisp-indent-hook-property 'fi:common-lisp-indent-hook)
-  (run-hooks 'fi:lisp-mode-hook 'fi:subprocess-mode-hook
+  (run-mode-hooks 'fi:lisp-mode-hook 'fi:subprocess-mode-hook
 	     'fi:lisp-listener-mode-hook))
 
 (defun fi:common-lisp-mode (&optional mode-hook)
@@ -233,7 +233,7 @@ any other mode setup."
   (use-local-map fi:common-lisp-mode-map)
   (setq fi::process-name fi::common-lisp-backdoor-main-process-name)
   (setq fi:lisp-indent-hook-property 'fi:common-lisp-indent-hook)
-  (run-hooks 'fi:lisp-mode-hook 'fi:common-lisp-mode-hook))
+  (run-mode-hooks 'fi:lisp-mode-hook 'fi:common-lisp-mode-hook))
 
 (defadvice lisp-mode (around ad-lisp-mode-use-fi:common-lisp-mode first
 			     (&optional mode-hook)
@@ -276,7 +276,7 @@ any other mode setup."
   (use-local-map fi:franz-lisp-mode-map)
   (setq fi::process-name fi:franz-lisp-process-name)
   (setq fi:lisp-indent-hook-property 'fi:franz-lisp-indent-hook)
-  (run-hooks 'fi:lisp-mode-hook 'fi:franz-lisp-mode-hook))
+  (run-mode-hooks 'fi:lisp-mode-hook 'fi:franz-lisp-mode-hook))
 
 (defun fi:emacs-lisp-mode (&optional mode-hook)
   "Major mode for editing Lisp code to run in Emacs Lisp.
@@ -298,7 +298,7 @@ any other mode setup."
   (fi::initialize-mode-map 'fi:emacs-lisp-mode-map)
   (use-local-map fi:emacs-lisp-mode-map)
   (setq fi:lisp-indent-hook-property 'fi:emacs-lisp-indent-hook)
-  (run-hooks 'fi:emacs-lisp-mode-hook))
+  (run-mode-hooks 'fi:emacs-lisp-mode-hook))
 
 (defun fi::lisp-edit-mode-setup ()
   (fi::lisp-mode-setup-common))

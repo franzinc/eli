@@ -60,7 +60,7 @@ any other mode setup."
   (setq fi:shell-popd-regexp nil)
   (setq fi:shell-pushd-regexp nil)
   (setq fi:shell-cd-regexp nil)
-  (run-hooks 'fi:subprocess-mode-hook 'fi:rlogin-mode-hook))
+  (run-mode-hooks 'fi:subprocess-mode-hook 'fi:rlogin-mode-hook))
 
 (defun fi:rlogin (&optional buffer-number host user)
   "Start an rlogin in a buffer whose name is determined from the optional

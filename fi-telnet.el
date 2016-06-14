@@ -60,7 +60,7 @@ any other mode setup."
   (setq fi:shell-popd-regexp nil)
   (setq fi:shell-pushd-regexp nil)
   (setq fi:shell-cd-regexp nil)
-  (run-hooks 'fi:subprocess-mode-hook 'fi:telnet-mode-hook))
+  (run-mode-hooks 'fi:subprocess-mode-hook 'fi:telnet-mode-hook))
 
 (defun fi:telnet (&optional buffer-number host)
   "Start an telnet in a buffer whose name is determined from the optional
