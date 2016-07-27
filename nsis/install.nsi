@@ -1,4 +1,3 @@
-; $Id: install.nsi,v 1.2 2005/08/03 05:08:34 layer Exp $
 
 !define REGKEY "Software\GNU\Gnu Emacs Easy Installer"
 !define ACLREGKEY "Software\Franz Inc.\Allegro Common Lisp"

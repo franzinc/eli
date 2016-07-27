@@ -1,14 +1,6 @@
+;; See the file LICENSE for the full license governing this code.
+
 ;; gnu emacs v21 specific hacks for the Franz Inc. emacs-lisp interface
-;;
-;; Copyright (c) 1987-2003 Franz Inc, Berkeley, Ca.
-;;
-;; Permission is granted to any individual or institution to use, copy,
-;; modify, and distribute this software, and to distribute modified
-;; versions, provided that this complete copyright and permission notice is
-;; maintained, intact, in all copies and supporting documentation.
-;;
-;; Franz Incorporated provides this software "as is" without
-;; express or implied warranty.
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; emacs specific stuff

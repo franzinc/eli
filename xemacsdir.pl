@@ -1,5 +1,3 @@
-# $Id: xemacsdir.pl,v 3.0 2003/12/15 22:52:58 layer Exp $
-#
 # This script requires Active Perl version 502 or later
 #  (\\beast\import\pc\perl-win32\APi502e.exe)
 
