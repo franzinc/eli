@@ -4,7 +4,6 @@
 ;; I frequently use the following function in place of the special-purpose
 ;; eval-compile functions. You might want to consider something similar for
 ;; inclusion in ELI (it could be bound to "C-c C-d"):
-;; $Id: eval.el,v 3.0 2003/12/15 22:52:58 layer Exp $
 
 (defun fi:lisp-eval-or-compile-dwim (compilep)
   "Send the appropriate forms to the Lisp subprocess associated with

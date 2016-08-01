@@ -1,4 +1,3 @@
-# $Id: emacsdir.pl,v 3.1.42.2 2009/03/11 21:52:39 layer Exp $
 #
 # This script requires Cygwin Perl
 
