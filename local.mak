@@ -40,7 +40,11 @@ rdist = rdist -P /usr/bin/ssh
 FILES_TO_RDIST = $(release_files) local*.el local*.elc 
 
 rdist:	DIST
-	(cd DIST; $(rdist) -Rc . "{$(hosts)}:$(to)")
+	@for host in `echo $(hosts) | sed 's/,/ /g'`; do \
+	    echo =================================== $$host; \
+	    echo rsync -va DIST/ "$$host:$(to)/"; \
+	    rsync -va DIST/ "$$host:$(to)/"; \
+	done
 	rm -fr DIST
 
 DIST:	FORCE
