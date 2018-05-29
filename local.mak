@@ -42,8 +42,8 @@ FILES_TO_RDIST = $(release_files) local*.el local*.elc
 rdist:	DIST
 	@for host in `echo $(hosts) | sed 's/,/ /g'`; do \
 	    echo =================================== $$host; \
-	    echo rsync -va DIST/ "$$host:$(to)/"; \
-	    rsync -va DIST/ "$$host:$(to)/"; \
+	    echo rsync --delete -va DIST/ "$$host:$(to)/"; \
+	    rsync --delete -va DIST/ "$$host:$(to)/"; \
 	done
 	rm -fr DIST
 
