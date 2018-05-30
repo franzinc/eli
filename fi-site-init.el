@@ -307,11 +307,7 @@ On Windows, just remove all .elc files and restart xemacs.")
 	      (>= emacs-major-version 21))
 	 (fi::load "fi-emacs21"))
 	
-	((or (eq fi::emacs-type 'emacs19)
-	     (eq fi::emacs-type 'emacs20))
-	 (fi::load "fi-emacs19"))
-	
-	(t (fi::load "fi-emacs18"))))
+	(t (error "Your emacs is too old."))))
 
 (defun fi::top-level ()
   (fi::initialize-emacs-lisp-interface)

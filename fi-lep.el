@@ -379,8 +379,7 @@ return the pathname of temp file."
 		       (not (fboundp 'buffer-modified-tick))
 		       (not (equal (buffer-modified-tick) write-if-modified)))
 		   (buffer-modified-p buffer)
-		   (save-excursion
-		     (set-buffer buffer)
+		   (with-current-buffer buffer
 		     (let* ((file (concat
 				   fi:emacs-to-lisp-transaction-directory
 					  (make-temp-name "/foo")))
@@ -728,8 +727,7 @@ beginning of words in target symbols."
 
 (defun lep::write-string-to-hidden-buffer (string buffer)
   "Like lep::display-string-in-buffer, but don't display the buffer."
-  (save-excursion
-    (set-buffer (get-buffer-create buffer))
+  (with-current-buffer (get-buffer-create buffer)
     (erase-buffer)
     (insert string)
     (goto-char (point-min))))

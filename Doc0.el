@@ -111,7 +111,7 @@
   (write-region (point-min) (point-max) output-file))
 
 (defun insert-file-contents-indented (file indent)
-  (insert-string
+  (insert
    (save-window-excursion
      (save-excursion
        (switch-to-buffer "*ifci*")
@@ -121,7 +121,7 @@
        (fix-html-chars)
        (goto-char (point-min))
        (while (not (eobp))
-	 (insert-string (make-string indent ? ))
+	 (insert (make-string indent ? ))
 	 (forward-line 1))
        (buffer-string)))))
 

@@ -537,8 +537,7 @@ be a string. Use the 6th argument for image file."))
 			 fi::common-lisp-backdoor-main-process-name)
 			buffer-name)))
 	      (let ((proc
-		     (save-excursion
-		       (set-buffer buffer)
+		     (with-current-buffer buffer
 		       (setq default-directory directory)
 		       (fi::socket-start-lisp fi::cl-process-name
 					      executable-image-name
@@ -762,14 +761,10 @@ be a string. Use the 6th argument for image file."))
      (function
       (lambda (local host dir)
 	(if local
-	    (save-excursion
-	      (set-buffer (current-buffer))
-	      ;; can't use "localhost" below because HP can't
-	      ;; write an operating system.
-	      (setq fi::lisp-host host)	; used to use "localhost"
-	      )
-	  (save-excursion
-	    (set-buffer (current-buffer))
+	    ;; can't use "localhost" below because HP can't
+	    ;; write an operating system.
+	    (setq fi::lisp-host host)
+	  (progn 
 	    (setq fi::lisp-is-remote t)
 	    (setq fi::lisp-host host)
 	    (condition-case ()
@@ -1105,8 +1100,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 (defun fi::common-lisp-subprocess-filter-1 (process output)
   ;; This is a temporary filter, which is used until the rendezvous with
   ;; Lisp is made.
-  (save-excursion
-    (set-buffer (process-buffer process))
+  (with-current-buffer (process-buffer process)
     (when (and (not (fi::lep-open-connection-p))
 	       (fi::fast-search-string 1 output)
 	       (string-match "\\([^\0]*\\)\\(.*\\)\\([^\0]*\\)"
@@ -1174,9 +1168,8 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	      (setq image-file (expand-file-name image-file)))))
 
     (unless runningp
-      (save-excursion
+      (with-current-buffer buffer
 	(save-window-excursion
-	  (switch-to-buffer buffer)
 	  (goto-char (point-max))
 	  (if (stringp startup-message) (insert startup-message))
 	  (when (and directory
@@ -1310,9 +1303,8 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 	 (proc (get-buffer-process buffer)))
 
     (unless (fi:process-running-p proc buffer-name)
-      (save-excursion
+      (with-current-buffer buffer
 	(save-window-excursion
-	  (switch-to-buffer buffer)
 	  (goto-char (point-max))
 
 	  (setq default-directory default-dir)
@@ -1469,12 +1461,12 @@ This function implements continuous output to visible buffers."
 	;;   the process marker (process-mark), window-start point
 	;;   (window-start), and window point (point) are all coincident,
 	;;   the window display `sticks' on the topmost line.  We use
-	;;   `(insert-string)' followed by `(set-marker)' to avoid this
+	;;   `(insert)' followed by `(set-marker)' to avoid this
 	;;   problem.  This also happens to be the way
 	;;   `handle_process_output()' deals with this in `process.c'.
 	(if fi::subprocess-filter-insert-output-hook
 	    (funcall fi::subprocess-filter-insert-output-hook output marker)
-	  (insert-string output)
+	  (insert output)
 	  (set-marker marker (point))))
       (if (not in-buffer)
 	  (if (and fi:subprocess-continuously-show-output-in-visible-buffer
@@ -1705,31 +1697,25 @@ to your `.cshrc' after the `set cdpath=(...)' in the same file."
 
 (defun fi::get-buffer-host (buffer)
   "Given BUFFER return the value in this buffer of fi::lisp-host."
-  (save-excursion
-    (set-buffer buffer)
-    fi::lisp-host))
+  (with-current-buffer buffer fi::lisp-host))
 
 (defun fi::get-buffer-port (buffer)
   "Given BUFFER return the value in this buffer of fi::lisp-port."
-  (save-excursion
-    (set-buffer buffer)
-    fi::lisp-port))
+  (with-current-buffer buffer fi::lisp-port))
 
 (defun fi::get-buffer-password (buffer)
   "Given BUFFER returns the values in this buffer of fi::lisp-password"
-  (save-excursion
-    (set-buffer buffer)
-    fi::lisp-password))
+  (with-current-buffer buffer fi::lisp-password))
 
 
 (defun fi::env-vars ()
   (let ((env (fi::compute-subprocess-env-vars)))
-    (concat (mapconcat '(lambda (x)
-			 (format "%s=%s" (car x) (eval (eval (cdr x)))))
+    (concat (mapconcat #'(lambda (x)
+			   (format "%s=%s" (car x) (eval (eval (cdr x)))))
 		       env
 		       " ")
 	    " export "
-	    (mapconcat '(lambda (x) (car x)) env " ")
+	    (mapconcat #'(lambda (x) (car x)) env " ")
 	    "; ")))
 
 (defun fi::set-environment-use-setenv (valist)

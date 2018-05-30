@@ -921,13 +921,13 @@ beginning with a colon) are recognized."
 		(error nil)))
 	     (special-keys nil)
 	     (keywords (if keywords
-			   (mapcar '(lambda (key)
-				     (if (consp key)
-					 (progn
-					   (setq special-keys
-					     (cons key special-keys))
-					   (car key))
-				       key))
+			   (mapcar #'(lambda (key)
+				       (if (consp key)
+					   (progn
+					     (setq special-keys
+					       (cons key special-keys))
+					     (car key))
+					 key))
 				   keywords)))
 	     (is-keyword
 	      (or (and (null keywords)

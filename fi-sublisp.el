@@ -147,8 +147,10 @@ This is normally called automatically from fi:start-lisp-interface-hook."
     (if (> len 4)
 	(setq string (substring string (- len 4)))))
   (setq fi:allegro-run-status-string string)
-  ;; Force redisplay of all buffers' mode lines to be considered.
-  (save-excursion (set-buffer (other-buffer)))
+  (with-current-buffer (other-buffer)
+;;;;TODO: is this right??
+    ;; Force redisplay of all buffers' mode lines to be considered.
+    )
   (set-buffer-modified-p (buffer-modified-p))
   ;; Do redisplay right now, if no input pending.
   (sit-for 0))

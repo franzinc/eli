@@ -37,10 +37,10 @@
 		(setq str (substitute ?_ ?: str))
 		(setq str (substitute ?_ ?- str))
 		(setq str (substitute ?_ ?  str))
-		(insert-string str)
-		(insert-string (case type
-				 (c "(){}")
-				 (rs " ())")))))
+		(insert str)
+		(insert (case type
+			  (c "(){}")
+			  (rs " ())")))))
 	  (foo (message "error updating modify line...")
 	       (sit-for 1))))))
   nil)
@@ -86,8 +86,9 @@
 		(search-forward "]-" (+ (point) 100))
 		(backward-char 2)
 		(delete-region from (point))
-		(insert-string (concat (current-time-string)
-				       " by " (user-login-name))))
+		(insert (current-time-string)
+			" by "
+			(user-login-name)))
 	    (error (message "error updating modify line...")
 		   (sit-for 1))))))
   nil)
