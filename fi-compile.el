@@ -36,8 +36,7 @@
 	   (eq fi::emacs-type 'xemacs20))
        (setq fi-files (append fi-files '("fi-xemacs"))))
       (t
-       (setq fi-files (append fi-files '("fi-emacs18" "fi-emacs19"
-					 "fi-emacs21")))))
+       (setq fi-files (append fi-files '("fi-emacs21")))))
 
 (setq fi-developer-files '("localfidev"))
 

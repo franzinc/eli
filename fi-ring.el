@@ -201,8 +201,7 @@ program and the optional second parameter is non-nil."
 	  (setq nth (% (+ arg (- ring-length yank-ring-length)) ring-length))))
 	(with-output-to-temp-buffer
 	  "*Input Ring*"
-	  (save-excursion
-	    (set-buffer standard-output)
+	  (with-current-buffer standard-output
 	    (let ((lastcdr (nthcdr nth input-ring-for-list)))
 		 ; GNU Emacs really needs better looping constructs. [HW]
 		 (while

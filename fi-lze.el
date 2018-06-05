@@ -167,8 +167,7 @@ with this buffer."
 	 :compilep (if compilep t nil)
 	 :return-string (eq 'minibuffer (car fi:pop-up-temp-window-behavior)))
       ((buffer compilep) (results stuff)
-       (save-excursion
-	 (set-buffer buffer)
+       (with-current-buffer buffer
 	 (cond
 	  ((eq 'minibuffer (car fi:pop-up-temp-window-behavior))
 	   (if (and (stringp stuff) (= 0 (length stuff)))
@@ -183,11 +182,10 @@ with this buffer."
 	 (pop-to-buffer fi:common-lisp-buffer-name)
 	 (goto-char (point-max))))
       ((buffer compilep) (error)
-	(save-excursion
-	  (set-buffer buffer)
-	  (fi::note-background-reply (list compilep))
-	  (message "Error during %s: %s"
-		   (if compilep "compile" "eval")
-		   error)))
+       (with-current-buffer buffer
+	 (fi::note-background-reply (list compilep))
+	 (message "Error during %s: %s"
+		  (if compilep "compile" "eval")
+		  error)))
       ignore-package)))
 

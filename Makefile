@@ -54,7 +54,6 @@ compile:	fi-vers.el
 	"$(emacs)" -batch -q -l $(pwd)/fi-compile.el -kill
 
 fi-vers.el: Makefile version.mak
-#	rm -f fi-vers.el
 	echo ';; automatically generate file--do not edit.' > fi-vers.el
 	echo '(defvar fi:emacs-lisp-interface-version)' >> fi-vers.el
 	echo '(setq fi:emacs-lisp-interface-version "$(VERSION)")' >> fi-vers.el
@@ -64,15 +63,19 @@ ifeq ($(OS),Windows_NT)
 	unix2dos fi-vers.el
 endif
 
-#readme.htm: readme0.htm
-#	sed -e 's/__VERSION__/$(VERSION)/g' < readme0.htm > readme.htm
+copy_dist: FORCE
+ifndef DISTDIR
+	@echo DISTDIR is not defined; exit 1
+endif
+	mkdir -p $(DISTDIR)
+	cp *.el *.elc $(DISTDIR)
 
 test.out:	$(elcs) fi-test.el
 	"$(emacs)" -nw -batch -q -l fi-test.el
 	@date > test.out
 
 clean:	FORCE
-	rm -f *.elc *.doc readme*.htm test.out
+	rm -f *.elc *.doc test.out
 
 tags:	FORCE
 	etags *.el

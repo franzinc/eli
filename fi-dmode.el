@@ -277,8 +277,8 @@ in definition mode."
     :pathname (buffer-file-name buffer) 
     :fspec string
     :type type
-    :package (save-excursion (set-buffer buffer)
-			     (fi::string-to-keyword (fi::package))))
+    :package (with-current-buffer buffer
+	       (fi::string-to-keyword (fi::package))))
    ;; Normal continuation
    ((string list-buffer) (pathname point n-more)
     (fi::show-found-definition string pathname point n-more t)
@@ -296,8 +296,7 @@ in definition mode."
     (fi::goto-definitions-buffer
      buffer
      'lep::definition-mode-saved-window-configuration)
-    (save-excursion
-      (set-buffer buffer)
+    (with-current-buffer buffer
       (setq buffer-read-only nil)
       (erase-buffer)
       (setq truncate-lines t)		;smh 22jul94
@@ -328,16 +327,15 @@ in definition mode."
     (fi::goto-definitions-buffer
      buffer
      'lep::inverse-definition-mode-saved-window-configuration)
-    (save-excursion
-      (set-buffer buffer)
+    (with-current-buffer buffer
       (setq buffer-read-only nil)
       (erase-buffer)
-      (mapc '(lambda (x) 
-	      (princ (car x) (current-buffer))
-	      (unless (equal '(nil) (second x))
-		(insert ", ")
-		(princ (second x) (current-buffer)))
-	      (insert "\n"))
+      (mapc #'(lambda (x) 
+		(princ (car x) (current-buffer))
+		(unless (equal '(nil) (second x))
+		  (insert ", ")
+		  (princ (second x) (current-buffer)))
+		(insert "\n"))
 	    buffer-definitions)
       (fi:inverse-definition-mode)
       (set-buffer-modified-p nil)

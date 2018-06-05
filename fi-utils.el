@@ -43,19 +43,13 @@
 (defun fi::symbol-value-in-buffer (symbol buffer)
   "Return the value of the local binding of SYMBOL in BUFFER, or
 nil if non-exists.  Yes, a value of nil and no local value are the same."
-  (save-excursion
-    ;; the `set-buffer' non-sense is because there is a cache which is only
-    ;; updated when a `set-buffer' is done.
-    (set-buffer buffer)
+  (with-current-buffer buffer
     (cdr (assoc symbol (buffer-local-variables buffer)))))
 
 (defun fi::set-in-buffer (symbol value buffer)
   "Set the value of the local binding of SYMBOL to VALUE in BUFFER, or
 nil if non-exists.  Yes, a value of nil and no local value are the same."
-  (save-excursion
-    ;; the `set-buffer' non-sense is because there is a cache which is only
-    ;; updated when a `set-buffer' is done.
-    (set-buffer buffer)
+  (with-current-buffer buffer
     (make-local-variable symbol)
     (set symbol value)))
 
@@ -70,21 +64,21 @@ nil if non-exists.  Yes, a value of nil and no local value are the same."
 (defun fi::substitute-chars-in-string (char-assoc-list string)
   "Substitute character pairs of CHAR-ASSOC-LIST in STRING."
   (let (pair)
-    (mapconcat '(lambda (char)
-		 (if (setq pair (assq char char-assoc-list))
-		     (if (null (cdr pair))
-			 nil
-		       (char-to-string (cdr pair)))
-		   (char-to-string char)))
+    (mapconcat #'(lambda (char)
+		   (if (setq pair (assq char char-assoc-list))
+		       (if (null (cdr pair))
+			   nil
+			 (char-to-string (cdr pair)))
+		     (char-to-string char)))
 	       string
 	       nil)))
 
 (defun fi::remove-chars-from-string (char-list string)
   "Remove characters in CHAR-LIST from string STRING and return the result."
-  (mapconcat '(lambda (char)
-	       (if (memq char char-list)
-		   nil
-		 (char-to-string char)))
+  (mapconcat #'(lambda (char)
+		 (if (memq char char-list)
+		     nil
+		   (char-to-string char)))
 	     string
 	     nil))
 
@@ -269,8 +263,7 @@ that starts with ~."
 
 (defun fi::insert-file-contents-into-kill-ring (copy-file-name)
   (let ((buffer (generate-new-buffer "*temp*")))
-    (save-excursion
-      (set-buffer buffer)
+    (with-current-buffer buffer
       (insert-file-contents copy-file-name)
       (copy-region-as-kill (point-min) (point-max)))
     (kill-buffer buffer)))
@@ -441,7 +434,7 @@ at the beginning of the line."
   (if (string-match "^[ \t]*(" pattern)
       ;; Don't do completion, since we have a form and we should just
       ;; insert a space.
-      (if (= 32 last-command-char) ;; space
+      (if (= 32 last-command-event) ;; space
 	  (concat pattern " ")
 	pattern)
     (fi::minibuffer-complete-1 pattern predicate what)))
@@ -774,8 +767,7 @@ If the `style' is `minibuffer', then the `boolean' is ignored.")
 	 (buffer-window (get-buffer-window buffer))
 	 (lines nil))
     
-    (save-excursion
-      (set-buffer buffer)
+    (with-current-buffer buffer
       (setq lines (count-lines (point-min) (point-max))))
 
     ;; get to the proper window
@@ -825,8 +817,7 @@ created by fi:common-lisp."
   (interactive (list (get-buffer-process (current-buffer))))
   (when (fi::lep-open-connection-p)
     (error "an emacs-lisp interface is already running in this emacs."))
-  (save-excursion
-    (set-buffer (process-buffer process))
+  (with-current-buffer (process-buffer process)
     (unless process
       (error "current buffer doesn't have a process associated with it"))
     (setq fi::common-lisp-backdoor-main-process-name
@@ -860,8 +851,7 @@ created by fi:common-lisp."
 
 (defun fi::shell-command-output-to-string (buffer program &rest arguments)
   ;; run COMMAND returning the output as a string
-  (save-excursion
-    (set-buffer buffer)
+  (with-current-buffer buffer
     (erase-buffer)
     (apply 'call-process program nil t nil arguments)
     (if (> (buffer-size) 0)
@@ -1152,8 +1142,7 @@ created by fi:common-lisp."
 (defun fi::file-contents (filename)
   (let* ((buffer (get-buffer-create "  *file-contents-tmp*"))
 	 (s 
-	  (save-excursion
-	    (set-buffer buffer)
+	  (with-current-buffer buffer
 	    (erase-buffer)
 	    (insert-file-contents filename)
 	    (buffer-string))))
@@ -1172,8 +1161,7 @@ created by fi:common-lisp."
   ;;  (sys::start-emacs-lisp-interface t 1 7666 "~/.eli-startup")
   ;; then, sometime later on the emacs side, do this:
   ;;  (fi:start-interface-via-file "pie" "*common-lisp*" "~/.eli-startup")
-  (save-excursion
-    (set-buffer (get-buffer-create buffer))
+  (with-current-buffer (get-buffer-create buffer)
     (setq fi::lisp-host host)
     (let ((command (fi::file-contents connection-file)))
       (or (string-match "\\(.*\\)" command)
@@ -1344,7 +1332,7 @@ created by fi:common-lisp."
 	     (car output))
 	(setq pid (match-string 1 (car output))))
       (setq output (cdr output)))
-    (when pid (string-to-int pid 10))))
+    (when pid (string-to-number pid 10))))
 
 (defun fi::double-char-in-string (char string)
   (let ((oldindex 0)

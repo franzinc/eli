@@ -212,7 +212,7 @@ The function should be defined in this way:
 	;;   the process marker (process-mark), window-start point
 	;;   (window-start), and window point (point) are all coincident,
 	;;   the window display `sticks' on the topmost line.  We use
-	;;   `(insert-string)' followed by `(set-marker)' to avoid this
+	;;   `(insert)' followed by `(set-marker)' to avoid this
 	;;   problem.  This also happens to be the way
 	;;   `handle_process_output()' deals with this in `process.c'.
 

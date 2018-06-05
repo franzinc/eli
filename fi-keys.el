@@ -354,9 +354,10 @@ fi:raw-mode is non-nil.")
 (defun fi:self-insert-command (arg)
   (interactive "P")
   (cond (fi:raw-mode
-	 (when fi:raw-mode-echo (insert last-input-char))
+	 (when fi:raw-mode-echo (insert last-input-event))
 	 (let ((process (get-buffer-process (current-buffer))))
-	   (process-send-string process (char-to-string last-input-char))
+	   (process-send-string process
+				(char-to-string last-input-event))
 	   (set-marker (process-mark process) (point))))
 	(t (self-insert-command (prefix-numeric-value arg)))))
 
@@ -840,9 +841,9 @@ at the head of the function."
   (end-of-line)
   (newline)
   (funcall indent-line-function)
-  (insert-string (concat (format "%s- " (fi::log-comment-start))
-			 (current-time-string) " by "
-			 (user-login-name) " - "))
+  (insert (format "%s- " (fi::log-comment-start))
+	  (current-time-string) " by "
+	  (user-login-name) " - ")
   (save-excursion
     (forward-line)
     (beginning-of-line)
@@ -1070,17 +1071,17 @@ positions, and UNCOMMENT."
 	      ;;at the start of each line.
 	      (while (and (>= (point) start)
 			  (progn (beginning-of-line)
-				 (insert-string comment-prefix)
+				 (insert comment-prefix)
 				 (= (forward-line -1) 0))))
 	    ;;When comment-end exists, put comment marks only at the
 	    ;;beginning and end of the region, and put a comment-prefix after
 	    ;;each comment-end in the region.
-	    (insert-string comment-end)
+	    (insert comment-end)
 	    (goto-char end)
 	    (while (search-backward comment-end start 'move)
 	      (replace-match (concat comment-end comment-prefix))
 	      (goto-char (match-beginning 0)))
-	    (insert-string comment-prefix))
+	    (insert comment-prefix))
 	;;Uncomment Region
 	(if (string-equal comment-end "")
 	    (while (and (>= (point) start)
@@ -1240,7 +1241,9 @@ buffer and the source buffer from which this function was invoked."
   (interactive)
   (when (and fi::toggle-to-lisp-common-lisp-buffer-name
 	     (null (get-buffer fi::toggle-to-lisp-common-lisp-buffer-name)))
-    (setq fi::toggle-to-lisp-common-lisp-buffer-name))
+    (setq fi::toggle-to-lisp-common-lisp-buffer-name 
+;;;;TODO: added `nil' to fix syntax error... is it right???
+      nil))
   (when (null fi::toggle-to-lisp-common-lisp-buffer-name)
     (or (and fi::common-lisp-backdoor-main-process-name
 	     (setq fi::toggle-to-lisp-common-lisp-buffer-name

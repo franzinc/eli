@@ -90,8 +90,7 @@
   ;;  I renamed package to apackage and that seemed to fix it.
   (let ((buffer (get-buffer-create fi::*show-some-text-buffer-name*)))
     ;; fill the buffer
-    (save-excursion
-      (set-buffer buffer)
+    (with-current-buffer buffer
       (erase-buffer)
       (fi:common-lisp-mode)
       (setq fi:package apackage)
@@ -167,8 +166,7 @@
 				  (fi::sublisp-select)
 				  (get-process fi::process-name)))))
     (if buffer
-	(save-excursion
-	  (set-buffer buffer)
+	(with-current-buffer buffer
 	  (fi::start-connection))
       (fi:error "
 An internal error has occurred.  There is no Lisp process and the
@@ -234,7 +232,7 @@ release.")
 	 (coding-system (fi::lisp-connection-coding-system)))
     (when buffer
       (bury-buffer buffer)
-      (save-excursion (set-buffer buffer) (erase-buffer))
+      (with-current-buffer buffer (erase-buffer))
       (set-process-buffer process buffer))
     (when coding-system 
       ;; bug12456 -mikel
@@ -276,15 +274,13 @@ release.")
 		    (get-buffer-create " LEP temp "))))
     (when fi::trace-lep-filter
       (fi::trace-debug (format "lep-connection-filter: %s" string)))
-    (save-excursion
-      (set-buffer buffer)
+    (with-current-buffer buffer
       (goto-char (point-max))
       (insert string))
     (let (form error)
       (while
 	  (condition-case nil
-	      (save-excursion
-		(set-buffer buffer)
+	      (with-current-buffer buffer
 		(and
 		 (null error)
 		 (not (eq (point-max) (point-min)))
@@ -304,8 +300,7 @@ release.")
 	  (fi::handle-lep-input process form))))))
 
 (defun fi::trace-debug (string)
-  (save-excursion
-    (set-buffer (get-buffer-create "*LEP-DEBUG*"))
+  (with-current-buffer (get-buffer-create "*LEP-DEBUG*")
     (goto-char (point-max))
     (insert "\n")
     (insert string)
