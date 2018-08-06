@@ -77,7 +77,9 @@ a buffer, which is used to display a buffer when a subprocess is created.")
 (defvar fi:subprocess-env-vars
     '(("EMACS" . "t")
       ("TERM" . "emacs")
-      ("DISPLAY" . (or (getenv "DISPLAY") (format "%s:0.0" (system-name))))
+;;;; This is the *wrong* thing to do, since it will override the DISPLAY
+;;;; set by `ssh'.
+      ;;("DISPLAY" . (or (getenv "DISPLAY") (format "%s:0.0" (system-name))))
       ("TERMCAP" . (format "emacs:co#%d:tc=unknown:" (frame-width))))
   "*An alist containing the environment variables to pass to newly created
 subprocesses.")
@@ -309,7 +311,7 @@ buffer local.")
 ;;;;
 
 (defvar fi::rsh-command nil)
-(defvar fi::rsh-args nil)
+(defvar fi::rsh-args '("-Y"))
 
 (defun fi::start-backdoor-interface (proc)
   (fi:verify-emacs-support)
@@ -1369,13 +1371,14 @@ It appears that %s to host %s exited abnormally.
 This is probably due to the host you specified to fi:common-lisp (%s)
 being inaccessible.  Check that
 
-    %s%% rsh %s date
+    %s$ %s %s date
 
 works--if it does not, then fi:common-lisp will fail.%s"
 		fi::rsh-command
 		fi::lisp-host
 		fi::lisp-host
 		(system-name)
+		fi::rsh-command
 		fi::lisp-host
 		extra)))
   
