@@ -302,11 +302,10 @@ release.")
 (defun fi::trace-debug (string)
   (with-current-buffer (get-buffer-create "*LEP-DEBUG*")
     (goto-char (point-max))
-    (insert "\n")
+    ;; Print the time w/microseconds:
+    (insert (format-time-string "%n%T %6N: "))
     (insert string)
-    (insert "\n")
-    ;;(insert (with-output-to-string (backtrace))) (insert "\n")
-    ))
+    (insert "\n")))
 
 (defun fi::handle-lep-input (process form)
   "A reply is (session-id . rest) or (nil . rest)"
