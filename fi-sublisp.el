@@ -139,10 +139,16 @@ This is normally called automatically from fi:start-lisp-interface-hook."
       proc)))
 
 (defun fi::show-run-status-sentinel (process status)
+  (when fi::trace-lep-filter
+    (fi::trace-debug (format "fi::show-run-status-sentinel: %s" status)))
   (setq fi:allegro-run-status-string "    ")
   t)
 
 (defun fi::show-run-status-filter (proc string)
+  (when fi::trace-lep-filter
+    (fi::trace-debug
+     (format "fi::show-run-status-filter %s"
+	     (substring string (min (length string) 15)))))
   (let ((len (length string)))
     (if (> len 4)
 	(setq string (substring string (- len 4)))))
