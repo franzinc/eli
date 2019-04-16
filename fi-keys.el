@@ -1,66 +1,12 @@
 ;; See the file LICENSE for the full license governing this code.
 
-(cond ((or (eq fi::emacs-type 'xemacs19)
-	   (eq fi::emacs-type 'xemacs20))
-       (require 'tags "etags"))
-      ((or (eq fi::emacs-type 'emacs19)
-	   (eq fi::emacs-type 'emacs20))
-       (require 'etags "etags"))
-      (t (require 'tags)))
+(require 'etags "etags")
 
-(defvar fi:subprocess-super-key-map nil
-  "Used by fi:subprocess-superkey as the place where super key bindings are
-kept.  Buffer local.")
-
-(make-variable-buffer-local 'fi:subprocess-super-key-map)
-
-(defvar fi:superkey-shadow-universal-argument t
-  "*If non-nil, then make C-u a superkey in subprocess modes, otherwise
-leave it alone.")
-
-(defvar fi:find-tag-lock t
-  "*If non-nil, then the first time find-tag or find-tag-other-window are
-executed a buffer will be displayed explaining the method for finding
-Lisp definitions.")
-
-(defvar fi:check-unbalanced-parentheses-when-saving t
-  "*If non-nil, for the Lisp editing modes (Common Lisp, Emacs Lisp, and
-Franz Lisp) check for unbalanced parentheses before writing the file.
-If the value is T, then ask whether or not the file should be written ``as
-is'' if there are too many or few parens--answering no leaves the point at
-the place of error.  If the value is 'warn, then a warning is issued and
-the file is written.")
-
-(defvar fi:define-global-lisp-mode-bindings t
-  "*This variable is obsolete.  Use fi:legacy-keybindings instead.")
-
-(defvar fi:legacy-keybindings t
-  "*If non-nil then define the global, legacy keybindings, which in some
-cases are in violation of the Elisp major mode conventions outlined in the
-Emacs Lisp Manual.  For compatibility reasons the value of this variable is
-`t' by default.")
-
-(defvar fi:menu-bar-single-item t
-  "*If non-nil then put a single item onto the menu-bar.  Otherwise, the
-sub-menus in the single menu are put onto the menu-bar.  This variable is
-ignored in all but XEmacs and Emacs 21 and later.")
-
-(defvar fi:arglist-on-space t
-  "*If non-nil, then bind SPC to a function that retrieves arglist
-information and displays it according to the value of the variable
-fi:auto-arglist-pop-up-style.")
-
-(defvar fi:use-web-documentation t
-  "*If non-nil, then fi:lisp-function-documentation is replaced with
-fi:manual for looking up documentation in the Allegro CL documentation
-set.")
 
 
 ;;;;
 ;;; Key defs
 ;;;;
-
-(defvar fi::.defkey-marker. (cons 'not-a 'keymap))
 
 (defun fi::defkey (map key func condition)
   (when condition
@@ -113,10 +59,8 @@ set.")
 		 (or (not (eq 'universal-argument
 			      (lookup-key global-map "\C-u")))
 		     fi:superkey-shadow-universal-argument)))
-	   (comint (and (or (eq fi::emacs-type 'emacs19)
-			    (eq fi::emacs-type 'emacs20))
-			(boundp 'comint-mode-map)
-			comint-mode-map))
+	   (comint-map (and (boundp 'comint-mode-map)
+			    (symbol-value 'comint-mode-map)))
 	   
 	   (map (make-keymap))
 	   (smap (make-sparse-keymap))
@@ -163,8 +107,8 @@ set.")
       (fi::defkey map " " 'fi:arglist-lisp-space (and clisp arglist))
       (fi::defkey map "!" 'fi:shell-mode-bang
 		  (and fi:shell-mode-use-history shell))
-      (when comint
-	(fi::defkey map [menu-bar] (lookup-key comint-mode-map [menu-bar]) t))
+      (when comint-map
+	(fi::defkey map [menu-bar] (lookup-key comint-map [menu-bar]) t))
 
 ;;;; ESC map
       (fi::defkey emap "\C-d" 'fi:lisp-disassemble clisp)
@@ -322,10 +266,6 @@ set.")
 
 ;;;;;;;;;;;;;;;;;;;;; inferior lisp mode related functions
 
-(defvar fi:lisp-mode-auto-indent t
-  "*If non-nil, then the command bound to \\r, fi:lisp-mode-newline, will
-indent, newline and indent.  It does this by funcalling the value bound to
-indent-line-function.")
 
 (defun fi:lisp-mode-newline ()
   "Depending on the value of fi:lisp-mode-auto-indent, either (if nil)
@@ -339,17 +279,6 @@ indent again."
 	(funcall indent-line-function))
     (newline 1)))
 
-(defvar fi:raw-mode nil
-  "*If non-nil, then the inferior lisp process gets characters as they are
-typed, not when a complete expressions has been entered.  This means that
-no input editing of expressions can occur.  The intention of this feature
-is that it be used by programs written in Common Lisp that need to read
-characters without newlines after them.  See the example in the Allegro
-User Guide for more information.")
-
-(defvar fi:raw-mode-echo t
-  "*If non-nil, then echo characters in the inferior lisp buffer when
-fi:raw-mode is non-nil.")
 
 (defun fi:self-insert-command (arg)
   (interactive "P")
@@ -626,13 +555,8 @@ subprocess mode."
 	(setq fi::last-input-start
 	  (marker-position
 	   (process-mark (get-buffer-process (current-buffer)))))
-	(if (and (on-ms-windows) (not *on-windows-nt*))
-	    (insert "\n\r")
-	  (insert "\n"))
-	(setq fi::last-input-end
-	  (if (and (on-ms-windows) (not *on-windows-nt*))
-	      (1- (point))
-	    (point))))
+	(insert "\n")
+	(setq fi::last-input-end (point)))
     (let ((max (point)))
       (beginning-of-line)
       (re-search-forward fi::prompt-pattern max t))
@@ -646,8 +570,6 @@ subprocess mode."
   (let ((process (get-buffer-process (current-buffer))))
     (process-send-region process fi::last-input-start fi::last-input-end)
     (fi::input-ring-save fi::last-input-start (1- fi::last-input-end))
-    (when (and (on-ms-windows) (not *on-windows-nt*))
-      (delete-char -1))
     (set-marker (process-mark process) (point))))
 
 ;;;;
@@ -960,7 +882,8 @@ If they are not, position the point at the first syntax error found."
 	       ;; don't know what it is, but hey, try and forward over it
 	       (forward-sexp 1)))))
     (goto-char saved-point))
-  (if (interactive-p) (message "All parentheses appear to be balanced."))
+  (if (called-interactively-p 'any)
+      (message "All parentheses appear to be balanced."))
   t)
 
 (defun fi::gobble-comment ()
@@ -998,8 +921,7 @@ If they are not, position the point at the first syntax error found."
 	   ;; save file if user types "yes":
 	   (not (y-or-n-p "Parens are not balanced.  Save file anyway? ")))))))
 
-(setq write-file-hooks
-  (cons 'fi:check-unbalanced-parentheses-when-saving write-file-hooks))
+(add-hook 'write-file-functions 'fi:check-unbalanced-parentheses-when-saving)
 
 (defun fi:fill-paragraph (arg)
   "Properly fill paragraphs of Lisp comments by inserting the appropriate
@@ -1115,10 +1037,7 @@ as it was before it was made visible."
 (defun fi:lisp-push-window-configuration ()
   (fi::emacs-lisp-push-window-configuration))
 
-(defvar fi::wc-stack)
 (setq fi::wc-stack nil)
-
-(defconst fi::wc-stack-max 15)
 
 (defun fi::emacs-lisp-push-window-configuration ()
   (let ((res (list (current-window-configuration) 'place-holder)))

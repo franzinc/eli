@@ -2,12 +2,6 @@
 
 ;; Command and file name completion
 
-(defvar fi:shell-token-pattern "[ \t\n()<>&|;=]"
-  "*The regular expression used by file name completion to mark path name
-boundaries.")
-
-(defvar fi::shell-completions-window nil
-  "If non-nil, completion window requires cleaning up.")
 
 (defun fi:shell-do-completion ()
   "Do either command or file name completion in a subprocess buffer

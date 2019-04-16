@@ -51,20 +51,21 @@ time."
 		(substring string 1 -1)
 	      string)))
 	 (symbol symbol-with-package))
-    (flet ((no-arglist-output-p ()
-	     (or (and last-char 
-		      (or
-		       ;; don't do silly things after comment character
-		       (equal last-char ";")
-		       ;; do something only if directly after a sexp.
-		       (equal last-char " ")))
-		 ;; could be something like #+foo, #-foo, or #:foo, any of
-		 ;; which is likely to lose.
-		 (and string (string-match "^#" string))
-		 double-quote-pos ;; there is no output  for strings only.
-		 (not (and symbol (stringp symbol) (> (length symbol) 0)))
-		 (string-match "^\. " symbol)
-		 (string-match "^\\\\" symbol))))
+    (cl-flet
+     ((no-arglist-output-p ()
+	(or (and last-char 
+		 (or
+		  ;; don't do silly things after comment character
+		  (equal last-char ";")
+		  ;; do something only if directly after a sexp.
+		  (equal last-char " ")))
+	    ;; could be something like #+foo, #-foo, or #:foo, any of
+	    ;; which is likely to lose.
+	    (and string (string-match "^#" string))
+	    double-quote-pos ;; there is no output  for strings only.
+	    (not (and symbol (stringp symbol) (> (length symbol) 0)))
+	    (string-match "^\. " symbol)
+	    (string-match "^\\\\" symbol))))
       (goto-char old-point)
       (unless (no-arglist-output-p)
 	;; only output for functions within brackets; too much lisp-traffic!
@@ -257,14 +258,12 @@ time."
        (when (fi::pop-metadot-session)
 	 (fi::show-error-text "%s" error)))))
 
-(defvar session) ;; bad name, but changing it is too complicated right now
-
 (defun scm::make-and-initialize-metadot-session
     (something &optional what from-fspec)
   (fi::push-metadot-session (or what "definition") something from-fspec
-			    session)
+			    eli--session)
   (fi::modify-session-continuation
-   session
+   eli--session
    (list (function (lambda (pathname point n-more)
 		     (fi::show-found-definition (lep::meta-dot-string)
 						pathname point n-more
@@ -300,19 +299,19 @@ time."
 	 (setq lep::meta-dot-session nil)
 	 t)))
 
-(defun fi::push-metadot-session (what string from-fspec session)
+(defun fi::push-metadot-session (what string from-fspec eli--session)
   (cond (fi:maintain-definition-stack
 	 (setq lep::meta-dot-what (cons what lep::meta-dot-what))
 	 (setq lep::meta-dot-string (cons string lep::meta-dot-string))
 	 (setq lep::meta-dot-from-fspec
 	   (cons from-fspec lep::meta-dot-from-fspec))
-	 (setq lep::meta-dot-session (cons session lep::meta-dot-session)))
+	 (setq lep::meta-dot-session (cons eli--session lep::meta-dot-session)))
 	(t
 	 (fi::pop-metadot-session)
 	 (setq lep::meta-dot-what what)
 	 (setq lep::meta-dot-string string)
 	 (setq lep::meta-dot-from-fspec from-fspec)
-	 (setq lep::meta-dot-session session))))
+	 (setq lep::meta-dot-session eli--session))))
 
 (defun fi::reset-metadot-session ()
   (setq lep::meta-dot-what nil)
@@ -433,44 +432,38 @@ information on how to send the mail."
        (fi::read-lisp-process-name "Process for stack :zoom: "))
     ;; Normal continuation
     (() (error-message stack lisp-info)
-      (mail)
-      (mail-to)
-      (insert "support@franz.com")
-      ;;(mail-subject)
-      ;;(insert "Bug-report")
-      (goto-char (point-max))
-      (save-excursion
-	(insert "\n")
-	(when (and error-message (not (string= "" error-message)))
-	  (insert "------------------------------\n\n")
-	  (insert error-message))
-        (insert "<<Please enter any comments or explanations here>>\n\n")
-	(insert "\n------------------------------\n\n")
-	(insert stack)
-	(insert "\n------------------------------\n\n")
-	(insert lisp-info)
-	(insert "\n------------------------------\n\n")
-	(insert (format "Emacs version: %s\n"
-			(emacs-version)))
-	(insert (format "Emacs-Lisp interface version: %s\n\n"
-			fi:emacs-lisp-interface-version))
-	(insert (format "load-path: %s\n\n" load-path))
-	(let* ((file (fi::find-path load-path "fi-site-init.el"))
-	       (dir (when file
-		      (file-name-directory file))))
-	  (if dir
-	      (progn
-		(insert (format "Contents of %s directory:\n" dir))
-		(call-process "ls" nil t nil "-la"
-			      (expand-file-name dir))
-		(insert "\n"))
-	    (insert (format "Could not find fi-site-init.el\n")))
-	  (insert "\n")))
-      (message "Please enter a descriptive Subject: line")
-      (mail-subject))
+     (mail)
+     (mail-to)
+     (insert "support@franz.com")
+     ;;(mail-subject)
+     ;;(insert "Bug-report")
+     (goto-char (point-max))
+     (save-excursion
+       (insert "\n")
+       (when (and error-message (not (string= "" error-message)))
+	 (insert "------------------------------\n\n")
+	 (insert error-message))
+       (insert "<<Please enter any comments or explanations here>>\n\n")
+       (insert "\n------------------------------\n\n")
+       (insert stack)
+       (insert "\n------------------------------\n\n")
+       (insert lisp-info)
+       (insert "\n------------------------------\n\n")
+       (insert (format "Emacs version: %s\n"
+		       (emacs-version)))
+       (insert (format "Emacs-Lisp interface version: %s\n\n"
+		       fi:emacs-lisp-interface-version))
+       (insert (format "load-path: %s\n\n" load-path))
+       (insert (format "Contents of %s directory:\n"
+		       fi::library-directory))
+       (call-process "ls" nil t nil "-la"
+		     (expand-file-name fi::library-directory))
+       (insert "\n"))
+     (message "Please enter a descriptive Subject: line")
+     (mail-subject))
     ;; Error continuation
     (() (error)
-      (fi::show-error-text "Cannot do a backtrace because: %s" error))))
+     (fi::show-error-text "Cannot do a backtrace because: %s" error))))
 
 ;;; Macroexpansion and walking
 
@@ -777,7 +770,7 @@ beginning of words in target symbols."
 	  (fi::lisp-complete-2
 	   (car
 	    (lep::make-request-in-session-and-wait
-	     session
+	     eli--session
 	     ':complete
 	     (fi::frob-case-to-lisp string)
 	     (and xpackage

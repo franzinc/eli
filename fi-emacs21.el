@@ -732,15 +732,6 @@
 (defun fi::connection-not-open ()
   (not (fi::lep-open-connection-p)))
 
-(defvar fi::connection-open-composer-loaded nil)
-
-(defvar fi::connection-open-composer-loaded-cached nil)
-
-(defvar fi::composer-connection-open nil)
-(defvar fi::composer-running nil)
-
-(defvar fi::composer-cached-connection nil)
-
 (defun fi::connection-open-composer-loaded ()
   (when (not (eq fi::*connection* fi::composer-cached-connection))
     ;; the lisp was (possibly) restarted

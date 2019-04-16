@@ -21,34 +21,6 @@
 ;; and implements the fi::subprocess input ring.  Each fi::subprocess buffer
 ;; has its own input ring.
 
-(defvar fi:default-input-ring-max 50
-  "*The default maximum length to which an input ring is allowed to grow.")
-
-(defvar fi::input-ring nil
-  "A list of previous input to a subprocess.")
-
-(make-variable-buffer-local 'fi::input-ring)
-
-(defvar fi::input-ring-max fi:default-input-ring-max
-  "Maximum length of input ring before oldest elements are thrown away.")
-
-(make-variable-buffer-local 'fi::input-ring-max)
-
-(defvar fi::input-ring-yank-pointer nil
-  "The tail of the input ring whose car is the last thing yanked.")
-
-(make-variable-buffer-local 'fi::input-ring-yank-pointer)
-
-(defvar fi::last-input-search-string ""
-  "Last input search string in each fi::subprocess buffer.")
-
-(make-variable-buffer-local 'fi::last-input-search-string)
-
-(defvar fi::last-command-was-successful-search nil
-  "Switch to indicate that last command was a successful input re-search.")
-
-(make-variable-buffer-local 'fi::last-command-was-successful-search)
-
 (defun fi::input-append (string before-p)
   (setq fi::last-command-was-successful-search nil)
   (when fi::input-ring

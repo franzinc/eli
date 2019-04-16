@@ -1,92 +1,5 @@
 ;; See the file LICENSE for the full license governing this code.
 
-;;;; Mode initializations
-
-;;;
-;; Variables
-;;;
-
-(defvar fi:inferior-common-lisp-mode-map nil
-  "The inferior-common-lisp major-mode keymap.")
-(defvar fi:inferior-common-lisp-mode-super-key-map nil
-  "Used for super-key processing in inferior-common-lisp mode.")
-
-(defvar fi:inferior-franz-lisp-mode-map nil
-  "The inferior-franz-lisp major-mode keymap.")
-(defvar fi:inferior-franz-lisp-mode-super-key-map nil
-  "Used for super-key processing in inferior-franz-lisp mode.")
-
-(defvar fi:lisp-listener-mode-map nil
-  "The tcp-lisp major-mode keymap.")
-(defvar fi:lisp-listener-mode-super-key-map nil
-  "Used for super-key processing in tcp-lisp mode.")
-
-(defvar fi:common-lisp-mode-map nil
-  "Major mode map used when editing Common Lisp source.")
-(defvar fi:franz-lisp-mode-map nil
-  "Major mode map used when editing Franz Lisp source.")
-(defvar fi:emacs-lisp-mode-map nil
-  "Major mode map used when editing GNU Emacs Lisp source.")
-
-(defvar fi:lisp-mode-syntax-table nil
-  "The value of which is the syntax table for all Lisp modes, except Emacs
-Lisp mode.")
-(defvar fi:emacs-lisp-mode-syntax-table nil
-  "The value of which is the syntax table for Emacs Lisp mode.")
-
-(defvar fi:common-lisp-file-types '(".cl" ".lisp" ".lsp")
-  "*A list of the file types which are automatically put in
-fi:common-lisp-mode.  NOTE: the value of this variable is only used at
-interface load time.  Setting after the interface is loaded will have no
-effect.")
-
-(defvar fi:lisp-do-indentation t
-  "*When non-nil, do FI-style indentation in Lisp modes.")
-
-(defvar fi:auto-fill nil
-  "*When non-nil, and fi:lisp-do-indentation is non-nil, turn on auto-fill
-mode in Lisp editing modes.")
-
-(defvar fi:subprocess-mode nil
-  "Non-nil when buffer has a subprocess.")
-
-(add-hook 'fi:common-lisp-mode-hook
-	  (function
-	   (lambda ()
-	     (when (not (fi:member-equal "; pkg:" mode-line-process))
-	       (setq mode-line-process
-		 (append mode-line-process
-			 '((fi:package ("; pkg:" fi:package))))))
-	     (when (not (fi:member-equal "; rt:" mode-line-process))
-	       (setq mode-line-process
-		 (append mode-line-process
-			 '((fi:readtable ("; rt:" fi:readtable))))))))
-	  "*The initial value of this hook, which is run whenever a Lisp mode is
-entered, causes the `package' and readtable (if any) to be displayed in the
-mode line.  It uses MODE-LINE-PROCESS, which has no use in non-subprocess
-buffers.")
-
-(defvar fi:in-package-regexp nil
-  "*If non-nil, the regular expression that describes the IN-PACKAGE form,
-for purposes of tracking package changes in a subprocess Lisp buffer.  The
-value of this is taken from fi:default-in-package-regexp in Lisp subprocess
-buffers, but is nil elsewhere.")
-(make-variable-buffer-local 'fi:in-package-regexp)
-
-(defvar fi::multiple-in-packages nil
-  ;; non-nil if there are multiple ones in the current buffer
-  )
-(make-variable-buffer-local 'fi::multiple-in-packages)
-
-(defvar fi:default-in-package-regexp
-  "(\\(cl:\\|common-lisp:\\)?in-package\\>\\|:pa\\>\\|:pac\\>\\|:pack\\>\\|:packa\\>\\|:packag\\>\\|:package\\>"
-  "*The regular expression matching the Lisp expression to change the
-current package.  The two things this must match are the IN-PACKAGE macro
-form and all the possible instances of the :package top-level command.
-If nil, no automatic package tracking will be done.")
-
-(defvar fi::menubar-initialization nil)
-
 ;;;;
 ;;; The Modes
 ;;;;
@@ -226,6 +139,22 @@ any other mode setup."
   (setq fi::process-name fi::common-lisp-backdoor-main-process-name)
   (setq fi:lisp-indent-hook-property 'fi:common-lisp-indent-hook)
   (run-mode-hooks 'fi:lisp-mode-hook 'fi:common-lisp-mode-hook))
+
+(add-hook 'fi:common-lisp-mode-hook
+	  (function
+	   (lambda ()
+	     (when (not (fi:member-equal "; pkg:" mode-line-process))
+	       (setq mode-line-process
+		 (append mode-line-process
+			 '((fi:package ("; pkg:" fi:package))))))
+	     (when (not (fi:member-equal "; rt:" mode-line-process))
+	       (setq mode-line-process
+		 (append mode-line-process
+			 '((fi:readtable ("; rt:" fi:readtable))))))))
+	  "*The initial value of this hook, which is run whenever a Lisp mode is
+entered, causes the `package' and readtable (if any) to be displayed in the
+mode line.  It uses MODE-LINE-PROCESS, which has no use in non-subprocess
+buffers.")
 
 (defadvice lisp-mode (around ad-lisp-mode-use-fi:common-lisp-mode first
 			     (&optional mode-hook)

@@ -2,12 +2,6 @@
 
 ;; Code the implements evaluation in via the backdoor
 
-(make-variable-buffer-local 'fi::show-compilation-status)
-(setq fi::show-compilation-status nil)
-
-(defvar fi::mode-line-note-for-compile " COMPILING")
-(defvar fi::mode-line-note-for-eval " EVALUATING")
-
 (defun fi::note-background-request (compiling)
   (let ((message1 (if compiling "Compiling" "Evaluating"))
 	(message (if compiling
@@ -33,12 +27,6 @@
     (setq fi::show-compilation-status nil)))
 
 ;;;;;;;;;;;;;
-
-(defvar fi:lisp-evals-always-compile t
-  "*This variable controls whether or not the fi:lisp-eval-or-compile-*
-functions will compile or evaluate their forms.  If non-nil, then
-compilation is the default, otherwise evaluation is the default.
-The non-default functionality can be selected by using a prefix argument.")
 
 (defun fi::decode-prefix-argument-for-eval-or-compile ()
   ;; return `t' for compile, `nil' for eval

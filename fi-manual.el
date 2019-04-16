@@ -39,6 +39,9 @@
 (require 'cl)
 (require 'browse-url)                   ;you need the Emacs 20 version
 (require 'thingatpt)
+
+(defvar +table-from-franz+ nil)
+
 (fi::load "fi-manual-data")
 
 (defvar fi::manual-base-url

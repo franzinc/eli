@@ -61,9 +61,9 @@ process. With argument ALL, do a \":zoom :all t\"."
      ((from-buffer process-name) (stack)
       (let ((buffer-name (format "*debugger:%s*"
 				 (fi::make-pretty-process-name
-				  process-name))))
+				  process-name)))
+	    (inhibit-read-only t))
 	(pop-to-buffer buffer-name)
-	(if buffer-read-only (toggle-read-only))
 	(erase-buffer)
 	(insert stack)
 	(goto-char (point-min))
@@ -141,7 +141,7 @@ Entry to this mode runs the fi:scan-stack-mode-hook hook."
 	(define-key map "u"	'fi:ss-previous-frame)
 	(setq fi:scan-stack-mode-map map)))
   (use-local-map fi:scan-stack-mode-map)
-  (if (not buffer-read-only) (toggle-read-only))
+  (setq buffer-read-only t)
   (setq truncate-lines t)
   (run-mode-hooks 'fi:scan-stack-mode-hook))
 
@@ -411,10 +411,9 @@ buffer."
       (if down lines (- lines))))))
 
 (defun fi::make-stack-frame-current (offset)
-  (toggle-read-only)
-  (delete-char 3)
-  (insert " ->")
-  (toggle-read-only)
+  (let ((inhibit-read-only t))
+    (delete-char 3)
+    (insert " ->"))
   (beginning-of-line)
   (save-excursion
     (let ((found
@@ -425,9 +424,8 @@ buffer."
 	     (re-search-backward fi::ss-current-frame-regexp nil t))))
       (when (not found)
 	(error "Could not find old current frame."))
-      (toggle-read-only)
-      (replace-match "   ")
-      (toggle-read-only))))
+      (let ((inhibit-read-only t))
+	(replace-match "   ")))))
 
 (defun fi::buffer-process ()
   (cond

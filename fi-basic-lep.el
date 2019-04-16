@@ -2,10 +2,6 @@
 
 ;; The basic lep code that implements connections and sessions
 
-(defvar fi::trace-lep-filter nil)	; for debugging
-
-(defvar session) ;; yuck
-
 (defun fi::show-error-text (format-string &rest args)
   (if (cdr fi:pop-up-temp-window-behavior)
       (apply 'fi:show-some-text nil format-string args)
@@ -31,10 +27,6 @@
 	    (message "%s" text)
 	    (fi::note-background-reply))
 	(fi::show-some-text-1 text (or xpackage (fi::package)))))))
-
-;; Why are these necessary????
-(defvar resize-mini-windows)
-(defvar max-mini-window-height)
 
 ;; would have been nice to use display-message-or-buffer...
 (defun fi::will-fit-in-minibuffer-p (string)
@@ -76,10 +68,6 @@
     (let ((len (- length start)))
       (if (> len max-length) (setq max-length len)))
     (list lines max-length)))
-
-(defvar fi::show-some-text-1-first-time t)
-
-(defvar fi::*show-some-text-buffer-name* "*CL-temp*")
 
 (defun fi::show-some-text-1 (text apackage &optional hook &rest args)
   ;;A note from cer:
@@ -130,8 +118,6 @@
 (defun fi::connection-host (c) (fifth c)) ; not used, apparently
 
 (defun fi::connection-buffer (c) (sixth c))
-
-(defvar fi::*connection* nil)
 
 (defun fi::lep-open-connection-p ()
   (and fi::*connection*
@@ -188,16 +174,6 @@ emacs-lisp interface cannot be started.
 			       fi::lisp-port
 			       fi::lisp-password))
 
-;; Removed defunct fi::old-emacs-mule-p.  cac 7jun05
-
-(defvar fi:use-emacs-mule-lisp-listeners t
-  "*Flag which determines whether to set a buffer's Lisp listener's
-*terminal-io* stream-external-format to :emacs-mule.  This flag should
-normally be set to true.  Setting this flag to nil restores the
-buffer-coding-systems setting behavior to be as it was in the Allegro CL 6.2
-release.")
-
-;; Removed defunct fi::emacs-mule-p.  cac 7jun05
 
 (defun fi::coding-system-name (cs)
   (when (listp cs)
@@ -213,8 +189,6 @@ release.")
 ;; Load mule-ucs if available.  This defines a good utf-8.
 ;; 
 (condition-case nil (require 'un-define) (error nil))
-
-(defvar fi::default-lisp-connection-coding-system 'utf-8)
 
 (defun fi::lisp-connection-coding-system ()
   fi::default-lisp-connection-coding-system)
@@ -261,9 +235,6 @@ release.")
       (when (fboundp 'set-menubar-dirty-flag)
 	(set-menubar-dirty-flag)))))
 
-(defvar fi::debug-subprocess-filter nil)
-(defvar fi::debug-subprocess-filter-output nil)
-
 (defun fi::lep-connection-filter (process string)
   ;; When a complete sexpression comes back from the lisp, read it and then
   ;; handle it
@@ -307,34 +278,34 @@ release.")
     (insert string)
     (insert "\n")))
 
-(defun fi::handle-lep-input (process form)
+(defun fi::handle-lep-input (eli--process form)
   "A reply is (session-id . rest) or (nil . rest)"
   (when fi::trace-lep-filter
     (fi::trace-debug 
      (format "handle-lep-input:\n  process: %s\n  form: %s"
-		   process form)))
+		   eli--process form)))
   (let* ((id (car form))
-	 (connection (fi::find-connection-from-process process))
-	 (session (fi::find-session connection id)))
-    (cond (session
-	   (fi::handle-session-reply session (cdr form)))
+	 (eli--connection (fi::find-connection-from-process eli--process))
+	 (eli--session (fi::find-session eli--connection id)))
+    (cond (eli--session
+	   (fi::handle-session-reply eli--session (cdr form)))
 	  ((car form)
 	   (error "something for nonexistent session: %s" form))
 	  (t (fi::handle-sessionless-reply (cdr form))))))
 
-(defun fi::handle-session-reply (session form)
+(defun fi::handle-session-reply (eli--session form)
   "A session reply is (:error Message) or (nil . results)"
-  (when (fi::session-oncep session)
-    (fi::delete-session session))
+  (when (fi::session-oncep eli--session)
+    (fi::delete-session eli--session))
   (if (eq (car form) ':error)
-      (if (fi::session-error-function session)
-	  (apply (fi::session-error-function session)
+      (if (fi::session-error-function eli--session)
+	  (apply (fi::session-error-function eli--session)
 		 (second form)
-		 (fi::session-error-arguments session))
+		 (fi::session-error-arguments eli--session))
 	(error (second form)))
-    (apply (fi::session-function session)
-	   (if (fi::session-arguments session)
-	     (append (cdr form) (fi::session-arguments session))
+    (apply (fi::session-function eli--session)
+	   (if (fi::session-arguments eli--session)
+	     (append (cdr form) (fi::session-arguments eli--session))
 	     (cdr form)))))
 
 (defun fi::delete-session (session)
@@ -539,39 +510,36 @@ release.")
 (defun fi::intern-it (s)
   (if (stringp s) (intern s) s))
 
-(defvar connection) ;; ugly, but necessary
-(defvar process) ;; this, too...  crikey, this is grossssss!!!!!
-
 (defun lep::make-session-for-lisp (session-id replyp oncep function &rest args)
-  (let ((session (fi::make-session session-id nil))
+  (let ((eli--session (fi::make-session session-id nil))
 	(done nil)
-	(dead (or (eq 'closed (process-status process))
+	(dead (or (eq 'closed (process-status eli--process))
 		  ;; The following test relies on
 		  ;; fi::make-connection-to-lisp associating the process
 		  ;; with a buffer IN ALL CASES, not just for debugging.
-		  (null (process-buffer process)))))
-    (fi::add-session connection session)
+		  (null (process-buffer eli--process)))))
+    (fi::add-session eli--connection eli--session)
     (unwind-protect
 	(when (not dead)
 	  (condition-case error
 	      (let* ((result (apply (fi::intern-it function) args)))
 		(when replyp
-		  (process-send-string process
+		  (process-send-string eli--process
 				       (fi::prin1-to-string
-					(list* (fi::session-id session)
+					(list* (fi::session-id eli--session)
 					       ':reply
 					       result)))
-		  (process-send-string process "\n")))
+		  (process-send-string eli--process "\n")))
 	    (error
 	     (if replyp
 		 (progn
-		   (process-send-string process
+		   (process-send-string eli--process
 					(fi::prin1-to-string
-					 (list (fi::session-id session)
+					 (list (fi::session-id eli--session)
 					       ':error
 					       (fi::prin1-to-string error))))
 
-		   (process-send-string process "\n"))
+		   (process-send-string eli--process "\n"))
 	       (fi::show-error-text
 		"Error %s in %s\nwith args: %s\nstack dump:\n%s"
 		(fi::prin1-to-string
@@ -584,12 +552,12 @@ release.")
 		  (with-output-to-string (backtrace)))))))
 	  (setq done t))
       (when (and (not dead) (not done))
-	(process-send-string process
-		     (fi::prin1-to-string (list (fi::session-id session)
+	(process-send-string eli--process
+		     (fi::prin1-to-string (list (fi::session-id eli--session)
 						':error
 						':aborted))))
       (when (or dead oncep)
-	(lep::kill-session session)))))
+	(lep::kill-session eli--session)))))
 
 (defun fi:send-reply (session string)
   (let* ((connection (fi::session-connection session))
@@ -626,12 +594,6 @@ the result in the Common Lisp to which we are connected."
       ((string) (error)
        (fi::show-error-text "error evaluating %s: %s" string error)))))
 
-(defvar fi:lisp-evalserver-number-reads 200
-  "*The number of times the Lisp eval server tries to read from the
-lisp-evalserver process before giving up.  Without this feature Emacs would
-hang if Lisp got into an infinite loop while printing.  If the size of the
-values returned to Emacs is large, then the value of this variable should
-be increased.")
 
 (defun fi:eval-in-lisp (string &rest args)
   "Apply (Emacs Lisp) format to STRING and ARGS and sychronously evaluate
