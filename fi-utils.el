@@ -102,23 +102,6 @@ nil if non-exists.  Yes, a value of nil and no local value are the same."
 	  (setq result (concat result (char-to-string xxx))))
 	result))))
 
-(defun fi::find-path (path file)
-  "Using PATH, find FILE, return the full pathname."
-  (let ((done nil) res temp)
-    (while (and (not done) path)
-      ;; accommodate nil's in the exec-path (bug3159)
-      (setq temp (car path))
-      (if (null temp)
-	  (setq temp default-directory))
-      (if (file-exists-p
-	   (setq res (concat temp
-			     (unless (string-match "/$" temp) "/")
-			     file)))
-	  (setq done t)
-	(setq res nil))
-      (setq path (cdr path)))
-    res))
-
 (defun fi::command-exists-p (command)
   "Use exec-path to determine whether or not COMMAND exists."
   (if (file-exists-p (format "%s%s" default-directory command))
@@ -228,6 +211,9 @@ that starts with ~."
       (concat "~" (substring file (match-beginning 2) (match-end 2)))
     file))
 
+(defvar fi::lisp-case-mode ':unknown
+  "The case in which the Common Lisp we are connected to lives.")
+
 (defun fi::frob-case-from-lisp (arg)
   (let ((string (if (symbolp arg)
 		    (symbol-name arg)
@@ -293,7 +279,7 @@ minimum require support for the Emacs-Lisp interface exists.
 As of GNU Emacs 18.58, there is no additional support/modifications needed
 for the emacs-lisp interface to function properly."
   (interactive)
-  (if (interactive-p)
+  (if (called-interactively-p 'any)
       (message "everything looks fine!")
     t))
 
@@ -353,10 +339,10 @@ Can't connect to host %s.  The error from open-network-stream was:
 	     nil))))))))
 
 (defun fi:note (format-string &rest args)
-  (let ((string (apply 'format format-string args)))
+  (let ((string (apply 'format format-string args))
+	(inhibit-read-only t))
     (delete-other-windows)
     (fi::switch-to-buffer "*Help*")
-    (when buffer-read-only (toggle-read-only))
     (erase-buffer)
     (insert string)
     (goto-char (point-min))))
@@ -460,7 +446,8 @@ at the beginning of the line."
 	      (when alist
 		(if xpackage
 		    (let ((real-package
-			   (reduce 'fi::package-prefix (mapcar #'car alist))))
+			   (reduce 'fi::package-prefix
+				   (mapcar #'car alist))))
 		      (try-completion (concat real-package pattern)
 				      alist))
 		  (try-completion pattern alist)))))
@@ -907,19 +894,12 @@ created by fi:common-lisp."
     ;; we have to use with-output-to-string.
     (with-output-to-string (prin1 form))))
 
-(cond ((or (eq fi::emacs-type 'xemacs19)
-	   (eq fi::emacs-type 'xemacs20))
-       (fset 'fi::mark 'fi::mark-hack)
-       (fset 'fi::prin1-to-string 'fi::prin1-to-string-xemacs))
-      ((eq fi::emacs-type 'emacs19)
-       (fset 'fi::mark 'fi::mark-hack)
-       (fset 'fi::prin1-to-string 'prin1-to-string))
-      ((eq fi::emacs-type 'emacs20)
-       (fset 'fi::mark 'fi::mark-hack)
-       (fset 'fi::prin1-to-string 'fi::prin1-to-string-mule))
-      (t
-       (fset 'fi::mark 'mark)
-       (fset 'fi::prin1-to-string 'prin1-to-string)))
+(fset 'fi::mark 'fi::mark-hack)
+(fset 'fi::prin1-to-string 'fi::prin1-to-string-mule)
+
+;;;; why can't we use these???
+;;(fset 'fi::mark 'mark)
+;;(fset 'fi::prin1-to-string 'prin1-to-string)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; The rest of the code in this file is modified from code in GNU Emacs, so

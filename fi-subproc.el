@@ -19,322 +19,18 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
-;; Low-level subprocess mode guts
-
-;;;;
-;;; General Subprocess Variables and Constants
-;;;;
-
-(defvar fi:shell-cd-regexp ":?cd"
-  "*The regular expression matching the C shell `cd' command and the
-Common Lisp :cd top-level command.   If nil, no tracking of directory
-changes will be done.")
-(make-variable-buffer-local 'fi:shell-cd-regexp)
-
-(defvar fi:shell-popd-regexp ":?popd"
-  "*The regular expression matching the C shell `popd' command and the
-Common Lisp :popd top-level command.   If nil, no tracking of directory
-changes will be done.")
-(make-variable-buffer-local 'fi:shell-popd-regexp)
-
-(defvar fi:shell-pushd-regexp ":?pushd"
-  "*The regular expression matching the C shell `pushd' command and the
-Common Lisp :pushd top-level command.   If nil, no tracking of directory
-changes will be done.")
-(make-variable-buffer-local 'fi:shell-pushd-regexp)
-
-(defvar fi:subprocess-continuously-show-output-in-visible-buffer t
-  "*If t, output from a subprocess to a visible buffer is continuously
-shown.  If a subprocess buffer is visible and the window point is beyond
-the process output marker, output to that buffer from its associated
-process will be continuously visible.  If the window point is before the
-process output marker, the window is not updated.  This is a buffer-local
-symbol.")
-(make-variable-buffer-local
- 'fi:subprocess-continuously-show-output-in-visible-buffer)
-
-(defvar fi:subprocess-enable-superkeys nil
-  "*If t, certain keys become `superkeys' in subprocess buffers--this
-should be set before starting any subprocesses.  The superkeys are C-a,
-C-d, C-o,C-u, C-w, C-z, and C-\\, which will behave as they would in the
-current local keymap when typed at the end of a subprocess buffer.  If
-typed elsewhere, these keys have their normal global binding.  This is a
-buffer-local symbol.  Use setq-default to set the default value for this
-symbol.")
-(make-variable-buffer-local 'fi:subprocess-enable-superkeys)
-
-(defvar fi:new-screen-for-common-lisp-buffer nil
-  "*If non-nil, then starting Common Lisp will cause emacs to create a new
-screen for the *common-lisp* buffer, if this version of emacs is capable of
-creating separate screens.  If you redefine fi:display-buffer-function this
-variable will be ignored.")
-
-(defvar fi:display-buffer-function
-    'fi::switch-to-buffer-new-screen
-  "*If non-nil, then the value should be a function taking one argument,
-a buffer, which is used to display a buffer when a subprocess is created.")
-
-(defvar fi:subprocess-env-vars
-    '(("EMACS" . "t")
-      ("TERM" . "emacs")
-;;;; This is the *wrong* thing to do, since it will override the DISPLAY
-;;;; set by `ssh'.
-      ;;("DISPLAY" . (or (getenv "DISPLAY") (format "%s:0.0" (system-name))))
-      ("TERMCAP" . (format "emacs:co#%d:tc=unknown:" (frame-width))))
-  "*An alist containing the environment variables to pass to newly created
-subprocesses.")
-(when (on-ms-windows)
-  (setq fi:subprocess-env-vars
-    (append fi:subprocess-env-vars
-	    '(("SHELL")))))
-
-(defvar fi:user-env-vars nil
-  ;; concept courtesy of John M. Adams
-  "*An alist containing environment variable/value pairs to add to the
-environment of the Lisp started with fi:common-lisp.")
-
-(defvar fi:pop-to-sublisp-buffer-after-lisp-eval nil
-  "*If non-nil, then go to the Lisp subprocess buffer after sending
-expressions to Lisp (via the functions which eval or compile the region, a
-form or the entire buffer).")
-
-(defvar fi:package nil
-  "A buffer-local variable whose value is automatically set for editing
-modes and will be nil or a string which names a package in the Lisp
-world--ie, in a Lisp subprocess running as an inferior of Emacs in some
-buffer.  It is used when expressions are sent from an Emacs buffer to a
-Lisp process so that the symbols are read into the correct Lisp package.")
-
-(make-variable-buffer-local 'fi:package)
-
-(defvar fi:readtable nil
-  "A buffer-local variable whose value is automatically set for editing
-modes and will be nil or a string which names a readtable in the Lisp
-world--ie, in a Lisp subprocess running as an inferior of Emacs in some
-buffer.  It is used when expressions are sent from an Emacs buffer to a
-Lisp process so that the expressions are read using the correct
-readtable.")
-
-(make-variable-buffer-local 'fi:readtable)
-
-(defvar fi::started-via-file nil
-  "If non-nil, then ELI started via fi:start-interface-via-file.")
-
- 
-;;;;
-;;; Common Lisp Variables and Constants
-;;;;
-
-(defvar fi:emacs-to-lisp-transaction-directory
-    (if (on-ms-windows)
-	(fi::temporary-directory)
-      "/tmp")
-  "*The directory in which files for Emacs/Lisp communication are stored.
-When using Lisp and Emacs on different machines, this directory must be
-accessible on both machine with the same pathname (via the wonders of NFS).")
-
-(defvar fi:echo-evals-from-buffer-in-listener-p nil
-  "*If non-nil, functions which eval a region, form, or an entire buffer will
-echo evaluated forms and results directly in the initial Lisp listener buffer.
-If nil, the results of evalation will be printed in the minibuffer if they
-fit, or otherwise in a popup buffer.")
-
-(defvar fi:start-lisp-interface-arguments
-    'fi::start-lisp-interface
-  "*This value of this variable determines whether or not the emacs-lisp
-interface is started automatically when fi:common-lisp is used to run
-Common Lisp images.   If non-nil, then a the value of this variable should
-be a function of one argument that returns command line argument sufficient
-to start the emacs-lisp interface.  The argument is a boolean that
-determines whether or not background streams are used (see
-fi:use-background-streams).")
-
-(defvar fi:use-background-streams t
-  "*If non-nil, then the default function bound to
-fi:start-lisp-interface-arguments will cause background streams to be
-initialized in ACL (see the function excl:use-background-streams).  Roughly
-speaking, background streams cause processes that do output, but which are
-not associated with any particular stream, to do it in a unique listener in
-an emacs buffer.  This allows MP:PROCESS-RUN-FUNCTION in the Lisp
-environment to be more useful.")
-
-(defvar fi:start-lisp-interface-hook nil
-  "*A function or a list of functions to call when we get the rendezvous
-info from Lisp in the Lisp subprocess buffer.  This is used to
-automatically startup the Emacs-Lisp hidden communication via a socket.
-fi:start-lisp-interface-arguments initiates the connection with Lisp from
-the Emacs side, Lisp then starts up the daemon which listens for
-connections and prints a string to the subprocess buffer (which is not
-displayed by the process filter for the Common Lisp subprocess), at which
-time the hooks are run.")
-
-(defvar fi:common-lisp-buffer-name "*common-lisp*"
-  "*Default buffer name used by fi:common-lisp.  This variable is set by
-fi:common-lisp when a new buffer name is used.")
-
-(defvar fi:common-lisp-directory nil
-  "*Default directory in which the process started by fi:common-lisp uses.")
-
-(defvar fi:common-lisp-image-name "alisp"
-  "*Default Common Lisp executable image used by fi:common-lisp.  The value
-is a string that names the executable image fi:common-lisp invokes.")
-
-(defvar fi:common-lisp-image-file nil
-  "*Default Common Lisp heap image used by fi:common-lisp.  If this
-variable is nil, and the corresponding argument to fi:common-lisp is not
-given, then a default heap image is loaded.")
-
-(defvar fi:common-lisp-image-arguments
-    (if (on-ms-windows) '("+B" "+cn") nil)
-  "*Default Common Lisp image arguments when invoked from `fi:common-lisp',
-which must be a list of strings.  Each element of the list is one command
-line argument.")
-
-(defvar fi:common-lisp-host "localhost"
-  "*The host on which fi:common-lisp starts the Common Lisp
-subprocess.  The default is the host on which emacs is running.")
-
-(defvar fi:common-lisp-prompt-pattern
-    "^\\(\\[[0-9]+i?c?\\] \\|\\[step\\] \\)?\\(<[-A-Za-z.]* ?[0-9]*?>\\|[-A-Za-z.0-9]+([0-9]+):\\) "
-  "*The regular expression which matches the Common Lisp prompt.
-Anything from beginning of line up to the end of what this pattern matches
-is deemed to be a prompt.")
-
-;;;;
-;;; Franz Lisp Variables and Constants
-;;;;
-
-(defvar fi:franz-lisp-buffer-name "*franz-lisp*"
-  "*Default buffer name used by fi:franz-lisp.")
-
-(defvar fi:franz-lisp-image-name "lisp"
-  "*Default Franz Lisp image to invoke from `fi:franz-lisp'.  If the value
-is a string then it names the image file or image path that
-`fi:franz-lisp' invokes.  Otherwise, the value of this variable is given
-to funcall, the result of which should yield a string which is the image
-name or path.")
-
-(defvar fi:franz-lisp-image-arguments nil
-  "*Default Franz Lisp image arguments when invoked from `fi:franz-lisp'.")
-
-(defvar fi:franz-lisp-host nil
-  "*The host on which fi:franz-lisp starts the Franz Lisp
-subprocess.  The default is the host on which emacs is running.")
-
-(defvar fi:franz-lisp-process-name nil)
-
-(defvar fi:franz-lisp-prompt-pattern
-  "^[-=]> +\\|^c{[0-9]+} +"
-  "*The regular expression which matches the Franz Lisp prompt, used in
-Inferior Franz Lisp mode.  Anything from beginning of line up to the end
-of what this pattern matches is deemed to be a prompt.")
-
-;;;;;;;;;;;;;;;;;;;;;; general subprocess internal variables
-
-(defvar fi::last-input-start nil
-  "Marker for start of last input in fi:shell-mode or fi:inferior-lisp-mode
-buffer.")
-(make-variable-buffer-local 'fi::last-input-start)
-
-(defvar fi::last-input-end nil
-  "Marker for end of last input in fi:shell-mode or fi:inferior-lisp-mode
-buffer.")
-(make-variable-buffer-local 'fi::last-input-end)
-
-(defvar fi::shell-directory-stack nil
-  "List of directories saved by pushd in this buffer's shell.")
-(make-variable-buffer-local 'fi::shell-directory-stack)
-
-(defvar fi::prompt-pattern)
-(make-variable-buffer-local 'fi::prompt-pattern)
-
-(defvar fi::process-is-local t)
-(make-variable-buffer-local 'fi::process-is-local)
-
-(defvar fi:franz-lisp-directory)
-
-(defconst fi:subprocess-max-buffer-lines nil
-  "*If non-nil, keep buffers created by fi:common-lisp, et al to a maximum
-of this number of lines when inserting new output.")
-
-;;;;;;;;;;;;;;;;;;;;;; lisp mode specific internal variables
-
-(defvar fi::process-name nil
-  "Name of inferior lisp process.")
-(make-variable-buffer-local 'fi::process-name)
-
-(defvar fi::common-lisp-first-time t)
-
-(defvar fi::franz-lisp-first-time t)
-
-;;;;;;;;;;;;;;;;;;;;;; common lisp mode specific internal variables
-
-(defvar fi::common-lisp-backdoor-main-process-name nil
-  "The name of the Common Lisp process to which we have a backdoor
-connection.")
-
-(defvar fi::lisp-case-mode ':unknown
-  "The case in which the Common Lisp we are connected to lives.")
-
-(defvar fi::lisp-version nil
-  "The version of the remote lisp.")
-
-(defvar fi::listener-protocol ':listener)
-
-;;;; the rest are buffer local:
-
-(defvar fi::lisp-host nil
-"Host that is running the lisp in this buffer.  Buffer local.")
-(make-variable-buffer-local 'fi::lisp-host)
-
-(defvar fi::lisp-port nil
-"Port to use in getting new listeners from remote lisp.  Buffer local.")
-(make-variable-buffer-local 'fi::lisp-port)
-
-(defvar fi::lisp-password nil
-"Password to use in getting new listeners from remote lisp.  Buffer local.")
-(make-variable-buffer-local 'fi::lisp-password)
-
-(defvar fi::lisp-is-remote nil
-  "Non-nil if the lisp process tied to the current buffer is on another
-machine, which implies that it was started via an `rsh'.  This variable is
-buffer local.")
-(make-variable-buffer-local 'fi::lisp-is-remote)
-
-(defvar fi::setup-for-mule nil)
-(make-variable-buffer-local 'fi::setup-for-mule)
-
-
-
 ;;;;
 ;;; User visible functions
 ;;;;
 
-(defvar fi::rsh-command nil)
-(defvar fi::rsh-args '("-Y"))
+(setq fi:emacs-to-lisp-transaction-directory
+  (or fi:emacs-to-lisp-transaction-directory
+      (if (on-ms-windows) (fi::temporary-directory) "/tmp")))
 
 (defun fi::start-backdoor-interface (proc)
   (fi:verify-emacs-support)
   (setq fi::common-lisp-backdoor-main-process-name (process-name proc))
   (fi::reset-metadot-session))
-
-(defvar fi::common-lisp-connection-type nil
-  "When creating an inferior cl process, the value to bind
-process-connection-type (q.v.).")
-
-(defvar fi:common-lisp-subprocess-timeout 30
-  "*This variable only has an effect on Windows.  The value is the timeout,
-in seconds, that Emacs will wait for Lisp to startup, when no connection
-can be made in fi:common-lisp.")
-
-(defvar fi::common-lisp-compatibility-mode-timeout 1)
-
-(defvar fi:common-lisp-subprocess-wait-forever nil
-  "*This variable only has an effect on Windows.  If the value is non-nil,
-then wait forever for the Lisp to startup.  Use with caution.  The
-keyboard-quit function will interrupt the waiting, however.")
-
-(defvar minibuffer-confirm-incomplete)
 
 (defun fi::set-terminal-io-external-format-string (ef)
   (if ef
@@ -378,14 +74,6 @@ keyboard-quit function will interrupt the waiting, however.")
 		      coding))))
 	       (list (symbol-name (car cs)) (symbol-name (cdr cs)))))
     (set-process-coding-system process (car ncs) (cadr ncs))))
-
-(defvar fi:eli-compatibility-mode t
-  "*If non-nil, then check for a Lisp running on port 9666, which is the
-port used by ACL 6.2 and before.  Set this variable to `nil' if you have
-problems starting Lisp from Emacs and only use the Emacs and Lisp portions
-from the same Lisp distribution.")
-
-(defvar fi::cl-process-name "common-lisp")
 
 (defun fi:common-lisp (&optional buffer-name directory executable-image-name
 				 image-args host image-file)
@@ -437,21 +125,6 @@ be a string. Use the 6th argument for image file."))
     fi:common-lisp-image-arguments
     (or fi:common-lisp-host (system-name))
     fi:common-lisp-image-file))
-  (when (and (boundp 'minibuffer-confirm-incomplete)
-	     minibuffer-confirm-incomplete
-	     (eq 'xemacs20 fi::emacs-type))
-    (save-excursion
-      (delete-other-windows)
-      (switch-to-buffer "*Help*")
-      (when buffer-read-only (toggle-read-only))
-      (erase-buffer)
-      (insert "
-It is known that XEmacs 20 and a non-nil value of the variable
-`minibuffer-confirm-incomplete' are incompatible with Lisp symbol
-completions read in the minibuffer.  Use this combination at your own
-risk.")
-      (when (null (y-or-n-p "Run Lisp anyway? "))
-	(error "fi:common-lisp aborted by user."))))
   (when fi::started-via-file
     (error "Emacs-Lisp interface already started via a file."))
   (when (and fi::shell-buffer-for-common-lisp-interaction-host-name
@@ -460,10 +133,10 @@ risk.")
     (setq fi::shell-buffer-for-common-lisp-interaction-host-name nil))
   
   (let* ((process-environment process-environment)
-	 (buffer-name (if (interactive-p)
+	 (buffer-name (if (called-interactively-p 'any)
 			  buffer-name
 			(or buffer-name fi:common-lisp-buffer-name)))
-	 (host (if (interactive-p)
+	 (host (if (called-interactively-p 'any)
 		   host
 		 (or host fi:common-lisp-host (system-name))))
 	 (directory
@@ -475,13 +148,13 @@ risk.")
 	    (when (not fi::process-is-local)
 	      (when (not fi::rsh-command)
 		(setq fi::rsh-command (fi::default-rsh-command))))
-	    (if (interactive-p)
+	    (if (called-interactively-p 'any)
 		(if fi::process-is-local
 		    (and directory (expand-file-name directory))
 		  directory)
 	      (or directory fi:common-lisp-directory))))
 	 (executable-image-name
-	  (if (interactive-p)
+	  (if (called-interactively-p 'any)
 	      executable-image-name
 	    (when (consp executable-image-name)
 	      (error "3rd argument to fi:common-lisp must \
@@ -489,11 +162,11 @@ be a string. Use the 6th argument for image file."))
 	    (or executable-image-name
 		fi:common-lisp-image-name)))
 	 (image-file
-	  (if (interactive-p)
+	  (if (called-interactively-p 'any)
 	      image-file
 	    (or image-file fi:common-lisp-image-file)))
 	 (image-args
-	  (if (interactive-p)
+	  (if (called-interactively-p 'any)
 	      image-args
 	    (or image-args fi:common-lisp-image-arguments)))
 	 (real-args
@@ -835,12 +508,6 @@ be a string. Use the 6th argument for image file."))
       (setq arguments (cdr arguments)))
     (append (nreverse dlisp-args) (nreverse other-args))))
 
-;; make xemacs compile warnings go away:
-(defvar win32-quote-process-args)
-(defvar win32-start-process-show-window)
-(defvar w32-quote-process-args)
-(defvar w32-start-process-show-window)
-
 (defun fi::socket-start-lisp (process-name image arguments)
   (let (
 ;;;; rms didn't like the win32- prefix, so we have to support the old and
@@ -952,20 +619,20 @@ the first \"free\" buffer name and start a subprocess in that buffer."
   (setq fi::process-is-local (or (string= "localhost" host)
 				 ;; so it is case insensitive:
 				 (string-match host (system-name))))
-  (let* ((buffer-name (if (interactive-p)
+  (let* ((buffer-name (if (called-interactively-p 'any)
 			  buffer-name
 			(or buffer-name fi:franz-lisp-buffer-name)))
-	 (directory (if (interactive-p)
+	 (directory (if (called-interactively-p 'any)
 			(expand-file-name directory)
 		      (or directory fi:franz-lisp-directory)))
 	 (executable-image-name
-	  (if (interactive-p)
+	  (if (called-interactively-p 'any)
 	      executable-image-name
 	    (or executable-image-name fi:franz-lisp-image-name)))
-	 (image-args (if (interactive-p)
+	 (image-args (if (called-interactively-p 'any)
 			 image-args
 		       (or image-args fi:franz-lisp-image-arguments)))
-	 (host (if (interactive-p)
+	 (host (if (called-interactively-p 'any)
 		   host
 		 (or host fi:franz-lisp-host)))
 	 (proc (fi::make-subprocess
@@ -1256,10 +923,6 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 		 (fi::buffer-number-to-buffer name buffer-name)
 	       name)))))
 
-(defvar fi::tcp-listener-table nil)
-;; Start counting at 2 because initial lisp listener is assigned 1.
-(defvar fi::tcp-listener-generation 2)
-
 (defun fi::tcp-listener-generation (proc)
   (let ((gen fi::tcp-listener-generation))
     (setq fi::tcp-listener-table
@@ -1399,9 +1062,11 @@ works--if it does not, then fi:common-lisp will fail.%s"
     "\n---------------------------------------------------------------------\n"))
   t)
 
+(defvar fi::subprocess-filter-output-preprocess-hook nil)
 (make-variable-buffer-local 'fi::subprocess-filter-output-preprocess-hook)
 (setq-default fi::subprocess-filter-output-preprocess-hook nil)
 
+(defvar fi::subprocess-filter-insert-output-hook nil)
 (make-variable-buffer-local 'fi::subprocess-filter-insert-output-hook)
 (setq-default fi::subprocess-filter-insert-output-hook nil)
 
@@ -1523,9 +1188,6 @@ This function implements continuous output to visible buffers."
   (setq fi::last-input-search-string "")
   (setq fi::last-input-start (make-marker))
   (setq fi::last-input-end (make-marker)))
-
-;; cached & discombobulated value of CDPATH env variable
-(defvar fi::cdpath nil)
 
 (defun fi::subprocess-watch-for-special-commands ()
   "Watch for special commands like, for example, `cd' in a shell.  We grok

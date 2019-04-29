@@ -12,8 +12,6 @@
 	   (reverse let-bindings)
 	   body)))
 
-(defvar session) ;; yuck
-
 (defun lep::create-listener-stream (&optional args)
   ;; This function has problems because it may be invoked asynchronously
   ;; by background computation.  See bug3267.
@@ -31,7 +29,7 @@
 	       (function
 		(lambda (proc)
 		  (format "%d\n%d\n"
-			  (fi::session-id session)
+			  (fi::session-id eli--session)
 			  (fi::tcp-listener-generation proc)))))))
 	   (buffer (process-buffer proc)))
       (cond ((or parent x y width height)

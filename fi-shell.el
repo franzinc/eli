@@ -1,41 +1,5 @@
 ;; See the file LICENSE for the full license governing this code.
 
-(defvar fi:shell-mode-map nil
-  "The shell major-mode keymap.")
-
-(defvar fi:shell-mode-super-key-map nil
-  "Used for super-key processing in shell mode.")
-
-(defvar fi:shell-image-name
-    (if (on-ms-windows)
-	(if *on-windows-nt*
-	    (format "%s/system32/cmd.exe" (getenv "WINDIR"))
-	  "C:\\COMMAND.COM")
-      "csh")
-  "*Default Shell image to invoke from (fi:shell).  If the value
-is a string then it names the image file or image path that
-`fi:shell' invokes.  Otherwise, the value of this variable is given
-to funcall, the result of which should yield a string which is the image
-name or path.")
-
-(defvar fi:shell-image-arguments
-    (if (on-ms-windows)
-	(if *on-windows-nt*
-	    '("/q")
-	  nil)
-      '("-i"))
-  "*Default Shell image arguments when invoked from (fi:shell).")
-
-(defvar fi:shell-prompt-pattern
-  "^[-_.a-zA-Z0-9]*[#$%>] *"
-  "*Regexp used by Newline command in shell mode to match subshell prompts.
-Anything from beginning of line up to the end of what this pattern matches
-is deemed to be prompt, and is not re-executed.")
-
-(defvar fi:shell-mode-use-history nil
-  "*If non-nil when fi:shell-mode is first entered, setup a binding that
-causes ! to do history processing and substitute the values from the
-history list into the current command line.")
 
 (defun fi:shell-mode (&optional mode-hook)
   "Major mode for interacting with an inferior shell.

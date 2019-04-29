@@ -1,5 +1,5 @@
 
-(defconst +table-from-franz+
+(setq +table-from-franz+
  '(("list-call-direct-possibilities"
     "doc/operators/compiler/list-call-direct-possibilities.htm")
    ("call-compiler-optimization-switch"

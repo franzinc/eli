@@ -28,27 +28,3 @@ dist:	FORCE
 	gtar Czcf tmp dists/$(DISTDIR)/$(TGZFILE) $(DISTDIR)
 	cp -p tmp/$(DISTDIR)/$(README_HTM) dists/$(DISTDIR)
 	rm -fr tmp/$(DISTDIR)
-
-###############################################################################
-
-hosts = corba,heavy,news,beast,romeo,beta,tiger,freezer,sole,sparky,louie,hefty,killer,biggie,boys,high,baby
-
-elib_root = /usr/fi/emacs-lib
-to = $(elib_root)/fi
-rdist = rdist -P /usr/bin/ssh
-
-FILES_TO_RDIST = $(release_files) local*.el local*.elc 
-
-rdist:	DIST
-	@for host in `echo $(hosts) | sed 's/,/ /g'`; do \
-	    echo =================================== $$host; \
-	    echo rsync --delete -va DIST/ "$$host:$(to)/"; \
-	    rsync --delete -va DIST/ "$$host:$(to)/"; \
-	done
-	rm -fr DIST
-
-DIST:	FORCE
-	rm -fr DIST
-	mkdir DIST
-	cp /dev/null DIST/local.mak
-	$(rdist) -hwqc $(FILES_TO_RDIST) "`hostname`:$(pwd)/DIST"
