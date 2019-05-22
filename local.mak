@@ -33,7 +33,6 @@ dist:	FORCE
 
 elib_root = /usr/fi/emacs-lib
 to = $(elib_root)/fi
-rdist = rdist -P /usr/bin/ssh
 
 FILES_TO_RDIST = $(release_files) local*.el local*.elc 
 
@@ -53,4 +52,4 @@ DIST:	FORCE
 	rm -fr DIST
 	mkdir DIST
 	cp /dev/null DIST/local.mak
-	$(rdist) -hwqc $(FILES_TO_RDIST) "`hostname`:$(pwd)/DIST"
+	tar cf - $(FILES_TO_RDIST) | (cd DIST; tar xfv -)
