@@ -28,3 +28,28 @@ dist:	FORCE
 	gtar Czcf tmp dists/$(DISTDIR)/$(TGZFILE) $(DISTDIR)
 	cp -p tmp/$(DISTDIR)/$(README_HTM) dists/$(DISTDIR)
 	rm -fr tmp/$(DISTDIR)
+
+###############################################################################
+
+elib_root = /usr/fi/emacs-lib
+to = $(elib_root)/fi
+
+FILES_TO_RDIST = $(release_files) local*.el local*.elc 
+
+rdist:	DIST
+	@if [ ! "$(hosts)" ]; then \
+	    echo Error: hosts is not defined; \
+	    exit 1; \
+	fi
+	@for host in `echo $(hosts) | sed 's/,/ /g'`; do \
+	    echo =================================== $$host; \
+	    echo rsync --delete -va DIST/ "$$host:$(to)/"; \
+	    rsync --delete -va DIST/ "$$host:$(to)/"; \
+	done
+	rm -fr DIST
+
+DIST:	FORCE
+	rm -fr DIST
+	mkdir DIST
+	cp /dev/null DIST/local.mak
+	tar cf - $(FILES_TO_RDIST) | (cd DIST; tar xfv -)
