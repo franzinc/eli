@@ -17,8 +17,9 @@ endif
 ###############################################################################
 
 all default:
-	"$(emacs)" -batch -q --eval '(setq fi--force-compile t)' \
-		-l $(pwd)/fi-site-init.el -kill
+	"$(emacs)" -batch -q --debug-init \
+	    --eval '(setq fi--eli-cache-dir "$(shell pwd)/" fi--force-compile t)' \
+	    -l $(pwd)/fi-site-init.el -kill
 
 copy_dist: FORCE
 ifndef DISTDIR

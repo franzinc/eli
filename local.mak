@@ -4,7 +4,7 @@ DISTDIR = eli-$(VERSION)
 README_HTM = readme.htm
 README_TXT = readme.txt
 
-release_files = Makefile version.mak fi-*.el fi-*.elc \
+release_files = Makefile fi-*.el fi-*.elc \
 	examples/emacs.el examples/eval.el
 
 echo_release_files:
