@@ -42,9 +42,8 @@ rdist:	DIST
 	    exit 1; \
 	fi
 	@for host in `echo $(hosts) | sed 's/,/ /g'`; do \
-	    echo =================================== $$host; \
-	    echo rsync --delete -va DIST/ "$$host:$(to)/"; \
-	    rsync --delete -va DIST/ "$$host:$(to)/"; \
+	    echo === Doing $$host; \
+	    rsync -q --delete -va DIST/ "$$host:$(to)/"; \
 	done
 	rm -fr DIST
 
@@ -52,4 +51,4 @@ DIST:	FORCE
 	rm -fr DIST
 	mkdir DIST
 	cp /dev/null DIST/local.mak
-	tar cf - $(FILES_TO_RDIST) | (cd DIST; tar xfv -)
+	tar cf - $(FILES_TO_RDIST) | (cd DIST; tar xf -)
