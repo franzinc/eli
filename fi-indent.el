@@ -534,14 +534,16 @@ of the start of the containing expression."
 
 (defun fi::lisp-invoke-method (form-start method depth count state
 			       indent-point)
-  (cond ((consp method)
-	 (cond ((eq 'like (car method))
-		(setq method
-		  (fi::lisp-get-method (symbol-name (car (cdr method))))))
-	       ((eq 'if (car method))
-		(setq method
-		  (apply 'fi::lisp-if-indent depth count state indent-point
-			 (cdr method)))))))
+  (when (and (consp method) (eq 'like (car method)))
+    (setq method
+      (fi::lisp-get-method (symbol-name (car (cdr method)))))
+    ;; 'like can turn into 'if...
+    )
+  (when (and (consp method) (eq 'if (car method)))
+    (setq method
+      (apply 'fi::lisp-if-indent depth count state indent-point
+	     (cdr method))))
+
   (cond ((and form-start
 	      (or (eq (char-after (- form-start 1)) ?\#) ;; Vectors.
 		  (and (eq (char-after (- form-start 1)) ?\') ;; Quoted lists.
