@@ -3,35 +3,6 @@
 ;; gnu emacs v21 specific hacks for the Franz Inc. emacs-lisp interface
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; emacs specific stuff
-
-(defun fi::switch-to-buffer-new-screen (buffer)
-  (cond
-   (fi:new-screen-for-common-lisp-buffer
-    ;; There should be some parameters for the make-frame call.
-    (let ((screen (make-frame)))
-      (select-frame screen)
-      ;; make sure the buffer is visible
-      (fi::switch-to-buffer buffer)))
-   (t (fi::switch-to-buffer buffer))))
-
-(defun fi::ensure-buffer-visible (buffer)
-  (let ((window (get-buffer-window buffer)))
-    (when window
-      (let ((frame (window-frame window)))
-	(when frame (raise-frame frame))))))
-
-(defun fi::ensure-minibuffer-visible ()
-  (let ((frame (window-frame (minibuffer-window))))
-    (when frame (raise-frame frame))))
-
-(defun fi::defontify-string (str)
-  (cond ((fboundp 'set-text-properties)
-	 (set-text-properties 0 (length str) nil str)
-	 str)
-	(t (format "%s" str))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; menu bar stuff
 
 (defvar fi::menu-bar-initialized nil)

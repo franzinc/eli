@@ -19,6 +19,14 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
+(declare-function fi::reset-metadot-session "fi-lep")
+(declare-function fi::lep-open-connection-p "fi-basic-lep")
+(declare-function fi::connection-buffer "fi-basic-lep")
+(declare-function fi::lisp-connection-coding-system "fi-basic-lep")
+(declare-function fi::set-environment "fi-subproc")
+(declare-function fi::ensure-lep-connection "fi-basic-lep")
+(declare-function fi:eval-in-lisp "fi-basic-lep")
+
 ;;;;
 ;;; User visible functions
 ;;;;
@@ -316,9 +324,9 @@ be a string. Use the 6th argument for image file."))
 	  (error
 	   (and fi::last-network-condition
 		(consp fi::last-network-condition)
-		(eq 'file-error (first fi::last-network-condition))
+		(eq 'file-error (cl-first fi::last-network-condition))
 		(equal "connection failed"
-		       (second fi::last-network-condition)))))
+		       (cl-second fi::last-network-condition)))))
       (cond
        (fi:common-lisp-subprocess-wait-forever)
        ((and (> i 0) (zerop (mod i 10)))
@@ -338,9 +346,9 @@ be a string. Use the 6th argument for image file."))
       (fi::ensure-lep-connection)
       (condition-case ()
 	  (setq fi::lisp-case-mode
-	    (case (car
-		   (read-from-string
-		    (fi:eval-in-lisp "excl:*current-case-mode*")))
+	    (cl-case (car
+		      (read-from-string
+		       (fi:eval-in-lisp "excl:*current-case-mode*")))
 	      ((case-insensitive-lower case-sensitive-lower) ':lower)
 	      ((CASE-INSENSITIVE-UPPER CASE-SENSITIVE-UPPER) ':upper)))
 	(error nil))
@@ -756,7 +764,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 								   cruft)
   (let ((val (catch 'cl-subproc-filter-foo
 	       (fi::common-lisp-subprocess-filter-1 process output))))
-    (case (car val)
+    (cl-case (car val)
       (normal
        (fi::subprocess-filter process (cdr val) stay cruft)
        (set-process-filter process 'fi::subprocess-filter))
@@ -1401,8 +1409,8 @@ to your `.cshrc' after the `set cdpath=(...)' in the same file."
 	   ;; environment passed to the subprocess. <from Luca Pisati>
 	   (let ((match (concat (car pair) "=")))
 	     (setf process-environment
-	       (remove-if (lambda (x) (string-match match x))
-			  process-environment)))))))
+	       (cl-remove-if (lambda (x) (string-match match x))
+			     process-environment)))))))
 
 (defun fi::compute-subprocess-env-vars ()
   (append fi:subprocess-env-vars fi:user-env-vars))

@@ -8,9 +8,9 @@
 			rest-arg 
 			(list 'quote (intern (concat ":" (symbol-name var))))))
 	    let-bindings))
-    (list* 'let
-	   (reverse let-bindings)
-	   body)))
+    (cl-list* 'let
+	      (reverse let-bindings)
+	      body)))
 
 (defun lep::create-listener-stream (&optional args)
   ;; This function has problems because it may be invoked asynchronously
@@ -43,7 +43,7 @@
 	  (fi::ensure-buffer-visible buffer)
 	  ;;(recenter 0)
 	  )
-	(setf (second conf) buffer))
+	(setf (cl-second conf) buffer))
       buffer)))
 
 (defun fi::create-new-mapped-screen-for-stream (parent x y width height)

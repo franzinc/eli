@@ -19,6 +19,11 @@
 ;; file named COPYING.  Among other things, the copyright notice
 ;; and this notice must be preserved on all copies.
 
+(declare-function fi::ensure-lep-connection "fi-basic-lep")
+(declare-function fi::lep-open-connection-p "fi-basic-lep")
+(declare-function fi::connection-buffer "fi-basic-lep")
+(declare-function fi::trace-debug "fi-basic-lep")
+
 (defun fi:set-associated-sublisp (buffer-name mode)
   "Use BUFFER-NAME as the name of a buffer which contains a Lisp subprocess
 to be used for Emacs-Lisp interactions (evaluating expressions, etc) in all

@@ -2,6 +2,15 @@
 
 ;;; Misc utilities
 
+(declare-function fi:lisp-push-window-configuration "fi-keys")
+(declare-function fi:show-run-status "fi-sublisp")
+(declare-function fi::parse-package-from-buffer "fi-modes")
+(declare-function fi::make-connection-to-lisp "fi-basic-lep")
+(declare-function fi::make-tcp-connection "fi-subproc")
+(declare-function fi::set-connection-vars "fi-subproc")
+(declare-function fi::lep-open-connection-p "fi-basic-lep")
+(declare-function fi::lisp-complete-1 "fi-lep")
+
 (defun fi::lisp-find-char (char string &optional from-end)
   (let* ((l (length string))
 	 (i (if from-end (1- l) 0))
@@ -235,7 +244,7 @@ that starts with ~."
 	      (not (eq (car plist) property)))
     (setq plist (cddr plist)))
   (if plist 
-      (second plist)
+      (cl-second plist)
     default))
 
 (defun fi::transpose-list (list)
@@ -244,7 +253,7 @@ that starts with ~."
       (let ((n 0))
 	(dolist (a k)
 	  (push a (nth n l))
-	  (incf n))))
+	  (cl-incf n))))
     l))
 
 (defun fi::insert-file-contents-into-kill-ring (copy-file-name)
@@ -270,7 +279,7 @@ that starts with ~."
 
 (defun fi::quote-every-other-one (list)
   (and list
-       (list* (list 'quote (first list)) (second list)
+       (cl-list* (list 'quote (cl-first list)) (cl-second list)
 	      (fi::quote-every-other-one (cddr list)))))
 
 (defun fi:verify-emacs-support ()
@@ -292,10 +301,10 @@ for the emacs-lisp interface to function properly."
 
 (defun fi::open-network-stream (name buffer host service)
   (let ((tries fi::open-network-stream-retries))
-    (block fi::open-network-stream
+    (cl-block fi::open-network-stream
       (dotimes (i tries)
 	(condition-case condition
-	    (return-from fi::open-network-stream
+	    (cl-return-from fi::open-network-stream
 	      (open-network-stream name buffer host service))
 	  (error
 	   (cond
@@ -446,8 +455,8 @@ at the beginning of the line."
 	      (when alist
 		(if xpackage
 		    (let ((real-package
-			   (reduce 'fi::package-prefix
-				   (mapcar #'car alist))))
+			   (cl-reduce 'fi::package-prefix
+				      (mapcar #'car alist))))
 		      (try-completion (concat real-package pattern)
 				      alist))
 		  (try-completion pattern alist)))))
@@ -458,7 +467,7 @@ at the beginning of the line."
 	(when (or (eq 'metadata what)
 		  (and (consp what) (eq 'boundaries (car what))))
 	  (setq what nil))
-	(ecase what
+	(cl-ecase what
 	  ((nil) (cond ((eq completion t) t)
 		       ((and (null completion) (null alist))
 			;; no match
@@ -876,7 +885,7 @@ created by fi:common-lisp."
       (select-window found))))
     
 (defun fi::insert-string (string start end)
-  (do ((p start (1+ p)))
+  (cl-do ((p start (1+ p)))
       ((eq p end))
     (insert-char (aref string p) 1)))
 
@@ -951,11 +960,11 @@ created by fi:common-lisp."
       (let ((fill-point
 	     (let ((opoint (point))
 		   bounce
-		   (first t))
+		   (first-line t))
 	       (save-excursion
 		 (move-to-column (1+ fc))
 		 ;; Move back to a word boundary.
-		 (while (or first
+		 (while (or first-line
 			    ;; If this is after period and a single space,
 			    ;; move back once more--we don't want to break
 			    ;; the line there and make it look like a
@@ -967,7 +976,7 @@ created by fi:common-lisp."
 				   (forward-char -1)
 				   (and (looking-at "\\. ")
 					(not (looking-at "\\.  "))))))
-		   (setq first nil)
+		   (setq first-line nil)
 		   (skip-chars-backward "^ \t\n")
 		   ;; If we find nowhere on the line to break it,
 		   ;; break after one word.  Set bounce to t
@@ -1067,7 +1076,7 @@ created by fi:common-lisp."
 (defvar fi::if*-keyword-list '("then" "thenret" "else" "elseif"))
 
 (defmacro if* (&rest args)
-   (do ((xx (reverse args) (cdr xx))
+   (cl-do ((xx (reverse args) (cdr xx))
 	(state ':init)
 	(elseseen nil)
 	(totalcol nil)
@@ -1212,7 +1221,7 @@ created by fi:common-lisp."
 		  (emacs-pid)))
 	 (temp-file
 	  (if (on-ms-windows)
-	      (substitute ?/ ?\\ xtemp-file)
+	      (cl-substitute ?/ ?\\ xtemp-file)
 	    xtemp-file))
 	 (args (list "-L"
 		     (if (cygwinp)
@@ -1323,8 +1332,8 @@ created by fi:common-lisp."
 	c)
     (while (< oldindex max+1)
       (when (= char (aref string oldindex))
-	(incf nfound))
-      (incf oldindex))
+	(cl-incf nfound))
+      (cl-incf oldindex))
     
     (setq new (make-string (+ nfound (length string)) 0)
 	  oldindex 0
@@ -1332,9 +1341,38 @@ created by fi:common-lisp."
     (while (< oldindex max+1)
       (cond ((= char (setq c (aref string oldindex)))
 	     (aset new newindex char)
-	     (incf newindex)
+	     (cl-incf newindex)
 	     (aset new newindex char))
 	    (t (aset new newindex c)))
-      (incf oldindex)
-      (incf newindex))
+      (cl-incf oldindex)
+      (cl-incf newindex))
     new))
+
+;; from fi-emacs21.el
+
+(defun fi::switch-to-buffer-new-screen (buffer)
+  (cond
+   (fi:new-screen-for-common-lisp-buffer
+    ;; There should be some parameters for the make-frame call.
+    (let ((screen (make-frame)))
+      (select-frame screen)
+      ;; make sure the buffer is visible
+      (fi::switch-to-buffer buffer)))
+   (t (fi::switch-to-buffer buffer))))
+
+(defun fi::ensure-buffer-visible (buffer)
+  (let ((window (get-buffer-window buffer)))
+    (when window
+      (let ((frame (window-frame window)))
+	(when frame (raise-frame frame))))))
+
+(defun fi::ensure-minibuffer-visible ()
+  (let ((frame (window-frame (minibuffer-window))))
+    (when frame (raise-frame frame))))
+
+(defun fi::defontify-string (str)
+  (cond ((fboundp 'set-text-properties)
+	 (set-text-properties 0 (length str) nil str)
+	 str)
+	(t (format "%s" str))))
+

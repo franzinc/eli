@@ -192,7 +192,7 @@ use the current buffer and display all the definitions contained in it."
 
 ;;;; epoch specific:
 ;;;(defun lep::dmode-mouse-select (info)
-;;;  (pop-to-buffer (second info))
+;;;  (pop-to-buffer (cl-second info))
 ;;;  (goto-char (car info))
 ;;;  (beginning-of-line)
 ;;;  (fi:definition-mode-goto-definition))
@@ -302,12 +302,12 @@ in definition mode."
       (setq truncate-lines t)		;smh 22jul94
       (mapc (function (lambda (x) 
 			(princ (car x) (current-buffer))
-			(unless (equal '(nil) (second x))
+			(unless (equal '(nil) (cl-second x))
 			  (insert ", ")
-			  (princ (second x) (current-buffer)))
-			(when (third x)	;smh 22jul94
+			  (princ (cl-second x) (current-buffer)))
+			(when (cl-third x)	;smh 22jul94
 			  (insert ", ")
-			  (princ (third x) (current-buffer)))
+			  (princ (cl-third x) (current-buffer)))
 			(insert "\n")))
 	    buffer-definitions)
       (fi:definition-mode)
@@ -332,9 +332,9 @@ in definition mode."
       (erase-buffer)
       (mapc #'(lambda (x) 
 		(princ (car x) (current-buffer))
-		(unless (equal '(nil) (second x))
+		(unless (equal '(nil) (cl-second x))
 		  (insert ", ")
-		  (princ (second x) (current-buffer)))
+		  (princ (cl-second x) (current-buffer)))
 		(insert "\n"))
 	    buffer-definitions)
       (fi:inverse-definition-mode)

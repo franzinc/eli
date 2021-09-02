@@ -2,7 +2,14 @@
 
 (require 'etags "etags")
 
-
+(declare-function fi::subprocess-watch-for-special-commands "fi-subproc")
+(declare-function fi::input-ring-save "fi-ring")
+(declare-function fi::shell-completion-cleanup "fi-filec")
+(declare-function fi:eval-in-lisp "fi-basic-lep")
+(declare-function fi:eval-in-lisp-asynchronous "fi-basic-lep")
+(declare-function fi:indent-sexp "fi-indent")
+(declare-function fi::lep-open-connection-p "fi-basic-lep")
+(declare-function fi::arglist-lisp-space-1 "fi-lep")
 
 ;;;;
 ;;; Key defs
@@ -481,7 +488,7 @@ which is a buffer local variable."
   (let ((key (this-command-keys)))
     (when prefix
       ;; Remove prefix digits
-      (setq key (subseq key (+ 1 (length (format "%d" prefix))))))
+      (setq key (cl-subseq key (+ 1 (length (format "%d" prefix))))))
     (if (eobp)
 	(fi::subprocess-reprocess-keys fi:subprocess-super-key-map key)
       (fi::subprocess-reprocess-keys (current-global-map) key))))
@@ -523,9 +530,9 @@ With argument ARG non nil or 1, move forward ARG - 1 lines first."
 	new)
     (beginning-of-line arg)
     (cond ((looking-at fi::prompt-pattern)
-	   (if (= old (second (setq new (match-data 0))))
-	       (goto-char (first new))
-	     (goto-char (second new))))
+	   (if (= old (cl-second (setq new (match-data 0))))
+	       (goto-char (cl-first new))
+	     (goto-char (cl-second new))))
 	  (bol (while (looking-at "[ \t]") (forward-char))))))
 
 (defun fi:subprocess-backward-kill-word (arg)
@@ -1051,9 +1058,9 @@ as it was before it was made visible."
     (error "The pop-up window stack is empty."))
   (let ((conf (car fi::wc-stack)))
     (setq fi::wc-stack (cdr fi::wc-stack))
-    (set-window-configuration (first conf))
-    (when (bufferp (second conf))
-      (bury-buffer (second conf)))))
+    (set-window-configuration (cl-first conf))
+    (when (bufferp (cl-second conf))
+      (bury-buffer (cl-second conf)))))
 
 ;;;(defun fi::epoch-lisp-push-window-configuration ()
 ;;;  (let* ((id (epoch::get-screen-id (current-screen)))

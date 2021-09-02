@@ -36,7 +36,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(require 'cl)
 (require 'browse-url)                   ;you need the Emacs 20 version
 (require 'thingatpt)
 
@@ -84,7 +83,7 @@ open in different tabs."
                           fi::manual-symbols #'boundp
                           t symbol-at-point
                           'fi:manual-history)))))
-  (maplist (lambda (entry)
+  (cl-maplist (lambda (entry)
              (browse-url (concat fi::manual-base-url (car entry)))
              (when (cdr entry)
 	       ;; How was this determined, and for what browser?

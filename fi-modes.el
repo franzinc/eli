@@ -405,9 +405,9 @@ the readtable used for evaluations given to Lisp from emacs."
   ;; the defaulting mechanism.  From smh, 8/14/2000.
   (let ((default (find-tag-default)))
     (when default
-      (let ((n (position ?: default :from-end t)))
+      (let ((n (cl-position ?: default :from-end t)))
 	(if n
-	    (subseq default (1+ n))
+	    (cl-subseq default (1+ n))
 	  default)))))
 
 (dolist (m '(fi:common-lisp-mode

@@ -83,7 +83,7 @@ completed file name."
 	  (save-match-data
 	   (let ((words (split-string shell-expand-completion " " nil)))
 	     (if (cdr words)
-		 (do ((ww (cdr words) (cdr ww)))
+		 (cl-do ((ww (cdr words) (cdr ww)))
 		     ((null ww)
 		      (setq shell-expand-completion
 			(apply 'concat words)))
