@@ -316,9 +316,9 @@ be a string. Use the 6th argument for image file."))
 	  (error
 	   (and fi::last-network-condition
 		(consp fi::last-network-condition)
-		(eq 'file-error (first fi::last-network-condition))
+		(eq 'file-error (car fi::last-network-condition))
 		(equal "connection failed"
-		       (second fi::last-network-condition)))))
+		       (cadr fi::last-network-condition)))))
       (cond
        (fi:common-lisp-subprocess-wait-forever)
        ((and (> i 0) (zerop (mod i 10)))
@@ -338,9 +338,9 @@ be a string. Use the 6th argument for image file."))
       (fi::ensure-lep-connection)
       (condition-case ()
 	  (setq fi::lisp-case-mode
-	    (case (car
-		   (read-from-string
-		    (fi:eval-in-lisp "excl:*current-case-mode*")))
+	    (cl-case (car
+		      (read-from-string
+		       (fi:eval-in-lisp "excl:*current-case-mode*")))
 	      ((case-insensitive-lower case-sensitive-lower) ':lower)
 	      ((CASE-INSENSITIVE-UPPER CASE-SENSITIVE-UPPER) ':upper)))
 	(error nil))
@@ -756,7 +756,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
 								   cruft)
   (let ((val (catch 'cl-subproc-filter-foo
 	       (fi::common-lisp-subprocess-filter-1 process output))))
-    (case (car val)
+    (cl-case (car val)
       (normal
        (fi::subprocess-filter process (cdr val) stay cruft)
        (set-process-filter process 'fi::subprocess-filter))

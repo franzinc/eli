@@ -8,9 +8,9 @@
 			rest-arg 
 			(list 'quote (intern (concat ":" (symbol-name var))))))
 	    let-bindings))
-    (list* 'let
-	   (reverse let-bindings)
-	   body)))
+    (cl-list* 'let
+	      (reverse let-bindings)
+	      body)))
 
 (defun lep::create-listener-stream (&optional args)
   ;; This function has problems because it may be invoked asynchronously

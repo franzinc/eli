@@ -727,7 +727,7 @@ beginning of words in target symbols."
 
 (defun lep::prompt-for-values (what prompt options)
   (fi::ensure-minibuffer-visible)
-  (list (case what
+  (list (cl-case what
 	  (:symbol
 	   (let* ((string (read-string
 			   prompt (fi::getf-property options ':initial-input)))
@@ -783,7 +783,7 @@ beginning of words in target symbols."
 	 (completion (and alist (try-completion string alist))))
     (when (and xpackage (stringp completion))
       (setq completion (concat xpackage package-prefix completion)))
-    (ecase what
+    (cl-ecase what
       ((nil) completion)
       ((t) (mapcar (function cdr) alist))
       (lambda (eq completion t)))))
@@ -886,32 +886,37 @@ parsed at file visit time."
       (forward-char 1)			;open paren
       (setq definer (fi::substr-sexp))
       (setq name (fi::substr-sexp))
-      (cond ((fi::string-equal-nocase definer "defmethod")
-	     (loop as subform = (read-from-string (fi::substr-sexp))
-		   as next = (car subform)
-		   while (symbolp next)
-		   collect next into quals
-		   finally do (setq qualifiers (apply 'concat (mapcar 'symbol-name quals)))
-		   (setq specializers
-		     (loop for spec in next
-			   until (member spec '(&optional &rest &key &aux &allow-other-keys))
-			   collect (if (atom spec) 't (cadr spec)))))
-	     (setq spec
-	       (concat "(method " name " "
-		       qualifiers " "
-		       (format "%S" specializers)
-		       " )")))
-	    ((or (fi::string-equal-nocase definer "defun")
-		 (fi::string-equal-nocase definer "defmacro")
-		 (fi::string-equal-nocase definer "defgeneric"))
-	     (setq spec name))
-	    ((fi::string-equal-nocase definer "deftype")
-	     (setq spec (format "(excl::deftype-expander %s)" name)))
-	    ((fi::string-equal-nocase definer "define-compiler-macro")
-	     (setq spec (format "(:property %s excl::.compiler-macro.)" name)))
-	    (t (error "Can't trace a %s" definer)))
+      (cond
+       ((fi::string-equal-nocase definer "defmethod")
+	(cl-loop as subform = (read-from-string (fi::substr-sexp))
+		 as next = (car subform)
+		 while (symbolp next)
+		 collect next into quals
+		 finally do (setq qualifiers
+			      (apply 'concat (mapcar 'symbol-name quals)))
+		 (setq specializers
+		   (cl-loop for spec in next
+			    until (member spec
+					  '(&optional &rest &key &aux
+					    &allow-other-keys))
+			    collect (if (atom spec) 't (cadr spec)))))
+	(setq spec
+	  (concat "(method " name " "
+		  qualifiers " "
+		  (format "%S" specializers)
+		  " )")))
+       ((or (fi::string-equal-nocase definer "defun")
+	    (fi::string-equal-nocase definer "defmacro")
+	    (fi::string-equal-nocase definer "defgeneric"))
+	(setq spec name))
+       ((fi::string-equal-nocase definer "deftype")
+	(setq spec (format "(excl::deftype-expander %s)" name)))
+       ((fi::string-equal-nocase definer "define-compiler-macro")
+	(setq spec (format "(:property %s excl::.compiler-macro.)" name)))
+       (t (error "Can't trace a %s" definer)))
       (fi::make-request
-	  (lep::toggle-trace :fspec (fi::defontify-string spec) :break current-prefix-arg)
+	  (lep::toggle-trace :fspec (fi::defontify-string spec)
+			     :break current-prefix-arg)
 	;; Normal continuation
 	(() (what tracep)
 	 (message (if tracep "%s is now traced" "%s is now untraced")

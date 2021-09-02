@@ -235,7 +235,7 @@ that starts with ~."
 	      (not (eq (car plist) property)))
     (setq plist (cddr plist)))
   (if plist 
-      (second plist)
+      (cadr plist)
     default))
 
 (defun fi::transpose-list (list)
@@ -270,7 +270,7 @@ that starts with ~."
 
 (defun fi::quote-every-other-one (list)
   (and list
-       (list* (list 'quote (first list)) (second list)
+       (cl-list* (list 'quote (car list)) (cadr list)
 	      (fi::quote-every-other-one (cddr list)))))
 
 (defun fi:verify-emacs-support ()
@@ -292,10 +292,10 @@ for the emacs-lisp interface to function properly."
 
 (defun fi::open-network-stream (name buffer host service)
   (let ((tries fi::open-network-stream-retries))
-    (block fi::open-network-stream
+    (cl-block fi::open-network-stream
       (dotimes (i tries)
 	(condition-case condition
-	    (return-from fi::open-network-stream
+	    (cl-return-from fi::open-network-stream
 	      (open-network-stream name buffer host service))
 	  (error
 	   (cond
@@ -458,7 +458,7 @@ at the beginning of the line."
 	(when (or (eq 'metadata what)
 		  (and (consp what) (eq 'boundaries (car what))))
 	  (setq what nil))
-	(ecase what
+	(cl-ecase what
 	  ((nil) (cond ((eq completion t) t)
 		       ((and (null completion) (null alist))
 			;; no match
@@ -876,7 +876,7 @@ created by fi:common-lisp."
       (select-window found))))
     
 (defun fi::insert-string (string start end)
-  (do ((p start (1+ p)))
+  (cl-do ((p start (1+ p)))
       ((eq p end))
     (insert-char (aref string p) 1)))
 
@@ -1067,7 +1067,7 @@ created by fi:common-lisp."
 (defvar fi::if*-keyword-list '("then" "thenret" "else" "elseif"))
 
 (defmacro if* (&rest args)
-   (do ((xx (reverse args) (cdr xx))
+   (cl-do ((xx (reverse args) (cdr xx))
 	(state ':init)
 	(elseseen nil)
 	(totalcol nil)

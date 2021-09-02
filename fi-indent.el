@@ -1675,4 +1675,12 @@ if matched at the beginning of a line, means don't indent that line."
   (put 'with-keywords tag 2)
   (put 'with-output-to-temp-buffer tag 1)
   (put 'if* tag '(funcall fi:lisp-indent-if*))
+  
+  ;; for 'cl-lib
+  (put 'cl-case     tag '(like case))
+  (put 'cl-do       tag '(like do))
+  (put 'cl-ecase    tag '(like ecase))
+  (put 'cl-list*    tag '(like list*))
+  (put 'cl-loop     tag '(like loop))
+  
   )

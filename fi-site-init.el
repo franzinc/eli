@@ -12,7 +12,7 @@
 
 (setq fi::*debug* nil)
 
-(require 'cl)
+(require 'cl-lib)
 
 (defun on-ms-windows ()
   (or (cygwinp)

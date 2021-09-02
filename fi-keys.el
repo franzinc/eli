@@ -524,7 +524,7 @@ With argument ARG non nil or 1, move forward ARG - 1 lines first."
     (beginning-of-line arg)
     (cond ((looking-at fi::prompt-pattern)
 	   (if (= old (second (setq new (match-data 0))))
-	       (goto-char (first new))
+	       (goto-char (car new))
 	     (goto-char (second new))))
 	  (bol (while (looking-at "[ \t]") (forward-char))))))
 
@@ -1051,7 +1051,7 @@ as it was before it was made visible."
     (error "The pop-up window stack is empty."))
   (let ((conf (car fi::wc-stack)))
     (setq fi::wc-stack (cdr fi::wc-stack))
-    (set-window-configuration (first conf))
+    (set-window-configuration (car conf))
     (when (bufferp (second conf))
       (bury-buffer (second conf)))))
 

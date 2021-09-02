@@ -159,7 +159,7 @@ OLD-FILE."
 (defun fi::compute-file-changed-values-for-current-buffer (since)
   (let ((actual-file (buffer-file-name))
 	(old-file 
-	 (case since
+	 (cl-case since
 	   (comma-zero (concat (buffer-file-name) fi::unlock-file-suffix))
 	   (t (if (and (not (eq since 'buffer-save))
 		       buffer-backed-up)
@@ -187,7 +187,7 @@ OLD-FILE."
       (message "There are no changes.")))
    ((operation) (error)
     (error 		 
-     (ecase operation
+     (cl-ecase operation
        (:copy "copy changed definitions: %s")
        (:list "Cannnot list changed definitions: %s")
        (:eval "Cannnot evaluate changed definitions: %s")

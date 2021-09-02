@@ -22,7 +22,7 @@
       (if (or (and (eq 'minibuffer (car fi:pop-up-temp-window-behavior))
 		   (fi::will-fit-in-minibuffer-p text))
 	      (and (< (car lines/len) 2)
-		   (<= (second lines/len) width)))
+		   (<= (cadr lines/len) width)))
 	  (progn
 	    (message "%s" text)
 	    (fi::note-background-reply))
@@ -107,17 +107,17 @@
 	host
 	buffer))
 
-(defun fi::connection-process (c) (second c))
+(defun fi::connection-process (c) (cadr c))
 
-(defun fi::connection-sessions (c) (third c))
-(defun fi::set-connection-sessions (c nv) (setf (third c) nv))
+(defun fi::connection-sessions (c) (caddr c))
+(defun fi::set-connection-sessions (c nv) (setf (caddr c) nv))
 
-(defun fi::connection-session-id (c) (fourth c))
-(defun fi::set-connection-session-id (c nv) (setf (fourth c) nv))
+(defun fi::connection-session-id (c) (cadddr c))
+(defun fi::set-connection-session-id (c nv) (setf (cadddr c) nv))
 
-(defun fi::connection-host (c) (fifth c)) ; not used, apparently
+(defun fi::connection-host (c) (nth 4 c)) ; not used, apparently
 
-(defun fi::connection-buffer (c) (sixth c))
+(defun fi::connection-buffer (c) (nth 5 c))
 
 (defun fi::lep-open-connection-p ()
   (and fi::*connection*
@@ -300,9 +300,9 @@ emacs-lisp interface cannot be started.
   (if (eq (car form) ':error)
       (if (fi::session-error-function eli--session)
 	  (apply (fi::session-error-function eli--session)
-		 (second form)
+		 (cadr form)
 		 (fi::session-error-arguments eli--session))
-	(error (second form)))
+	(error (cadr form)))
     (apply (fi::session-function eli--session)
 	   (if (fi::session-arguments eli--session)
 	     (append (cdr form) (fi::session-arguments eli--session))
@@ -317,10 +317,10 @@ emacs-lisp interface cannot be started.
 (defun fi::handle-sessionless-reply (form)
   ;; A session-less reply is either (:error message) or (:request fn . args)
   (cond ((eq (car form) ':error)
-	 (error (second form)))
+	 (error (cadr form)))
 	((eq (car form) ':request)
 	 (condition-case error
-	     (apply (fi::intern-it (second form)) (cddr form))
+	     (apply (fi::intern-it (cadr form)) (cddr form))
 	   (error
 	    (fi::show-error-text "Request error: %s"
 				 (fi::prin1-to-string error)))))
@@ -330,22 +330,22 @@ emacs-lisp interface cannot be started.
 (defun fi::make-session (id oncep &optional fn args error-fn error-args)
   (list 'session id fn args error-fn error-args oncep))
 
-(defun fi::session-id (s) (second s))
+(defun fi::session-id (s) (cadr s))
 
-(defun fi::session-function (s) (third s))
-(defun fi::set-session-function (s nv) (setf (third s) nv))
+(defun fi::session-function (s) (caddr s))
+(defun fi::set-session-function (s nv) (setf (caddr s) nv))
 
 
-(defun fi::session-arguments (s) (fourth s))
-(defun fi::set-session-arguments (s nv) (setf (fourth s) nv))
+(defun fi::session-arguments (s) (cadddr s))
+(defun fi::set-session-arguments (s nv) (setf (cadddr s) nv))
 
-(defun fi::session-error-function (s) (fifth s))
-(defun fi::set-session-error-function (s nv) (setf (fifth s) nv))
+(defun fi::session-error-function (s) (nth 4 s))
+(defun fi::set-session-error-function (s nv) (setf (nth 4 s) nv))
 
-(defun fi::session-error-arguments (s) (sixth s))
-(defun fi::set-session-error-arguments (s nv) (setf (sixth s) nv))
+(defun fi::session-error-arguments (s) (nth 5 s))
+(defun fi::set-session-error-arguments (s nv) (setf (nth 5 s) nv))
 
-(defun fi::session-oncep (s) (seventh s))
+(defun fi::session-oncep (s) (nth 6 s))
 
 (defun fi::session-connection (s) fi::*connection*)
 
@@ -397,20 +397,23 @@ emacs-lisp interface cannot be started.
 					continuation-and-arguments
 					error-continuation-and-arguments))
 	 (process (fi::connection-process connection)))
-    (process-send-string process (fi::prin1-to-string
-			  (list* nil
-				 'lep::make-session session-class
-				 ':session-id (fi::session-id session)
-				 ':buffer-readtable (fi::string-to-keyword
-						     fi:readtable)
-				 (if (or ignore-package
-					 (fi::member-plist ':buffer-package
-							   session-arguments))
-				     session-arguments
-				   (list* ':buffer-package
-					  (fi::string-to-keyword
-					   (fi::package))
-					  session-arguments)))))
+    (process-send-string
+     process
+     (fi::prin1-to-string
+      (cl-list*
+       nil
+       'lep::make-session session-class
+       ':session-id (fi::session-id session)
+       ':buffer-readtable (fi::string-to-keyword
+			   fi:readtable)
+       (if (or ignore-package
+	       (fi::member-plist ':buffer-package
+				 session-arguments))
+	   session-arguments
+	 (cl-list* ':buffer-package
+		   (fi::string-to-keyword
+		    (fi::package))
+		   session-arguments)))))
     (process-send-string process "\n")
     session))
 
@@ -420,17 +423,21 @@ emacs-lisp interface cannot be started.
 	(list 'quote (car type-and-options))
 	t
 	(cons 'list (fi::quote-every-other-one (cdr type-and-options)))
-	(list* 'list
-	       (list 'function
-		     (list* 'lambda (append (fi::listify (second continuation))
-					    (fi::listify (first continuation)))
-			    (cddr continuation)))
-	       (first continuation))
-	(list* 'list (list 'function
-			   (list* 'lambda (append (fi::listify (second error-continuation))
-						  (fi::listify (first error-continuation)))
-				  (cddr error-continuation)))
-	       (first error-continuation))
+	(cl-list*
+	 'list
+	 (list 'function
+	       (cl-list* 'lambda (append (fi::listify (cadr continuation))
+					 (fi::listify (car continuation)))
+			 (cddr continuation)))
+	 (car continuation))
+	(cl-list*
+	 'list
+	 (list 'function
+	       (cl-list* 'lambda
+			 (append (fi::listify (cadr error-continuation))
+				 (fi::listify (car error-continuation)))
+			 (cddr error-continuation)))
+	 (car error-continuation))
 	ignore-package))
 
 
@@ -440,18 +447,21 @@ emacs-lisp interface cannot be started.
 	(list 'quote (car type-and-options))
 	nil
 	(cons 'list (fi::quote-every-other-one (cdr type-and-options)))
-	(list* 'list (list 'function
-			   (list* 'lambda
-				  (append (fi::listify (second continuation))
-					  (fi::listify (first continuation)))
-				  (cddr continuation)))
-	       (first continuation))
-	(list* 'list (list 'function
-			   (list* 'lambda
-				  (append (fi::listify (second error-continuation))
-					  (fi::listify (first error-continuation)))
-				  (cddr error-continuation)))
-	       (first error-continuation))))
+	(cl-list*
+	 'list (list 'function
+		     (cl-list* 'lambda
+			       (append (fi::listify (cadr continuation))
+				       (fi::listify (car continuation)))
+			       (cddr continuation)))
+	 (car continuation))
+	(cl-list*
+	 'list
+	 (list 'function
+	       (cl-list* 'lambda
+			 (append (fi::listify (cadr error-continuation))
+				 (fi::listify (car error-continuation)))
+			 (cddr error-continuation)))
+	 (car error-continuation))))
 
 (defun lep::send-request-in-existing-session (session session-class oncep
 					      session-arguments
@@ -461,7 +471,7 @@ emacs-lisp interface cannot be started.
 	 (process (fi::connection-process connection)))
     (process-send-string process
 		 (fi::prin1-to-string
-		  (list* (fi::session-id session) session-class session-arguments)))
+		  (cl-list* (fi::session-id session) session-class session-arguments)))
     (process-send-string process "\n")))
 
 (defun lep::kill-session (session)
@@ -480,11 +490,12 @@ emacs-lisp interface cannot be started.
 	 (process (fi::connection-process connection)))
     (fi::modify-session-continuation
      session continuation-and-arguments error-continuation-and-arguments)
-    (process-send-string process
-		 (fi::prin1-to-string (list* (fi::session-id session)
-					     ':request
-					     session-class
-					     session-arguments)))
+    (process-send-string
+     process
+     (fi::prin1-to-string (cl-list* (fi::session-id session)
+				    ':request
+				    session-class
+				    session-arguments)))
     (process-send-string process "\n")))
 
 (defmacro fi::make-request-in-existing-session (session type-and-options
@@ -494,18 +505,22 @@ emacs-lisp interface cannot be started.
 	session
 	(list 'quote (car type-and-options))
 	(cons 'list (fi::quote-every-other-one (cdr type-and-options)))
-	(list* 'list (list 'function
-			   (list* 'lambda
-				  (append (fi::listify (second continuation))
-					  (fi::listify (first continuation)))
-				  (cddr continuation)))
-	       (first continuation))
-	(list* 'list
-	       (list 'function
-		     (list* 'lambda (append (fi::listify (second error-continuation))
-					    (fi::listify (first error-continuation)))
-			    (cddr error-continuation)))
-	       (first error-continuation))))
+	(cl-list*
+	 'list
+	 (list 'function
+	       (cl-list* 'lambda
+			 (append (fi::listify (cadr continuation))
+				 (fi::listify (car continuation)))
+			 (cddr continuation)))
+	 (car continuation))
+	(cl-list*
+	 'list
+	 (list 'function
+	       (cl-list* 'lambda
+			 (append (fi::listify (cadr error-continuation))
+				 (fi::listify (car error-continuation)))
+			 (cddr error-continuation)))
+	 (car error-continuation))))
 
 (defun fi::intern-it (s)
   (if (stringp s) (intern s) s))
@@ -526,9 +541,9 @@ emacs-lisp interface cannot be started.
 		(when replyp
 		  (process-send-string eli--process
 				       (fi::prin1-to-string
-					(list* (fi::session-id eli--session)
-					       ':reply
-					       result)))
+					(cl-list* (fi::session-id eli--session)
+						  ':reply
+						  result)))
 		  (process-send-string eli--process "\n")))
 	    (error
 	     (if replyp
@@ -553,9 +568,9 @@ emacs-lisp interface cannot be started.
 	  (setq done t))
       (when (and (not dead) (not done))
 	(process-send-string eli--process
-		     (fi::prin1-to-string (list (fi::session-id eli--session)
-						':error
-						':aborted))))
+			     (fi::prin1-to-string (list (fi::session-id eli--session)
+							':error
+							':aborted))))
       (when (or dead oncep)
 	(lep::kill-session eli--session)))))
 
@@ -627,8 +642,8 @@ the result in the Common Lisp to which we are connected."
 
 (defun fi::stash-in-cons (c r p)
   (setf (third c) p)
-  (setf (second c) r)
-  (setf (first c) t))
+  (setf (cadr c) r)
+  (setf (car c) t))
 
 ;;; This is complicated because we have to wait for output multiple times.
 
@@ -641,8 +656,8 @@ the result in the Common Lisp to which we are connected."
 	 (fi::connection-process (fi::ensure-lep-connection)))))
     (when (not (car result-cons)) (error "Eval in lisp timed out"))
     (if (third result-cons)
-	(error (second result-cons))
-      (second result-cons))))
+	(error (cadr result-cons))
+      (cadr result-cons))))
 
 (defun lep::make-request-in-session-and-wait (session function &rest arguments)
   "Send a request to SESSION consisting of FUNCTION and ARGUMENTS and wait

@@ -36,7 +36,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(require 'cl)
 (require 'browse-url)                   ;you need the Emacs 20 version
 (require 'thingatpt)
 
