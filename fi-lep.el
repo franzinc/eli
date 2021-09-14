@@ -1,5 +1,11 @@
 ;; See the file LICENSE for the full license governing this code.
 
+(declare-function fi::read-lisp-process-name "fi-db")
+(declare-function lep:display-some-definitions "fi-dmode")
+(declare-function lep:display-some-inverse-definitions "fi-dmode")
+(declare-function fi::note-background-reply "fi-lze")
+(declare-function fi::note-background-request "fi-lze")
+
 (defun fi:lisp-arglist (string)
   "Dynamically determine, in the Common Lisp environment, the arglist for
 STRING.  fi:package is used to determine from which Common Lisp package the
@@ -77,7 +83,7 @@ time."
 	     (let ((fi:pop-up-temp-window-behavior
 		    fi:auto-arglist-pop-up-style))
 	       (when (= (aref arglist 0) ?\()
-		 (setq arglist (subseq arglist 1 (1- (length arglist)))))
+		 (setq arglist (cl-subseq arglist 1 (1- (length arglist)))))
 	       (fi:show-some-text nil "%s's arglist: %s" what arglist)))
 	    ;; Error continuation
 	    ((string) (error)
@@ -227,7 +233,7 @@ at file visit time."
 	  (fi::show-error-text "%s" error))))))
 
 (defun fi::ensure-translated-pathname (pathname)
-  (if (position ?: pathname)
+  (if (cl-position ?: pathname)
       (or (ignore-errors (fi::translate-putative-logical-pathname pathname))
 	  pathname)
     pathname))
@@ -419,6 +425,9 @@ since the Emacs-Lisp interface will not create it."
 (condition-case ()
     (require 'sendmail) ;; for mail-to
   (error nil)) 
+
+(declare-function mail-to "sendmail")
+(declare-function mail-subject "sendmail")
 
 (defun fi:bug-report ()
   "Create a mail buffer which contains information about the Common Lisp
@@ -727,7 +736,7 @@ beginning of words in target symbols."
 
 (defun lep::prompt-for-values (what prompt options)
   (fi::ensure-minibuffer-visible)
-  (list (case what
+  (list (cl-case what
 	  (:symbol
 	   (let* ((string (read-string
 			   prompt (fi::getf-property options ':initial-input)))
@@ -783,7 +792,7 @@ beginning of words in target symbols."
 	 (completion (and alist (try-completion string alist))))
     (when (and xpackage (stringp completion))
       (setq completion (concat xpackage package-prefix completion)))
-    (ecase what
+    (cl-ecase what
       ((nil) completion)
       ((t) (mapcar (function cdr) alist))
       (lambda (eq completion t)))))
@@ -886,32 +895,37 @@ parsed at file visit time."
       (forward-char 1)			;open paren
       (setq definer (fi::substr-sexp))
       (setq name (fi::substr-sexp))
-      (cond ((fi::string-equal-nocase definer "defmethod")
-	     (loop as subform = (read-from-string (fi::substr-sexp))
-		   as next = (car subform)
-		   while (symbolp next)
-		   collect next into quals
-		   finally do (setq qualifiers (apply 'concat (mapcar 'symbol-name quals)))
-		   (setq specializers
-		     (loop for spec in next
-			   until (member spec '(&optional &rest &key &aux &allow-other-keys))
-			   collect (if (atom spec) 't (cadr spec)))))
-	     (setq spec
-	       (concat "(method " name " "
-		       qualifiers " "
-		       (format "%S" specializers)
-		       " )")))
-	    ((or (fi::string-equal-nocase definer "defun")
-		 (fi::string-equal-nocase definer "defmacro")
-		 (fi::string-equal-nocase definer "defgeneric"))
-	     (setq spec name))
-	    ((fi::string-equal-nocase definer "deftype")
-	     (setq spec (format "(excl::deftype-expander %s)" name)))
-	    ((fi::string-equal-nocase definer "define-compiler-macro")
-	     (setq spec (format "(:property %s excl::.compiler-macro.)" name)))
-	    (t (error "Can't trace a %s" definer)))
+      (cond
+       ((fi::string-equal-nocase definer "defmethod")
+	(cl-loop as subform = (read-from-string (fi::substr-sexp))
+		 as next = (car subform)
+		 while (symbolp next)
+		 collect next into quals
+		 finally do (setq qualifiers
+			      (apply 'concat (mapcar 'symbol-name quals)))
+		 (setq specializers
+		   (cl-loop for spec in next
+			    until (member spec
+					  '(&optional &rest &key &aux
+					    &allow-other-keys))
+			    collect (if (atom spec) 't (cadr spec)))))
+	(setq spec
+	  (concat "(method " name " "
+		  qualifiers " "
+		  (format "%S" specializers)
+		  " )")))
+       ((or (fi::string-equal-nocase definer "defun")
+	    (fi::string-equal-nocase definer "defmacro")
+	    (fi::string-equal-nocase definer "defgeneric"))
+	(setq spec name))
+       ((fi::string-equal-nocase definer "deftype")
+	(setq spec (format "(excl::deftype-expander %s)" name)))
+       ((fi::string-equal-nocase definer "define-compiler-macro")
+	(setq spec (format "(:property %s excl::.compiler-macro.)" name)))
+       (t (error "Can't trace a %s" definer)))
       (fi::make-request
-	  (lep::toggle-trace :fspec (fi::defontify-string spec) :break current-prefix-arg)
+	  (lep::toggle-trace :fspec (fi::defontify-string spec)
+			     :break current-prefix-arg)
 	;; Normal continuation
 	(() (what tracep)
 	 (message (if tracep "%s is now traced" "%s is now untraced")

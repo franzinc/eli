@@ -111,7 +111,7 @@ status of that parse."
 		   (nth 5 parse-state)))
 	  (if (and (boundp 'comment-indent-function) comment-indent-function)
 	      (let ((to-column (funcall comment-indent-function (point))))
-		(if (and (second fi::comment-indent-hook-values)
+		(if (and (cl-second fi::comment-indent-hook-values)
 			 (null fi::lisp-doing-electric-semicolon)
 			 (save-excursion
 			   (skip-chars-backward "\t ")
@@ -142,7 +142,7 @@ status of that parse."
 			(delete-horizontal-space)
 			(if (and (= (preceding-char) ?\))
 				 (or (not
-				      (second fi::comment-indent-hook-values))
+				      (cl-second fi::comment-indent-hook-values))
 				     (>= (current-column) to-column)))
 			    ;; Insert space if not rigid comment or if rigid
 			    ;;   comment and we are at or beyond the comment
@@ -1207,7 +1207,7 @@ distinguished."
       (if (> spec-count 0)
 	  ;; A distinguished form.  If it is the first or second form use
 	  ;; double fi:lisp-body-indent, else normal indent.  With
-	  ;; fi:lisp-body-indent bound to 2 (the default), this just happens
+	  ;; fi:lisp-body-indent bound to 2, the default, this just happens
 	  ;; to work the same with if as the older code, but it makes
 	  ;; unwind-protect, condition-case, with-output-to-temp-buffer,
 	  ;; et. al. much more tasteful.  The older, less hacked, behavior
@@ -1675,4 +1675,12 @@ if matched at the beginning of a line, means don't indent that line."
   (put 'with-keywords tag 2)
   (put 'with-output-to-temp-buffer tag 1)
   (put 'if* tag '(funcall fi:lisp-indent-if*))
+  
+  ;; for 'cl-lib
+  (put 'cl-case     tag '(like case))
+  (put 'cl-do       tag '(like do))
+  (put 'cl-ecase    tag '(like case))
+  (put 'cl-list*    tag '(like list*))
+  (put 'cl-loop     tag '(like loop))
+  
   )

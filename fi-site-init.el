@@ -1,8 +1,6 @@
 ;; The Franz Inc. Lisp/Emacs interface.
 
-(defvar fi:emacs-lisp-interface-version "4.00")
-
-(setq byte-compile-warnings '(not unresolved cl-functions))
+(defvar fi:emacs-lisp-interface-version "5.00")
 
 (when (not load-file-name)
   (error "load-file-name is nil... how are you loading fi-site-init??"))
@@ -12,7 +10,7 @@
 
 (setq fi::*debug* nil)
 
-(require 'cl)
+(require 'cl-lib)
 
 (defun on-ms-windows ()
   (or (cygwinp)

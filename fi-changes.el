@@ -147,7 +147,7 @@ OLD-FILE."
   "Decide whether this buffer is worth checking for changes."
   (and (eq major-mode 'fi:common-lisp-mode)
        (buffer-file-name)
-       (ecase since
+       (cl-ecase since
 	 (comma-zero
 	  (file-exists-p (concat (buffer-file-name) fi::unlock-file-suffix)))
 	 (file-first-read (or (buffer-modified-p) buffer-backed-up))
@@ -159,7 +159,7 @@ OLD-FILE."
 (defun fi::compute-file-changed-values-for-current-buffer (since)
   (let ((actual-file (buffer-file-name))
 	(old-file 
-	 (case since
+	 (cl-case since
 	   (comma-zero (concat (buffer-file-name) fi::unlock-file-suffix))
 	   (t (if (and (not (eq since 'buffer-save))
 		       buffer-backed-up)
@@ -187,7 +187,7 @@ OLD-FILE."
       (message "There are no changes.")))
    ((operation) (error)
     (error 		 
-     (ecase operation
+     (cl-ecase operation
        (:copy "copy changed definitions: %s")
        (:list "Cannnot list changed definitions: %s")
        (:eval "Cannnot evaluate changed definitions: %s")
