@@ -1,3 +1,4 @@
 .git-branch-name
+TAGS
 *.elc
 test.out
