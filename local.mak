@@ -4,7 +4,7 @@ DISTDIR = eli-$(VERSION)
 README_HTM = readme.htm
 README_TXT = readme.txt
 
-release_files = Makefile fi-*.el fi-*.elc \
+release_files = Makefile fi-*.el \
 	examples/emacs.el examples/eval.el
 
 echo_release_files:
@@ -34,7 +34,7 @@ dist:	FORCE
 elib_root = /usr/fi/emacs-lib
 to = $(elib_root)/fi
 
-FILES_TO_RDIST = $(release_files) local*.el local*.elc 
+FILES_TO_RDIST = $(release_files) local*.el
 
 rdist:	DIST
 	@if [ ! "$(hosts)" ]; then \
