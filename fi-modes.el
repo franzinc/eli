@@ -163,12 +163,10 @@ buffers.")
 
 (ad-activate 'lisp-mode)
 
-(defun common-lisp-mode (&optional mode-hook)
+(defalias 'common-lisp-mode 'fi:common-lisp-mode
   "See fi:common-lisp-mode.  This function is here so that set-auto-mode
 will go into the FI Common Lisp mode when ``mode: common-lisp'' appears in
-the file modeline."
-  (interactive)
-  (fi:common-lisp-mode mode-hook))
+the file modeline.")
 
 (defun fi:franz-lisp-mode (&optional mode-hook)
   "Major mode for editing Lisp code to run in Franz Lisp.
