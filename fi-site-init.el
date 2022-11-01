@@ -43,27 +43,35 @@
 
 (defvar fi--force-compile nil)
 
+(defvar fi:native-comp-available-p (and (>= emacs-major-version 28)
+                                        (fboundp 'native-comp-available-p)
+                                        (native-comp-available-p)))
+
 (defvar fi--eli-cache-dir
-    (format "~/.emacs.d/franzinc/%d.%d/eli/"
-	    emacs-major-version
-	    emacs-minor-version))
+  (expand-file-name (format "~/.emacs.d/franzinc/%d.%d/eli/"
+	                    emacs-major-version
+	                    emacs-minor-version)))
 
 (make-directory fi--eli-cache-dir t)
 
 (defun fi::load (file)
   (let* ((el-path  (format "%s%s.el"  fi::library-directory file))
-	 (elc-path (format "%s%s.elc" fi--eli-cache-dir     file))
-	 (byte-compile-dest-file-function
-	  #'(lambda (file)
-	      file ;; ignored
-	      elc-path)))
-    (or (file-exists-p el-path) (error "File %s does not exist." el-path)) 
+         (compiled-el-path (if fi:native-comp-available-p
+                               (format "%s%s.eln" fi--eli-cache-dir     file)
+                             (format   "%s%s.elc" fi--eli-cache-dir     file)))
+         (byte-compile-dest-file-function
+          #'(lambda (file)
+              file ;; ignored
+              compiled-el-path)))
+    (or (file-exists-p el-path) (error "File %s does not exist." el-path))
     (cond (fi:compile-at-load-time
-	   (cond ((or fi--force-compile
-		      (file-newer-than-file-p el-path elc-path))
-		  (byte-compile-file el-path t))
-		 (t (load elc-path))))
-	  (t (load el-path)))))
+           (cond ((or fi--force-compile
+                      (file-newer-than-file-p el-path compiled-el-path))
+                  (if fi:native-comp-available-p
+                      (load (native-compile el-path compiled-el-path))
+                    (byte-compile-file el-path t)))
+                 (t (load compiled-el-path))))
+          (t (load el-path)))))
 
 (fi::load "fi-vars")
 (fi::load "fi-utils")
