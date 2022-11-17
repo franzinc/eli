@@ -13,6 +13,6 @@ To find items not documented in doc/eli.htm:
 (with-lines-from-file (line "eli/xxx2")
   (when (/= 0 (run-shell-command
 	       (format nil
-		       "egrep -q '%% ~a' eli/doc/eli.htm"
+		       "grep -E -q '%% ~a' eli/doc/eli.htm"
 		       line)))
     (format t "~a~%" line)))
