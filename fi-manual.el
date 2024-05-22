@@ -44,10 +44,10 @@
 (fi::load "fi-manual-data")
 
 (defvar fi::manual-base-url
-    "http://www.franz.com/support/documentation/current/"
+    "https://franz.com/support/documentation/current/"
   "The root URL of the ACL documentation.
 If you copy the ACL manual to your local system, set this variable to
-something like \"file:/usr/local/acl/acl81/doc/\".")
+something like \"file:/home/joe/acl11.0-docs/\".")
 
 (defvar fi:manual-history nil
   "History of symbols looked up in the ACL manual.")
