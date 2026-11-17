@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 ;; See the file LICENSE for the full license governing this code.
 
 (defun composer::make-listener (new-screen-p)
@@ -7,6 +8,7 @@
 ;;;	   (epoch::map-screen screen)
 ;;;	   (epoch::select-screen screen)
 ;;;	   screen))
+  (ignore new-screen-p)
   (fi:open-lisp-listener -1))
 
 (defun composer::edit-file-in-editor ()
@@ -47,6 +49,7 @@ Composer loaded and initialized."
   (fi::inspect-something something 'eval "Inspect"))
 
 (defun fi::inspect-something (something function descr)
+  (ignore descr)
   (fi::make-request
       (composer::inspect-something-session :fspec something :function function)
     ;; Normal continuation

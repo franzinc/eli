@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 ;; Stuff grabbed and modified from the GNU Emacs sources.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Copyright (C) 1985, 1986, 1987, 1992, 1993, 1994, 1995, 1996,
@@ -24,6 +25,8 @@
 ;; Boston, MA 02110-1301, USA.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defvar backup-extract-version-start)
+
 ;; Trimmed down version of find-backup-file-name from lisp/files.el.
 (defun fi::find-most-recent-backup-file-name (fn)
   (if (eq version-control 'never)
@@ -32,7 +35,6 @@
 	   (base-versions (concat (file-name-nondirectory basic-name) ".~"))
 	   (backup-extract-version-start (length base-versions))
 	   (high-water-mark 0)
-	   (number-to-delete 0)
 	   possibilities deserve-versions-p versions)
       (condition-case ()
 	  (setq possibilities (file-name-all-completions
@@ -43,11 +45,7 @@
 			       #'<)
 		high-water-mark (apply 'max 0 versions)
 		deserve-versions-p (or version-control
-				       (> high-water-mark 0))
-		number-to-delete (- (length versions)
-				    kept-old-versions
-				    kept-new-versions
-				    -1))
+				       (> high-water-mark 0)))
 	(file-error (setq possibilities nil)))
       (list (if (not deserve-versions-p)
 		(make-backup-file-name fn)

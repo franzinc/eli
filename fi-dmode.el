@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 ;; See the file LICENSE for the full license governing this code.
 
 ;; Create a mode in which each line is a definition and . on that
@@ -175,16 +176,18 @@ back to the previous contents of the definition-mode buffer."
   "List the definition for all the objects in the current buffer.  That is,
 use the current buffer and display all the definitions contained in it."
   (interactive)
-  (let ((buffer (current-buffer)))
+  (let ((buffer (current-buffer))
+	(package fi:package))
     (fi::make-request
      (scm::file-definitions-session
       :pathname (buffer-file-name buffer))
      ;; Normal continuation
-     ((buffer fi:package) (the-definitions)
-      (lep:display-some-definitions 
-       fi:package
-       the-definitions
-       (list 'lep::find-buffer-definition buffer)))
+     ((buffer package) (the-definitions)
+      (let ((fi:package package))
+	(lep:display-some-definitions 
+	 fi:package
+	 the-definitions
+	 (list 'lep::find-buffer-definition buffer))))
      ;; Error continuation
      ((buffer) (error)
       (message "Cannot find the definitions of buffer %s: %s"

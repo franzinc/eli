@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 ;; Copyright (C) 1985, 1986, 1987 Free Software Foundation, Inc.
 ;;
 ;; This file is derived from part of GNU Emacs.

@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 ;; This file can be loaded at emacs build time to have the emacs-lisp
 ;; interface preloaded into the image.
 

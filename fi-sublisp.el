@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
 ;; Copyright (C) 1985, 1986, 1987 Free Software Foundation, Inc.
@@ -144,12 +145,14 @@ This is normally called automatically from fi:start-lisp-interface-hook."
       proc)))
 
 (defun fi::show-run-status-sentinel (process status)
+  (ignore process)
   (when fi::trace-lep-filter
     (fi::trace-debug (format "fi::show-run-status-sentinel: %s" status)))
   (setq fi:allegro-run-status-string "    ")
   t)
 
 (defun fi::show-run-status-filter (proc string)
+  (ignore proc)
   (when fi::trace-lep-filter
     (fi::trace-debug
      (format "fi::show-run-status-filter %s"

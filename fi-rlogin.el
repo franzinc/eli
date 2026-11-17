@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 ;; See the file LICENSE for the full license governing this code.
 
 (defvar fi:rlogin-mode-map nil
@@ -84,7 +85,9 @@ The rlogin image file and image arguments are taken from the variables
 				 (when user
 				   (list "-l" user)))
 			 'fi::rlogin-filter
-			 (function (lambda (&rest ignore) (cd "~/"))))))
+			 (function (lambda (&rest ignore)
+				     (ignore ignore)
+				     (cd "~/"))))))
 
 (defun fi:rlogin-new-user (&optional buffer-number host user)
   (interactive "p\nsRemote login to host: \nsUser name: ")

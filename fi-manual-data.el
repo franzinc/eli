@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 (setq +table-from-franz+
   '(  ("x509-certificate" "acl-socket-classes.html#x509-certificate")
   ("socket-stream-internet-passive" "acl-socket-classes.html#socket-stream-internet-passive")

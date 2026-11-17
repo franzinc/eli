@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 
 (setq load-path (cons default-directory load-path))
 

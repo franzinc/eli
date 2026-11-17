@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 ;; See the file LICENSE for the full license governing this code.
 
 (require 'etags "etags")
@@ -1093,6 +1094,7 @@ as it was before it was made visible."
 
 (defun fi::disabled-once-find-tag (&rest args)
   (interactive)
+  (ignore args)
   (let ((wc (current-window-configuration)))
     (delete-other-windows)
     (switch-to-buffer "*find-tag lock*")
@@ -1266,6 +1268,7 @@ current form."
 	(insert ")")))))
 
 (defun fi::symbol-in-function-position (start end)
+  (ignore start end)
   (save-excursion
     (condition-case nil
 	(progn
@@ -1339,6 +1342,7 @@ current form."
     (reverse result)))
 
 (defun fi::next-argument-number (limit point)
+  (ignore point) ;; bug????
   ;; If the limit and point are here:
   ;;    (foo 1 2 3 4
   ;;    |limit       |point
@@ -1365,3 +1369,7 @@ current form."
       (when (cdr list) (insert " "))
       (setq list (cdr list))))
   (insert ")"))
+
+;; Local Variables:
+;; byte-compile-warnings: (not docstrings)
+;; End:
