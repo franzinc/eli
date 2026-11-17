@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 ;; See the file LICENSE for the full license governing this code.
 
 (declare-function fi::note-background-reply "fi-lze")
@@ -162,6 +163,7 @@ emacs-lisp interface cannot be started.
 "))))
 
 (defun fi::find-connection-from-process (process)
+  (ignore process)
   fi::*connection*)
 
 (defun fi::find-session (connection id)
@@ -280,35 +282,37 @@ emacs-lisp interface cannot be started.
     (insert string)
     (insert "\n")))
 
-(defun fi::handle-lep-input (eli--process form)
+(defun fi::handle-lep-input (eli--proc form)
   "A reply is (session-id . rest) or (nil . rest)"
-  (when fi::trace-lep-filter
-    (fi::trace-debug 
-     (format "handle-lep-input:\n  process: %s\n  form: %s"
-		   eli--process form)))
-  (let* ((id (car form))
-	 (eli--connection (fi::find-connection-from-process eli--process))
-	 (eli--session (fi::find-session eli--connection id)))
-    (cond (eli--session
-	   (fi::handle-session-reply eli--session (cdr form)))
-	  ((car form)
-	   (error "something for nonexistent session: %s" form))
-	  (t (fi::handle-sessionless-reply (cdr form))))))
+  (let ((eli--process eli--proc))
+    (when fi::trace-lep-filter
+      (fi::trace-debug 
+       (format "handle-lep-input:\n  process: %s\n  form: %s"
+	       eli--process form)))
+    (let* ((id (car form))
+	   (eli--connection (fi::find-connection-from-process eli--process))
+	   (eli--session (fi::find-session eli--connection id)))
+      (cond (eli--session
+	     (fi::handle-session-reply eli--session (cdr form)))
+	    ((car form)
+	     (error "something for nonexistent session: %s" form))
+	    (t (fi::handle-sessionless-reply (cdr form)))))))
 
-(defun fi::handle-session-reply (eli--session form)
+(defun fi::handle-session-reply (eli--sess form)
   "A session reply is (:error Message) or (nil . results)"
-  (when (fi::session-oncep eli--session)
-    (fi::delete-session eli--session))
-  (if (eq (car form) ':error)
-      (if (fi::session-error-function eli--session)
-	  (apply (fi::session-error-function eli--session)
-		 (cl-second form)
-		 (fi::session-error-arguments eli--session))
-	(error (cl-second form)))
-    (apply (fi::session-function eli--session)
-	   (if (fi::session-arguments eli--session)
-	     (append (cdr form) (fi::session-arguments eli--session))
-	     (cdr form)))))
+  (let ((eli--session eli--sess))
+    (when (fi::session-oncep eli--session)
+      (fi::delete-session eli--session))
+    (if (eq (car form) ':error)
+	(if (fi::session-error-function eli--session)
+	    (apply (fi::session-error-function eli--session)
+		   (cl-second form)
+		   (fi::session-error-arguments eli--session))
+	  (error (cl-second form)))
+      (apply (fi::session-function eli--session)
+	     (if (fi::session-arguments eli--session)
+		 (append (cdr form) (fi::session-arguments eli--session))
+	       (cdr form))))))
 
 (defun fi::delete-session (session)
   (let ((connection (fi::session-connection session)))
@@ -349,7 +353,9 @@ emacs-lisp interface cannot be started.
 
 (defun fi::session-oncep (s) (cl-seventh s))
 
-(defun fi::session-connection (s) fi::*connection*)
+(defun fi::session-connection (s)
+  (ignore s)
+  fi::*connection*)
 
 (defun fi::modify-session-continuation (session continuation-and-arguments
 					error-continuation)
@@ -462,6 +468,7 @@ emacs-lisp interface cannot be started.
 					      session-arguments
 					      continuation-and-arguments
 					      &optional error-continuation-and-arguments)
+  (ignore oncep continuation-and-arguments error-continuation-and-arguments)
   (let* ((connection (fi::session-connection session))
 	 (process (fi::connection-process connection)))
     (process-send-string process
@@ -597,6 +604,7 @@ the result in the Common Lisp to which we are connected."
       ;; Normal continuation
       (() (value)
        ;; ignore the value...
+       value
        nil)
       ((string) (error)
        (fi::show-error-text "error evaluating %s: %s" string error)))))
@@ -622,6 +630,7 @@ the result in the Common Lisp to which we are connected."
 			 result-cons)
 		   (list (function fi::immediate-reply-error-continuation)
 			 result-cons))))
+    session
     (fi::wait-for-reply-to-come-back result-cons)))
 
 (defun fi::immediate-reply-continuation (&rest results)
@@ -663,4 +672,5 @@ for the reply to come back. It returns a list of values."
 			 result-cons)
 		   (list (function fi::immediate-reply-error-continuation)
 			 result-cons))))
+    session
     (fi::wait-for-reply-to-come-back result-cons)))

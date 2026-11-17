@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 ;; See the file LICENSE for the full license governing this code.
 
 
@@ -60,4 +61,5 @@ The shell image file and image arguments are taken from the variables
 			 'fi::subprocess-dos-filter)))
 
 (defun fi::subprocess-dos-filter (process output &optional stay cruft)
+  (ignore cruft)
   (fi::subprocess-filter process output stay t))

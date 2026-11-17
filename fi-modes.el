@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 ;; See the file LICENSE for the full license governing this code.
 
 ;;;;
@@ -156,12 +157,9 @@ entered, causes the `package' and readtable (if any) to be displayed in the
 mode line.  It uses MODE-LINE-PROCESS, which has no use in non-subprocess
 buffers.")
 
-(defadvice lisp-mode (around ad-lisp-mode-use-fi:common-lisp-mode first
-			     (&optional mode-hook)
-			     activate) 
+(define-advice lisp-mode (:override (&optional mode-hook)
+				    use-fi:common-lisp-mode -100)
   (fi:common-lisp-mode mode-hook))
-
-(ad-activate 'lisp-mode)
 
 (defalias 'common-lisp-mode 'fi:common-lisp-mode
   "See fi:common-lisp-mode.  This function is here so that set-auto-mode

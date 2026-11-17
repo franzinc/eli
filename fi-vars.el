@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 ;; See the file LICENSE for the full license governing this code.
 
 ;; All variable definitions for ELI.  Moved here to minimize 
@@ -113,15 +114,15 @@ This variable is buffer-local.")
 (defvar fi:lisp-tag-indentation 1
   "*Indentation of tags relative to containing list.
 This variable is used by the function `fi:lisp-indent-tagbody' to indent tags
-that occur within special forms whose symbols have a 'fi:lisp-indent-hook
-property of 'tag or 'tagbody.  The indentation is relative to the
+that occur within special forms whose symbols have a \'fi:lisp-indent-hook
+property of \'tag or \'tagbody.  The indentation is relative to the
 indentation of the parenthesis enclosing the special form.")
 
 (make-variable-buffer-local 'fi:lisp-tag-indentation)
 
 (defvar fi:lisp-tag-body-indentation 2
   "*Indentation of non-tagged lines relative to containing list.
-This variable is used by the function `fi:lisp-indent-tagbody' to indent normal
+This variable is used by the function \"fi:lisp-indent-tagbody\" to indent normal
 lines (lines without tags) that occur within special forms whose symbols have
 a 'fi:lisp-indent-hook property of 'tag or 'tagbody.  The indentation is
 relative to the indentation of the parenthesis enclosing the special form.
@@ -138,16 +139,16 @@ This variable may be bound to the name of a function to be applied (to
 three arguments: the character position of the beginning of the tag,
 the last parse state, and the indent point) to return the appropriate
 indentation for tags occurring within special forms whose symbols have
-a 'fi:lisp-indent-hook property of 'tag or 'tagbody.  The indentation
+a \'fi:lisp-indent-hook property of \'tag or \'tagbody.  The indentation
 returned is absolute.")
 
 (make-variable-buffer-local 'fi:lisp-tag-indentation-hook)
 
 (defvar fi:lisp-keyword-indentation 1
   "*Indentation of keywords relative to containing list.
-This variable is used by the function `fi:lisp-indent-keyword-list' to indent
+This variable is used by the function \"fi:lisp-indent-keyword-list\" to indent
 keywords that occur within special forms whose symbols have a
-'fi:lisp-indent-hook property of 'keyword or 'keyword-list.  The
+\'fi:lisp-indent-hook property of \'keyword or \'keyword-list.  The
 indentation is relative to the indentation of the parenthesis enclosing the
 special form.")
 
@@ -155,13 +156,13 @@ special form.")
 
 (defvar fi:lisp-keyword-argument-indentation t
   "*Indentation of keyword argument lines relative to containing list.
-This variable is used by the function `fi:lisp-indent-keyword-list' to indent
+This variable is used by the function \"fi:lisp-indent-keyword-list\" to indent
 keyword-argument lines that occur within special forms whose symbols have
-a 'fi:lisp-indent-hook property of 'keyword or 'keyword-list.  The indentation
+a \'fi:lisp-indent-hook property of \'keyword or \'keyword-list.  The indentation
 is relative to the indentation of the parenthesis enclosing the special form.
 If the value is T, the argument(s) of keywords will be indented as a block
 at the same indentation as the first s-expression following the tag.  See
-the documentation for the function `fi:lisp-indent-keyword-list'.")
+the documentation for the function \"fi:lisp-indent-keyword-list\".")
 
 (make-variable-buffer-local 'fi:lisp-keyword-argument-indentation)
 
@@ -171,16 +172,16 @@ This variable may be bound to the name of a function to be applied (to
 three arguments: the character position of the beginning of the keyword,
 the last parse state, and the indent point) to return the appropriate
 indentation for keywords occurring within special forms whose symbols have
-a 'fi:lisp-indent-hook property of 'keyword or 'keyword-list.  The inden-
-tation returned is absolute.")
+a \'fi:lisp-indent-hook property of \'keyword or \'keyword-list.
+The indentation returned is absolute.")
 
 (make-variable-buffer-local 'fi:lisp-keyword-indentation-hook)
 
 (defvar fi:lisp-maximum-indent-struct-depth 3
   "*Maximum depth to backtrack out from a sublist for structured indentation.
-If this variable is NIL, no backtracking will occur and lists whose `car'
-is a symbol with a 'fi:lisp-indent-hook property of 'label, 'labels, 'flet,
-'macrolet, 'defun, or a list may not be indented properly.  In addition,
+If this variable is NIL, no backtracking will occur and lists whose \"car\"
+is a symbol with a \'fi:lisp-indent-hook property of \'label, \'labels, \'flet,
+\'macrolet, \'defun, or a list may not be indented properly.  In addition,
 quoted lists will not be treated specially.  If this variable is T, there
 is no limit placed on backtracking.  A numeric value specifies the maximum
 depth to backtrack.  A reasonable value is 3.")
@@ -264,8 +265,8 @@ Lisp definitions.")
 (defvar fi:check-unbalanced-parentheses-when-saving t
   "*If non-nil, for the Lisp editing modes (Common Lisp, Emacs Lisp, and
 Franz Lisp) check for unbalanced parentheses before writing the file.
-If the value is T, then ask whether or not the file should be written ``as
-is'' if there are too many or few parens--answering no leaves the point at
+If the value is T, then ask whether or not the file should be written as
+is if there are too many or few parens--answering no leaves the point at
 the place of error.  If the value is 'warn, then a warning is issued and
 the file is written.")
 
@@ -783,3 +784,7 @@ from the same Lisp distribution.")
 
 (defvar fi::rsh-command nil)
 (defvar fi::rsh-args '("-Y"))
+
+;; Local Variables:
+;; byte-compile-warnings: (not docstrings)
+;; End:

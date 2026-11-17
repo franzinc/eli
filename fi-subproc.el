@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 ;; This file has its (distant) roots in lisp/shell.el, so:
 ;;
 ;; Copyright (C) 1985, 1986, 1987 Free Software Foundation, Inc.
@@ -26,6 +27,12 @@
 (declare-function fi::set-environment "fi-subproc")
 (declare-function fi::ensure-lep-connection "fi-basic-lep")
 (declare-function fi:eval-in-lisp "fi-basic-lep")
+
+;; Defined in C on MS Windows builds only.  Declare them special so the
+;; `let' in fi::socket-start-lisp binds them dynamically.  (`dlet' would
+;; do this too, but it requires Emacs 28.1.)
+(defvar w32-start-process-show-window)
+(defvar w32-quote-process-args)
 
 ;;;;
 ;;; User visible functions
@@ -287,11 +294,7 @@ be a string. Use the 6th argument for image file."))
 (defun fi::eli-compat-mode-p (port)
   (let (proc)
     (condition-case ()
-	(setq proc
-	  (let ((display-warning-minimum-level
-		 ;; For XEmacs -- see bug14703
-		 'error))
-	    (open-network-stream "*eli-compat*" nil "localhost" port)))
+	(setq proc (open-network-stream "*eli-compat*" nil "localhost" port))
       (error))
     (cond (proc
 	   ;; something detected on port, kill proc and return `t'
@@ -302,6 +305,7 @@ be a string. Use the 6th argument for image file."))
 (defun fi::common-lisp-1-windows-compat (host buffer-name directory
 					 executable-image-name image-file
 					 image-args)
+  (ignore executable-image-name image-file image-args)
   (let ((i 0)
 	(process nil))
     (unless fi::lisp-host (setq-default fi::lisp-host host))
@@ -311,7 +315,7 @@ be a string. Use the 6th argument for image file."))
     ;; So fi::make-tcp-connection knows we've started a Lisp:
     (setq fi::common-lisp-backdoor-main-process-name fi::cl-process-name)
     (while
-	(condition-case condition
+	(condition-case nil
 	    (progn
 	      (setq process
 		(let ((fi::muffle-open-network-stream-errors t))
@@ -368,6 +372,7 @@ be a string. Use the 6th argument for image file."))
 (defun fi::common-lisp-1-windows (proc host buffer-name directory
 				  executable-image-name image-file
 				  image-args)
+  (ignore directory executable-image-name image-file image-args)
   (let* ((pid (if (cygwinp)
 		  (cygwin-to-windows-process-id proc)
 		(process-id proc)))
@@ -517,16 +522,8 @@ be a string. Use the 6th argument for image file."))
     (append (nreverse dlisp-args) (nreverse other-args))))
 
 (defun fi::socket-start-lisp (process-name image arguments)
-  (let (
-;;;; rms didn't like the win32- prefix, so we have to support the old and
-;;;; new style:
-	(win32-start-process-show-window t)
-	(w32-start-process-show-window t)
-	(win32-quote-process-args t)
-	(w32-quote-process-args t)
-	;; from Greg Klanderman:
-	;; XEmacs 21 NT does this differently...
-	(nt-quote-args-functions-alist '(("." . nt-quote-args-double-quote))))
+  (let ((w32-start-process-show-window t)
+	(w32-quote-process-args t))
     (apply (function start-process)
 	   process-name
 	   nil ;; no buffer name
@@ -1017,6 +1014,7 @@ the first \"free\" buffer name and start a subprocess in that buffer."
   ;; Sentinel for subprocesses.  The sentinel currently
   ;; does nothing, other than prevent the status change message when the
   ;; process dies.
+  (ignore process)
   (when (and fi::lisp-is-remote
 	     (string-match "exited abnormally" status))
     (let ((extra ""))
@@ -1063,6 +1061,7 @@ works--if it does not, then fi:common-lisp will fail.%s"
   ;; Sentinel and filter for network connections.  The sentinel currently
   ;; does nothing, other than prevent the status change message when the
   ;; connection is closed.
+  (ignore status)
   (set-buffer (process-buffer process))
   (goto-char (point-max))
   (insert

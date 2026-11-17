@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 ;; See the file LICENSE for the full license governing this code.
 
 (declare-function fi::read-lisp-process-name "fi-db")
@@ -86,7 +87,7 @@ time."
 		 (setq arglist (cl-subseq arglist 1 (1- (length arglist)))))
 	       (fi:show-some-text nil "%s's arglist: %s" what arglist)))
 	    ;; Error continuation
-	    ((string) (error)
+	    (() (_error)
 	     (fi::show-error-text "")))))))
   (self-insert-command (prefix-numeric-value current-prefix-arg)))
 
@@ -219,7 +220,7 @@ at file visit time."
 					; `type' is not bound in this
 					; context
      :fspec something)
-    ((something other-window-p what from-fspec)
+    ((something other-window-p)
      (pathname point n-more)
      (fi::show-found-definition (if (symbolp something)
 				    (symbol-name something)
@@ -273,7 +274,7 @@ time."
    (list (function (lambda (pathname point n-more)
 		     (fi::show-found-definition (lep::meta-dot-string)
 						pathname point n-more
-						(eq 0 n-more)))))
+						nil (eq 0 n-more)))))
    (list (function (lambda (error something)
 		     (when (fi::pop-metadot-session)
 		       (fi::show-error-text "%s: %s" something error))))
@@ -305,19 +306,21 @@ time."
 	 (setq lep::meta-dot-session nil)
 	 t)))
 
-(defun fi::push-metadot-session (what string from-fspec eli--session)
-  (cond (fi:maintain-definition-stack
-	 (setq lep::meta-dot-what (cons what lep::meta-dot-what))
-	 (setq lep::meta-dot-string (cons string lep::meta-dot-string))
-	 (setq lep::meta-dot-from-fspec
-	   (cons from-fspec lep::meta-dot-from-fspec))
-	 (setq lep::meta-dot-session (cons eli--session lep::meta-dot-session)))
-	(t
-	 (fi::pop-metadot-session)
-	 (setq lep::meta-dot-what what)
-	 (setq lep::meta-dot-string string)
-	 (setq lep::meta-dot-from-fspec from-fspec)
-	 (setq lep::meta-dot-session eli--session))))
+(defun fi::push-metadot-session (what string from-fspec eli--sess)
+  (let ((eli--session eli--sess))
+    (cond (fi:maintain-definition-stack
+	   (setq lep::meta-dot-what (cons what lep::meta-dot-what))
+	   (setq lep::meta-dot-string (cons string lep::meta-dot-string))
+	   (setq lep::meta-dot-from-fspec
+	     (cons from-fspec lep::meta-dot-from-fspec))
+	   (setq lep::meta-dot-session
+	     (cons eli--session lep::meta-dot-session)))
+	  (t
+	   (fi::pop-metadot-session)
+	   (setq lep::meta-dot-what what)
+	   (setq lep::meta-dot-string string)
+	   (setq lep::meta-dot-from-fspec from-fspec)
+	   (setq lep::meta-dot-session eli--session)))))
 
 (defun fi::reset-metadot-session ()
   (setq lep::meta-dot-what nil)
@@ -333,12 +336,12 @@ time."
 	   "%s was defined somewhere at the top-level, %d more definitions"
 	   thing n-more)
 	(let ((mess "")
-	      (xb nil)
+	      ;;(xb nil)
 	      (pathname (fi::ensure-translated-pathname pathname)))
 	  (when fi:filename-frobber-hook
 	    (setq pathname (funcall fi:filename-frobber-hook pathname)))
 	  (ring-insert lep::show-def-marker-ring (point-marker))
-	  (setq xb (get-file-buffer pathname))
+	  ;;(setq xb (get-file-buffer pathname))
 	  (if other-window-p
 	      (find-file-other-window pathname)
 	    (find-file pathname))
@@ -672,9 +675,10 @@ beginning of words in target symbols."
 (defvar fi::inside-lisp-complete-1 nil)
 
 (defun fi::lisp-complete-1 (pattern xpackage functions-only
-			    &optional ignore-keywords)
+			    &optional ignore-kwds)
   (unless fi::inside-lisp-complete-1	;return nil on recursion
-    (let ((fi::inside-lisp-complete-1 t))
+    (let* ((ignore-keywords ignore-kwds)
+	   (fi::inside-lisp-complete-1 t))
       (condition-case nil
 	  (let ((completions
 		 (car (lep::eval-session-in-lisp
@@ -767,6 +771,7 @@ beginning of words in target symbols."
 	 initial-input)))
 
 (defun lep::completing-read-complete (pattern predicate what)
+  (ignore predicate)
   (let* ((inhibit-quit nil)
 	 (matchp (string-match ":?:" pattern))
 	 (xpackage (and matchp (substring pattern 0 matchp)))
@@ -862,7 +867,7 @@ for tracing methods."
 				:end-point (save-excursion
 					     (forward-sexp)
 					     (point)))
-   (() (form)
+   (() (_form)
     (message "Tracing definition...done."))
    (() (error)
     (fi::show-error-text "Cannot trace current definition: %s" error))))
@@ -873,7 +878,7 @@ for tracing methods."
     (forward-sexp 1)
     (buffer-substring start (point))))
 
-(defun fi:trace-definer (current-prefix-arg)
+(defun fi:trace-definer (cpa)
   "Dynamically toggle, in the Common Lisp environment, tracing for the
 function defined by the top-level form around the cursor position.  The
 form can be a defun, defgeneric, defmethod, define-compiler-macro, or
@@ -887,7 +892,8 @@ package is tracked automatically.  In source buffer, the package is
 parsed at file visit time."
   (interactive "P")
   (save-excursion
-    (let (definer spec name qualifiers specializers)
+    (let ((current-prefix-arg cpa)
+	  definer spec name qualifiers specializers)
       (forward-char 1)
       (beginning-of-defun)
       (unless (looking-at "(def")
@@ -941,7 +947,7 @@ parsed at file visit time."
   (interactive (fi::get-default-symbol "Disassemble for" t t))
   (fi::make-request (lep::disassemble-fspec-session :fspec fspec)
     ;; Normal continuation
-    (() (what disassembly)
+    (() (_what disassembly)
      (fi:show-some-text nil "%s" disassembly))
     ;; Error continuation
     ((fspec) (error)
@@ -1022,17 +1028,21 @@ the next definition, if there is one."
 
 
 (defun lep::list-fspecs-common (fspec function msg &optional what)
-  (fi::make-request
-      ;;fi::frob-case-to-lisp removed - 18jan94 smh
-      (lep::list-fspecs-session :function function :fspec fspec)
-    ((fspec fi:package what) (the-definitions)
-     (lep:display-some-definitions fi:package
-				   the-definitions
-				   (list 'lep::find-a-definition what fspec)))
-    ((msg) (error)
-     (fi::show-error-text msg error))))
+  (let ((package fi:package))
+    (fi::make-request
+	;;fi::frob-case-to-lisp removed - 18jan94 smh
+	(lep::list-fspecs-session :function function :fspec fspec)
+      ((fspec package what) (the-definitions)
+       (let ((fi:package package))
+	 (lep:display-some-definitions
+	  fi:package
+	  the-definitions
+	  (list 'lep::find-a-definition what fspec))))
+      ((msg) (error)
+       (fi::show-error-text msg error)))))
 
 (defun lep::find-a-definition (string type list-buffer what from-fspec)
+  (ignore type list-buffer)
   (fi::lisp-find-definition-common string t what from-fspec))
 
 (defun lep::edit-somethings (fspec generator &optional other-window-p what)
@@ -1045,7 +1055,7 @@ the next definition, if there is one."
      :generator generator
      :package (fi::string-to-keyword (fi::package))
      :fspec fspec)
-    ((other-window-p fspec what) (pathname point n-more)
+    ((other-window-p fspec) (pathname point n-more)
      (fi::show-found-definition fspec pathname point n-more other-window-p)
      (if (or (null n-more) (= 0 n-more)) (fi::pop-metadot-session)))
     ((fspec) (error)
@@ -1155,7 +1165,7 @@ environment."
     (fi::make-request
 	(lep::compile/load-file-request :pathname file :operation operation
 					:warnings-buffer "*ACL Warnings*")
-      ((compilep msg-start) (res)
+      ((compilep msg-start) (_res)
        (fi::note-background-reply (list compilep))
        (message "%sdone." msg-start))
       ((compilep) (error)
@@ -1172,18 +1182,21 @@ the undefined functions.  See the Allegro CL variable
 EXCL:*RECORD-XREF-INFO*."
   (interactive)
   (message "Finding undefined functions...")
-  (fi::make-request
-      (lep::list-undefined-functions-session)
-    ((fi:package) (undeffuncs)
-      (message "Finding undefined functions...done.")
-      (lep:display-some-inverse-definitions
-       fi:package
-       undeffuncs
-       (list 'lep::edit-undefined-function-callers)))
-    (() (error)
-      (fi::show-error-text "error: %s" error))))
+  (let ((package fi:package))
+    (fi::make-request
+	(lep::list-undefined-functions-session)
+      ((package) (undeffuncs)
+       (let ((fi:package package))
+	 (message "Finding undefined functions...done.")
+	 (lep:display-some-inverse-definitions
+	  fi:package
+	  undeffuncs
+	  (list 'lep::edit-undefined-function-callers))))
+      (() (error)
+       (fi::show-error-text "error: %s" error)))))
 
 (defun lep::edit-undefined-function-callers (fspec &rest ignore)
+  (ignore ignore)
   (lep::edit-somethings fspec 'lep::who-calls t))
 
 (defvar fi::list-unused-functions-ignored-packages
@@ -1198,17 +1211,19 @@ more information on finding the definitions of the unused functions.  See
 the Allegro CL variable EXCL:*RECORD-XREF-INFO*."
   (interactive)
   (message "Finding unused functions...")
-  (fi::make-request
-      (lep::list-unused-functions-session
-       :ignore-packages fi::list-unused-functions-ignored-packages)
-    ((fi:package) (funcs)
-      (message "Finding unused functions...done.")
-      (lep:display-some-definitions
-       fi:package
-       funcs
-       (list 'lep::find-a-definition "unused function" nil)))
-    (() (error)
-      (fi::show-error-text "error: %s" error))))
+  (let ((package fi:package))
+    (fi::make-request
+	(lep::list-unused-functions-session
+	 :ignore-packages fi::list-unused-functions-ignored-packages)
+      ((package) (funcs)
+       (let ((fi:package package))
+	 (message "Finding unused functions...done.")
+	 (lep:display-some-definitions
+	  fi:package
+	  funcs
+	  (list 'lep::find-a-definition "unused function" nil))))
+      (() (error)
+       (fi::show-error-text "error: %s" error)))))
 
 (defun lep::eval-from-lisp (string)
   (list (eval (car (read-from-string string)))))

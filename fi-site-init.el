@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 ;; The Franz Inc. Lisp/Emacs interface.
 
 (defvar fi:emacs-lisp-interface-version "5.00")
@@ -5,8 +6,19 @@
 (when (not load-file-name)
   (error "load-file-name is nil... how are you loading fi-site-init??"))
 
-(when (< emacs-major-version 23)
-  (error "ELI requires GNU Emacs 23 or later."))
+;; 25.1 is the minimum because of `define-advice' (fi-modes.el) and
+;; lexical-binding, which all ELI files use.
+(when (or (featurep 'xemacs)
+	  (< emacs-major-version 25))
+  (error "ELI requires GNU Emacs 25.1 or later; this is %s %s"
+	 (if (featurep 'xemacs) "XEmacs" "GNU Emacs")
+	 emacs-version))
+
+;; fi::load binds byte-compile-dest-file-function with `let'.  This file
+;; uses lexical-binding and is loaded as source, so that `let' only binds
+;; dynamically (where byte-compile-file can see it) if bytecomp's defvar
+;; has already been seen.  Load it now to guarantee that.
+(require 'bytecomp)
 
 (setq fi::*debug* nil)
 
