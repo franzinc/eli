@@ -55,7 +55,11 @@
 
 (defvar fi--force-compile nil)
 
-(defvar fi:native-comp-available-p (featurep 'native-compile))
+(defvar fi:native-comp-available-p)
+(setq fi:native-comp-available-p
+  (and (>= emacs-major-version 28)
+       (fboundp 'native-comp-available-p)
+       (native-comp-available-p)))
 
 (defvar fi--eli-cache-dir
   (expand-file-name (format "~/.emacs.d/franzinc/%s/eli/"
