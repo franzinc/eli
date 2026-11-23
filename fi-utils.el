@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 ;; See the file LICENSE for the full license governing this code.
 
 ;;; Misc utilities
@@ -384,8 +385,9 @@ at the beginning of the line."
 
 (defvar ignore-keywords nil)
 
-(defun fi::get-default-symbol (prompt &optional up-p ignore-keywords)
-  (let ((symbol-at-point (fi::get-symbol-at-point up-p)))
+(defun fi::get-default-symbol (prompt &optional up-p ignore-kwds)
+  (let ((ignore-keywords ignore-kwds)
+	(symbol-at-point (fi::get-symbol-at-point up-p)))
     (if fi::use-symbol-at-point
 	(list symbol-at-point)
       (let ((read-symbol
@@ -435,6 +437,7 @@ at the beginning of the line."
     (fi::minibuffer-complete-1 pattern predicate what)))
 
 (defun fi::minibuffer-complete-1 (pattern predicate what)
+  (ignore predicate)
 
   ;; HACK HACK HACK HACK
   ;;   ignore-keywords must be bound in the dynamic context in which this
@@ -1095,7 +1098,7 @@ created by fi:common-lisp."
 				   (setq col nil
 					 state ':then))
 				  (t (error
-				      "if*: bad keyword %a" lookat))))
+				      "if*: bad keyword %s" lookat))))
 		    (t (setq state ':col
 			     col nil)
 		       (push (car xx) col))))
@@ -1304,24 +1307,24 @@ created by fi:common-lisp."
   (cygwin-to-windows-process-id-via-ps (process-id proc)))
 
 (defun cygwin-to-windows-process-id-via-ps (cygwin-pid)
-  (let ((pid (int-to-string cygwin-pid))
-	(output
+  (let ((output
 	 (cdr (split-string (shell-command-to-string "ps -al")
 			    "[\n\r]")))
 	(s "[ \t]+")
 	(d "[0-9]+")
-	pid)
-    (while output
+	(target (number-to-string cygwin-pid))
+	(winpid nil))
+    (while (and output (null winpid))
       (when (string-match
-	     (concat s pid		; CYGWIN PID
+	     (concat s target		; CYGWIN PID
 		     s d		; PPID
 		     s d		; PGID
-		     s "\\(" d "\\)"	; WINPIN
+		     s "\\(" d "\\)"	; WINPID
 		     s)
 	     (car output))
-	(setq pid (match-string 1 (car output))))
+	(setq winpid (match-string 1 (car output))))
       (setq output (cdr output)))
-    (when pid (string-to-number pid 10))))
+    (when winpid (string-to-number winpid 10))))
 
 (defun fi::double-char-in-string (char string)
   (let ((oldindex 0)
@@ -1376,3 +1379,6 @@ created by fi:common-lisp."
 	 str)
 	(t (format "%s" str))))
 
+;; Local Variables:
+;; byte-compile-warnings: (not docstrings)
+;; End:

@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 ;; See the file LICENSE for the full license governing this code.
 
 (defmacro fi::with-keywords (variables rest-arg &rest body)
@@ -47,6 +48,7 @@
       buffer)))
 
 (defun fi::create-new-mapped-screen-for-stream (parent x y width height)
+  (ignore parent x y width height)
 ;;;  (and (boundp 'epoch::screen-properties)
 ;;;       (let ((props epoch::screen-properties))
 ;;;	 (when (stringp parent)

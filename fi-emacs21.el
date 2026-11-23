@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 ;; See the file LICENSE for the full license governing this code.
 
 ;; gnu emacs v21 specific hacks for the Franz Inc. emacs-lisp interface
@@ -536,8 +537,7 @@
 
 (defun fi:menu-common-lisp-new-frame ()
   (interactive)
-  (let ((get-screen-for-buffer-default-screen-name 'common-lisp)
-	(fi:new-screen-for-common-lisp-buffer t))
+  (let ((fi:new-screen-for-common-lisp-buffer t))
     (call-interactively 'fi:common-lisp)))
 
 (defun fi:menu-open-lisp-listener ()
@@ -546,8 +546,7 @@
 
 (defun fi:menu-open-lisp-listener-new-frame ()
   (interactive)
-  (let ((get-screen-for-buffer-default-screen-name 'lisp-listener)
-	(fi:new-screen-for-common-lisp-buffer t))
+  (let ((fi:new-screen-for-common-lisp-buffer t))
     (fi:open-lisp-listener -1)))
 
 (defun fi::region-active ()
@@ -1042,7 +1041,8 @@
   (ignore-errors
    (when (and fi::*new-frame-width* fi::*current-frame-width*)
      (let ((new-width (car fi::*new-frame-width*))
-	   (frame (cdr fi::*new-frame-width*)))
+	   ;;(frame (cdr fi::*new-frame-width*))
+	   )
        (setq fi::*new-frame-width* nil)
        (when (and (/= fi::*current-frame-width* new-width)
 		  (fi::lep-open-connection-p))

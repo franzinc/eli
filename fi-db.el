@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 ;; See the file LICENSE for the full license governing this code.
 
 (defvar fi::ss-help)

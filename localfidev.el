@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 ;; local-fi-developer-hooks.el
 
 ;; This file is not for public distribution.

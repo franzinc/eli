@@ -1,3 +1,4 @@
+;; -*- lexical-binding: t; -*-
 ;; This file has its (distant) roots in lisp/lisp-mode.el, so:
 ;;
 ;; Copyright (C) 1985, 1986, 1987 Free Software Foundation, Inc.
@@ -671,6 +672,7 @@ treated just like a LAMBDA (whose method is '((1 1 lambda-list) (0 t 1)))."
 
 (defun fi::lisp-indent-quoted-list (depth count state indent-point)
   "Function for indenting quoted lists."
+  (ignore depth count indent-point)
   (goto-char (1+ (car (cdr state))))
   (current-column))
 
@@ -1070,6 +1072,7 @@ atomic or if the s-expression is not a list or if the s-expression
 is a list but does not contain enough elements.  The second element of
 the returned list will be non-NIL if the specified element was found,
 NIL otherwise.  The ELEMENT is the number of the element, zero indexed."
+  (ignore count state)
   (let ((atomic nil)
 	(found nil)
 	(count 0))
@@ -1178,6 +1181,7 @@ distinguished."
       (error nil))))
 
 (defun fi::lisp-indent-specform (spec-count depth count state indent-point)
+  (ignore count)
   (if (> depth 0)
       nil
     (let ((containing-form-start (car (cdr state))) (i spec-count)
@@ -1684,3 +1688,7 @@ if matched at the beginning of a line, means don't indent that line."
   (put 'cl-loop     tag '(like loop))
   
   )
+
+;; Local Variables:
+;; byte-compile-warnings: (not docstrings)
+;; End:
