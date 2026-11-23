@@ -383,10 +383,10 @@ at the beginning of the line."
   ;; to be able to grab the thing at the point.
   )
 
-(defvar ignore-keywords nil)
+(defvar fi::ignore-keywords nil)
 
 (defun fi::get-default-symbol (prompt &optional up-p ignore-kwds)
-  (let ((ignore-keywords ignore-kwds)
+  (let ((fi::ignore-keywords ignore-kwds)
 	(symbol-at-point (fi::get-symbol-at-point up-p)))
     (if fi::use-symbol-at-point
 	(list symbol-at-point)
@@ -440,7 +440,7 @@ at the beginning of the line."
   (ignore predicate)
 
   ;; HACK HACK HACK HACK
-  ;;   ignore-keywords must be bound in the dynamic context in which this
+  ;;   fi::ignore-keywords must be bound in the dynamic context in which this
   ;;   function is called (just above in fi::get-default-symbol).
   ;; HACK HACK HACK HACK
   
@@ -453,7 +453,7 @@ at the beginning of the line."
 	(setq pattern (substring pattern (match-end 0))))
       (let* ((alist
 	      (fi::package-frob-completion-alist
-	       (fi::lisp-complete-1 pattern xpackage nil ignore-keywords)))
+	       (fi::lisp-complete-1 pattern xpackage nil fi::ignore-keywords)))
 	     (completion
 	      (when alist
 		(if xpackage

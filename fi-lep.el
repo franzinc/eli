@@ -677,7 +677,7 @@ beginning of words in target symbols."
 (defun fi::lisp-complete-1 (pattern xpackage functions-only
 			    &optional ignore-kwds)
   (unless fi::inside-lisp-complete-1	;return nil on recursion
-    (let* ((ignore-keywords ignore-kwds)
+    (let* ((fi::ignore-keywords ignore-kwds)
 	   (fi::inside-lisp-complete-1 t))
       (condition-case nil
 	  (let ((completions
@@ -694,7 +694,7 @@ beginning of words in target symbols."
 					    functions-only))
 		       ':ignore-keywords (intern
 					  (fi::frob-case-to-lisp
-					   ignore-keywords))))))
+					   fi::ignore-keywords))))))
 	    (fi::lisp-complete-2 completions xpackage))
 	(quit
 	 (fi:eval-in-lisp
